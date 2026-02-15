@@ -42,7 +42,8 @@ namespace EditorBridge.Editor.Server
             }
             catch (Exception ex)
             {
-                WriteResponse(context, 500, JsonHelper.Error(ex.Message));
+                UnityEngine.Debug.LogError($"[EditorBridge] {method} {path} failed: {ex}");
+                WriteResponse(context, 500, JsonHelper.Error("Internal server error"));
             }
         }
 

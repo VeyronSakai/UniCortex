@@ -25,7 +25,7 @@ namespace EditorBridge.Editor.Server
 
         public static Task<T> RunOnMainThread<T>(Func<T> func)
         {
-            var tcs = new TaskCompletionSource<T>();
+            var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
             Queue.Enqueue(() =>
             {
                 try
@@ -43,7 +43,7 @@ namespace EditorBridge.Editor.Server
 
         public static Task RunOnMainThread(Action action)
         {
-            var tcs = new TaskCompletionSource<bool>();
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             Queue.Enqueue(() =>
             {
                 try

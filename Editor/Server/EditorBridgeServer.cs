@@ -87,7 +87,10 @@ namespace EditorBridge.Editor.Server
                 try
                 {
                     var result = _listener.BeginGetContext(ListenerCallback, _listener);
-                    WaitHandle.WaitAny(new[] { result.AsyncWaitHandle, _cts.Token.WaitHandle });
+                    using (var handle = result.AsyncWaitHandle)
+                    {
+                        WaitHandle.WaitAny(new[] { handle, _cts.Token.WaitHandle });
+                    }
                 }
                 catch (ObjectDisposedException)
                 {
@@ -120,9 +123,10 @@ namespace EditorBridge.Editor.Server
             }
             catch (Exception ex)
             {
+                Debug.LogError($"[EditorBridge] Unhandled exception: {ex}");
                 try
                 {
-                    RequestRouter.WriteResponse(context, 500, JsonHelper.Error(ex.Message));
+                    RequestRouter.WriteResponse(context, 500, JsonHelper.Error("Internal server error"));
                 }
                 catch
                 {
