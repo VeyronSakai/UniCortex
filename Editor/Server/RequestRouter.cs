@@ -54,14 +54,24 @@ namespace EditorBridge.Editor.Server
             response.ContentType = "application/json; charset=utf-8";
             var buffer = Encoding.UTF8.GetBytes(json);
             response.ContentLength64 = buffer.Length;
-            response.OutputStream.Write(buffer, 0, buffer.Length);
             try
             {
-                response.OutputStream.Close();
+                response.OutputStream.Write(buffer, 0, buffer.Length);
             }
             catch
             {
-                // client may have already disconnected
+                // client may have disconnected during write
+            }
+            finally
+            {
+                try
+                {
+                    response.OutputStream.Close();
+                }
+                catch
+                {
+                    // client may have already disconnected
+                }
             }
         }
 

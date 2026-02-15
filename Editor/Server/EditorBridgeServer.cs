@@ -30,19 +30,25 @@ namespace EditorBridge.Editor.Server
             if (_listener != null) return;
 
             var port = EditorBridgeSettings.instance.Port;
+            if (port < 1 || port > 65535)
+            {
+                Debug.LogError($"[EditorBridge] Invalid port: {port}. Must be between 1 and 65535.");
+                return;
+            }
+
             _router = new RequestRouter();
             RegisterHandlers();
 
             _listener = new HttpListener();
-            _listener.Prefixes.Add($"http://localhost:{port}/");
-
             try
             {
+                _listener.Prefixes.Add($"http://localhost:{port}/");
                 _listener.Start();
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[EditorBridge] Failed to start server on port {port}: {ex.Message}");
+                try { _listener.Close(); } catch { }
                 _listener = null;
                 return;
             }
