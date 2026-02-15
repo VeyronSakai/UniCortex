@@ -13,6 +13,7 @@ namespace EditorBridge.Editor.Server
         static MainThreadDispatcher()
         {
             EditorApplication.update += Update;
+            AssemblyReloadEvents.beforeAssemblyReload += () => EditorApplication.update -= Update;
         }
 
         static void Update()

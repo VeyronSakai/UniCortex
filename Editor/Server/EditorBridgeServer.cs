@@ -70,9 +70,11 @@ namespace EditorBridge.Editor.Server
                 // ignore errors during shutdown
             }
 
+            _listenerThread?.Join(1000);
             _listener = null;
             _listenerThread = null;
             _cts = null;
+            _router = null;
         }
 
         static void RegisterHandlers()

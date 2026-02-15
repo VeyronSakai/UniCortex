@@ -15,15 +15,15 @@ namespace EditorBridge.Editor.Server
 
         public void Register(string method, string path, Func<HttpListenerContext, Task> handler)
         {
-            _handlers[(method.ToUpperInvariant(), path)] = handler;
-            _knownPaths.Add(path);
+            var normalized = NormalizePath(path);
+            _handlers[(method.ToUpperInvariant(), normalized)] = handler;
+            _knownPaths.Add(normalized);
         }
 
         public async Task HandleRequest(HttpListenerContext context)
         {
             var method = context.Request.HttpMethod.ToUpperInvariant();
-            var path = context.Request.Url.AbsolutePath.TrimEnd('/');
-            if (string.IsNullOrEmpty(path)) path = "/";
+            var path = NormalizePath(context.Request.Url.AbsolutePath);
 
             try
             {
@@ -55,7 +55,20 @@ namespace EditorBridge.Editor.Server
             var buffer = Encoding.UTF8.GetBytes(json);
             response.ContentLength64 = buffer.Length;
             response.OutputStream.Write(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
+            try
+            {
+                response.OutputStream.Close();
+            }
+            catch
+            {
+                // client may have already disconnected
+            }
+        }
+
+        static string NormalizePath(string path)
+        {
+            var trimmed = path.TrimEnd('/');
+            return string.IsNullOrEmpty(trimmed) ? "/" : trimmed;
         }
     }
 }
