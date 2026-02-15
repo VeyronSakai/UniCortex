@@ -1,0 +1,136 @@
+name: Release
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  PACKAGE_JSON_PATH: package.json
+  GITHUB_BOT_NAME: github-actions[bot]
+  GITHUB_BOT_EMAIL: github-actions[bot]@users.noreply.github.com
+
+jobs:
+  paths-filter:
+    name: Paths Filter
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    outputs:
+      package_json: ${{ steps.filter.outputs.package_json }}
+    steps:
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        id: filter
+        with:
+          filters: |
+            package_json:
+              - ${{ env.PACKAGE_JSON_PATH }}
+
+  update-draft:
+    name: Update Draft
+    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main') || github.event_name == 'workflow_dispatch'}}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    outputs:
+      tag_name: ${{ steps.release-drafter.outputs.tag_name }}
+    steps:
+      - uses: release-drafter/release-drafter@6db134d15f3909ccc9eefd369f02bd1e9cffdf97 # v6
+        id: release-drafter
+        with:
+          commitish: main
+
+  update-files:
+    name: Update Files
+    needs: update-draft
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}
+      cancel-in-progress: true
+    env:
+      VERSION: ${{ needs.update-draft.outputs.tag_name }}
+      SOURCE_BRANCH: github-actions/update-files/${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Update package.json
+        run: |
+          json_content=$(cat "${PACKAGE_JSON_PATH}")
+          updated_json=$(echo "${json_content}" | jq --arg version "${VERSION}" '.version = $version')
+          echo "${updated_json}" | jq '.' > "${PACKAGE_JSON_PATH}"
+      - name: Commit package.json
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9
+        id: commit-package-json
+        with:
+          author_name: ${{ env.GITHUB_BOT_NAME }}
+          author_email: ${{ env.GITHUB_BOT_EMAIL }}
+          message: "Update package.json"
+          add: ${{ env.PACKAGE_JSON_PATH }}
+          new_branch: ${{ env.SOURCE_BRANCH }}
+      - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2
+        id: create-github-app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Create pull request and merge
+        if: ${{ steps.commit-package-json.outputs.committed == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.create-github-app-token.outputs.token }}
+        run: |
+          gh pr create --title "Update files for release" --body "Update files for release" --base main --head "${SOURCE_BRANCH}"
+          gh pr merge "${SOURCE_BRANCH}" --auto --merge
+
+  release:
+    name: Release
+    needs: [update-draft, paths-filter]
+    environment: Release
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}
+      cancel-in-progress: false
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged && needs.paths-filter.outputs.package_json == 'true' }}
+    env:
+      VERSION: ${{ needs.update-draft.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: main
+      - name: Validate version in package.json
+        run: |
+          package_version=$(jq -r '.version' "${PACKAGE_JSON_PATH}")
+          if [[ "${package_version}" != "${VERSION}" ]]; then
+            echo "::error::version in package.json (${package_version}) does not match the release draft tag (${VERSION})"
+            exit 1
+          fi
+      - uses: release-drafter/release-drafter@6db134d15f3909ccc9eefd369f02bd1e9cffdf97 # v6
+        id: release-drafter
+        with:
+          publish: true
+          commitish: main
+      - name: Get semver
+        id: get-semver
+        run: |
+          read -r major minor patch <<< "$(echo "${VERSION}" | grep -oE '^([0-9]+)\.([0-9]+)\.([0-9]+)' | awk -F '.' '{print $1 " " $2 " " $3}')"
+          {
+            echo "major=${major}"
+            echo "minor=${major}.${minor}"
+            echo "patch=${major}.${minor}.${patch}"
+          } >> "${GITHUB_OUTPUT}"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ env.VERSION }}
+      - name: Update major tag
+        if: steps.get-semver.outputs.major != '0'
+        run: |
+          git push -f origin "refs/tags/${{ env.VERSION }}:refs/tags/${{ steps.get-semver.outputs.major }}"
+      - name: Update minor tag
+        run: |
+          git push -f origin "refs/tags/${{ env.VERSION }}:refs/tags/${{ steps.get-semver.outputs.minor }}"

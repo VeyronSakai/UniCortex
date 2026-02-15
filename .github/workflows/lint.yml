@@ -1,0 +1,40 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  paths-filter:
+    name: Paths Filter
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-slim
+    outputs:
+      action: ${{ steps.filter.outputs.action }}
+    steps:
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+        id: filter
+        with:
+          filters: |
+            action:
+              - ".github/**"
+
+  action:
+    name: Action
+    needs: paths-filter
+    if: ${{ needs.paths-filter.outputs.action == 'true' || github.event_name == 'push'}}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: reviewdog/action-actionlint@e58ee9d111489c31395fbe4857b0be6e7635dbda
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: error
