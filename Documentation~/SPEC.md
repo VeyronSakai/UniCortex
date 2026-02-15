@@ -95,7 +95,7 @@ Unity API はメインスレッドからのみ呼び出し可能。HttpListener 
 レスポンスは常に `application/json; charset=utf-8`。
 エラー時: HTTP ステータスコード + `{"error": "メッセージ"}`
 
-### GET `/api/ping`
+### GET `/ping`
 
 サーバー疎通確認。**Unity Console に `pong` とログ出力**し、レスポンスを返す。
 
@@ -104,7 +104,7 @@ Unity API はメインスレッドからのみ呼び出し可能。HttpListener 
 {"status": "ok"}
 ```
 
-### POST `/api/editor/play`
+### POST `/editor/play`
 
 Play モードを開始する。`EditorApplication.isPlaying = true`
 
@@ -113,7 +113,7 @@ Play モードを開始する。`EditorApplication.isPlaying = true`
 {"success": true}
 ```
 
-### POST `/api/editor/stop`
+### POST `/editor/stop`
 
 Play モードを停止する。`EditorApplication.isPlaying = false`
 
@@ -122,7 +122,7 @@ Play モードを停止する。`EditorApplication.isPlaying = false`
 {"success": true}
 ```
 
-### POST `/api/gameobject/create`
+### POST `/gameobject/create`
 
 GameObject を作成する。
 
@@ -198,15 +198,15 @@ app.Run(args);
 
 | コマンド | API | 説明 |
 |---------|-----|------|
-| `dotnet ueb editor ping` | GET `/api/ping` | 疎通確認 |
-| `dotnet ueb editor play` | POST `/api/editor/play` | Play 開始 |
-| `dotnet ueb editor stop` | POST `/api/editor/stop` | Play 停止 |
+| `dotnet ueb editor ping` | GET `/ping` | 疎通確認 |
+| `dotnet ueb editor play` | POST `/editor/play` | Play 開始 |
+| `dotnet ueb editor stop` | POST `/editor/stop` | Play 停止 |
 
 #### gameobject
 
 | コマンド | API | 説明 |
 |---------|-----|------|
-| `dotnet ueb gameobject create --name <名前> [--primitive Cube]` | POST `/api/gameobject/create` | オブジェクト作成 |
+| `dotnet ueb gameobject create --name <名前> [--primitive Cube]` | POST `/gameobject/create` | オブジェクト作成 |
 
 各メソッドに `/// <summary>` と `/// <param name="">` を記述し、`--help` で説明が出るようにする。
 
@@ -285,6 +285,6 @@ dotnet ueb editor stop
 dotnet ueb gameobject create --name "Player" --primitive Cube
 
 # curl でも可
-curl http://localhost:56780/api/ping
-curl -X POST http://localhost:56780/api/editor/play
+curl http://localhost:56780/ping
+curl -X POST http://localhost:56780/editor/play
 ```
