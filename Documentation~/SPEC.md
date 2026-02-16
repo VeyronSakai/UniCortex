@@ -231,7 +231,7 @@ CLI はユーザーが手動でインストールする。Unity プロジェク�
 
 ```bash
 # nupkg をビルド
-dotnet pack "Packages/com.veyron-sakai.editor-bridge/Tools~/UnityEditorBridge.CLI/" \
+dotnet pack Library/PackageCache/com.veyron-sakai.editor-bridge@*/Tools~/UnityEditorBridge.CLI/ \
   -c Release -o Library/EditorBridge/nupkg
 
 # tool manifest がなければ作成

@@ -34,15 +34,22 @@ https://github.com/VeyronSakai/UnityEditorBridge.git
 
 ### CLI Setup
 
-After installing the UPM package, run the following in the Unity project root to set up the CLI:
+After installing the UPM package, run the following commands in the **Unity project root** to install the CLI as a dotnet local tool:
 
 ```bash
-dotnet pack "Packages/com.veyron-sakai.editor-bridge/Tools~/UnityEditorBridge.CLI/" \
+# 1. Build the nupkg from the package source
+dotnet pack Library/PackageCache/com.veyron-sakai.editor-bridge@*/Tools~/UnityEditorBridge.CLI/ \
   -c Release -o Library/EditorBridge/nupkg
-dotnet new tool-manifest  # skip if .config/dotnet-tools.json already exists
+
+# 2. Create a tool manifest if one does not exist yet
+dotnet new tool-manifest
+
+# 3. Install the CLI as a local tool
 dotnet tool install UnityEditorBridge.CLI --local \
   --add-source Library/EditorBridge/nupkg
 ```
+
+Once installed, the CLI is available via `dotnet ueb` within the project directory.
 
 ## Usage
 
@@ -84,6 +91,14 @@ Configurable from Project Settings > Unity Editor Bridge.
 |---------|---------|-------------|
 | Port | 56780 | Listen port |
 | AutoStart | true | Start automatically on Editor launch |
+
+## Contributing
+
+When developing this package locally, you can run the CLI directly from source without building a nupkg:
+
+```bash
+dotnet run --project Tools~/UnityEditorBridge.CLI -- editor ping
+```
 
 ## License
 
