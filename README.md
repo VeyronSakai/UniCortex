@@ -32,7 +32,17 @@ Add via Unity Package Manager using a Git URL:
 https://github.com/VeyronSakai/UnityEditorBridge.git
 ```
 
-The CLI is automatically installed as a dotnet local tool when Unity Editor starts.
+### CLI Setup
+
+After installing the UPM package, run the following in the Unity project root to set up the CLI:
+
+```bash
+dotnet pack "Packages/com.veyron-sakai.editor-bridge/Tools~/UnityEditorBridge.CLI/" \
+  -c Release -o Library/EditorBridge/nupkg
+dotnet new tool-manifest  # skip if .config/dotnet-tools.json already exists
+dotnet tool install UnityEditorBridge.CLI --local \
+  --add-source Library/EditorBridge/nupkg
+```
 
 ## Usage
 
