@@ -19,8 +19,8 @@ namespace EditorBridge.Editor.Server
     internal class RequestRouter
     {
         // Maps (HTTP method, normalized path) to an async handler function.
-        // Example key: ("GET", "/ping")
-        private readonly Dictionary<(string method, string path), Func<HttpListenerContext, CancellationToken, Task>>
+        // Example key: (HttpMethodType.Get, "/ping")
+        private readonly Dictionary<(HttpMethodType method, string path), Func<HttpListenerContext, CancellationToken, Task>>
             _handlers = new();
 
         // Tracks all registered paths regardless of method, so we can distinguish
@@ -31,13 +31,13 @@ namespace EditorBridge.Editor.Server
         /// Registers a handler for a specific HTTP method and path.
         /// If a handler already exists for the same method+path, it is replaced.
         /// </summary>
-        /// <param name="method">HTTP method (e.g. "GET", "POST"). Case-insensitive.</param>
+        /// <param name="method">HTTP method type.</param>
         /// <param name="path">The URL path (e.g. "/ping"). Trailing slashes are stripped.</param>
         /// <param name="handler">An async function that processes the request and writes the response.</param>
-        public void Register(string method, string path, Func<HttpListenerContext, CancellationToken, Task> handler)
+        public void Register(HttpMethodType method, string path, Func<HttpListenerContext, CancellationToken, Task> handler)
         {
             var normalized = NormalizePath(path);
-            _handlers[(method.ToUpperInvariant(), normalized)] = handler;
+            _handlers[(method, normalized)] = handler;
             _knownPaths.Add(normalized);
         }
 
@@ -53,8 +53,14 @@ namespace EditorBridge.Editor.Server
         /// </summary>
         public async Task HandleRequestAsync(HttpListenerContext context, CancellationToken cancellationToken)
         {
-            var method = context.Request.HttpMethod.ToUpperInvariant();
+            var rawMethod = context.Request.HttpMethod;
             var path = NormalizePath(context.Request.Url.AbsolutePath);
+
+            if (!Enum.TryParse<HttpMethodType>(rawMethod, ignoreCase: true, out var method))
+            {
+                WriteResponse(context, 405, JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
+                return;
+            }
 
             try
             {
@@ -76,7 +82,7 @@ namespace EditorBridge.Editor.Server
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[EditorBridge] {method} {path} failed: {ex}");
+                Debug.LogError($"[EditorBridge] {rawMethod} {path} failed: {ex}");
                 WriteResponse(context, 500, JsonUtility.ToJson(new ErrorResponse("Internal server error")));
             }
         }

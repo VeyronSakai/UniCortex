@@ -4,35 +4,31 @@ namespace UnityEditorBridge.CLI;
 
 public static class BridgeClient
 {
-    private static readonly HttpClient HttpClient = new()
+    private static readonly HttpClient s_httpClient = new()
     {
         BaseAddress = new Uri(
             Environment.GetEnvironmentVariable("UEB_URL") ?? "http://localhost:56780")
     };
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        IncludeFields = true
-    };
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true, IncludeFields = true };
 
-    public static async Task GetAsync(string path)
+    public static async Task GetAsync(string path, CancellationToken cancellationToken)
     {
         try
         {
-            var response = await HttpClient.GetAsync(path);
-            var body = await response.Content.ReadAsStringAsync();
+            var response = await s_httpClient.GetAsync(path, cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
                 await Console.Error.WriteLineAsync(
-                    $"Error: {(int)response.StatusCode} {response.StatusCode}\n{body}");
+                    $"Error: {(int)response.StatusCode} {response.StatusCode}{Environment.NewLine}{body}");
                 Environment.Exit(1);
                 return;
             }
 
             var json = JsonSerializer.Deserialize<JsonElement>(body);
-            Console.WriteLine(JsonSerializer.Serialize(json, JsonOptions));
+            Console.WriteLine(JsonSerializer.Serialize(json, s_jsonOptions));
         }
         catch (HttpRequestException ex)
         {
