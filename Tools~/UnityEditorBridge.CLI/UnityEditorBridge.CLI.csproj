@@ -13,6 +13,6 @@
     <PackageReference Include="ConsoleAppFramework" Version="5.7.13" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="../../Editor/Models/**/*.cs" LinkBase="Models" />
+    <Compile Include="../../Editor/Domains/Models/**/*.cs" LinkBase="Models" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using EditorBridge.Editor.Models;
+using EditorBridge.Editor.Domains.Models;
 
 namespace UnityEditorBridge.CLI.Commands;
 
