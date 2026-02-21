@@ -159,7 +159,7 @@ GameObject を作成する。
 
 ---
 
-## コンポーネント 2: MCP サーバー（dotnet ueb）
+## コンポーネント 2: MCP サーバー（dotnet run --project）
 
 ### 構成
 
