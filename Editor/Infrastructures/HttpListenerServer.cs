@@ -114,7 +114,7 @@ namespace EditorBridge.Editor.Infrastructures
                     Debug.LogError($"[EditorBridge] Unhandled exception: {ex}");
                     try
                     {
-                        context.WriteResponse(500,
+                        await context.WriteResponseAsync(500,
                             JsonUtility.ToJson(new ErrorResponse("Internal server error")));
                     }
                     catch

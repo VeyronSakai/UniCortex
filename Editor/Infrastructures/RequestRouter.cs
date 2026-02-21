@@ -31,7 +31,7 @@ namespace EditorBridge.Editor.Infrastructures
 
             if (!Enum.TryParse<HttpMethodType>(rawMethod, ignoreCase: true, out var method))
             {
-                context.WriteResponse(405, JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
+                await context.WriteResponseAsync(405, JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
                 return;
             }
 
@@ -43,17 +43,17 @@ namespace EditorBridge.Editor.Infrastructures
                 }
                 else if (_knownPaths.Contains(path))
                 {
-                    context.WriteResponse(405, JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
+                    await context.WriteResponseAsync(405, JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
                 }
                 else
                 {
-                    context.WriteResponse(404, JsonUtility.ToJson(new ErrorResponse("Not found")));
+                    await context.WriteResponseAsync(404, JsonUtility.ToJson(new ErrorResponse("Not found")));
                 }
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[EditorBridge] {rawMethod} {path} failed: {ex}");
-                context.WriteResponse(500, JsonUtility.ToJson(new ErrorResponse("Internal server error")));
+                await context.WriteResponseAsync(500, JsonUtility.ToJson(new ErrorResponse("Internal server error")));
             }
         }
 

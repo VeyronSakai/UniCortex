@@ -1,6 +1,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using EditorBridge.Editor.Domains.Interfaces;
 
 namespace EditorBridge.Editor.Infrastructures
@@ -18,22 +19,23 @@ namespace EditorBridge.Editor.Infrastructures
 
         public string Path => _context.Request.Url.AbsolutePath;
 
-        public string ReadBody()
+        public async Task<string> ReadBodyAsync()
         {
             using var reader = new StreamReader(_context.Request.InputStream, Encoding.UTF8);
-            return reader.ReadToEnd();
+            return await reader.ReadToEndAsync();
         }
 
-        public void WriteResponse(int statusCode, string json)
+        public async Task WriteResponseAsync(int statusCode, string json)
         {
             var response = _context.Response;
             response.StatusCode = statusCode;
             response.ContentType = "application/json; charset=utf-8";
             var buffer = Encoding.UTF8.GetBytes(json);
             response.ContentLength64 = buffer.Length;
+
             try
             {
-                response.OutputStream.Write(buffer, 0, buffer.Length);
+                await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
             }
             catch
             {

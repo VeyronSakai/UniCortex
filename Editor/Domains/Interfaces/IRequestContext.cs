@@ -1,10 +1,12 @@
+using System.Threading.Tasks;
+
 namespace EditorBridge.Editor.Domains.Interfaces
 {
     internal interface IRequestContext
     {
         string HttpMethod { get; }
         string Path { get; }
-        string ReadBody();
-        void WriteResponse(int statusCode, string json);
+        Task<string> ReadBodyAsync();
+        Task WriteResponseAsync(int statusCode, string json);
     }
 }

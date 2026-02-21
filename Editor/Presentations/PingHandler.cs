@@ -25,7 +25,7 @@ namespace EditorBridge.Editor.Presentations
         {
             var message = await _useCase.ExecuteAsync();
             var json = JsonUtility.ToJson(new PingResponse(status: "ok", message: message));
-            context.WriteResponse(200, json);
+            await context.WriteResponseAsync(200, json);
         }
     }
 }

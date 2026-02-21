@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using EditorBridge.Editor.Domains.Interfaces;
 
 namespace EditorBridge.Editor.Tests.TestDoubles
@@ -11,10 +12,16 @@ namespace EditorBridge.Editor.Tests.TestDoubles
         public int ResponseStatusCode { get; private set; }
         public string ResponseBody { get; private set; }
 
-        public string ReadBody() => Body;
-
-        public void WriteResponse(int statusCode, string json)
+        public async Task<string> ReadBodyAsync()
         {
+            await Task.Yield(); // Simulate asynchronous behavior
+            return Body;
+        }
+
+        public async Task WriteResponseAsync(int statusCode, string json)
+        {
+            await Task.Yield(); // Simulate asynchronous behavior
+
             ResponseStatusCode = statusCode;
             ResponseBody = json;
         }
