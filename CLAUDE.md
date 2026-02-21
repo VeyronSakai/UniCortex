@@ -21,10 +21,11 @@ Unity Editor を外部から REST API + MCP で操作するツールキット。
 - DTO は Editor/Domains/Models/ に配置、namespace は UniCortex.Editor.Domains.Models
 - DTO に Unity 依存（using UnityEngine 等）を入れないこと（MCP サーバーと共有するため）
 - MCP サーバーの設定例（`.mcp.json`）:
+
   ```json
   {
     "mcpServers": {
-      "uni-cortex": {
+      "Unity": {
         "type": "stdio",
         "command": "dotnet",
         "args": ["run", "--project", "Library/PackageCache/com.veyron-sakai.uni-cortex@0.1.0/Tools~/UniCortex.Mcp/"]
