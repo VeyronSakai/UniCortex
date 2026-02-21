@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ModelContextProtocol.Server;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+builder.Logging.ClearProviders();
 builder.Logging.AddConsole(options =>
 {
     options.LogToStandardErrorThreshold = LogLevel.Trace;
@@ -13,7 +13,15 @@ builder.Logging.AddConsole(options =>
 builder.Services.AddHttpClient("EditorBridge", client =>
 {
     var baseUrl = Environment.GetEnvironmentVariable("UEB_URL") ?? "http://localhost:56780";
-    client.BaseAddress = new Uri(baseUrl);
+    if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri))
+    {
+        Console.Error.WriteLine(
+            $"Invalid UEB_URL environment variable value: '{baseUrl}'. Please set it to a valid absolute URL (for example, 'http://localhost:56780').");
+        Environment.Exit(1);
+        return;
+    }
+
+    client.BaseAddress = baseUri;
 });
 
 builder.Services

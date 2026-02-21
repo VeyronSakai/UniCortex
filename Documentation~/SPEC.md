@@ -31,20 +31,30 @@ UnityEditorBridge/
 ├── LICENSE
 ├── Editor/
 │   ├── UnityEditorBridge.Editor.asmdef
-│   ├── Server/
-│   │   ├── EditorBridgeServer.cs       ← HttpListener HTTP サーバー
-│   │   ├── RequestRouter.cs            ← パスルーティング
-│   │   └── MainThreadDispatcher.cs     ← メインスレッドディスパッチ
-│   ├── Models/
-│   │   ├── PingResponse.cs             ← GET /ping レスポンス DTO
-│   │   └── ErrorResponse.cs            ← エラーレスポンス DTO
-│   ├── Handlers/
-│   │   ├── PingHandler.cs
-│   │   ├── EditorHandlers.cs
-│   │   └── GameObjectHandlers.cs
+│   ├── AssemblyInfo.cs
+│   ├── EntryPoint.cs
+│   ├── Domains/
+│   │   ├── Interfaces/
+│   │   │   ├── IHttpServer.cs
+│   │   │   ├── IMainThreadDispatcher.cs
+│   │   │   ├── IRequestContext.cs
+│   │   │   └── IRequestRouter.cs
+│   │   └── Models/
+│   │       ├── ApiRoutes.cs
+│   │       ├── ErrorResponse.cs         ← エラーレスポンス DTO
+│   │       ├── HttpMethodType.cs
+│   │       └── PingResponse.cs          ← GET /ping レスポンス DTO
+│   ├── Infrastructures/
+│   │   ├── HttpListenerRequestContext.cs
+│   │   ├── HttpListenerServer.cs        ← HttpListener HTTP サーバー
+│   │   ├── MainThreadDispatcher.cs      ← メインスレッドディスパッチ
+│   │   └── RequestRouter.cs             ← パスルーティング
+│   ├── Presentations/
+│   │   └── PingHandler.cs
+│   ├── UseCases/
+│   │   └── PingUseCase.cs
 │   └── Settings/
-│       ├── EditorBridgeSettings.cs
-│       └── EditorBridgeSettingsProvider.cs
+│       └── EditorBridgeSettings.cs
 ├── Tools~/
 │   └── UnityEditorBridge.Mcp/
 │       ├── UnityEditorBridge.Mcp.csproj
@@ -93,7 +103,7 @@ Unity API はメインスレッドからのみ呼び出し可能。HttpListener 
 
 リクエスト/レスポンスの JSON シリアライズには DTO クラスを使用する。
 
-- `Editor/Models/` に配置。namespace: `EditorBridge.Editor.Models`
+- `Editor/Domains/Models/` に配置。namespace: `EditorBridge.Editor.Domains.Models`
 - `[Serializable]` 属性 + public fields（camelCase）
 - Unity 依存（`using UnityEngine` 等）を含めないこと（MCP サーバーと共有するため）
 - Unity 側: `JsonUtility.ToJson()` / `JsonUtility.FromJson<T>()`
@@ -238,15 +248,13 @@ Unity プロジェクトのルートに `.mcp.json` を配置するだけで利�
 ```json
 {
   "name": "com.veyron-sakai.editor-bridge",
+  "displayName": "Editor Bridge",
   "version": "0.1.0",
-  "displayName": "Unity Editor Bridge",
   "description": "Control Unity Editor via REST API and MCP.",
-  "unity": "2021.3",
   "author": {
     "name": "veyron-sakai",
     "url": "https://github.com/veyron-sakai"
-  },
-  "license": "MIT"
+  }
 }
 ```
 
