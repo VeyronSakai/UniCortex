@@ -23,11 +23,6 @@ public class PauseTool(IHttpClientFactory httpClientFactory)
             var statusResponse = await httpClient.GetAsync(ApiRoutes.Status, cancellationToken);
             statusResponse.EnsureSuccessStatusCode();
             var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-            if (string.IsNullOrEmpty(statusJson))
-            {
-                continue;
-            }
-
             var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, jsonOptions)!;
             if (status.isPaused)
             {

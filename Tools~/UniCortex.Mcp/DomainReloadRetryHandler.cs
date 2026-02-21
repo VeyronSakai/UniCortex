@@ -17,6 +17,17 @@ public class DomainReloadRetryHandler(ILogger<DomainReloadRetryHandler> logger) 
             try
             {
                 var response = await base.SendAsync(request, cancellationToken);
+                if (response.Content.Headers.ContentLength is null or 0)
+                {
+                    if (!logged)
+                    {
+                        logger.LogInformation(
+                            "Unity Editor is not responding. Waiting for domain reload to complete...");
+                        logged = true;
+                    }
+
+                    continue;
+                }
 
                 if (logged)
                 {
