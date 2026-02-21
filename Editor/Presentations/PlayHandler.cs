@@ -26,7 +26,7 @@ namespace UniCortex.Editor.Presentations
             // Write the response before executing the use case.
             // Setting isPlaying = true triggers a domain reload, which can invalidate
             // the HTTP context before WriteResponseAsync is called.
-            var json = JsonUtility.ToJson(new PlayStopResponse(success: true));
+            var json = JsonUtility.ToJson(new PlayResponse(success: true));
             await context.WriteResponseAsync(200, json);
             await _useCase.ExecuteAsync(cancellationToken);
         }
