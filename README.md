@@ -39,7 +39,7 @@ Add the following to `.mcp.json` in the Unity project root:
 ```json
 {
   "mcpServers": {
-    "uni-cortex": {
+    "Unity": {
       "type": "stdio",
       "command": "dotnet",
       "args": ["run", "--project", "Library/PackageCache/com.veyron-sakai.uni-cortex@0.1.0/Tools~/UniCortex.Mcp/"]
