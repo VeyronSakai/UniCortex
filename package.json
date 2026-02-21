@@ -1,10 +1,12 @@
 {
   "name": "com.veyron-sakai.editor-bridge",
-  "displayName": "Editor Bridge",
   "version": "0.1.0",
-  "description": "Control Unity Editor via REST API and CLI.",
+  "displayName": "Unity Editor Bridge",
+  "description": "Control Unity Editor via REST API and MCP.",
+  "unity": "2021.3",
   "author": {
     "name": "veyron-sakai",
     "url": "https://github.com/veyron-sakai"
-  }
+  },
+  "license": "MIT"
 }
