@@ -31,7 +31,7 @@ public class PlayTool(IHttpClientFactory httpClientFactory)
             var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, jsonOptions)!;
             if (status.isPlaying)
             {
-                return true.ToString();
+                return "Play mode started successfully.";
             }
         }
     }
