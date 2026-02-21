@@ -5,11 +5,11 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class PlayStopResponse
+    public class UnpauseResponse
     {
         public bool success;
 
-        public PlayStopResponse(bool success)
+        public UnpauseResponse(bool success)
         {
             this.success = success;
         }

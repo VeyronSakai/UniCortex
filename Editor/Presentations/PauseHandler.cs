@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Presentations
         private async Task HandlePauseAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             await _useCase.ExecuteAsync(cancellationToken);
-            var json = JsonUtility.ToJson(new PlayStopResponse(success: true));
+            var json = JsonUtility.ToJson(new PauseResponse(success: true));
             await context.WriteResponseAsync(200, json);
         }
     }

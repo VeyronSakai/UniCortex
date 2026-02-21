@@ -50,6 +50,9 @@ namespace UniCortex.Editor
             var unpauseUseCase = new UnpauseUseCase(s_dispatcher);
             var unpauseHandler = new UnpauseHandler(unpauseUseCase);
 
+            var requestDomainReloadUseCase = new RequestDomainReloadUseCase(s_dispatcher);
+            var requestDomainReloadHandler = new RequestDomainReloadHandler(requestDomainReloadUseCase);
+
             var getEditorStatusUseCase = new GetEditorStatusUseCase(s_dispatcher);
             var editorStatusHandler = new EditorStatusHandler(getEditorStatusUseCase);
 
@@ -59,6 +62,7 @@ namespace UniCortex.Editor
             stopHandler.Register(router);
             pauseHandler.Register(router);
             unpauseHandler.Register(router);
+            requestDomainReloadHandler.Register(router);
             editorStatusHandler.Register(router);
 
             s_server = new HttpListenerServer(router, port);

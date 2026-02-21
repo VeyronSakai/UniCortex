@@ -8,6 +8,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string Status = "/status";
         public const string Pause = "/pause";
         public const string Unpause = "/unpause";
+        public const string DomainReload = "/domain-reload";
         public const string GameObjectCreate = "/gameobject/create";
     }
 }
