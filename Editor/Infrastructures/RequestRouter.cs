@@ -53,7 +53,7 @@ namespace UniCortex.Editor.Infrastructures
             catch (Exception ex)
             {
                 Debug.LogError($"[UniCortex] {rawMethod} {path} failed: {ex}");
-                await context.WriteResponseAsync(500, JsonUtility.ToJson(new ErrorResponse("Internal server error")));
+                await context.WriteResponseAsync(500, JsonUtility.ToJson(new ErrorResponse(ex.Message)));
             }
         }
 
