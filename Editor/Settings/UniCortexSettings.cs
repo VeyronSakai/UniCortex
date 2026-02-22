@@ -12,10 +12,6 @@ namespace UniCortex.Editor.Settings
     [FilePath("UniCortex/Settings.asset", FilePathAttribute.Location.PreferencesFolder)]
     internal sealed class UniCortexSettings : ScriptableSingleton<UniCortexSettings>
     {
-        // The TCP port number the HTTP server listens on.
-        // Defaults to 56780 — a high port unlikely to conflict with common services.
-        public int Port = 56780;
-
         // When true, the server starts automatically on editor launch / domain reload.
         // When false, the server must be started manually.
         public bool AutoStart = true;

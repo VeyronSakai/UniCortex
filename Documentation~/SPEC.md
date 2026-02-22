@@ -54,7 +54,9 @@ UniCortex/
 │   ├── UseCases/
 │   │   └── PingUseCase.cs
 │   └── Settings/
-│       └── UniCortexSettings.cs
+│       ├── UniCortexSettings.cs
+│       ├── UniCortexSettingsProvider.cs  ← Project Settings UI
+│       └── ServerUrlFile.cs              ← Library/UniCortex/config.json 操作
 ├── Tools~/
 │   └── UniCortex.Mcp/
 │       ├── UniCortex.Mcp.csproj
@@ -74,19 +76,30 @@ UniCortex/
 
 ### 技術要素
 
-- `System.Net.HttpListener` で `http://localhost:56780/` をリッスン
+- `System.Net.HttpListener` で `http://localhost:<port>/` をリッスン
+- ポートは Editor 起動時にランダムな空きポートを自動割り当て（`TcpListener` port 0 で取得）
+- `SessionState` でポート番号をドメインリロード間で維持（Editor 再起動時のみ変わる）
 - `[InitializeOnLoad]` で Editor 起動時に自動開始
 - `EditorApplication.update` + `ConcurrentQueue<Action>` でメインスレッドディスパッチ
 - `AssemblyReloadEvents.beforeAssemblyReload` で graceful shutdown、リロード後に再起動
+- サーバー起動成功時に `Library/UniCortex/config.json` へ URL を書き出す
+- `EditorApplication.quitting` で `Library/UniCortex/config.json` を削除
+
+### URL ファイル
+
+`Library/UniCortex/config.json` にサーバーの URL（例: `http://localhost:54321`）を書き出す。
+
+- プロジェクト固有（`Library/` 以下）なので複数 Unity インスタンスでも独立
+- `Library/` は通常 `.gitignore` 対象なのでリポジトリには含まれない
+- MCP サーバーが `UNICORTEX_PROJECT_PATH` 環境変数経由でこのファイルを読む
 
 ### 設定（ScriptableSingleton）
 
 | 項目 | デフォルト | 説明 |
 |------|----------|------|
-| Port | 56780 | リッスンポート |
 | AutoStart | true | 自動開始 |
 
-Project Settings UI（`Project/UniCortex`）から変更可能。
+Project Settings UI（`Project/UniCortex`）から変更可能。現在のポート番号は同画面に読み取り専用で表示。
 
 ### メインスレッドディスパッチ
 
@@ -227,7 +240,10 @@ GameObject を作成する。
 - `Host.CreateApplicationBuilder` で MCP サーバーを構築
 - `.WithStdioServerTransport()` で stdio トランスポート
 - `.WithToolsFromAssembly()` でツール自動検出
-- `HttpClient` を DI に登録（ベースアドレスは環境変数 `UNICORTEX_URL` / デフォルト `http://localhost:56780`）
+- `HttpClient` を DI に登録（ベースアドレスは以下の優先順で決定）
+  1. 環境変数 `UNICORTEX_URL`（直接 URL 指定）
+  2. 環境変数 `UNICORTEX_PROJECT_PATH` 配下の `Library/UniCortex/config.json`
+  3. どちらもなければエラーで終了
 - ログは stderr に出力（stdout は MCP プロトコル用）
 
 ### MCP ツール
@@ -253,16 +269,30 @@ Unity プロジェクトのルートに `.mcp.json` を配置するだけで利�
 ```json
 {
   "mcpServers": {
-    "uni-cortex": {
+    "Unity": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", "--project", "Library/PackageCache/com.veyron-sakai.uni-cortex@0.1.0/Tools~/UniCortex.Mcp/"]
+      "args": ["run", "--project", "/path/to/your/unity/project/Library/PackageCache/com.veyron-sakai.uni-cortex@0.1.0/Tools~/UniCortex.Mcp/"],
+      "env": {
+        "UNICORTEX_PROJECT_PATH": "/path/to/your/unity/project"
+      }
     }
   }
 }
 ```
 
+`/path/to/your/unity/project` を Unity プロジェクトの絶対パスに置き換える。`args` の `--project` と `UNICORTEX_PROJECT_PATH` の両方に同じパスを設定する必要がある（`args` 内での環境変数展開は MCP クライアントが対応していないため）。
+
 `dotnet run` が初回実行時に自動でビルドし、MCP サーバーを起動する。
+
+### URL 指定方法のまとめ
+
+| 方法 | 設定 | 優先度 |
+|------|------|--------|
+| 直接 URL 指定 | `UNICORTEX_URL=http://localhost:XXXXX` | 高 |
+| プロジェクトパス指定 | `UNICORTEX_PROJECT_PATH=/path/to/project` | 低 |
+
+どちらも未設定の場合、MCP サーバーはエラーで終了する。
 
 ---
 
@@ -296,9 +326,12 @@ Unity プロジェクトのルートに `.mcp.json` を配置するだけで利�
 ## 使用例
 
 ```bash
+# ポート番号は Library/UniCortex/config.json または Project Settings > UniCortex で確認
+PORT=$(python3 -c "import json; print(json.load(open('Library/UniCortex/config.json'))['server_url'].split(':')[-1])")
+
 # curl で直接 API を呼ぶことも可能
-curl http://localhost:56780/editor/ping
-curl -X POST http://localhost:56780/editor/play
+curl http://localhost:${PORT}/editor/ping
+curl -X POST http://localhost:${PORT}/editor/play
 ```
 
 MCP 経由の操作は AI エージェント（Claude Code 等）の MCP 設定に追加することで利用可能。

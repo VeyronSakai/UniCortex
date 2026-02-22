@@ -42,13 +42,35 @@ Add the following to `.mcp.json` in the Unity project root:
     "Unity": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", "--project", "Library/PackageCache/com.veyron-sakai.uni-cortex@0.1.0/Tools~/UniCortex.Mcp/"]
+      "args": ["run", "--project", "/path/to/your/unity/project/Library/PackageCache/com.veyron-sakai.uni-cortex@0.1.0/Tools~/UniCortex.Mcp/"],
+      "env": {
+        "UNICORTEX_PROJECT_PATH": "/path/to/your/unity/project"
+      }
     }
   }
 }
 ```
 
+Replace `/path/to/your/unity/project` with the absolute path of your Unity project (set it in both `args` and `UNICORTEX_PROJECT_PATH`). The MCP server reads the port number from `Library/UniCortex/config.json` (written automatically when Unity Editor starts) and connects to the HTTP server.
+
 No pre-build or tool installation is required. The MCP server is built and started automatically via `dotnet run`.
+
+Alternatively, you can specify the URL directly via the `UNICORTEX_URL` environment variable (takes priority over `UNICORTEX_PROJECT_PATH`):
+
+```json
+{
+  "mcpServers": {
+    "Unity": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "--project", "/path/to/your/unity/project/Library/PackageCache/com.veyron-sakai.uni-cortex@0.1.0/Tools~/UniCortex.Mcp/"],
+      "env": {
+        "UNICORTEX_URL": "http://localhost:12345"
+      }
+    }
+  }
+}
+```
 
 ## API Endpoints
 
@@ -59,21 +81,23 @@ No pre-build or tool installation is required. The MCP server is built and start
 | POST | `/editor/stop` | Stop Play mode |
 | POST | `/gameobject/create` | Create a GameObject |
 
-You can also call the API directly with curl:
+You can also call the API directly with curl (check the current port in Project Settings > UniCortex or in `Library/UniCortex/config.json`):
 
 ```bash
-curl http://localhost:56780/editor/ping
-curl -X POST http://localhost:56780/editor/play
+curl http://localhost:<port>/editor/ping
+curl -X POST http://localhost:<port>/editor/play
 ```
 
 ## Settings
 
-Configurable from Project Settings > UniCortex.
+Configurable from **Project Settings > UniCortex**.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Port | 56780 | Listen port |
 | AutoStart | true | Start automatically on Editor launch |
+| Current Port | — | Read-only. The port assigned at startup (random, persisted across domain reloads) |
+
+The HTTP server is assigned a random free port on each Editor launch. The port is written to `Library/UniCortex/config.json` and read automatically by the MCP server.
 
 ## Contributing
 

@@ -3,7 +3,6 @@ using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
 using UniCortex.Editor.UseCases;
 using UnityEditor;
-using UnityEngine;
 
 namespace UniCortex.Editor
 {
@@ -16,6 +15,7 @@ namespace UniCortex.Editor
         static EntryPoint()
         {
             AssemblyReloadEvents.beforeAssemblyReload += Shutdown;
+            EditorApplication.quitting += OnQuit;
 
             s_dispatcher = new MainThreadDispatcher();
             EditorApplication.update += s_dispatcher.OnUpdate;
@@ -28,11 +28,11 @@ namespace UniCortex.Editor
 
         private static void StartServer()
         {
-            var port = UniCortexSettings.instance.Port;
-            if (port is < 1 or > 65535)
+            var port = SessionState.GetInt("UniCortex.Port", 0);
+            if (port == 0)
             {
-                Debug.LogError($"[UniCortex] Invalid port: {port}. Must be between 1 and 65535.");
-                return;
+                port = FindFreePort();
+                SessionState.SetInt("UniCortex.Port", port);
             }
 
             var pingUseCase = new PingUseCase(s_dispatcher);
@@ -67,6 +67,23 @@ namespace UniCortex.Editor
 
             s_server = new HttpListenerServer(router, port);
             s_server.Start();
+
+            ServerUrlFile.Write(port);
+        }
+
+        private static int FindFreePort()
+        {
+            var listener = new System.Net.Sockets.TcpListener(
+                System.Net.IPAddress.Loopback, 0);
+            listener.Start();
+            var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+            listener.Stop();
+            return port;
+        }
+
+        private static void OnQuit()
+        {
+            ServerUrlFile.Delete();
         }
 
         private static void Shutdown()
