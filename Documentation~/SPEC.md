@@ -35,6 +35,8 @@ UniCortex/
 │   ├── EntryPoint.cs
 │   ├── Domains/
 │   │   ├── Interfaces/
+│   │   │   ├── ICompilationPipeline.cs
+│   │   │   ├── IEditorApplication.cs
 │   │   │   ├── IHttpServer.cs
 │   │   │   ├── IMainThreadDispatcher.cs
 │   │   │   ├── IRequestContext.cs
@@ -45,6 +47,8 @@ UniCortex/
 │   │       ├── HttpMethodType.cs
 │   │       └── PingResponse.cs          ← GET /ping レスポンス DTO
 │   ├── Infrastructures/
+│   │   ├── CompilationPipelineAdapter.cs ← CompilationPipeline ラッパー
+│   │   ├── EditorApplicationAdapter.cs  ← EditorApplication ラッパー
 │   │   ├── HttpListenerRequestContext.cs
 │   │   ├── HttpListenerServer.cs        ← HttpListener HTTP サーバー
 │   │   ├── MainThreadDispatcher.cs      ← メインスレッドディスパッチ
@@ -63,6 +67,17 @@ UniCortex/
 │       ├── Program.cs
 │       └── Tools/
 │           └── PingTool.cs
+├── Tests/
+│   └── Editor/
+│       ├── TestDoubles/
+│       │   ├── FakeMainThreadDispatcher.cs
+│       │   ├── FakeRequestContext.cs
+│       │   ├── SpyCompilationPipeline.cs
+│       │   └── SpyEditorApplication.cs
+│       ├── UseCases/
+│       │   └── *UseCaseTest.cs          ← UseCase 単体テスト
+│       └── Presentations/
+│           └── *HandlerTest.cs          ← Handler 単体テスト
 └── docs/
     └── SPEC.md                         ← この文書
 ```
@@ -320,6 +335,20 @@ Unity プロジェクトのルートに `.mcp.json` を配置するだけで利�
   "includePlatforms": ["Editor"]
 }
 ```
+
+---
+
+## テスト規約
+
+### UseCase 単体テスト
+
+UseCase クラスを新規作成・変更する際は、必ず対応する単体テストを `Tests/Editor/UseCases/` に作成すること。
+
+- テストクラス名: `<UseCase名>Test`（例: `PlayUseCaseTest`）
+- namespace: `UniCortex.Editor.Tests.UseCases`
+- `FakeMainThreadDispatcher` でディスパッチャをスタブ化し、`CallCount` で呼び出し回数を検証する
+- Unity API に依存するインターフェース（`IEditorApplication`, `ICompilationPipeline` 等）はスパイ（`Tests/Editor/TestDoubles/`）を注入して状態・呼び出しを検証する
+- 非同期メソッドは `.GetAwaiter().GetResult()` で同期実行する（Unity Test Framework 1.1.x 互換のため）
 
 ---
 
