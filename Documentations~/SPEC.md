@@ -78,7 +78,7 @@ UniCortex/
 │       │   └── *UseCaseTest.cs          ← UseCase 単体テスト
 │       └── Presentations/
 │           └── *HandlerTest.cs          ← Handler 単体テスト
-└── docs/
+└── Documentations~/
     └── SPEC.md                         ← この文書
 ```
 
