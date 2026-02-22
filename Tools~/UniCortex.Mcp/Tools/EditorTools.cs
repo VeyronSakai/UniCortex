@@ -5,6 +5,7 @@ using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Mcp.Domains.Interfaces;
+using UniCortex.Mcp.Extensions;
 using UniCortex.Mcp.UseCases;
 
 namespace UniCortex.Mcp.Tools;
@@ -22,7 +23,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         {
             var baseUrl = urlProvider.GetUrl();
             var response = await _httpClient.GetAsync(baseUrl + ApiRoutes.Ping, cancellationToken);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
             var json = await response.Content.ReadAsStringAsync(cancellationToken);
             var ping = JsonSerializer.Deserialize<PingResponse>(json, _jsonOptions)!;
             return new CallToolResult { Content = [new TextContentBlock { Text = ping.message }] };
@@ -42,12 +43,12 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.Play, null, cancellationToken);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             while (true)
             {
                 var statusResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Status, cancellationToken);
-                statusResponse.EnsureSuccessStatusCode();
+                await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
                 var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
                 var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, _jsonOptions)!;
                 if (status.isPlaying)
@@ -72,12 +73,12 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         {
             var baseUrl = urlProvider.GetUrl();
             var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.Stop, null, cancellationToken);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             while (true)
             {
                 var statusResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Status, cancellationToken);
-                statusResponse.EnsureSuccessStatusCode();
+                await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
                 var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
                 var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, _jsonOptions)!;
                 if (!status.isPlaying)
@@ -102,12 +103,12 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         {
             var baseUrl = urlProvider.GetUrl();
             var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.Pause, null, cancellationToken);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             while (true)
             {
                 var statusResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Status, cancellationToken);
-                statusResponse.EnsureSuccessStatusCode();
+                await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
                 var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
                 var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, _jsonOptions)!;
                 if (status.isPaused)
@@ -129,12 +130,12 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         {
             var baseUrl = urlProvider.GetUrl();
             var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.Resume, null, cancellationToken);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             while (true)
             {
                 var statusResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Status, cancellationToken);
-                statusResponse.EnsureSuccessStatusCode();
+                await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
                 var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
                 var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, _jsonOptions)!;
                 if (!status.isPaused)
@@ -157,12 +158,12 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         {
             var baseUrl = urlProvider.GetUrl();
             var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.DomainReload, null, cancellationToken);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             // Poll /ping to wait for the server to come back after domain reload.
             // DomainReloadRetryHandler handles retries during the reload.
             var pingResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Ping, cancellationToken);
-            pingResponse.EnsureSuccessStatusCode();
+            await pingResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             return new CallToolResult
             {
