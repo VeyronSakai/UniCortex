@@ -59,12 +59,6 @@ namespace UniCortex.Editor
             var stopUseCase = new StopUseCase(s_dispatcher, editorApplication);
             var stopHandler = new StopHandler(stopUseCase);
 
-            var pauseUseCase = new PauseUseCase(s_dispatcher, editorApplication);
-            var pauseHandler = new PauseHandler(pauseUseCase);
-
-            var resumeUseCase = new ResumeUseCase(s_dispatcher, editorApplication);
-            var resumeHandler = new ResumeHandler(resumeUseCase);
-
             var requestDomainReloadUseCase = new RequestDomainReloadUseCase(s_dispatcher, compilationPipeline);
             var requestDomainReloadHandler = new DomainReloadHandler(requestDomainReloadUseCase);
 
@@ -74,8 +68,6 @@ namespace UniCortex.Editor
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
-            pauseHandler.Register(router);
-            resumeHandler.Register(router);
             requestDomainReloadHandler.Register(router);
             editorStatusHandler.Register(router);
         }
