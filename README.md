@@ -72,16 +72,24 @@ Alternatively, you can specify the URL directly via the `UNICORTEX_URL` environm
 }
 ```
 
-## API Endpoints
+## MCP Tools
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/editor/ping` | Health check |
-| POST | `/editor/play` | Start Play mode |
-| POST | `/editor/stop` | Stop Play mode |
-| POST | `/gameobject/create` | Create a GameObject |
+31 tools organized into 8 categories:
 
-You can also call the API directly with curl (check the current port in Project Settings > UniCortex or in `Library/UniCortex/config.json`):
+| Category | Tools | Description |
+|----------|-------|-------------|
+| Editor Control | 8 | ping, play/stop, pause/resume, domain reload, undo/redo |
+| Scene | 3 | open, save, get hierarchy |
+| GameObject | 5 | find, create, delete, info, modify (reparent, rename, etc.) |
+| Component | 4 | add, remove, get properties, set property |
+| Prefab | 2 | create prefab, instantiate prefab |
+| Asset | 4 | refresh, create, get info, set property |
+| Console | 2 | get logs, clear |
+| Utility | 3 | execute menu item, run tests, capture screenshot |
+
+See [`Documentations~/SPEC.md`](Documentations~/SPEC.md) for full API endpoint and tool definitions.
+
+You can also call the REST API directly with curl (check the current port in Project Settings > UniCortex or in `Library/UniCortex/config.json`):
 
 ```bash
 curl http://localhost:<port>/editor/ping
