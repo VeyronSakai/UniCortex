@@ -21,6 +21,7 @@ Unity Editor を外部から REST API + MCP で操作するツールキット。
 - JSON シリアライズは DTO クラス + JsonUtility（Unity 側）/ System.Text.Json（MCP サーバー側）
 - DTO は Editor/Domains/Models/ に配置、namespace は UniCortex.Editor.Domains.Models
 - DTO に Unity 依存（using UnityEngine 等）を入れないこと（MCP サーバーと共有するため）
+- 機能を実装・変更した際は、MCP サーバー側（`Tools~/UniCortex.Mcp.Test/`）と Unity Editor 側（`Tests~/`）の両方にテストコードを書くこと
 - MCP サーバーの設定例（`.mcp.json`）:
 
   ```json

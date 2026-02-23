@@ -1,4 +1,3 @@
-using NUnit.Framework;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UniCortex.Editor.Domains.Models;
@@ -21,30 +20,12 @@ public sealed class UnityEditorFixture
     public static async ValueTask<UnityEditorFixture> CreateAsync()
     {
         var urlProvider = new UnityServerUrlProvider();
-
-        string baseUrl;
-        try
-        {
-            baseUrl = urlProvider.GetUrl();
-        }
-        catch (InvalidOperationException ex)
-        {
-            Assert.Ignore($"Skipping: {ex.Message}");
-            return null!; // unreachable
-        }
+        var baseUrl = urlProvider.GetUrl();
 
         // Connection check with a plain HttpClient (no retry handler)
         using var checkClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-        try
-        {
-            var response = await checkClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}");
-            response.EnsureSuccessStatusCode();
-        }
-        catch
-        {
-            Assert.Ignore($"Skipping: Unity Editor is not reachable at {baseUrl}.");
-            return null!; // unreachable
-        }
+        var response = await checkClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}");
+        response.EnsureSuccessStatusCode();
 
         // Build DI container
         var services = new ServiceCollection();
