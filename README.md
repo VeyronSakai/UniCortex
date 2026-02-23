@@ -1,6 +1,6 @@
 # UniCortex
 
-> **Warning**
+> [!CAUTION]
 > This project is in a very early stage of development. Only a small subset of features has been implemented, and the API and command structure are subject to significant changes without notice.
 
 A toolkit for controlling Unity Editor externally via REST API and MCP (Model Context Protocol).
