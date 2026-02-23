@@ -1,18 +1,11 @@
 # UniCortex
 
-> **Warning**
+> [!CAUTION]
 > This project is in a very early stage of development. Only a small subset of features has been implemented, and the API and command structure are subject to significant changes without notice.
 
 A toolkit for controlling Unity Editor externally via REST API and MCP (Model Context Protocol).
 
 Primarily designed for AI agents (Claude Code, Codex CLI, etc.) to operate Unity Editor through MCP.
-
-## Features
-
-- Pure C# — no external runtimes like Python or Node.js required
-- Embeds an HTTP server inside Unity Editor, controlled via REST API
-- .NET 8 MCP server (run via `dotnet run`) for AI agent integration via stdio
-- Distributed as a UPM package
 
 ## Requirements
 
@@ -72,22 +65,6 @@ Alternatively, you can specify the URL directly via the `UNICORTEX_URL` environm
 }
 ```
 
-## API Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/editor/ping` | Health check |
-| POST | `/editor/play` | Start Play mode |
-| POST | `/editor/stop` | Stop Play mode |
-| POST | `/gameobject/create` | Create a GameObject |
-
-You can also call the API directly with curl (check the current port in Project Settings > UniCortex or in `Library/UniCortex/config.json`):
-
-```bash
-curl http://localhost:<port>/editor/ping
-curl -X POST http://localhost:<port>/editor/play
-```
-
 ## Settings
 
 Configurable from **Project Settings > UniCortex**.
@@ -98,6 +75,10 @@ Configurable from **Project Settings > UniCortex**.
 | Current Port | — | Read-only. The port assigned at startup (random, persisted across domain reloads) |
 
 The HTTP server is assigned a random free port on each Editor launch. The port is written to `Library/UniCortex/config.json` and read automatically by the MCP server.
+
+## Documentation
+
+See [`Documentations~/SPEC.md`](Documentations~/SPEC.md) for full API endpoint and MCP tool definitions.
 
 ## Contributing
 
