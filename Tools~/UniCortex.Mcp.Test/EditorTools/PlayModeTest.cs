@@ -4,12 +4,12 @@ using ModelContextProtocol.Protocol;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Mcp.Test.Fixtures;
 
-namespace UniCortex.Mcp.Test;
+namespace UniCortex.Mcp.Test.EditorTools;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.SingleInstance)]
 [NonParallelizable]
-public class EditorToolsPlayModeTest
+public class PlayModeTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
@@ -42,11 +42,15 @@ public class EditorToolsPlayModeTest
     [Test, Order(1)]
     public async Task EnterPlayMode_ReturnsSuccess()
     {
-        var result = await _fixture.EditorTools.EnterPlayMode(CancellationToken.None);
+        // Arrange
+        var editorTools = _fixture.EditorTools;
 
+        // Act
+        var result = await editorTools.EnterPlayMode(CancellationToken.None);
+
+        // Assert
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));
-
         var text = ((TextContentBlock)result.Content[0]).Text;
         Assert.That(text, Does.Contain("started"));
     }
@@ -54,11 +58,15 @@ public class EditorToolsPlayModeTest
     [Test, Order(2)]
     public async Task ExitPlayMode_ReturnsSuccess()
     {
-        var result = await _fixture.EditorTools.ExitPlayMode(CancellationToken.None);
+        // Arrange
+        var editorTools = _fixture.EditorTools;
 
+        // Act
+        var result = await editorTools.ExitPlayMode(CancellationToken.None);
+
+        // Assert
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));
-
         var text = ((TextContentBlock)result.Content[0]).Text;
         Assert.That(text, Does.Contain("stopped"));
     }

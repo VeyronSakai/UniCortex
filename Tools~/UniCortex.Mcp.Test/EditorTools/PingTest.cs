@@ -2,10 +2,10 @@ using NUnit.Framework;
 using ModelContextProtocol.Protocol;
 using UniCortex.Mcp.Test.Fixtures;
 
-namespace UniCortex.Mcp.Test;
+namespace UniCortex.Mcp.Test.EditorTools;
 
 [TestFixture]
-public class EditorToolsPingTest
+public class PingTest
 {
     private UnityEditorFixture _fixture = null!;
 
@@ -18,11 +18,15 @@ public class EditorToolsPingTest
     [Test]
     public async Task PingEditor_ReturnsSuccessWithPong()
     {
-        var result = await _fixture.EditorTools.PingEditor(CancellationToken.None);
+        // Arrange
+        var editorTools = _fixture.EditorTools;
 
+        // Act
+        var result = await editorTools.PingEditor(CancellationToken.None);
+
+        // Assert
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));
-
         var text = ((TextContentBlock)result.Content[0]).Text;
         Assert.That(text, Does.Contain("pong"));
     }
