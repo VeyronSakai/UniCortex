@@ -45,6 +45,24 @@
 
 ---
 
+## 推奨実装順序
+
+依存関係と開発効率を考慮した優先順位。上から順に実装する。
+
+| 優先度 | タスク | 理由 |
+|--------|--------|------|
+| 1 | undo / redo | 既存パターンの踏襲で最小工数。Editor 制御カテゴリ完成 |
+| 2 | run_tests | 以降の全実装で MCP 経由のセルフテストが可能になる |
+| 3 | console (logs / clear) | テスト失敗時のデバッグに直結。独立性が高い |
+| 4 | scene (open / save / hierarchy) | GameObject 操作の前提となる基盤機能 |
+| 5 | GameObject (find / create / delete / info / modify) | シーン構築の基本フロー成立 |
+| 6 | component (add / remove / properties / set-property) | GameObject 操作の次に自然な流れ |
+| 7 | prefab (create / instantiate) | GameObject + シーン操作に依存 |
+| 8 | asset (refresh / create / info / set-property) | 独立性はあるが優先度は低め |
+| 9 | menu execute / screenshot | 汎用ユーティリティ、最後でよい |
+
+---
+
 ## 未実装タスク
 
 ### Editor 制御（残り 2）
