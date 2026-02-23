@@ -612,82 +612,88 @@ Game View のスクリーンショットを取得する。`ScreenCapture.Capture
   3. どちらもなければエラーで終了
 - ログは stderr に出力（stdout は MCP プロトコル用）
 
-### MCP ツール（全 31 ツール）
+### MCP ツール（全 31 ツール — 実装済み 6 / 未実装 25）
 
 AI エージェントが混乱なく使えるよう、各ツールは明確に異なる操作に対応し重複を排除している。
 各ツールは `[McpServerToolType]` クラス内に `[McpServerTool]` メソッドとして定義。
 `IHttpClientFactory` をコンストラクタ DI で受け取り、Unity Editor HTTP サーバーにリクエストを送信する。
 
-#### Editor 制御（8）
+状態の凡例: 済 = REST API + MCP ツール両方実装済み / 未 = 未実装
 
-| ツール | API | 説明 |
-|--------|-----|------|
-| `ping_editor` | GET `/editor/ping` | Unity Editor との疎通確認 |
-| `enter_play_mode` | POST `/editor/play` | Play モード開始 |
-| `exit_play_mode` | POST `/editor/stop` | Play モード停止 |
-| `pause_editor` | POST `/editor/pause` | エディターを一時停止 |
-| `resume_editor` | POST `/editor/resume` | エディターの一時停止を解除 |
-| `reload_domain` | POST `/editor/domain-reload` | スクリプト再コンパイル（ドメインリロード） |
-| `undo` | POST `/editor/undo` | 直前の操作を Undo |
-| `redo` | POST `/editor/redo` | Undo した操作を Redo |
+#### Editor 制御（8 — 済 6 / 未 2）
 
-#### シーン（3）
+| ツール | API | 説明 | 状態 |
+|--------|-----|------|------|
+| `ping_editor` | GET `/editor/ping` | Unity Editor との疎通確認 | 済 |
+| `enter_play_mode` | POST `/editor/play` | Play モード開始 | 済 |
+| `exit_play_mode` | POST `/editor/stop` | Play モード停止 | 済 |
+| `pause_editor` | POST `/editor/pause` | エディターを一時停止 | 済 |
+| `resume_editor` | POST `/editor/resume` | エディターの一時停止を解除 | 済 |
+| `reload_domain` | POST `/editor/domain-reload` | スクリプト再コンパイル（ドメインリロード） | 済 |
+| `undo` | POST `/editor/undo` | 直前の操作を Undo | 未 |
+| `redo` | POST `/editor/redo` | Undo した操作を Redo | 未 |
 
-| ツール | API | 説明 |
-|--------|-----|------|
-| `open_scene` | POST `/scene/open` | シーンをパス指定で開く |
-| `save_scene` | POST `/scene/save` | 開いているシーンを保存 |
-| `get_scene_hierarchy` | GET `/scene/hierarchy` | シーン内の GameObject 階層をツリーで取得 |
+※ `GET /editor/status` は MCP ツールとしては公開しないが、REST API として実装済み（MCP ツール内部のポーリング用）。
 
-#### GameObject（5）
+#### シーン（3 — 済 0 / 未 3）
 
-| ツール | API | 説明 |
-|--------|-----|------|
-| `find_gameobjects` | GET `/gameobject/find` | 名前・タグ・コンポーネント型でシーン内検索 |
-| `create_gameobject` | POST `/gameobject/create` | GameObject を作成（プリミティブ指定可） |
-| `delete_gameobject` | POST `/gameobject/delete` | GameObject を削除 |
-| `get_gameobject_info` | GET `/gameobject/info` | GameObject の基本情報とコンポーネント型一覧を取得 |
-| `modify_gameobject` | POST `/gameobject/modify` | 名前変更・有効/無効・親子関係・タグ・レイヤーの変更 |
+| ツール | API | 説明 | 状態 |
+|--------|-----|------|------|
+| `open_scene` | POST `/scene/open` | シーンをパス指定で開く | 未 |
+| `save_scene` | POST `/scene/save` | 開いているシーンを保存 | 未 |
+| `get_scene_hierarchy` | GET `/scene/hierarchy` | シーン内の GameObject 階層をツリーで取得 | 未 |
 
-#### コンポーネント（4）
+#### GameObject（5 — 済 0 / 未 5）
 
-| ツール | API | 説明 |
-|--------|-----|------|
-| `add_component` | POST `/component/add` | GameObject にコンポーネントを追加 |
-| `remove_component` | POST `/component/remove` | GameObject からコンポーネントを削除 |
-| `get_component_properties` | GET `/component/properties` | コンポーネントのシリアライズ済みプロパティを取得 |
-| `set_component_property` | POST `/component/set-property` | コンポーネントのプロパティを変更 |
+| ツール | API | 説明 | 状態 |
+|--------|-----|------|------|
+| `find_gameobjects` | GET `/gameobject/find` | 名前・タグ・コンポーネント型でシーン内検索 | 未 |
+| `create_gameobject` | POST `/gameobject/create` | GameObject を作成（プリミティブ指定可） | 未 |
+| `delete_gameobject` | POST `/gameobject/delete` | GameObject を削除 | 未 |
+| `get_gameobject_info` | GET `/gameobject/info` | GameObject の基本情報とコンポーネント型一覧を取得 | 未 |
+| `modify_gameobject` | POST `/gameobject/modify` | 名前変更・有効/無効・親子関係・タグ・レイヤーの変更 | 未 |
 
-#### Prefab（2）
+※ `create_gameobject` は `ApiRoutes.cs` にルート定義のみ存在。Handler・UseCase・MCP ツールは未実装。
 
-| ツール | API | 説明 |
-|--------|-----|------|
-| `create_prefab` | POST `/prefab/create` | シーン内 GameObject を Prefab アセットとして保存 |
-| `instantiate_prefab` | POST `/prefab/instantiate` | Prefab をシーンにインスタンス化 |
+#### コンポーネント（4 — 済 0 / 未 4）
 
-#### アセット（4）
+| ツール | API | 説明 | 状態 |
+|--------|-----|------|------|
+| `add_component` | POST `/component/add` | GameObject にコンポーネントを追加 | 未 |
+| `remove_component` | POST `/component/remove` | GameObject からコンポーネントを削除 | 未 |
+| `get_component_properties` | GET `/component/properties` | コンポーネントのシリアライズ済みプロパティを取得 | 未 |
+| `set_component_property` | POST `/component/set-property` | コンポーネントのプロパティを変更 | 未 |
 
-| ツール | API | 説明 |
-|--------|-----|------|
-| `refresh_assets` | POST `/asset/refresh` | AssetDatabase をリフレッシュ |
-| `create_asset` | POST `/asset/create` | Material・ScriptableObject 等のアセットを新規作成 |
-| `get_asset_info` | GET `/asset/info` | アセットのシリアライズ済みプロパティを取得 |
-| `set_asset_property` | POST `/asset/set-property` | アセットのプロパティを変更 |
+#### Prefab（2 — 済 0 / 未 2）
 
-#### コンソール（2）
+| ツール | API | 説明 | 状態 |
+|--------|-----|------|------|
+| `create_prefab` | POST `/prefab/create` | シーン内 GameObject を Prefab アセットとして保存 | 未 |
+| `instantiate_prefab` | POST `/prefab/instantiate` | Prefab をシーンにインスタンス化 | 未 |
 
-| ツール | API | 説明 |
-|--------|-----|------|
-| `get_console_logs` | GET `/console/logs` | Unity Console のログを取得 |
-| `clear_console_logs` | POST `/console/clear` | Unity Console のログをクリア |
+#### アセット（4 — 済 0 / 未 4）
 
-#### ユーティリティ（3）
+| ツール | API | 説明 | 状態 |
+|--------|-----|------|------|
+| `refresh_assets` | POST `/asset/refresh` | AssetDatabase をリフレッシュ | 未 |
+| `create_asset` | POST `/asset/create` | Material・ScriptableObject 等のアセットを新規作成 | 未 |
+| `get_asset_info` | GET `/asset/info` | アセットのシリアライズ済みプロパティを取得 | 未 |
+| `set_asset_property` | POST `/asset/set-property` | アセットのプロパティを変更 | 未 |
 
-| ツール | API | 説明 |
-|--------|-----|------|
-| `execute_menu_item` | POST `/menu/execute` | Unity メニューアイテムをパス指定で実行 |
-| `run_tests` | POST `/tests/run` | Test Runner でテスト実行し結果を返す |
-| `capture_screenshot` | GET `/editor/screenshot` | Game View のスクリーンショットを取得 |
+#### コンソール（2 — 済 0 / 未 2）
+
+| ツール | API | 説明 | 状態 |
+|--------|-----|------|------|
+| `get_console_logs` | GET `/console/logs` | Unity Console のログを取得 | 未 |
+| `clear_console_logs` | POST `/console/clear` | Unity Console のログをクリア | 未 |
+
+#### ユーティリティ（3 — 済 0 / 未 3）
+
+| ツール | API | 説明 | 状態 |
+|--------|-----|------|------|
+| `execute_menu_item` | POST `/menu/execute` | Unity メニューアイテムをパス指定で実行 | 未 |
+| `run_tests` | POST `/tests/run` | Test Runner でテスト実行し結果を返す | 未 |
+| `capture_screenshot` | GET `/editor/screenshot` | Game View のスクリーンショットを取得 | 未 |
 
 #### 設計判断
 
