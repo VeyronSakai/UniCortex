@@ -7,13 +7,6 @@ A toolkit for controlling Unity Editor externally via REST API and MCP (Model Co
 
 Primarily designed for AI agents (Claude Code, Codex CLI, etc.) to operate Unity Editor through MCP.
 
-## Features
-
-- No external runtimes like Python or Node.js required
-- Embeds an HTTP server inside Unity Editor, controlled via REST API
-- .NET 8 MCP server (run via `dotnet run`) for AI agent integration via stdio
-- Distributed as a UPM package
-
 ## Requirements
 
 - Unity 2022.3 or later
