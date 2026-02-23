@@ -5,7 +5,6 @@ using UniCortex.Mcp.Test.Fixtures;
 namespace UniCortex.Mcp.Test.EditorTools;
 
 [TestFixture]
-[NonParallelizable]
 public class DomainReloadTest
 {
     private UnityEditorFixture _fixture = null!;

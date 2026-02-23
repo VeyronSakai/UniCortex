@@ -8,7 +8,6 @@ namespace UniCortex.Mcp.Test.EditorTools;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.SingleInstance)]
-[NonParallelizable]
 public class PlayModeTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
