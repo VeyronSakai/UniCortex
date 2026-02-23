@@ -32,7 +32,7 @@ UniCortex/
 ├── Editor/
 │   ├── UniCortex.Editor.asmdef
 │   ├── AssemblyInfo.cs
-│   ├── EntryPoint.cs
+│   ├── EntryPoint.cs                      ← Handler 登録・サーバー起動
 │   ├── Domains/
 │   │   ├── Interfaces/
 │   │   │   ├── ICompilationPipeline.cs
@@ -42,44 +42,69 @@ UniCortex/
 │   │   │   ├── IRequestContext.cs
 │   │   │   └── IRequestRouter.cs
 │   │   └── Models/
-│   │       ├── ApiRoutes.cs
-│   │       ├── ErrorResponse.cs         ← エラーレスポンス DTO
+│   │       ├── ApiRoutes.cs               ← ルート定数定義
+│   │       ├── ErrorResponse.cs
 │   │       ├── HttpMethodType.cs
-│   │       └── PingResponse.cs          ← GET /ping レスポンス DTO
+│   │       ├── *Response.cs               ← 各エンドポイントのレスポンス DTO
+│   │       └── UnityServerConfig.cs
+│   ├── Handlers/
+│   │   └── Editor/
+│   │       ├── PingHandler.cs
+│   │       ├── PlayHandler.cs
+│   │       ├── StopHandler.cs
+│   │       ├── PauseHandler.cs
+│   │       ├── ResumeHandler.cs
+│   │       ├── EditorStatusHandler.cs
+│   │       └── DomainReloadHandler.cs
 │   ├── Infrastructures/
-│   │   ├── CompilationPipelineAdapter.cs ← CompilationPipeline ラッパー
-│   │   ├── EditorApplicationAdapter.cs  ← EditorApplication ラッパー
+│   │   ├── CompilationPipelineAdapter.cs  ← CompilationPipeline ラッパー
+│   │   ├── EditorApplicationAdapter.cs    ← EditorApplication ラッパー
 │   │   ├── HttpListenerRequestContext.cs
-│   │   ├── HttpListenerServer.cs        ← HttpListener HTTP サーバー
-│   │   ├── MainThreadDispatcher.cs      ← メインスレッドディスパッチ
-│   │   └── RequestRouter.cs             ← パスルーティング
-│   ├── Presentations/
-│   │   └── PingHandler.cs
+│   │   ├── HttpListenerServer.cs          ← HttpListener HTTP サーバー
+│   │   ├── MainThreadDispatcher.cs        ← メインスレッドディスパッチ
+│   │   └── RequestRouter.cs              ← パスルーティング
 │   ├── UseCases/
-│   │   └── PingUseCase.cs
+│   │   ├── PingUseCase.cs
+│   │   ├── PlayUseCase.cs
+│   │   ├── StopUseCase.cs
+│   │   ├── PauseUseCase.cs
+│   │   ├── ResumeUseCase.cs
+│   │   ├── GetEditorStatusUseCase.cs
+│   │   └── RequestDomainReloadUseCase.cs
 │   └── Settings/
 │       ├── UniCortexSettings.cs
-│       ├── UniCortexSettingsProvider.cs  ← Project Settings UI
-│       └── ServerUrlFile.cs              ← Library/UniCortex/config.json 操作
+│       ├── UniCortexSettingsProvider.cs   ← Project Settings UI
+│       └── ServerUrlFile.cs               ← Library/UniCortex/config.json 操作
 ├── Tools~/
 │   └── UniCortex.Mcp/
 │       ├── UniCortex.Mcp.csproj
 │       ├── Program.cs
-│       └── Tools/
-│           └── PingTool.cs
+│       ├── Domains/
+│       │   └── Interfaces/
+│       │       └── IUnityServerUrlProvider.cs
+│       ├── Extensions/
+│       │   └── HttpResponseMessageExtensions.cs
+│       ├── Infrastructures/
+│       │   ├── HttpRequestHandler.cs
+│       │   └── UnityServerUrlProvider.cs
+│       ├── Tools/
+│       │   └── EditorTools.cs             ← MCP ツール定義
+│       └── UseCases/
+│           └── DomainReloadUseCase.cs
 ├── Tests/
 │   └── Editor/
+│       ├── UniCortex.Editor.Tests.asmdef
 │       ├── TestDoubles/
 │       │   ├── FakeMainThreadDispatcher.cs
 │       │   ├── FakeRequestContext.cs
 │       │   ├── SpyCompilationPipeline.cs
 │       │   └── SpyEditorApplication.cs
 │       ├── UseCases/
-│       │   └── *UseCaseTest.cs          ← UseCase 単体テスト
+│       │   └── *UseCaseTest.cs            ← UseCase 単体テスト
 │       └── Presentations/
-│           └── *HandlerTest.cs          ← Handler 単体テスト
+│           └── *HandlerTest.cs            ← Handler 単体テスト
 └── Documentations~/
-    └── SPEC.md                         ← この文書
+    └── SPEC.md                            ← この文書
 ```
 
 - `Editor/` — Unity Editor 拡張。asmdef で `includePlatforms: ["Editor"]`
@@ -791,12 +816,13 @@ UseCase クラスを新規作成・変更する際は、必ず対応する単体
 ## 使用例
 
 ```bash
-# ポート番号は Library/UniCortex/config.json または Project Settings > UniCortex で確認
-PORT=$(python3 -c "import json; print(json.load(open('Library/UniCortex/config.json'))['server_url'].split(':')[-1])")
+# ポート番号は Project Settings > UniCortex または Library/UniCortex/config.json で確認
+# config.json から server_url を取得する例:
+URL=$(grep -o '"server_url":"[^"]*"' Library/UniCortex/config.json | cut -d'"' -f4)
 
 # curl で直接 API を呼ぶことも可能
-curl http://localhost:${PORT}/editor/ping
-curl -X POST http://localhost:${PORT}/editor/play
+curl ${URL}/editor/ping
+curl -X POST ${URL}/editor/play
 ```
 
 MCP 経由の操作は AI エージェント（Claude Code 等）の MCP 設定に追加することで利用可能。
