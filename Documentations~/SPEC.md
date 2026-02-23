@@ -140,12 +140,15 @@ Unity API はメインスレッドからのみ呼び出し可能。HttpListener 
 
 ---
 
-## API エンドポイント（v0.1.0 スコープ）
+## API エンドポイント
 
 レスポンスは常に `application/json; charset=utf-8`。
 エラー時: HTTP ステータスコード + `{"error": "メッセージ"}`
+シーン変更操作はすべて Undo 対応する。
 
-### GET `/editor/ping`
+### Editor 制御
+
+#### GET `/editor/ping`
 
 サーバー疎通確認。**Unity Console に `pong` とログ出力**し、レスポンスを返す。
 
@@ -154,45 +157,135 @@ Unity API はメインスレッドからのみ呼び出し可能。HttpListener 
 {"status": "ok", "message": "pong"}
 ```
 
-### POST `/editor/play`
+#### GET `/editor/status`
+
+エディターの現在の状態を取得する。MCP ツール内部でのポーリングにも使用。
+
+レスポンス:
+```json
+{"isPlaying": false, "isPaused": false}
+```
+
+#### POST `/editor/play`
 
 Play モードを開始する。`EditorApplication.isPlaying = true`
 
-レスポンス:
-```json
-{"success": true}
-```
+レスポンス: `{"success": true}`
 
-### POST `/editor/stop`
+#### POST `/editor/stop`
 
 Play モードを停止する。`EditorApplication.isPlaying = false`
 
-レスポンス:
-```json
-{"success": true}
-```
+レスポンス: `{"success": true}`
 
-### POST `/editor/pause`
+#### POST `/editor/pause`
 
 Play モードを一時停止する。`EditorApplication.isPaused = true`
 
-レスポンス:
-```json
-{"success": true}
-```
+レスポンス: `{"success": true}`
 
-### POST `/editor/unpause`
+#### POST `/editor/resume`
 
 Play モードの一時停止を解除する。`EditorApplication.isPaused = false`
 
-レスポンス:
+レスポンス: `{"success": true}`
+
+#### POST `/editor/domain-reload`
+
+ドメインリロード（スクリプト再コンパイル）を要求する。`CompilationPipeline.RequestScriptCompilation()`
+
+レスポンス: `{"success": true}`
+
+#### POST `/editor/undo`
+
+直前の操作を Undo する。`Undo.PerformUndo()`
+
+レスポンス: `{"success": true}`
+
+#### POST `/editor/redo`
+
+Undo した操作を Redo する。`Undo.PerformRedo()`
+
+レスポンス: `{"success": true}`
+
+### シーン
+
+#### POST `/scene/open`
+
+シーンを開く。`EditorSceneManager.OpenScene()`
+
+リクエストボディ:
 ```json
-{"success": true}
+{"scenePath": "Assets/Scenes/Main.unity"}
 ```
 
-### POST `/gameobject/create`
+レスポンス: `{"success": true}`
 
-GameObject を作成する。
+#### POST `/scene/save`
+
+開いているシーンを保存する。`EditorSceneManager.SaveOpenScenes()`
+
+レスポンス: `{"success": true}`
+
+#### GET `/scene/hierarchy`
+
+現在のシーンの GameObject 階層をツリー構造で返す。シーン情報を含む。
+
+レスポンス:
+```json
+{
+  "sceneName": "SampleScene",
+  "scenePath": "Assets/Scenes/SampleScene.unity",
+  "gameObjects": [
+    {
+      "name": "Main Camera",
+      "instanceId": 10200,
+      "activeSelf": true,
+      "components": ["Transform", "Camera", "AudioListener"],
+      "children": []
+    },
+    {
+      "name": "Canvas",
+      "instanceId": 10300,
+      "activeSelf": true,
+      "components": ["RectTransform", "Canvas"],
+      "children": [
+        {
+          "name": "Button",
+          "instanceId": 10400,
+          "activeSelf": true,
+          "components": ["RectTransform", "Image", "Button"],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
+```
+
+### GameObject
+
+#### GET `/gameobject/find`
+
+シーン内の GameObject を検索する。
+
+クエリパラメータ（いずれか 1 つ以上指定）:
+- `name`: 名前で検索（部分一致）
+- `tag`: タグで検索（完全一致）
+- `componentType`: 指定コンポーネントを持つ GameObject を検索
+
+レスポンス:
+```json
+{
+  "gameObjects": [
+    {"name": "Player", "instanceId": 10500, "activeSelf": true}
+  ]
+}
+```
+
+#### POST `/gameobject/create`
+
+GameObject を作成する。`Undo.RegisterCreatedObjectUndo` で Undo 対応。
 
 リクエストボディ:
 ```json
@@ -206,12 +299,270 @@ GameObject を作成する。
 - `primitive`: `PrimitiveType` の名前。省略時は空の GameObject を作成
   - 有効値: `Cube`, `Sphere`, `Capsule`, `Cylinder`, `Plane`, `Quad`
 
-作成時は `Undo.RegisterCreatedObjectUndo` を呼び、Undo 対応する。
-
 レスポンス:
 ```json
 {"name": "MyCube", "instanceId": 12345}
 ```
+
+#### POST `/gameobject/delete`
+
+GameObject を削除する。`Undo.DestroyObjectImmediate` で Undo 対応。
+
+リクエストボディ: `{"instanceId": 12345}`
+
+レスポンス: `{"success": true}`
+
+#### GET `/gameobject/info?instanceId=12345`
+
+指定した GameObject の基本情報とコンポーネント型一覧を返す（軽量）。詳細なプロパティは `/component/properties` で取得する。
+
+レスポンス:
+```json
+{
+  "name": "MyCube",
+  "instanceId": 12345,
+  "activeSelf": true,
+  "tag": "Untagged",
+  "layer": 0,
+  "components": [
+    {"type": "Transform", "index": 0},
+    {"type": "MeshFilter", "index": 1},
+    {"type": "MeshRenderer", "index": 2},
+    {"type": "BoxCollider", "index": 3}
+  ]
+}
+```
+
+#### POST `/gameobject/modify`
+
+GameObject のプロパティを変更する。指定したフィールドのみ更新。`Undo.RecordObject` で Undo 対応。
+
+リクエストボディ:
+```json
+{
+  "instanceId": 12345,
+  "name": "RenamedCube",
+  "activeSelf": false,
+  "tag": "Player",
+  "layer": 8,
+  "parentInstanceId": 67890
+}
+```
+
+すべてのフィールド（`instanceId` 以外）は任意。`parentInstanceId` に `0` を指定するとルートに移動。
+
+レスポンス: `{"success": true}`
+
+### コンポーネント
+
+#### POST `/component/add`
+
+GameObject にコンポーネントを追加する。`Undo.AddComponent` で Undo 対応。
+
+リクエストボディ: `{"instanceId": 12345, "componentType": "Rigidbody"}`
+
+レスポンス: `{"success": true}`
+
+#### POST `/component/remove`
+
+GameObject からコンポーネントを削除する。`Undo.DestroyObjectImmediate` で Undo 対応。
+
+リクエストボディ: `{"instanceId": 12345, "componentType": "Rigidbody", "componentIndex": 0}`
+
+- `componentIndex`: 同じ型のコンポーネントが複数ある場合のインデックス（デフォルト: 0）
+
+レスポンス: `{"success": true}`
+
+#### GET `/component/properties?instanceId=12345&componentType=Transform`
+
+指定コンポーネントのシリアライズ済みプロパティを返す。
+
+クエリパラメータ:
+- `instanceId`: 対象 GameObject の instanceId（必須）
+- `componentType`: コンポーネント型名（必須）
+- `componentIndex`: 同型が複数ある場合のインデックス（任意、デフォルト: 0）
+
+レスポンス:
+```json
+{
+  "componentType": "Transform",
+  "properties": [
+    {"path": "m_LocalPosition", "type": "Vector3", "value": {"x": 0, "y": 1, "z": 0}},
+    {"path": "m_LocalRotation", "type": "Quaternion", "value": {"x": 0, "y": 0, "z": 0, "w": 1}},
+    {"path": "m_LocalScale", "type": "Vector3", "value": {"x": 1, "y": 1, "z": 1}}
+  ]
+}
+```
+
+#### POST `/component/set-property`
+
+コンポーネントのシリアライズ済みプロパティを変更する。`SerializedObject` / `SerializedProperty` API を使用し、`Undo` に自動記録される。
+
+リクエストボディ:
+```json
+{
+  "instanceId": 12345,
+  "componentType": "Transform",
+  "propertyPath": "m_LocalPosition.x",
+  "value": "1.5"
+}
+```
+
+- `propertyPath`: Unity の `SerializedProperty.propertyPath` 形式
+- `value`: 文字列で指定。型は `SerializedProperty.propertyType` から自動判定
+
+レスポンス: `{"success": true}`
+
+### Prefab
+
+#### POST `/prefab/create`
+
+シーン内の GameObject を Prefab アセットとして保存する。`PrefabUtility.SaveAsPrefabAsset()`
+
+リクエストボディ:
+```json
+{"instanceId": 12345, "assetPath": "Assets/Prefabs/MyCube.prefab"}
+```
+
+レスポンス: `{"success": true}`
+
+#### POST `/prefab/instantiate`
+
+Prefab をシーンにインスタンス化する。`PrefabUtility.InstantiatePrefab()` + `Undo.RegisterCreatedObjectUndo`
+
+リクエストボディ:
+```json
+{"assetPath": "Assets/Prefabs/MyCube.prefab"}
+```
+
+レスポンス:
+```json
+{"name": "MyCube", "instanceId": 56789}
+```
+
+### アセット
+
+#### POST `/asset/refresh`
+
+アセットデータベースをリフレッシュする。`AssetDatabase.Refresh()`
+
+レスポンス: `{"success": true}`
+
+#### POST `/asset/create`
+
+新規アセットを作成する。Material, ScriptableObject 等に対応。
+
+リクエストボディ:
+```json
+{"type": "Material", "assetPath": "Assets/Materials/NewMat.mat"}
+```
+
+- `type`: `Material` またはプロジェクト内の `ScriptableObject` サブクラスの型名
+
+レスポンス: `{"success": true}`
+
+#### GET `/asset/info?assetPath=Assets/Materials/NewMat.mat`
+
+アセットのシリアライズ済みプロパティを返す。Material, ScriptableObject 等に対応。
+
+レスポンス:
+```json
+{
+  "assetPath": "Assets/Materials/NewMat.mat",
+  "type": "Material",
+  "properties": [
+    {"path": "_Color", "type": "Color", "value": {"r": 1, "g": 1, "b": 1, "a": 1}},
+    {"path": "_MainTex", "type": "Texture", "value": null}
+  ]
+}
+```
+
+#### POST `/asset/set-property`
+
+アセットのシリアライズ済みプロパティを変更する。`SerializedObject` API を使用。
+
+リクエストボディ:
+```json
+{
+  "assetPath": "Assets/Materials/NewMat.mat",
+  "propertyPath": "_Color",
+  "value": "{\"r\":1,\"g\":0,\"b\":0,\"a\":1}"
+}
+```
+
+レスポンス: `{"success": true}`
+
+### コンソール
+
+#### GET `/console/logs`
+
+Unity Console の最新ログエントリを返す。
+
+クエリパラメータ:
+- `count`（任意、デフォルト: 100）: 取得件数
+
+レスポンス:
+```json
+{
+  "logs": [
+    {
+      "message": "NullReferenceException: ...",
+      "stackTrace": "at MyScript.Update() ...",
+      "type": "Error",
+      "timestamp": "2026-02-23T10:30:00"
+    }
+  ]
+}
+```
+
+- `type`: `Log`, `Warning`, `Error` のいずれか
+
+#### POST `/console/clear`
+
+Unity Console のログをクリアする。`LogEntries.Clear()`
+
+レスポンス: `{"success": true}`
+
+### ユーティリティ
+
+#### POST `/menu/execute`
+
+Unity のメニューアイテムを実行する。`EditorApplication.ExecuteMenuItem()`
+
+リクエストボディ: `{"menuPath": "GameObject/3D Object/Cube"}`
+
+レスポンス: `{"success": true}`
+
+#### POST `/tests/run`
+
+Unity Test Runner でテストを実行し、完了まで待機して結果を返す。`TestRunnerApi`
+
+リクエストボディ:
+```json
+{"testMode": "EditMode", "nameFilter": "MyTest"}
+```
+
+- `testMode`: `EditMode` または `PlayMode`（任意、デフォルト: `EditMode`）
+- `nameFilter`: テスト名フィルタ（任意、省略時は全テスト実行）
+
+レスポンス:
+```json
+{
+  "passed": 10,
+  "failed": 1,
+  "skipped": 2,
+  "results": [
+    {"name": "MyTests.ShouldWork", "status": "Passed", "duration": 0.05},
+    {"name": "MyTests.ShouldFail", "status": "Failed", "duration": 0.02, "message": "Expected true but was false"}
+  ]
+}
+```
+
+#### GET `/editor/screenshot`
+
+Game View のスクリーンショットを取得する。`ScreenCapture.CaptureScreenshotAsTexture()`
+
+レスポンス: PNG 画像バイナリ（`Content-Type: image/png`）
 
 ---
 
@@ -261,19 +612,98 @@ GameObject を作成する。
   3. どちらもなければエラーで終了
 - ログは stderr に出力（stdout は MCP プロトコル用）
 
-### MCP ツール
+### MCP ツール（全 31 ツール）
+
+AI エージェントが混乱なく使えるよう、各ツールは明確に異なる操作に対応し重複を排除している。
+各ツールは `[McpServerToolType]` クラス内に `[McpServerTool]` メソッドとして定義。
+`IHttpClientFactory` をコンストラクタ DI で受け取り、Unity Editor HTTP サーバーにリクエストを送信する。
+
+#### Editor 制御（8）
 
 | ツール | API | 説明 |
 |--------|-----|------|
-| `ping_editor` | GET `/editor/ping` | 疎通確認 |
+| `ping_editor` | GET `/editor/ping` | Unity Editor との疎通確認 |
 | `enter_play_mode` | POST `/editor/play` | Play モード開始 |
 | `exit_play_mode` | POST `/editor/stop` | Play モード停止 |
 | `pause_editor` | POST `/editor/pause` | エディターを一時停止 |
-| `resume_editor` | POST `/editor/unpause` | エディターの一時停止を解除 |
-| `reload_domain` | POST `/editor/domain-reload` | ドメインリロード（スクリプト再コンパイル） |
+| `resume_editor` | POST `/editor/resume` | エディターの一時停止を解除 |
+| `reload_domain` | POST `/editor/domain-reload` | スクリプト再コンパイル（ドメインリロード） |
+| `undo` | POST `/editor/undo` | 直前の操作を Undo |
+| `redo` | POST `/editor/redo` | Undo した操作を Redo |
 
-各ツールは `[McpServerToolType]` クラス内に `[McpServerTool]` メソッドとして定義。
-`IHttpClientFactory` をコンストラクタ DI で受け取り、Unity Editor HTTP サーバーにリクエストを送信する。
+#### シーン（3）
+
+| ツール | API | 説明 |
+|--------|-----|------|
+| `open_scene` | POST `/scene/open` | シーンをパス指定で開く |
+| `save_scene` | POST `/scene/save` | 開いているシーンを保存 |
+| `get_scene_hierarchy` | GET `/scene/hierarchy` | シーン内の GameObject 階層をツリーで取得 |
+
+#### GameObject（5）
+
+| ツール | API | 説明 |
+|--------|-----|------|
+| `find_gameobjects` | GET `/gameobject/find` | 名前・タグ・コンポーネント型でシーン内検索 |
+| `create_gameobject` | POST `/gameobject/create` | GameObject を作成（プリミティブ指定可） |
+| `delete_gameobject` | POST `/gameobject/delete` | GameObject を削除 |
+| `get_gameobject_info` | GET `/gameobject/info` | GameObject の基本情報とコンポーネント型一覧を取得 |
+| `modify_gameobject` | POST `/gameobject/modify` | 名前変更・有効/無効・親子関係・タグ・レイヤーの変更 |
+
+#### コンポーネント（4）
+
+| ツール | API | 説明 |
+|--------|-----|------|
+| `add_component` | POST `/component/add` | GameObject にコンポーネントを追加 |
+| `remove_component` | POST `/component/remove` | GameObject からコンポーネントを削除 |
+| `get_component_properties` | GET `/component/properties` | コンポーネントのシリアライズ済みプロパティを取得 |
+| `set_component_property` | POST `/component/set-property` | コンポーネントのプロパティを変更 |
+
+#### Prefab（2）
+
+| ツール | API | 説明 |
+|--------|-----|------|
+| `create_prefab` | POST `/prefab/create` | シーン内 GameObject を Prefab アセットとして保存 |
+| `instantiate_prefab` | POST `/prefab/instantiate` | Prefab をシーンにインスタンス化 |
+
+#### アセット（4）
+
+| ツール | API | 説明 |
+|--------|-----|------|
+| `refresh_assets` | POST `/asset/refresh` | AssetDatabase をリフレッシュ |
+| `create_asset` | POST `/asset/create` | Material・ScriptableObject 等のアセットを新規作成 |
+| `get_asset_info` | GET `/asset/info` | アセットのシリアライズ済みプロパティを取得 |
+| `set_asset_property` | POST `/asset/set-property` | アセットのプロパティを変更 |
+
+#### コンソール（2）
+
+| ツール | API | 説明 |
+|--------|-----|------|
+| `get_console_logs` | GET `/console/logs` | Unity Console のログを取得 |
+| `clear_console_logs` | POST `/console/clear` | Unity Console のログをクリア |
+
+#### ユーティリティ（3）
+
+| ツール | API | 説明 |
+|--------|-----|------|
+| `execute_menu_item` | POST `/menu/execute` | Unity メニューアイテムをパス指定で実行 |
+| `run_tests` | POST `/tests/run` | Test Runner でテスト実行し結果を返す |
+| `capture_screenshot` | GET `/editor/screenshot` | Game View のスクリーンショットを取得 |
+
+#### 設計判断
+
+**採用理由:**
+- `remove_component` — `add_component` との対称性。Undo 対応により安全に削除可能
+- `get_gameobject_info` と `get_component_properties` の分離 — 前者は軽量な概要（型一覧のみ）、後者は特定コンポーネントの詳細。大量のプロパティを一度に返すことを防ぐ
+- `execute_menu_item` — 専用ツールでカバーできないエッジケースの汎用エスケープハッチ
+- `capture_screenshot` — マルチモーダル AI エージェントが視覚的に状態を確認するために必要
+- `get_asset_info` / `set_asset_property` — Material・ScriptableObject 操作を汎用的にカバー。専用の Material ツールやシェーダーツールは不要
+
+**不採用:**
+- `execute_csharp`（任意 C# 実行） — セキュリティリスクが高い。`execute_menu_item` で大半のエッジケースをカバー可能
+- `get_editor_status` — MCP ツールとしては不要。REST API（`GET /editor/status`）として内部ポーリング用に存在
+- 専用 Material / シェーダーツール — `create_asset` + `set_asset_property` で汎用対応。シェーダーファイルはエージェントがファイルシステムで直接編集可能
+- `find_assets` — エージェントはファイルシステムを直接検索可能
+- 専用 Transform ツール — `set_component_property` で汎用対応
 
 ---
 
