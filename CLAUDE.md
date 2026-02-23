@@ -4,8 +4,9 @@ Unity Editor を外部から REST API + MCP で操作するツールキット。
 
 ## 仕様書
 
-実装の詳細は `Documentations~/SPEC.md` を参照してください。
-実装前に必ず読んでから作業を開始すること。
+- 実装の詳細は `Documentations~/SPEC.md` を参照してください。
+- 実装状況は `Documentations~/TASKS.md` を参照してください。
+- 実装前に必ず読んでから作業を開始すること。
 
 ## 技術スタック
 

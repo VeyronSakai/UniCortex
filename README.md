@@ -78,7 +78,8 @@ The HTTP server is assigned a random free port on each Editor launch. The port i
 
 ## Documentation
 
-See [`Documentations~/SPEC.md`](Documentations~/SPEC.md) for full API endpoint and MCP tool definitions.
+- [`Documentations~/SPEC.md`](Documentations~/SPEC.md) — Full API endpoint and MCP tool definitions
+- [`Documentations~/TASKS.md`](Documentations~/TASKS.md) — Implementation task list and progress
 
 ## Contributing
 
