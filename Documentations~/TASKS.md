@@ -8,27 +8,23 @@
 
 ## 実装済み
 
-### REST API エンドポイント（7/32）
+### REST API エンドポイント（5/30）
 
 | エンドポイント | Handler | UseCase | テスト |
 |---------------|---------|---------|--------|
 | GET `/editor/ping` | PingHandler | PingUseCase | UseCase + Handler |
 | POST `/editor/play` | PlayHandler | PlayUseCase | UseCase |
 | POST `/editor/stop` | StopHandler | StopUseCase | UseCase |
-| POST `/editor/pause` | PauseHandler | PauseUseCase | UseCase |
-| POST `/editor/resume` | ResumeHandler | ResumeUseCase | UseCase |
 | POST `/editor/domain-reload` | DomainReloadHandler | RequestDomainReloadUseCase | UseCase |
 | GET `/editor/status` | EditorStatusHandler | GetEditorStatusUseCase | UseCase |
 
-### MCP ツール（6/31）
+### MCP ツール（4/29）
 
 | ツール名 | 対応 API | 状態 |
 |----------|---------|------|
 | `ping_editor` | GET `/editor/ping` | 済 |
 | `enter_play_mode` | POST `/editor/play` | 済 |
 | `exit_play_mode` | POST `/editor/stop` | 済 |
-| `pause_editor` | POST `/editor/pause` | 済 |
-| `resume_editor` | POST `/editor/resume` | 済 |
 | `reload_domain` | POST `/editor/domain-reload` | 済 |
 
 ### インフラ・基盤
@@ -154,7 +150,7 @@
 
 | カテゴリ | 済 | 未 | 合計 |
 |---------|----|----|------|
-| Editor 制御 | 7 | 2 | 9 |
+| Editor 制御 | 5 | 2 | 7 |
 | シーン | 0 | 3 | 3 |
 | GameObject | 0 | 5 | 5 |
 | コンポーネント | 0 | 4 | 4 |
@@ -162,6 +158,6 @@
 | アセット | 0 | 4 | 4 |
 | コンソール | 0 | 2 | 2 |
 | ユーティリティ | 0 | 3 | 3 |
-| **合計** | **7** | **25** | **32** |
+| **合計** | **5** | **25** | **30** |
 
-MCP ツール: 6/31 実装済み（`GET /editor/status` は MCP ツール対象外）
+MCP ツール: 4/29 実装済み（`GET /editor/status` は MCP ツール対象外）

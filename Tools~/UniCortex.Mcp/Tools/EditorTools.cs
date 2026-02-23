@@ -100,60 +100,6 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         }
     }
 
-    [McpServerTool(ReadOnly = false), Description("Pause the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> PauseEditor(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var baseUrl = urlProvider.GetUrl();
-            var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.Pause, null, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            while (true)
-            {
-                var statusResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Status, cancellationToken);
-                await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-                var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-                var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, _jsonOptions)!;
-                if (status.isPaused)
-                {
-                    return new CallToolResult { Content = [new TextContentBlock { Text = "Paused successfully." }] };
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
-        }
-    }
-
-    [McpServerTool(ReadOnly = false), Description("Resume the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> ResumeEditor(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var baseUrl = urlProvider.GetUrl();
-            var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.Resume, null, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            while (true)
-            {
-                var statusResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Status, cancellationToken);
-                await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-                var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-                var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, _jsonOptions)!;
-                if (!status.isPaused)
-                {
-                    return new CallToolResult { Content = [new TextContentBlock { Text = "Resumed successfully." }] };
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
-        }
-    }
-
     [McpServerTool(ReadOnly = false),
      Description("Request a domain reload (script recompilation) in the Unity Editor."), UsedImplicitly]
     public async Task<CallToolResult> ReloadDomain(CancellationToken cancellationToken)

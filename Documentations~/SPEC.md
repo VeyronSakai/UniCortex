@@ -147,16 +147,6 @@ Play モードを停止する。`EditorApplication.isPlaying = false`
 
 レスポンス: `{"success": true}`
 
-#### POST `/editor/pause`
-Play モードを一時停止する。`EditorApplication.isPaused = true`
-
-レスポンス: `{"success": true}`
-
-#### POST `/editor/resume`
-Play モードの一時停止を解除する。`EditorApplication.isPaused = false`
-
-レスポンス: `{"success": true}`
-
 #### POST `/editor/domain-reload`
 ドメインリロード（スクリプト再コンパイル）を要求する。`CompilationPipeline.RequestScriptCompilation()`
 
@@ -553,21 +543,19 @@ Game View のスクリーンショットを取得する。`ScreenCapture.Capture
   3. どちらもなければエラーで終了
 - ログは stderr に出力（stdout は MCP プロトコル用）
 
-### MCP ツール（全 31 ツール）
+### MCP ツール（全 29 ツール）
 
 AI エージェントが混乱なく使えるよう、各ツールは明確に異なる操作に対応し重複を排除している。
 各ツールは `[McpServerToolType]` クラス内に `[McpServerTool]` メソッドとして定義。
 `IHttpClientFactory` をコンストラクタ DI で受け取り、Unity Editor HTTP サーバーにリクエストを送信する。
 
-#### Editor 制御（8）
+#### Editor 制御（6）
 
 | ツール | API | 説明 |
 |--------|-----|------|
 | `ping_editor` | GET `/editor/ping` | Unity Editor との疎通確認 |
 | `enter_play_mode` | POST `/editor/play` | Play モード開始 |
 | `exit_play_mode` | POST `/editor/stop` | Play モード停止 |
-| `pause_editor` | POST `/editor/pause` | エディターを一時停止 |
-| `resume_editor` | POST `/editor/resume` | エディターの一時停止を解除 |
 | `reload_domain` | POST `/editor/domain-reload` | スクリプト再コンパイル（ドメインリロード） |
 | `undo` | POST `/editor/undo` | 直前の操作を Undo |
 | `redo` | POST `/editor/redo` | Undo した操作を Redo |
