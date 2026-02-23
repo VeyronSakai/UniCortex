@@ -15,4 +15,7 @@
   <ItemGroup>
     <Compile Include="../../Editor/Domains/Models/**/*.cs" LinkBase="Models" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="UniCortex.Mcp.Test" />
+  </ItemGroup>
 </Project>
