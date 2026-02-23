@@ -26,85 +26,28 @@ AI エージェント（Claude Code, Codex CLI 等）が MCP プロトコルを�
 
 ```
 UniCortex/
-├── package.json
-├── README.md
-├── LICENSE
-├── Editor/
-│   ├── UniCortex.Editor.asmdef
-│   ├── AssemblyInfo.cs
-│   ├── EntryPoint.cs                      ← Handler 登録・サーバー起動
+├── Editor/                  ← Unity Editor 拡張
 │   ├── Domains/
-│   │   ├── Interfaces/
-│   │   │   ├── ICompilationPipeline.cs
-│   │   │   ├── IEditorApplication.cs
-│   │   │   ├── IHttpServer.cs
-│   │   │   ├── IMainThreadDispatcher.cs
-│   │   │   ├── IRequestContext.cs
-│   │   │   └── IRequestRouter.cs
-│   │   └── Models/
-│   │       ├── ApiRoutes.cs               ← ルート定数定義
-│   │       ├── ErrorResponse.cs
-│   │       ├── HttpMethodType.cs
-│   │       ├── *Response.cs               ← 各エンドポイントのレスポンス DTO
-│   │       └── UnityServerConfig.cs
-│   ├── Handlers/
-│   │   └── Editor/
-│   │       ├── PingHandler.cs
-│   │       ├── PlayHandler.cs
-│   │       ├── StopHandler.cs
-│   │       ├── PauseHandler.cs
-│   │       ├── ResumeHandler.cs
-│   │       ├── EditorStatusHandler.cs
-│   │       └── DomainReloadHandler.cs
-│   ├── Infrastructures/
-│   │   ├── CompilationPipelineAdapter.cs  ← CompilationPipeline ラッパー
-│   │   ├── EditorApplicationAdapter.cs    ← EditorApplication ラッパー
-│   │   ├── HttpListenerRequestContext.cs
-│   │   ├── HttpListenerServer.cs          ← HttpListener HTTP サーバー
-│   │   ├── MainThreadDispatcher.cs        ← メインスレッドディスパッチ
-│   │   └── RequestRouter.cs              ← パスルーティング
-│   ├── UseCases/
-│   │   ├── PingUseCase.cs
-│   │   ├── PlayUseCase.cs
-│   │   ├── StopUseCase.cs
-│   │   ├── PauseUseCase.cs
-│   │   ├── ResumeUseCase.cs
-│   │   ├── GetEditorStatusUseCase.cs
-│   │   └── RequestDomainReloadUseCase.cs
-│   └── Settings/
-│       ├── UniCortexSettings.cs
-│       ├── UniCortexSettingsProvider.cs   ← Project Settings UI
-│       └── ServerUrlFile.cs               ← Library/UniCortex/config.json 操作
+│   │   ├── Interfaces/      ← Unity API のインターフェース抽象
+│   │   └── Models/          ← DTO・ルート定数（MCP サーバーと共有）
+│   ├── Handlers/            ← HTTP リクエストハンドラー
+│   ├── Infrastructures/     ← HttpListener, MainThreadDispatcher 等
+│   ├── UseCases/            ← ビジネスロジック
+│   └── Settings/            ← Project Settings UI, config.json 操作
 ├── Tools~/
-│   └── UniCortex.Mcp/
-│       ├── UniCortex.Mcp.csproj
-│       ├── Program.cs
+│   └── UniCortex.Mcp/      ← .NET 8 MCP サーバー
 │       ├── Domains/
-│       │   └── Interfaces/
-│       │       └── IUnityServerUrlProvider.cs
 │       ├── Extensions/
-│       │   └── HttpResponseMessageExtensions.cs
 │       ├── Infrastructures/
-│       │   ├── HttpRequestHandler.cs
-│       │   └── UnityServerUrlProvider.cs
-│       ├── Tools/
-│       │   └── EditorTools.cs             ← MCP ツール定義
+│       ├── Tools/           ← MCP ツール定義
 │       └── UseCases/
-│           └── DomainReloadUseCase.cs
 ├── Tests/
 │   └── Editor/
-│       ├── UniCortex.Editor.Tests.asmdef
-│       ├── TestDoubles/
-│       │   ├── FakeMainThreadDispatcher.cs
-│       │   ├── FakeRequestContext.cs
-│       │   ├── SpyCompilationPipeline.cs
-│       │   └── SpyEditorApplication.cs
-│       ├── UseCases/
-│       │   └── *UseCaseTest.cs            ← UseCase 単体テスト
-│       └── Presentations/
-│           └── *HandlerTest.cs            ← Handler 単体テスト
+│       ├── TestDoubles/     ← Fake, Spy 等のテストダブル
+│       ├── UseCases/        ← UseCase 単体テスト
+│       └── Presentations/   ← Handler 単体テスト
 └── Documentations~/
-    └── SPEC.md                            ← この文書
+    └── SPEC.md              ← この文書
 ```
 
 - `Editor/` — Unity Editor 拡張。asmdef で `includePlatforms: ["Editor"]`
@@ -171,9 +114,11 @@ Unity API はメインスレッドからのみ呼び出し可能。HttpListener 
 エラー時: HTTP ステータスコード + `{"error": "メッセージ"}`
 シーン変更操作はすべて Undo 対応する。
 
-### Editor 制御
+各エンドポイントの実装状況: 済 = 実装済み / 未 = 未実装
 
-#### GET `/editor/ping`
+### Editor 制御（済 7 / 未 2）
+
+#### GET `/editor/ping`【済】
 
 サーバー疎通確認。**Unity Console に `pong` とログ出力**し、レスポンスを返す。
 
@@ -182,7 +127,7 @@ Unity API はメインスレッドからのみ呼び出し可能。HttpListener 
 {"status": "ok", "message": "pong"}
 ```
 
-#### GET `/editor/status`
+#### GET `/editor/status`【済】
 
 エディターの現在の状態を取得する。MCP ツール内部でのポーリングにも使用。
 
@@ -191,51 +136,51 @@ Unity API はメインスレッドからのみ呼び出し可能。HttpListener 
 {"isPlaying": false, "isPaused": false}
 ```
 
-#### POST `/editor/play`
+#### POST `/editor/play`【済】
 
 Play モードを開始する。`EditorApplication.isPlaying = true`
 
 レスポンス: `{"success": true}`
 
-#### POST `/editor/stop`
+#### POST `/editor/stop`【済】
 
 Play モードを停止する。`EditorApplication.isPlaying = false`
 
 レスポンス: `{"success": true}`
 
-#### POST `/editor/pause`
+#### POST `/editor/pause`【済】
 
 Play モードを一時停止する。`EditorApplication.isPaused = true`
 
 レスポンス: `{"success": true}`
 
-#### POST `/editor/resume`
+#### POST `/editor/resume`【済】
 
 Play モードの一時停止を解除する。`EditorApplication.isPaused = false`
 
 レスポンス: `{"success": true}`
 
-#### POST `/editor/domain-reload`
+#### POST `/editor/domain-reload`【済】
 
 ドメインリロード（スクリプト再コンパイル）を要求する。`CompilationPipeline.RequestScriptCompilation()`
 
 レスポンス: `{"success": true}`
 
-#### POST `/editor/undo`
+#### POST `/editor/undo`【未】
 
 直前の操作を Undo する。`Undo.PerformUndo()`
 
 レスポンス: `{"success": true}`
 
-#### POST `/editor/redo`
+#### POST `/editor/redo`【未】
 
 Undo した操作を Redo する。`Undo.PerformRedo()`
 
 レスポンス: `{"success": true}`
 
-### シーン
+### シーン（済 0 / 未 3）
 
-#### POST `/scene/open`
+#### POST `/scene/open`【未】
 
 シーンを開く。`EditorSceneManager.OpenScene()`
 
@@ -246,13 +191,13 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
 
 レスポンス: `{"success": true}`
 
-#### POST `/scene/save`
+#### POST `/scene/save`【未】
 
 開いているシーンを保存する。`EditorSceneManager.SaveOpenScenes()`
 
 レスポンス: `{"success": true}`
 
-#### GET `/scene/hierarchy`
+#### GET `/scene/hierarchy`【未】
 
 現在のシーンの GameObject 階層をツリー構造で返す。シーン情報を含む。
 
@@ -288,9 +233,9 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
 }
 ```
 
-### GameObject
+### GameObject（済 0 / 未 5）
 
-#### GET `/gameobject/find`
+#### GET `/gameobject/find`【未】
 
 シーン内の GameObject を検索する。
 
@@ -308,7 +253,7 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
 }
 ```
 
-#### POST `/gameobject/create`
+#### POST `/gameobject/create`【未】
 
 GameObject を作成する。`Undo.RegisterCreatedObjectUndo` で Undo 対応。
 
@@ -329,7 +274,7 @@ GameObject を作成する。`Undo.RegisterCreatedObjectUndo` で Undo 対応。
 {"name": "MyCube", "instanceId": 12345}
 ```
 
-#### POST `/gameobject/delete`
+#### POST `/gameobject/delete`【未】
 
 GameObject を削除する。`Undo.DestroyObjectImmediate` で Undo 対応。
 
@@ -337,7 +282,7 @@ GameObject を削除する。`Undo.DestroyObjectImmediate` で Undo 対応。
 
 レスポンス: `{"success": true}`
 
-#### GET `/gameobject/info?instanceId=12345`
+#### GET `/gameobject/info?instanceId=12345`【未】
 
 指定した GameObject の基本情報とコンポーネント型一覧を返す（軽量）。詳細なプロパティは `/component/properties` で取得する。
 
@@ -358,7 +303,7 @@ GameObject を削除する。`Undo.DestroyObjectImmediate` で Undo 対応。
 }
 ```
 
-#### POST `/gameobject/modify`
+#### POST `/gameobject/modify`【未】
 
 GameObject のプロパティを変更する。指定したフィールドのみ更新。`Undo.RecordObject` で Undo 対応。
 
@@ -378,9 +323,9 @@ GameObject のプロパティを変更する。指定したフィールドのみ
 
 レスポンス: `{"success": true}`
 
-### コンポーネント
+### コンポーネント（済 0 / 未 4）
 
-#### POST `/component/add`
+#### POST `/component/add`【未】
 
 GameObject にコンポーネントを追加する。`Undo.AddComponent` で Undo 対応。
 
@@ -388,7 +333,7 @@ GameObject にコンポーネントを追加する。`Undo.AddComponent` で Und
 
 レスポンス: `{"success": true}`
 
-#### POST `/component/remove`
+#### POST `/component/remove`【未】
 
 GameObject からコンポーネントを削除する。`Undo.DestroyObjectImmediate` で Undo 対応。
 
@@ -398,7 +343,7 @@ GameObject からコンポーネントを削除する。`Undo.DestroyObjectImmed
 
 レスポンス: `{"success": true}`
 
-#### GET `/component/properties?instanceId=12345&componentType=Transform`
+#### GET `/component/properties?instanceId=12345&componentType=Transform`【未】
 
 指定コンポーネントのシリアライズ済みプロパティを返す。
 
@@ -419,7 +364,7 @@ GameObject からコンポーネントを削除する。`Undo.DestroyObjectImmed
 }
 ```
 
-#### POST `/component/set-property`
+#### POST `/component/set-property`【未】
 
 コンポーネントのシリアライズ済みプロパティを変更する。`SerializedObject` / `SerializedProperty` API を使用し、`Undo` に自動記録される。
 
@@ -438,9 +383,9 @@ GameObject からコンポーネントを削除する。`Undo.DestroyObjectImmed
 
 レスポンス: `{"success": true}`
 
-### Prefab
+### Prefab（済 0 / 未 2）
 
-#### POST `/prefab/create`
+#### POST `/prefab/create`【未】
 
 シーン内の GameObject を Prefab アセットとして保存する。`PrefabUtility.SaveAsPrefabAsset()`
 
@@ -451,7 +396,7 @@ GameObject からコンポーネントを削除する。`Undo.DestroyObjectImmed
 
 レスポンス: `{"success": true}`
 
-#### POST `/prefab/instantiate`
+#### POST `/prefab/instantiate`【未】
 
 Prefab をシーンにインスタンス化する。`PrefabUtility.InstantiatePrefab()` + `Undo.RegisterCreatedObjectUndo`
 
@@ -465,15 +410,15 @@ Prefab をシーンにインスタンス化する。`PrefabUtility.InstantiatePr
 {"name": "MyCube", "instanceId": 56789}
 ```
 
-### アセット
+### アセット（済 0 / 未 4）
 
-#### POST `/asset/refresh`
+#### POST `/asset/refresh`【未】
 
 アセットデータベースをリフレッシュする。`AssetDatabase.Refresh()`
 
 レスポンス: `{"success": true}`
 
-#### POST `/asset/create`
+#### POST `/asset/create`【未】
 
 新規アセットを作成する。Material, ScriptableObject 等に対応。
 
@@ -486,7 +431,7 @@ Prefab をシーンにインスタンス化する。`PrefabUtility.InstantiatePr
 
 レスポンス: `{"success": true}`
 
-#### GET `/asset/info?assetPath=Assets/Materials/NewMat.mat`
+#### GET `/asset/info?assetPath=Assets/Materials/NewMat.mat`【未】
 
 アセットのシリアライズ済みプロパティを返す。Material, ScriptableObject 等に対応。
 
@@ -502,7 +447,7 @@ Prefab をシーンにインスタンス化する。`PrefabUtility.InstantiatePr
 }
 ```
 
-#### POST `/asset/set-property`
+#### POST `/asset/set-property`【未】
 
 アセットのシリアライズ済みプロパティを変更する。`SerializedObject` API を使用。
 
@@ -517,9 +462,9 @@ Prefab をシーンにインスタンス化する。`PrefabUtility.InstantiatePr
 
 レスポンス: `{"success": true}`
 
-### コンソール
+### コンソール（済 0 / 未 2）
 
-#### GET `/console/logs`
+#### GET `/console/logs`【未】
 
 Unity Console の最新ログエントリを返す。
 
@@ -542,15 +487,15 @@ Unity Console の最新ログエントリを返す。
 
 - `type`: `Log`, `Warning`, `Error` のいずれか
 
-#### POST `/console/clear`
+#### POST `/console/clear`【未】
 
 Unity Console のログをクリアする。`LogEntries.Clear()`
 
 レスポンス: `{"success": true}`
 
-### ユーティリティ
+### ユーティリティ（済 0 / 未 3）
 
-#### POST `/menu/execute`
+#### POST `/menu/execute`【未】
 
 Unity のメニューアイテムを実行する。`EditorApplication.ExecuteMenuItem()`
 
@@ -558,7 +503,7 @@ Unity のメニューアイテムを実行する。`EditorApplication.ExecuteMen
 
 レスポンス: `{"success": true}`
 
-#### POST `/tests/run`
+#### POST `/tests/run`【未】
 
 Unity Test Runner でテストを実行し、完了まで待機して結果を返す。`TestRunnerApi`
 
@@ -583,7 +528,7 @@ Unity Test Runner でテストを実行し、完了まで待機して結果を�
 }
 ```
 
-#### GET `/editor/screenshot`
+#### GET `/editor/screenshot`【未】
 
 Game View のスクリーンショットを取得する。`ScreenCapture.CaptureScreenshotAsTexture()`
 
@@ -700,7 +645,7 @@ AI エージェントが混乱なく使えるよう、各ツールは明確に�
 
 | ツール | API | 説明 | 状態 |
 |--------|-----|------|------|
-| `refresh_assets` | POST `/asset/refresh` | AssetDatabase をリフレッシュ | 未 |
+| `refresh_asset_database` | POST `/asset/refresh` | AssetDatabase をリフレッシュ | 未 |
 | `create_asset` | POST `/asset/create` | Material・ScriptableObject 等のアセットを新規作成 | 未 |
 | `get_asset_info` | GET `/asset/info` | アセットのシリアライズ済みプロパティを取得 | 未 |
 | `set_asset_property` | POST `/asset/set-property` | アセットのプロパティを変更 | 未 |
