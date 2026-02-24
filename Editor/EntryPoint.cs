@@ -65,11 +65,21 @@ namespace UniCortex.Editor
             var getEditorStatusUseCase = new GetEditorStatusUseCase(s_dispatcher, editorApplication);
             var editorStatusHandler = new EditorStatusHandler(getEditorStatusUseCase);
 
+            var undoAdapter = new UndoAdapter();
+
+            var undoUseCase = new UndoUseCase(s_dispatcher, undoAdapter);
+            var undoHandler = new UndoHandler(undoUseCase);
+
+            var redoUseCase = new RedoUseCase(s_dispatcher, undoAdapter);
+            var redoHandler = new RedoHandler(redoUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
             requestDomainReloadHandler.Register(router);
             editorStatusHandler.Register(router);
+            undoHandler.Register(router);
+            redoHandler.Register(router);
         }
 
         private static int FindFreePort()

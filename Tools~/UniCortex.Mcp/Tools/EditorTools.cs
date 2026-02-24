@@ -100,6 +100,41 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         }
     }
 
+    [McpServerTool(ReadOnly = false), Description("Perform Undo in the Unity Editor."), UsedImplicitly]
+    public async Task<CallToolResult> Undo(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var baseUrl = urlProvider.GetUrl();
+            var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Undo}", null,
+                cancellationToken);
+            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+
+            return new CallToolResult { Content = [new TextContentBlock { Text = "Undo performed successfully." }] };
+        }
+        catch (Exception ex)
+        {
+            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
+        }
+    }
+
+    [McpServerTool(ReadOnly = false), Description("Perform Redo in the Unity Editor."), UsedImplicitly]
+    public async Task<CallToolResult> Redo(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var baseUrl = urlProvider.GetUrl();
+            var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Redo}", null, cancellationToken);
+            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+
+            return new CallToolResult { Content = [new TextContentBlock { Text = "Redo performed successfully." }] };
+        }
+        catch (Exception ex)
+        {
+            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
+        }
+    }
+
     [McpServerTool(ReadOnly = false),
      Description("Request a domain reload (script recompilation) in the Unity Editor."), UsedImplicitly]
     public async Task<CallToolResult> ReloadDomain(CancellationToken cancellationToken)
