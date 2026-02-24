@@ -4,7 +4,7 @@ using ModelContextProtocol.Protocol;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Mcp.Test.Fixtures;
 
-namespace UniCortex.Mcp.Test.EditorTools;
+namespace UniCortex.Mcp.Test.TestTools;
 
 [TestFixture]
 public class RunTestsTest
@@ -23,10 +23,10 @@ public class RunTestsTest
     public async Task RunTests_EditMode_ReturnsJsonWithResults()
     {
         // Arrange
-        var editorTools = _fixture.EditorTools;
+        var testTools = _fixture.TestTools;
 
         // Act
-        var result = await editorTools.RunTests(testMode: "EditMode", cancellationToken: CancellationToken.None);
+        var result = await testTools.RunTests(testMode: "EditMode", cancellationToken: CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);
@@ -41,10 +41,10 @@ public class RunTestsTest
     public async Task RunTests_PlayMode_ReturnsJson()
     {
         // Arrange
-        var editorTools = _fixture.EditorTools;
+        var testTools = _fixture.TestTools;
 
         // Act
-        var result = await editorTools.RunTests(testMode: "PlayMode", cancellationToken: CancellationToken.None);
+        var result = await testTools.RunTests(testMode: "PlayMode", cancellationToken: CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);
@@ -58,10 +58,10 @@ public class RunTestsTest
     public async Task RunTests_WithNameFilter_ReturnsFilteredResults()
     {
         // Arrange
-        var editorTools = _fixture.EditorTools;
+        var testTools = _fixture.TestTools;
 
         // Act — filter to a test name that is unlikely to match anything
-        var result = await editorTools.RunTests(
+        var result = await testTools.RunTests(
             testMode: "EditMode",
             nameFilter: "NonExistentTestName_12345",
             cancellationToken: CancellationToken.None);

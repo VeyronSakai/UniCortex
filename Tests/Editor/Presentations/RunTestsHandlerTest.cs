@@ -6,7 +6,7 @@ using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using NUnit.Framework;
-using UniCortex.Editor.Handlers.Utility;
+using UniCortex.Editor.Handlers.Tests;
 
 namespace UniCortex.Editor.Tests.Presentations
 {
