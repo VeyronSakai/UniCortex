@@ -10,14 +10,14 @@ internal sealed class UnityServerUrlProvider : IUnityServerUrlProvider
 
     public string GetUrl()
     {
-        // 優先度1: UNICORTEX_URL 環境変数
+        // Priority 1: UNICORTEX_URL environment variable
         var url = Environment.GetEnvironmentVariable("UNICORTEX_URL");
         if (url is not null)
         {
             return url;
         }
 
-        // 優先度2: UNICORTEX_PROJECT_PATH 環境変数
+        // Priority 2: UNICORTEX_PROJECT_PATH environment variable
         var projectPath = Environment.GetEnvironmentVariable("UNICORTEX_PROJECT_PATH");
         if (projectPath is null)
         {

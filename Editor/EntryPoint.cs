@@ -4,6 +4,8 @@ using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
 using UniCortex.Editor.UseCases;
 using UnityEditor;
+using UnityEditor.TestTools.TestRunner.Api;
+using UnityEngine;
 
 namespace UniCortex.Editor
 {
@@ -20,6 +22,8 @@ namespace UniCortex.Editor
 
             s_dispatcher = new MainThreadDispatcher();
             EditorApplication.update += s_dispatcher.OnUpdate;
+
+            ReregisterTestCallbacksIfNeeded();
 
             if (UniCortexSettings.instance.AutoStart)
             {
@@ -103,6 +107,18 @@ namespace UniCortex.Editor
         private static void OnQuit()
         {
             ServerUrlFile.Delete();
+        }
+
+        private static void ReregisterTestCallbacksIfNeeded()
+        {
+            if (!TestResultStore.IsPending)
+            {
+                return;
+            }
+
+            var api = ScriptableObject.CreateInstance<TestRunnerApi>();
+            api.RegisterCallbacks(new SessionStoreTestCallbacks());
+            Debug.Log("[UniCortex] Re-registered test callbacks after domain reload");
         }
 
         private static void Shutdown()
