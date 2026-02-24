@@ -1,4 +1,5 @@
 using UniCortex.Editor.Handlers.Editor;
+using UniCortex.Editor.Handlers.Utility;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
 using UniCortex.Editor.UseCases;
@@ -73,6 +74,10 @@ namespace UniCortex.Editor
             var redoUseCase = new RedoUseCase(s_dispatcher, undoAdapter);
             var redoHandler = new RedoHandler(redoUseCase);
 
+            var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher);
+            var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter);
+            var runTestsHandler = new RunTestsHandler(runTestsUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -80,6 +85,7 @@ namespace UniCortex.Editor
             editorStatusHandler.Register(router);
             undoHandler.Register(router);
             redoHandler.Register(router);
+            runTestsHandler.Register(router);
         }
 
         private static int FindFreePort()

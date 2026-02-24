@@ -133,7 +133,7 @@
 
 - [ ] POST `/menu/execute` + MCP `execute_menu_item`
   - `EditorApplication.ExecuteMenuItem(menuPath)`
-- [ ] POST `/tests/run` + MCP `run_tests`
+- [x] POST `/tests/run` + MCP `run_tests`
   - `TestRunnerApi` でテスト実行、完了まで待機して結果を返す
   - testMode (EditMode/PlayMode) + nameFilter
 - [ ] GET `/editor/screenshot` + MCP `capture_screenshot`
@@ -152,7 +152,7 @@
 | Prefab | 0 | 2 | 2 |
 | アセット | 0 | 4 | 4 |
 | コンソール | 0 | 2 | 2 |
-| ユーティリティ | 0 | 3 | 3 |
-| **合計** | **7** | **23** | **30** |
+| ユーティリティ | 1 | 2 | 3 |
+| **合計** | **8** | **22** | **30** |
 
-MCP ツール: 6/29 実装済み（`GET /editor/status` は MCP ツール対象外）
+MCP ツール: 7/29 実装済み（`GET /editor/status` は MCP ツール対象外）

@@ -10,5 +10,6 @@ namespace UniCortex.Editor.Domains.Models
         public const string Undo = "/editor/undo";
         public const string Redo = "/editor/redo";
         public const string GameObjectCreate = "/gameobject/create";
+        public const string TestsRun = "/tests/run";
     }
 }
