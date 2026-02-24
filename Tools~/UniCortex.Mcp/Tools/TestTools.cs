@@ -34,11 +34,32 @@ public class TestTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProv
             var json = JsonSerializer.Serialize(request, _jsonOptions);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TestsRun}", content,
-                cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+            string responseJson;
+            try
+            {
+                var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TestsRun}", content,
+                    cancellationToken);
+                await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+                responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+            }
+            catch (HttpRequestException)
+            {
+                // Server disrupted (e.g., domain reload during PlayMode entry)
+                responseJson = "";
+            }
 
-            var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+            // PlayMode tests trigger a domain reload when entering play mode,
+            // which disrupts the HTTP server. Poll GET /tests/result for results.
+            // The HttpRequestHandler retries GET on Content-Length: 0, so this
+            // automatically polls until results are stored in SessionState.
+            if (string.IsNullOrEmpty(responseJson))
+            {
+                await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+                var resultResponse =
+                    await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.TestsResult}", cancellationToken);
+                await resultResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+                responseJson = await resultResponse.Content.ReadAsStringAsync(cancellationToken);
+            }
 
             return new CallToolResult { Content = [new TextContentBlock { Text = responseJson }] };
         }

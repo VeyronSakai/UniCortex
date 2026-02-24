@@ -26,6 +26,8 @@ namespace UniCortex.Editor.Infrastructures
             {
                 await _dispatcher.RunOnMainThreadAsync(() =>
                 {
+                    TestResultStore.MarkPending();
+
                     var testRunnerApi = ScriptableObject.CreateInstance<TestRunnerApi>();
                     var callbacks = new TestCallbacks(tcs);
                     testRunnerApi.RegisterCallbacks(callbacks);
@@ -51,37 +53,23 @@ namespace UniCortex.Editor.Infrastructures
         private sealed class TestCallbacks : ICallbacks
         {
             private readonly TaskCompletionSource<IReadOnlyList<TestResultItem>> _tcs;
-            private readonly List<TestResultItem> _results = new();
+            private readonly SessionStoreTestCallbacks _inner = new();
 
             public TestCallbacks(TaskCompletionSource<IReadOnlyList<TestResultItem>> tcs)
             {
                 _tcs = tcs;
             }
 
-            public void RunStarted(ITestAdaptor testsToRun)
-            {
-            }
+            public void RunStarted(ITestAdaptor testsToRun) => _inner.RunStarted(testsToRun);
+
+            public void TestStarted(ITestAdaptor test) => _inner.TestStarted(test);
+
+            public void TestFinished(ITestResultAdaptor result) => _inner.TestFinished(result);
 
             public void RunFinished(ITestResultAdaptor result)
             {
-                _tcs.TrySetResult(_results);
-            }
-
-            public void TestStarted(ITestAdaptor test)
-            {
-            }
-
-            public void TestFinished(ITestResultAdaptor result)
-            {
-                if (result.HasChildren)
-                {
-                    return;
-                }
-
-                var status = result.TestStatus.ToString();
-                var duration = (float)result.Duration;
-                var message = result.Message ?? "";
-                _results.Add(new TestResultItem(result.Name, status, duration, message));
+                _inner.RunFinished(result);
+                _tcs.TrySetResult(_inner.Results);
             }
         }
     }

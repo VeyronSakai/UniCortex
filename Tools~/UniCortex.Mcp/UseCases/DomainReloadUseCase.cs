@@ -10,9 +10,22 @@ internal static class DomainReloadUseCase
         var response = await httpClient.PostAsync(baseUrl + ApiRoutes.DomainReload, null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
-        // Poll /ping to wait for the server to come back after domain reload.
-        // DomainReloadRetryHandler handles retries during the reload.
-        var pingResponse = await httpClient.GetAsync(baseUrl + ApiRoutes.Ping, cancellationToken);
+        // RequestScriptCompilation() is dispatched asynchronously on the Unity main thread.
+        // Wait briefly so that compilation starts and the server becomes unavailable
+        // before we begin polling /ping.
+        await Task.Delay(1000, cancellationToken);
+
+        await WaitForServerAsync(httpClient, baseUrl, cancellationToken);
+    }
+
+    /// <summary>
+    /// Poll GET /ping until the server responds with a non-empty body.
+    /// HttpRequestHandler handles retries for GET requests during domain reload.
+    /// </summary>
+    internal static async Task WaitForServerAsync(HttpClient httpClient, string baseUrl,
+        CancellationToken cancellationToken)
+    {
+        var pingResponse = await httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}", cancellationToken);
         await pingResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
     }
 }

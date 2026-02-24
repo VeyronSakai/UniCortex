@@ -77,6 +77,7 @@ namespace UniCortex.Editor
             var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher);
             var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter);
             var runTestsHandler = new RunTestsHandler(runTestsUseCase);
+            var testResultHandler = new TestResultHandler();
 
             pingHandler.Register(router);
             playHandler.Register(router);
@@ -86,6 +87,7 @@ namespace UniCortex.Editor
             undoHandler.Register(router);
             redoHandler.Register(router);
             runTestsHandler.Register(router);
+            testResultHandler.Register(router);
         }
 
         private static int FindFreePort()

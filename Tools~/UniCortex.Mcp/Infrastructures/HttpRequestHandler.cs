@@ -9,6 +9,12 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        // Non-idempotent requests (POST, etc.) must not be retried to avoid duplicate side effects.
+        if (request.Method != HttpMethod.Get)
+        {
+            return await base.SendAsync(request, cancellationToken);
+        }
+
         var startTime = DateTime.UtcNow;
         var logged = false;
 
@@ -21,6 +27,7 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
                 // If the domain is reloading, a response with Content-Length 0 may be returned, which will also be considered a failure and will be retried.
                 if (response.Content.Headers.ContentLength is null or 0)
                 {
+                    response.Dispose();
                     throw new HttpRequestException();
                 }
 
@@ -39,6 +46,8 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
                         "Unity Editor is not responding. Waiting for domain reload to complete...");
                     logged = true;
                 }
+
+                await Task.Delay(100, cancellationToken);
             }
         }
     }
