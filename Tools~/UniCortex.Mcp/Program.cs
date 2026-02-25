@@ -14,7 +14,11 @@ builder.Logging.AddConsole(options =>
 
 builder.Services.AddTransient<HttpRequestHandler>();
 builder.Services.AddTransient<IUnityServerUrlProvider, UnityServerUrlProvider>();
-builder.Services.AddHttpClient("UniCortex")
+builder.Services.AddHttpClient("UniCortex", client =>
+    {
+        // Test runs can take several minutes, so increase the default timeout.
+        client.Timeout = TimeSpan.FromMinutes(10);
+    })
     .AddHttpMessageHandler<HttpRequestHandler>();
 
 builder.Services

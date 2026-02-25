@@ -51,7 +51,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
 
             while (true)
             {
-                var statusResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Status, cancellationToken);
+                var statusResponse = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}",
+                    cancellationToken);
                 await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
                 var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
                 var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, _jsonOptions)!;

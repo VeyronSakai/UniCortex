@@ -1,8 +1,11 @@
 using UniCortex.Editor.Handlers.Editor;
+using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
 using UniCortex.Editor.UseCases;
 using UnityEditor;
+using UnityEditor.TestTools.TestRunner.Api;
+using UnityEngine;
 
 namespace UniCortex.Editor
 {
@@ -19,6 +22,8 @@ namespace UniCortex.Editor
 
             s_dispatcher = new MainThreadDispatcher();
             EditorApplication.update += s_dispatcher.OnUpdate;
+
+            ReregisterTestCallbacksIfNeeded();
 
             if (UniCortexSettings.instance.AutoStart)
             {
@@ -73,6 +78,11 @@ namespace UniCortex.Editor
             var redoUseCase = new RedoUseCase(s_dispatcher, undoAdapter);
             var redoHandler = new RedoHandler(redoUseCase);
 
+            var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher);
+            var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter);
+            var runTestsHandler = new RunTestsHandler(runTestsUseCase);
+            var testResultHandler = new TestResultHandler();
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -80,6 +90,8 @@ namespace UniCortex.Editor
             editorStatusHandler.Register(router);
             undoHandler.Register(router);
             redoHandler.Register(router);
+            runTestsHandler.Register(router);
+            testResultHandler.Register(router);
         }
 
         private static int FindFreePort()
@@ -95,6 +107,18 @@ namespace UniCortex.Editor
         private static void OnQuit()
         {
             ServerUrlFile.Delete();
+        }
+
+        private static void ReregisterTestCallbacksIfNeeded()
+        {
+            if (!TestResultStore.IsPending)
+            {
+                return;
+            }
+
+            var api = ScriptableObject.CreateInstance<TestRunnerApi>();
+            api.RegisterCallbacks(new SessionStoreTestCallbacks());
+            Debug.Log("[UniCortex] Re-registered test callbacks after domain reload");
         }
 
         private static void Shutdown()

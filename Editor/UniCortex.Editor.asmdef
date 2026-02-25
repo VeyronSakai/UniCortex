@@ -1,6 +1,10 @@
 {
     "name": "UniCortex.Editor",
     "rootNamespace": "UniCortex.Editor",
+    "references": [
+        "UnityEditor.TestRunner",
+        "UnityEngine.TestRunner"
+    ],
     "includePlatforms": [
         "Editor"
     ]
