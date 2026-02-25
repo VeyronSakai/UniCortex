@@ -48,7 +48,11 @@ namespace UniCortex.Editor.Infrastructures
 
         public void TestFinished(ITestResultAdaptor result)
         {
-            if (result.HasChildren)
+            // HasChildren: skip parent nodes that contain child test results
+            // IsSuite: skip container nodes (assemblies, namespaces, classes, folders, etc.)
+            //          When a nameFilter excludes all tests, suite nodes are reported with
+            //          HasChildren == false, so the IsSuite check is also required.
+            if (result.HasChildren || result.Test.IsSuite)
             {
                 return;
             }
