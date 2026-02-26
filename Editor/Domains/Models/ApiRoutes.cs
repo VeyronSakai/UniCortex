@@ -12,5 +12,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string GameObjectCreate = "/gameobject/create";
         public const string TestsRun = "/tests/run";
         public const string TestsResult = "/tests/result";
+        public const string ConsoleLogs = "/console/logs";
+        public const string ConsoleClear = "/console/clear";
     }
 }
