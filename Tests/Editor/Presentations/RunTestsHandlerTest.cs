@@ -16,11 +16,9 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void HandleRunTests_Returns200WithTestResults()
         {
-            var spy = new SpyTestRunner();
-            spy.SetResults(new List<TestResultItem>
+            var spy = new SpyTestRunner(new List<TestResultItem>
             {
-                new TestResultItem("Test1", "Passed", 0.1f),
-                new TestResultItem("Test2", "Failed", 0.2f, "error"),
+                new("Test1", "Passed", 0.1f), new("Test2", "Failed", 0.2f, "error"),
             });
             var useCase = new RunTestsUseCase(spy);
             var handler = new RunTestsHandler(useCase);
@@ -28,12 +26,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.TestsRun,
-                Body = "{\"testMode\":\"EditMode\",\"nameFilter\":\"\"}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun,
+                "{\"testMode\":\"EditMode\",\"nameFilter\":\"\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -53,12 +47,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.TestsRun,
-                Body = "{}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun, "{}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -76,12 +65,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.TestsRun,
-                Body = ""
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

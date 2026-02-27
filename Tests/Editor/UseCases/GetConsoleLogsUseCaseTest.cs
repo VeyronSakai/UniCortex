@@ -14,12 +14,12 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_ReturnsLogs_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var collector = new SpyConsoleLogCollector();
-            collector.SetLogs(new List<ConsoleLogEntry>
+            var logs = new List<ConsoleLogEntry>
             {
-                new ConsoleLogEntry("msg1", "", "Log", ""),
-                new ConsoleLogEntry("msg2", "", "Warning", ""),
-            });
+                new("msg1", "", "Log", ""), new ConsoleLogEntry("msg2", "", "Warning", ""),
+            };
+
+            var collector = new SpyConsoleLogCollector(logs);
             var useCase = new GetConsoleLogsUseCase(dispatcher, collector);
 
             var result = useCase.ExecuteAsync(50, false, true, true, true, CancellationToken.None)
@@ -34,7 +34,7 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_PassesAllParametersToCollector()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var collector = new SpyConsoleLogCollector();
+            var collector = new SpyConsoleLogCollector(new List<ConsoleLogEntry>());
             var useCase = new GetConsoleLogsUseCase(dispatcher, collector);
 
             useCase.ExecuteAsync(25, true, false, true, false, CancellationToken.None)

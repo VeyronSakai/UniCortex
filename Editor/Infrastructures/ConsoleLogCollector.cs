@@ -40,21 +40,21 @@ namespace UniCortex.Editor.Infrastructures
             s_logEntryType?.GetField("callstackTextStartUTF16");
 
         // LogMessageFlags bit masks
-        private const int kError = 1 << 0;
-        private const int kAssert = 1 << 1;
-        private const int kScriptingError = 1 << 8;
-        private const int kScriptingWarning = 1 << 9;
-        private const int kScriptCompileError = 1 << 11;
-        private const int kScriptCompileWarning = 1 << 12;
-        private const int kScriptingException = 1 << 17;
-        private const int kScriptingAssertion = 1 << 21;
-        private const int kAssetImportError = 1 << 6;
-        private const int kAssetImportWarning = 1 << 7;
+        private const int Error = 1 << 0;
+        private const int Assert = 1 << 1;
+        private const int AssetImportError = 1 << 6;
+        private const int AssetImportWarning = 1 << 7;
+        private const int ScriptingError = 1 << 8;
+        private const int ScriptingWarning = 1 << 9;
+        private const int ScriptCompileError = 1 << 11;
+        private const int ScriptCompileWarning = 1 << 12;
+        private const int ScriptingException = 1 << 17;
+        private const int ScriptingAssertion = 1 << 21;
 
-        private const int ErrorMask = kError | kAssert | kScriptingError | kScriptCompileError |
-                                      kScriptingException | kScriptingAssertion | kAssetImportError;
+        private const int ErrorMask = Error | Assert | ScriptingError | ScriptCompileError |
+                                      ScriptingException | ScriptingAssertion | AssetImportError;
 
-        private const int WarningMask = kScriptingWarning | kScriptCompileWarning | kAssetImportWarning;
+        private const int WarningMask = ScriptingWarning | ScriptCompileWarning | AssetImportWarning;
 
         public List<ConsoleLogEntry> GetLogs(int count, bool includeStackTrace = false,
             bool showLog = true, bool showWarning = true, bool showError = true)
@@ -96,11 +96,12 @@ namespace UniCortex.Editor.Infrastructures
                     var callstackStart = (int)s_callstackStartField.GetValue(entry);
 
                     var logMessage = callstackStart > 0 && callstackStart < message.Length
-                        ? message.Substring(0, callstackStart)
+                        ? message[..callstackStart]
                         : message;
+
                     var stackTrace = includeStackTrace && callstackStart > 0 && callstackStart < message.Length
-                        ? message.Substring(callstackStart)
-                        : "";
+                        ? message[callstackStart..]
+                        : string.Empty;
 
                     result.Add(new ConsoleLogEntry(logMessage, stackTrace, type, ""));
                 }
@@ -117,13 +118,13 @@ namespace UniCortex.Editor.Infrastructures
 
         private static bool ShouldInclude(string type, bool showLog, bool showWarning, bool showError)
         {
-            switch (type)
+            return type switch
             {
-                case "Log": return showLog;
-                case "Warning": return showWarning;
-                case "Error": return showError;
-                default: return true;
-            }
+                "Log" => showLog,
+                "Warning" => showWarning,
+                "Error" => showError,
+                _ => true
+            };
         }
 
         public void Clear()

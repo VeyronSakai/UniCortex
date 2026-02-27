@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Handlers.Console;
@@ -15,14 +16,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleConsoleClear_Returns200WithSuccess()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var collector = new SpyConsoleLogCollector();
+            var collector = new SpyConsoleLogCollector(new List<ConsoleLogEntry>());
             var useCase = new ClearConsoleLogsUseCase(dispatcher, collector);
             var handler = new ConsoleClearHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext { HttpMethod = "POST", Path = ApiRoutes.ConsoleClear };
+            var context = new FakeRequestContext("POST", ApiRoutes.ConsoleClear);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -34,14 +35,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleConsoleClear_CallsClearOnCollector()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var collector = new SpyConsoleLogCollector();
+            var collector = new SpyConsoleLogCollector(new List<ConsoleLogEntry>());
             var useCase = new ClearConsoleLogsUseCase(dispatcher, collector);
             var handler = new ConsoleClearHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext { HttpMethod = "POST", Path = ApiRoutes.ConsoleClear };
+            var context = new FakeRequestContext("POST", ApiRoutes.ConsoleClear);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
