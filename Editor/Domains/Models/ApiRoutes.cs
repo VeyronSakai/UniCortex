@@ -25,5 +25,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string ComponentRemove = "/component/remove";
         public const string ComponentProperties = "/component/properties";
         public const string ComponentSetProperty = "/component/set-property";
+        public const string PrefabCreate = "/prefab/create";
+        public const string PrefabInstantiate = "/prefab/instantiate";
     }
 }
