@@ -1,5 +1,6 @@
 using UniCortex.Editor.Handlers.Console;
 using UniCortex.Editor.Handlers.Editor;
+using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Scene;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Infrastructures;
@@ -104,6 +105,23 @@ namespace UniCortex.Editor
             var getSceneHierarchyUseCase = new GetSceneHierarchyUseCase(s_dispatcher, sceneManagerAdapter);
             var sceneHierarchyHandler = new SceneHierarchyHandler(getSceneHierarchyUseCase);
 
+            var gameObjectOps = new GameObjectOperationsAdapter();
+
+            var findGameObjectsUseCase = new FindGameObjectsUseCase(s_dispatcher, gameObjectOps);
+            var findGameObjectsHandler = new FindGameObjectsHandler(findGameObjectsUseCase);
+
+            var createGameObjectUseCase = new CreateGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var createGameObjectHandler = new CreateGameObjectHandler(createGameObjectUseCase);
+
+            var deleteGameObjectUseCase = new DeleteGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var deleteGameObjectHandler = new DeleteGameObjectHandler(deleteGameObjectUseCase);
+
+            var getGameObjectInfoUseCase = new GetGameObjectInfoUseCase(s_dispatcher, gameObjectOps);
+            var gameObjectInfoHandler = new GameObjectInfoHandler(getGameObjectInfoUseCase);
+
+            var modifyGameObjectUseCase = new ModifyGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var modifyGameObjectHandler = new ModifyGameObjectHandler(modifyGameObjectUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -118,6 +136,11 @@ namespace UniCortex.Editor
             openSceneHandler.Register(router);
             saveSceneHandler.Register(router);
             sceneHierarchyHandler.Register(router);
+            findGameObjectsHandler.Register(router);
+            createGameObjectHandler.Register(router);
+            deleteGameObjectHandler.Register(router);
+            gameObjectInfoHandler.Register(router);
+            modifyGameObjectHandler.Register(router);
         }
 
         private static int FindFreePort()

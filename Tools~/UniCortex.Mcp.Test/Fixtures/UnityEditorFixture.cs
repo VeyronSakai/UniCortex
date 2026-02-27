@@ -4,6 +4,7 @@ using UniCortex.Editor.Domains.Models;
 using UniCortex.Mcp.Infrastructures;
 using ConsoleToolsClass = UniCortex.Mcp.Tools.ConsoleTools;
 using EditorToolsClass = UniCortex.Mcp.Tools.EditorTools;
+using GameObjectToolsClass = UniCortex.Mcp.Tools.GameObjectTools;
 using SceneToolsClass = UniCortex.Mcp.Tools.SceneTools;
 using TestToolsClass = UniCortex.Mcp.Tools.TestTools;
 
@@ -15,15 +16,18 @@ public sealed class UnityEditorFixture
     public TestToolsClass TestTools { get; }
     public ConsoleToolsClass ConsoleTools { get; }
     public SceneToolsClass SceneTools { get; }
+    public GameObjectToolsClass GameObjectTools { get; }
     public string BaseUrl { get; }
 
     private UnityEditorFixture(EditorToolsClass editorTools, TestToolsClass testTools,
-        ConsoleToolsClass consoleTools, SceneToolsClass sceneTools, string baseUrl)
+        ConsoleToolsClass consoleTools, SceneToolsClass sceneTools, GameObjectToolsClass gameObjectTools,
+        string baseUrl)
     {
         EditorTools = editorTools;
         TestTools = testTools;
         ConsoleTools = consoleTools;
         SceneTools = sceneTools;
+        GameObjectTools = gameObjectTools;
         BaseUrl = baseUrl;
     }
 
@@ -50,7 +54,8 @@ public sealed class UnityEditorFixture
         var testTools = new TestToolsClass(httpClientFactory, urlProvider);
         var consoleTools = new ConsoleToolsClass(httpClientFactory, urlProvider);
         var sceneTools = new SceneToolsClass(httpClientFactory, urlProvider);
+        var gameObjectTools = new GameObjectToolsClass(httpClientFactory, urlProvider);
 
-        return new UnityEditorFixture(editorTools, testTools, consoleTools, sceneTools, baseUrl);
+        return new UnityEditorFixture(editorTools, testTools, consoleTools, sceneTools, gameObjectTools, baseUrl);
     }
 }

@@ -9,7 +9,11 @@ namespace UniCortex.Editor.Domains.Models
         public const string DomainReload = "/editor/domain-reload";
         public const string Undo = "/editor/undo";
         public const string Redo = "/editor/redo";
+        public const string GameObjectFind = "/gameobject/find";
         public const string GameObjectCreate = "/gameobject/create";
+        public const string GameObjectDelete = "/gameobject/delete";
+        public const string GameObjectInfo = "/gameobject/info";
+        public const string GameObjectModify = "/gameobject/modify";
         public const string TestsRun = "/tests/run";
         public const string TestsResult = "/tests/result";
         public const string ConsoleLogs = "/console/logs";
