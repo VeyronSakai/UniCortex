@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Mcp.Infrastructures;
+using ConsoleToolsClass = UniCortex.Mcp.Tools.ConsoleTools;
 using EditorToolsClass = UniCortex.Mcp.Tools.EditorTools;
 using TestToolsClass = UniCortex.Mcp.Tools.TestTools;
 
@@ -11,12 +12,15 @@ public sealed class UnityEditorFixture
 {
     public EditorToolsClass EditorTools { get; }
     public TestToolsClass TestTools { get; }
+    public ConsoleToolsClass ConsoleTools { get; }
     public string BaseUrl { get; }
 
-    private UnityEditorFixture(EditorToolsClass editorTools, TestToolsClass testTools, string baseUrl)
+    private UnityEditorFixture(EditorToolsClass editorTools, TestToolsClass testTools,
+        ConsoleToolsClass consoleTools, string baseUrl)
     {
         EditorTools = editorTools;
         TestTools = testTools;
+        ConsoleTools = consoleTools;
         BaseUrl = baseUrl;
     }
 
@@ -41,7 +45,8 @@ public sealed class UnityEditorFixture
         var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
         var editorTools = new EditorToolsClass(httpClientFactory, urlProvider);
         var testTools = new TestToolsClass(httpClientFactory, urlProvider);
+        var consoleTools = new ConsoleToolsClass(httpClientFactory, urlProvider);
 
-        return new UnityEditorFixture(editorTools, testTools, baseUrl);
+        return new UnityEditorFixture(editorTools, testTools, consoleTools, baseUrl);
     }
 }

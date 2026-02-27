@@ -11,11 +11,11 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string LastTestMode { get; private set; }
         public string LastNameFilter { get; private set; }
 
-        private IReadOnlyList<TestResultItem> _results = new List<TestResultItem>();
+        private readonly IReadOnlyList<TestResultItem> _results;
 
-        public void SetResults(IReadOnlyList<TestResultItem> results)
+        public SpyTestRunner(IReadOnlyList<TestResultItem> results = null)
         {
-            _results = results;
+            _results = results ?? new List<TestResultItem>();
         }
 
         public Task<IReadOnlyList<TestResultItem>> RunTestsAsync(string testMode, string nameFilter,

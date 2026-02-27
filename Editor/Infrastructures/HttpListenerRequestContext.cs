@@ -19,6 +19,11 @@ namespace UniCortex.Editor.Infrastructures
 
         public string Path => _context.Request.Url.AbsolutePath;
 
+        public string GetQueryParameter(string name)
+        {
+            return _context.Request.QueryString[name];
+        }
+
         public async Task<string> ReadBodyAsync()
         {
             using var reader = new StreamReader(_context.Request.InputStream, Encoding.UTF8);

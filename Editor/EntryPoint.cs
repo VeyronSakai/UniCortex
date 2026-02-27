@@ -1,3 +1,4 @@
+using UniCortex.Editor.Handlers.Console;
 using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Infrastructures;
@@ -83,6 +84,14 @@ namespace UniCortex.Editor
             var runTestsHandler = new RunTestsHandler(runTestsUseCase);
             var testResultHandler = new TestResultHandler();
 
+            var consoleLogCollector = new ConsoleLogCollector();
+
+            var getConsoleLogsUseCase = new GetConsoleLogsUseCase(s_dispatcher, consoleLogCollector);
+            var consoleLogsHandler = new ConsoleLogsHandler(getConsoleLogsUseCase);
+
+            var clearConsoleLogsUseCase = new ClearConsoleLogsUseCase(s_dispatcher, consoleLogCollector);
+            var consoleClearHandler = new ConsoleClearHandler(clearConsoleLogsUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -92,6 +101,8 @@ namespace UniCortex.Editor
             redoHandler.Register(router);
             runTestsHandler.Register(router);
             testResultHandler.Register(router);
+            consoleLogsHandler.Register(router);
+            consoleClearHandler.Register(router);
         }
 
         private static int FindFreePort()

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
 
@@ -16,12 +17,32 @@ namespace UniCortex.Editor.Tests.TestDoubles
     // safest approach.
     internal sealed class FakeRequestContext : IRequestContext
     {
-        public string HttpMethod { get; set; } = "GET";
-        public string Path { get; set; } = "/";
-        public string Body { get; set; } = "";
+        public string HttpMethod { get; }
+        public string Path { get; }
+        public string Body { get; }
 
         public int ResponseStatusCode { get; private set; }
         public string ResponseBody { get; private set; }
+
+        public FakeRequestContext(string httpMethod, string path, string body = "")
+        {
+            HttpMethod = httpMethod;
+            Path = path;
+            Body = body;
+        }
+
+        private readonly Dictionary<string, string> _queryParameters = new();
+
+        public void SetQueryParameter(string name, string value)
+        {
+            _queryParameters[name] = value;
+        }
+
+        public string GetQueryParameter(string name)
+        {
+            _queryParameters.TryGetValue(name, out var value);
+            return value;
+        }
 
         public Task<string> ReadBodyAsync()
         {
