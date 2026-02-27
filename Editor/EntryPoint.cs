@@ -1,3 +1,4 @@
+using UniCortex.Editor.Handlers.ComponentOps;
 using UniCortex.Editor.Handlers.Console;
 using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.GameObject;
@@ -122,6 +123,20 @@ namespace UniCortex.Editor
             var modifyGameObjectUseCase = new ModifyGameObjectUseCase(s_dispatcher, gameObjectOps);
             var modifyGameObjectHandler = new ModifyGameObjectHandler(modifyGameObjectUseCase);
 
+            var componentOps = new ComponentOperationsAdapter();
+
+            var addComponentUseCase = new AddComponentUseCase(s_dispatcher, componentOps);
+            var addComponentHandler = new AddComponentHandler(addComponentUseCase);
+
+            var removeComponentUseCase = new RemoveComponentUseCase(s_dispatcher, componentOps);
+            var removeComponentHandler = new RemoveComponentHandler(removeComponentUseCase);
+
+            var getComponentPropertiesUseCase = new GetComponentPropertiesUseCase(s_dispatcher, componentOps);
+            var componentPropertiesHandler = new ComponentPropertiesHandler(getComponentPropertiesUseCase);
+
+            var setComponentPropertyUseCase = new SetComponentPropertyUseCase(s_dispatcher, componentOps);
+            var setComponentPropertyHandler = new SetComponentPropertyHandler(setComponentPropertyUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -141,6 +156,10 @@ namespace UniCortex.Editor
             deleteGameObjectHandler.Register(router);
             gameObjectInfoHandler.Register(router);
             modifyGameObjectHandler.Register(router);
+            addComponentHandler.Register(router);
+            removeComponentHandler.Register(router);
+            componentPropertiesHandler.Register(router);
+            setComponentPropertyHandler.Register(router);
         }
 
         private static int FindFreePort()
