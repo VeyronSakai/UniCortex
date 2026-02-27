@@ -20,6 +20,9 @@ public class SceneToolsTest
     {
         var sceneTools = _fixture.SceneTools;
 
+        var openResult = await sceneTools.OpenScene("Assets/Scenes/SampleScene.unity", CancellationToken.None);
+        Assert.That(openResult.IsError, Is.Not.True);
+
         var result = await sceneTools.GetSceneHierarchy(CancellationToken.None);
 
         Assert.That(result.IsError, Is.Not.True);
@@ -30,9 +33,25 @@ public class SceneToolsTest
     }
 
     [Test]
+    public async Task OpenScene_ReturnsSuccess()
+    {
+        var sceneTools = _fixture.SceneTools;
+
+        var result = await sceneTools.OpenScene("Assets/Scenes/SampleScene.unity", CancellationToken.None);
+
+        Assert.That(result.IsError, Is.Not.True);
+        Assert.That(result.Content, Has.Count.EqualTo(1));
+        var text = ((TextContentBlock)result.Content[0]).Text;
+        Assert.That(text, Does.Contain("Scene opened"));
+    }
+
+    [Test]
     public async Task SaveScene_ReturnsSuccess()
     {
         var sceneTools = _fixture.SceneTools;
+
+        var openResult = await sceneTools.OpenScene("Assets/Scenes/SampleScene.unity", CancellationToken.None);
+        Assert.That(openResult.IsError, Is.Not.True);
 
         var result = await sceneTools.SaveScene(CancellationToken.None);
 
