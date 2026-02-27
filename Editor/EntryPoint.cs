@@ -6,6 +6,7 @@ using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Prefab;
 using UniCortex.Editor.Handlers.Scene;
 using UniCortex.Editor.Handlers.Tests;
+using UniCortex.Editor.Handlers.Utility;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
 using UniCortex.Editor.UseCases;
@@ -161,6 +162,14 @@ namespace UniCortex.Editor
             var setAssetPropertyUseCase = new SetAssetPropertyUseCase(s_dispatcher, assetOps);
             var setAssetPropertyHandler = new SetAssetPropertyHandler(setAssetPropertyUseCase);
 
+            var utilityOps = new UtilityOperationsAdapter();
+
+            var executeMenuItemUseCase = new ExecuteMenuItemUseCase(s_dispatcher, utilityOps);
+            var executeMenuItemHandler = new ExecuteMenuItemHandler(executeMenuItemUseCase);
+
+            var captureScreenshotUseCase = new CaptureScreenshotUseCase(s_dispatcher, utilityOps);
+            var screenshotHandler = new ScreenshotHandler(captureScreenshotUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -190,6 +199,8 @@ namespace UniCortex.Editor
             createAssetHandler.Register(router);
             assetInfoHandler.Register(router);
             setAssetPropertyHandler.Register(router);
+            executeMenuItemHandler.Register(router);
+            screenshotHandler.Register(router);
         }
 
         private static int FindFreePort()

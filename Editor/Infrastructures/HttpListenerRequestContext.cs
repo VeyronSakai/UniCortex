@@ -58,5 +58,33 @@ namespace UniCortex.Editor.Infrastructures
                 }
             }
         }
+
+        public async Task WriteBinaryResponseAsync(int statusCode, string contentType, byte[] data)
+        {
+            var response = _context.Response;
+            response.StatusCode = statusCode;
+            response.ContentType = contentType;
+            response.ContentLength64 = data.Length;
+
+            try
+            {
+                await response.OutputStream.WriteAsync(data, 0, data.Length);
+            }
+            catch
+            {
+                // client may have disconnected during write
+            }
+            finally
+            {
+                try
+                {
+                    response.OutputStream.Close();
+                }
+                catch
+                {
+                    // client may have already disconnected
+                }
+            }
+        }
     }
 }

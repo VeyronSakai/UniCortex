@@ -10,6 +10,7 @@ using GameObjectToolsClass = UniCortex.Mcp.Tools.GameObjectTools;
 using PrefabToolsClass = UniCortex.Mcp.Tools.PrefabTools;
 using SceneToolsClass = UniCortex.Mcp.Tools.SceneTools;
 using TestToolsClass = UniCortex.Mcp.Tools.TestTools;
+using UtilityToolsClass = UniCortex.Mcp.Tools.UtilityTools;
 
 namespace UniCortex.Mcp.Test.Fixtures;
 
@@ -23,12 +24,13 @@ public sealed class UnityEditorFixture
     public ComponentToolsClass ComponentTools { get; }
     public PrefabToolsClass PrefabTools { get; }
     public AssetToolsClass AssetTools { get; }
+    public UtilityToolsClass UtilityTools { get; }
     public string BaseUrl { get; }
 
     private UnityEditorFixture(EditorToolsClass editorTools, TestToolsClass testTools,
         ConsoleToolsClass consoleTools, SceneToolsClass sceneTools, GameObjectToolsClass gameObjectTools,
         ComponentToolsClass componentTools, PrefabToolsClass prefabTools, AssetToolsClass assetTools,
-        string baseUrl)
+        UtilityToolsClass utilityTools, string baseUrl)
     {
         EditorTools = editorTools;
         TestTools = testTools;
@@ -38,6 +40,7 @@ public sealed class UnityEditorFixture
         ComponentTools = componentTools;
         PrefabTools = prefabTools;
         AssetTools = assetTools;
+        UtilityTools = utilityTools;
         BaseUrl = baseUrl;
     }
 
@@ -68,8 +71,9 @@ public sealed class UnityEditorFixture
         var componentTools = new ComponentToolsClass(httpClientFactory, urlProvider);
         var prefabTools = new PrefabToolsClass(httpClientFactory, urlProvider);
         var assetTools = new AssetToolsClass(httpClientFactory, urlProvider);
+        var utilityTools = new UtilityToolsClass(httpClientFactory, urlProvider);
 
         return new UnityEditorFixture(editorTools, testTools, consoleTools, sceneTools, gameObjectTools,
-            componentTools, prefabTools, assetTools, baseUrl);
+            componentTools, prefabTools, assetTools, utilityTools, baseUrl);
     }
 }
