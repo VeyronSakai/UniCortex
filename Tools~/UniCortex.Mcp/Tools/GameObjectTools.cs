@@ -84,8 +84,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
         }
     }
 
-    [McpServerTool(ReadOnly = false),
-     Description("Delete a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
+    [McpServerTool(ReadOnly = false), Description("Remove a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
     public async Task<CallToolResult> DeleteGameObject(
         [Description("The instance ID of the GameObject to delete.")]
         int instanceId,
