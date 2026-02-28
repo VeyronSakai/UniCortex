@@ -47,7 +47,9 @@ namespace UniCortex.Editor.Infrastructures
                 children.Add(BuildNode(transform.GetChild(i)));
             }
 
-            return new GameObjectNode(go.name, go.GetInstanceID(), go.activeSelf, components, children);
+            var isLocked = (go.hideFlags & HideFlags.NotEditable) != 0;
+            return new GameObjectNode(go.name, go.GetInstanceID(), go.activeSelf, go.tag, go.layer, go.isStatic,
+                isLocked, components, children);
         }
     }
 }
