@@ -57,7 +57,7 @@ namespace UniCortex.Editor.Infrastructures
                 properties.Add(new SerializedPropertyEntry(
                     iterator.propertyPath,
                     iterator.propertyType.ToString(),
-                    GetPropertyValueAsString(iterator)));
+                    SerializedPropertyValueConverter.ToValueString(iterator)));
             }
 
             return new AssetInfoResponse(assetPath, asset.GetType().Name, properties);
@@ -79,81 +79,9 @@ namespace UniCortex.Editor.Infrastructures
                 throw new ArgumentException($"Property '{propertyPath}' not found on asset at '{assetPath}'.");
             }
 
-            SetPropertyValue(property, value);
+            SerializedPropertyValueParser.ApplyValue(property, value);
             serializedObject.ApplyModifiedProperties();
             AssetDatabase.SaveAssets();
-        }
-
-        private static string GetPropertyValueAsString(SerializedProperty property)
-        {
-            switch (property.propertyType)
-            {
-                case SerializedPropertyType.Integer:
-                    return property.intValue.ToString();
-                case SerializedPropertyType.Boolean:
-                    return property.boolValue.ToString().ToLower();
-                case SerializedPropertyType.Float:
-                    return property.floatValue.ToString();
-                case SerializedPropertyType.String:
-                    return property.stringValue ?? "";
-                case SerializedPropertyType.Enum:
-                    return property.enumValueIndex >= 0 && property.enumValueIndex < property.enumDisplayNames.Length
-                        ? property.enumDisplayNames[property.enumValueIndex]
-                        : property.enumValueIndex.ToString();
-                case SerializedPropertyType.Color:
-                    var c = property.colorValue;
-                    return $"({c.r}, {c.g}, {c.b}, {c.a})";
-                case SerializedPropertyType.ObjectReference:
-                    return property.objectReferenceValue != null
-                        ? property.objectReferenceValue.name
-                        : "null";
-                default:
-                    return property.propertyType.ToString();
-            }
-        }
-
-        private static void SetPropertyValue(SerializedProperty property, string value)
-        {
-            switch (property.propertyType)
-            {
-                case SerializedPropertyType.Integer:
-                    if (int.TryParse(value, out var intVal))
-                        property.intValue = intVal;
-                    break;
-                case SerializedPropertyType.Float:
-                    if (float.TryParse(value, out var floatVal))
-                        property.floatValue = floatVal;
-                    break;
-                case SerializedPropertyType.Boolean:
-                    property.boolValue = value == "true" || value == "True" || value == "1";
-                    break;
-                case SerializedPropertyType.String:
-                    property.stringValue = value;
-                    break;
-                case SerializedPropertyType.Enum:
-                    if (int.TryParse(value, out var enumIdx))
-                    {
-                        property.enumValueIndex = enumIdx;
-                    }
-                    else
-                    {
-                        var names = property.enumDisplayNames;
-                        for (var i = 0; i < names.Length; i++)
-                        {
-                            if (string.Equals(names[i], value, StringComparison.OrdinalIgnoreCase))
-                            {
-                                property.enumValueIndex = i;
-                                break;
-                            }
-                        }
-                    }
-
-                    break;
-                default:
-                    if (float.TryParse(value, out var fallbackFloat))
-                        property.floatValue = fallbackFloat;
-                    break;
-            }
         }
 
         private static Type ResolveScriptableObjectType(string typeName)
