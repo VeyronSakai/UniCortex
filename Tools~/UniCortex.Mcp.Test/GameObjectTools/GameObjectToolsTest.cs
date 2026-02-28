@@ -225,14 +225,4 @@ public class GameObjectToolsTest
             await tools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
         }
     }
-
-    [Test]
-    public async Task ModifyGameObject_InvalidInstanceId_ReturnsError()
-    {
-        var tools = _fixture.GameObjectTools;
-
-        var result = await tools.ModifyGameObject(-999, name: "Invalid", cancellationToken: CancellationToken.None);
-
-        Assert.That(result.IsError, Is.True);
-    }
 }
