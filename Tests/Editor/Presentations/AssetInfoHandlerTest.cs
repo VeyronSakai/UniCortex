@@ -30,11 +30,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "GET",
-                Path = ApiRoutes.AssetInfo
-            };
+            var context = new FakeRequestContext("GET", ApiRoutes.AssetInfo);
             context.SetQueryParameter("assetPath", "Assets/Test.mat");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -55,11 +51,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "GET",
-                Path = ApiRoutes.AssetInfo
-            };
+            var context = new FakeRequestContext("GET", ApiRoutes.AssetInfo);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

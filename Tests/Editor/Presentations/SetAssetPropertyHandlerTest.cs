@@ -22,12 +22,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.AssetSetProperty,
-                Body = "{\"assetPath\":\"Assets/Test.mat\",\"propertyPath\":\"m_Name\",\"value\":\"NewName\"}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.AssetSetProperty,
+                "{\"assetPath\":\"Assets/Test.mat\",\"propertyPath\":\"m_Name\",\"value\":\"NewName\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -47,12 +43,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.AssetSetProperty,
-                Body = ""
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.AssetSetProperty);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -71,12 +62,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.AssetSetProperty,
-                Body = "{\"assetPath\":\"Assets/Test.mat\"}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.AssetSetProperty,
+                "{\"assetPath\":\"Assets/Test.mat\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

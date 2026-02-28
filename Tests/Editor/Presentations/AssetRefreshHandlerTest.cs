@@ -22,12 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.AssetRefresh,
-                Body = ""
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.AssetRefresh);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
