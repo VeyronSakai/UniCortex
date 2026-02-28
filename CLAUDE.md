@@ -23,6 +23,11 @@ Unity Editor を外部から REST API + MCP で操作するツールキット。
 - DTO に Unity 依存（using UnityEngine 等）を入れないこと（MCP サーバーと共有するため）
 - 機能を実装・変更した際は、MCP サーバー側（`Tools~/UniCortex.Mcp.Test/`）と Unity Editor 側（`Tests~/`）の両方にテストコードを書くこと
 - コード内のコメントは英語で記述すること
+- コードを変更した際は、作業完了前に必ず以下の全てを実行し、問題がないことを確認すること:
+  1. MCP サーバー側のビルド: `dotnet build Tools~/UniCortex.Mcp/`
+  2. MCP サーバー側のテスト: `dotnet test Tools~/UniCortex.Mcp.Test/`
+  3. Unity Editor 側のコンパイルエラーチェック: Unity MCP の `get_console_logs`（error のみ）で確認
+  4. Unity Editor 側のテスト: Unity MCP の `run_tests` で実行
 - MCP サーバーの設定例（`.mcp.json`）:
 
   ```json

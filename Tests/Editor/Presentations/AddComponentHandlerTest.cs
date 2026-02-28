@@ -22,12 +22,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.ComponentAdd,
-                Body = "{\"instanceId\":123,\"componentType\":\"Rigidbody\"}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.ComponentAdd,
+                "{\"instanceId\":123,\"componentType\":\"Rigidbody\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -48,12 +44,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.ComponentAdd,
-                Body = ""
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.ComponentAdd, "");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -71,12 +62,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.ComponentAdd,
-                Body = "{\"instanceId\":123}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.ComponentAdd,
+                "{\"instanceId\":123}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

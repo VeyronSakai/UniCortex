@@ -24,7 +24,7 @@ public class ComponentToolsTest
         Assert.That(createResult.IsError, Is.Not.True);
 
         // Find the created object to get its instanceId
-        var findResult = await _fixture.GameObjectTools.FindGameObjects(name: "ComponentTestObj",
+        var findResult = await _fixture.GameObjectTools.GetGameObjects(query: "ComponentTestObj",
             cancellationToken: CancellationToken.None);
         Assert.That(findResult.IsError, Is.Not.True);
         var findText = ((TextContentBlock)findResult.Content[0]).Text;
