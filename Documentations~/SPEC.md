@@ -443,8 +443,7 @@ Unity Console の最新ログエントリを返す。
     {
       "message": "NullReferenceException: ...",
       "stackTrace": "at MyScript.Update() ...",
-      "type": "Error",
-      "timestamp": "2026-02-23T10:30:00"
+      "type": "Error"
     }
   ]
 }
