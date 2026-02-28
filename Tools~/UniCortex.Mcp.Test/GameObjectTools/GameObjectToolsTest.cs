@@ -65,4 +65,174 @@ public class GameObjectToolsTest
         var deleteText = ((TextContentBlock)deleteResult.Content[0]).Text;
         Assert.That(deleteText, Does.Contain("deleted"));
     }
+
+    [Test]
+    public async Task ModifyGameObject_ChangeName_ReturnsSuccess()
+    {
+        var tools = _fixture.GameObjectTools;
+        var ct = CancellationToken.None;
+
+        var createResult = await tools.CreateGameObject("ModifyNameTest", cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
+
+        try
+        {
+            var result = await tools.ModifyGameObject(createResponse.instanceId, name: "RenamedObj",
+                cancellationToken: ct);
+
+            Assert.That(result.IsError, Is.Not.True);
+            var text = ((TextContentBlock)result.Content[0]).Text;
+            Assert.That(text, Does.Contain("modified successfully"));
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail($"Unexpected exception: {ex}");
+        }
+        finally
+        {
+            await tools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+        }
+    }
+
+    [Test]
+    public async Task ModifyGameObject_ChangeActiveSelf_ReturnsSuccess()
+    {
+        var tools = _fixture.GameObjectTools;
+        var ct = CancellationToken.None;
+
+        var createResult = await tools.CreateGameObject("ModifyActiveTest", cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
+
+        try
+        {
+            var result = await tools.ModifyGameObject(createResponse.instanceId, activeSelf: false,
+                cancellationToken: ct);
+
+            Assert.That(result.IsError, Is.Not.True);
+            var text = ((TextContentBlock)result.Content[0]).Text;
+            Assert.That(text, Does.Contain("modified successfully"));
+        }
+        finally
+        {
+            await tools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+        }
+    }
+
+    [Test]
+    public async Task ModifyGameObject_ChangeTag_ReturnsSuccess()
+    {
+        var tools = _fixture.GameObjectTools;
+        var ct = CancellationToken.None;
+
+        var createResult = await tools.CreateGameObject("ModifyTagTest", cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
+
+        try
+        {
+            var result = await tools.ModifyGameObject(createResponse.instanceId, tag: "EditorOnly",
+                cancellationToken: ct);
+
+            Assert.That(result.IsError, Is.Not.True);
+            var text = ((TextContentBlock)result.Content[0]).Text;
+            Assert.That(text, Does.Contain("modified successfully"));
+        }
+        finally
+        {
+            await tools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+        }
+    }
+
+    [Test]
+    public async Task ModifyGameObject_ChangeLayer_ReturnsSuccess()
+    {
+        var tools = _fixture.GameObjectTools;
+        var ct = CancellationToken.None;
+
+        var createResult = await tools.CreateGameObject("ModifyLayerTest", cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
+
+        try
+        {
+            var result = await tools.ModifyGameObject(createResponse.instanceId, layer: 1,
+                cancellationToken: ct);
+
+            Assert.That(result.IsError, Is.Not.True);
+            var text = ((TextContentBlock)result.Content[0]).Text;
+            Assert.That(text, Does.Contain("modified successfully"));
+        }
+        finally
+        {
+            await tools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+        }
+    }
+
+    [Test]
+    public async Task ModifyGameObject_ChangeParent_ReturnsSuccess()
+    {
+        var tools = _fixture.GameObjectTools;
+        var ct = CancellationToken.None;
+
+        var createParentResult = await tools.CreateGameObject("ParentObj", cancellationToken: ct);
+        var parentResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createParentResult.Content[0]).Text, s_jsonOptions)!;
+
+        var createChildResult = await tools.CreateGameObject("ChildObj", cancellationToken: ct);
+        var childResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createChildResult.Content[0]).Text, s_jsonOptions)!;
+
+        try
+        {
+            var result = await tools.ModifyGameObject(childResponse.instanceId,
+                parentInstanceId: parentResponse.instanceId, cancellationToken: ct);
+
+            Assert.That(result.IsError, Is.Not.True);
+            var text = ((TextContentBlock)result.Content[0]).Text;
+            Assert.That(text, Does.Contain("modified successfully"));
+        }
+        finally
+        {
+            await tools.DeleteGameObject(childResponse.instanceId, cancellationToken: ct);
+            await tools.DeleteGameObject(parentResponse.instanceId, cancellationToken: ct);
+        }
+    }
+
+    [Test]
+    public async Task ModifyGameObject_MultipleProperties_ReturnsSuccess()
+    {
+        var tools = _fixture.GameObjectTools;
+        var ct = CancellationToken.None;
+
+        var createResult = await tools.CreateGameObject("ModifyMultiTest", cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
+
+        try
+        {
+            var result = await tools.ModifyGameObject(createResponse.instanceId,
+                name: "MultiModified", activeSelf: false, tag: "EditorOnly", layer: 1,
+                cancellationToken: ct);
+
+            Assert.That(result.IsError, Is.Not.True);
+            var text = ((TextContentBlock)result.Content[0]).Text;
+            Assert.That(text, Does.Contain("modified successfully"));
+        }
+        finally
+        {
+            await tools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+        }
+    }
+
+    [Test]
+    public async Task ModifyGameObject_InvalidInstanceId_ReturnsError()
+    {
+        var tools = _fixture.GameObjectTools;
+
+        var result = await tools.ModifyGameObject(-999, name: "Invalid", cancellationToken: CancellationToken.None);
+
+        Assert.That(result.IsError, Is.True);
+    }
 }
