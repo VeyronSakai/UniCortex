@@ -59,7 +59,7 @@ namespace UniCortex.Editor.Infrastructures
         {
             var components = go.GetComponents<Component>()
                 .Where(c => c != null)
-                .Select(c => c.GetType().Name)
+                .Select(c => c.GetType().FullName)
                 .ToList();
 
             var isLocked = (go.hideFlags & HideFlags.NotEditable) != 0;

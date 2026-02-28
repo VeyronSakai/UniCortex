@@ -12,7 +12,7 @@ namespace UniCortex.Editor.Infrastructures
             var go = transform.gameObject;
             var components = go.GetComponents<Component>()
                 .Where(c => c != null)
-                .Select(c => c.GetType().Name)
+                .Select(c => c.GetType().FullName)
                 .ToList();
 
             var children = new List<GameObjectNode>();

@@ -196,7 +196,7 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
       "layer": 0,
       "isStatic": false,
       "isLocked": false,
-      "components": ["Transform", "Camera", "AudioListener"],
+      "components": ["UnityEngine.Transform", "UnityEngine.Camera", "UnityEngine.AudioListener"],
       "children": []
     },
     {
@@ -207,7 +207,7 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
       "layer": 5,
       "isStatic": false,
       "isLocked": false,
-      "components": ["RectTransform", "Canvas"],
+      "components": ["UnityEngine.RectTransform", "UnityEngine.Canvas"],
       "children": [
         {
           "name": "Button",
@@ -217,7 +217,7 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
           "layer": 5,
           "isStatic": false,
           "isLocked": false,
-          "components": ["RectTransform", "Image", "Button"],
+          "components": ["UnityEngine.RectTransform", "UnityEngine.UI.Image", "UnityEngine.UI.Button"],
           "children": []
         }
       ]
@@ -263,7 +263,7 @@ Unity Search (`SearchService` API) の `scene` プロバイダに委譲。Unity 
       "layer": 0,
       "isStatic": false,
       "isLocked": false,
-      "components": ["Transform", "CharacterController"]
+      "components": ["UnityEngine.Transform", "UnityEngine.CharacterController"]
     }
   ]
 }
@@ -317,31 +317,31 @@ GameObject のプロパティを変更する。指定したフィールドのみ
 #### POST `/component/add`
 GameObject にコンポーネントを追加する。`Undo.AddComponent` で Undo 対応。
 
-リクエストボディ: `{"instanceId": 12345, "componentType": "Rigidbody"}`
+リクエストボディ: `{"instanceId": 12345, "componentType": "UnityEngine.Rigidbody"}`
 
 レスポンス: `{"success": true}`
 
 #### POST `/component/remove`
 GameObject からコンポーネントを削除する。`Undo.DestroyObjectImmediate` で Undo 対応。
 
-リクエストボディ: `{"instanceId": 12345, "componentType": "Rigidbody", "componentIndex": 0}`
+リクエストボディ: `{"instanceId": 12345, "componentType": "UnityEngine.Rigidbody", "componentIndex": 0}`
 
 - `componentIndex`: 同じ型のコンポーネントが複数ある場合のインデックス（デフォルト: 0）
 
 レスポンス: `{"success": true}`
 
-#### GET `/component/properties?instanceId=12345&componentType=Transform`
+#### GET `/component/properties?instanceId=12345&componentType=UnityEngine.Transform`
 指定コンポーネントのシリアライズ済みプロパティを返す。
 
 クエリパラメータ:
 - `instanceId`: 対象 GameObject の instanceId（必須）
-- `componentType`: コンポーネント型名（必須）
+- `componentType`: namespace を含む完全修飾コンポーネント型名（必須）
 - `componentIndex`: 同型が複数ある場合のインデックス（任意、デフォルト: 0）
 
 レスポンス:
 ```json
 {
-  "componentType": "Transform",
+  "componentType": "UnityEngine.Transform",
   "properties": [
     {"path": "m_LocalPosition", "type": "Vector3", "value": {"x": 0, "y": 1, "z": 0}},
     {"path": "m_LocalRotation", "type": "Quaternion", "value": {"x": 0, "y": 0, "z": 0, "w": 1}},
@@ -357,7 +357,7 @@ GameObject からコンポーネントを削除する。`Undo.DestroyObjectImmed
 ```json
 {
   "instanceId": 12345,
-  "componentType": "Transform",
+  "componentType": "UnityEngine.Transform",
   "propertyPath": "m_LocalPosition.x",
   "value": "1.5"
 }

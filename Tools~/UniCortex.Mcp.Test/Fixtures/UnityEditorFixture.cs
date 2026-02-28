@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Mcp.Infrastructures;
+using ComponentToolsClass = UniCortex.Mcp.Tools.ComponentTools;
 using ConsoleToolsClass = UniCortex.Mcp.Tools.ConsoleTools;
 using EditorToolsClass = UniCortex.Mcp.Tools.EditorTools;
 using GameObjectToolsClass = UniCortex.Mcp.Tools.GameObjectTools;
@@ -17,17 +18,19 @@ public sealed class UnityEditorFixture
     public ConsoleToolsClass ConsoleTools { get; }
     public SceneToolsClass SceneTools { get; }
     public GameObjectToolsClass GameObjectTools { get; }
+    public ComponentToolsClass ComponentTools { get; }
     public string BaseUrl { get; }
 
     private UnityEditorFixture(EditorToolsClass editorTools, TestToolsClass testTools,
         ConsoleToolsClass consoleTools, SceneToolsClass sceneTools, GameObjectToolsClass gameObjectTools,
-        string baseUrl)
+        ComponentToolsClass componentTools, string baseUrl)
     {
         EditorTools = editorTools;
         TestTools = testTools;
         ConsoleTools = consoleTools;
         SceneTools = sceneTools;
         GameObjectTools = gameObjectTools;
+        ComponentTools = componentTools;
         BaseUrl = baseUrl;
     }
 
@@ -55,7 +58,9 @@ public sealed class UnityEditorFixture
         var consoleTools = new ConsoleToolsClass(httpClientFactory, urlProvider);
         var sceneTools = new SceneToolsClass(httpClientFactory, urlProvider);
         var gameObjectTools = new GameObjectToolsClass(httpClientFactory, urlProvider);
+        var componentTools = new ComponentToolsClass(httpClientFactory, urlProvider);
 
-        return new UnityEditorFixture(editorTools, testTools, consoleTools, sceneTools, gameObjectTools, baseUrl);
+        return new UnityEditorFixture(editorTools, testTools, consoleTools, sceneTools, gameObjectTools,
+            componentTools, baseUrl);
     }
 }
