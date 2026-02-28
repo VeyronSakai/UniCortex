@@ -192,6 +192,10 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
       "name": "Main Camera",
       "instanceId": 10200,
       "activeSelf": true,
+      "tag": "MainCamera",
+      "layer": 0,
+      "isStatic": false,
+      "isLocked": false,
       "components": ["Transform", "Camera", "AudioListener"],
       "children": []
     },
@@ -199,12 +203,20 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
       "name": "Canvas",
       "instanceId": 10300,
       "activeSelf": true,
+      "tag": "Untagged",
+      "layer": 5,
+      "isStatic": false,
+      "isLocked": false,
       "components": ["RectTransform", "Canvas"],
       "children": [
         {
           "name": "Button",
           "instanceId": 10400,
           "activeSelf": true,
+          "tag": "Untagged",
+          "layer": 5,
+          "isStatic": false,
+          "isLocked": false,
           "components": ["RectTransform", "Image", "Button"],
           "children": []
         }
@@ -216,19 +228,43 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
 
 ### GameObject
 
-#### GET `/gameobject/find`
-シーン内の GameObject を検索する。
+#### GET `/gameobjects?query=...`
+シーン内の GameObject を検索する。Unity Search スタイルのクエリ構文をサポート。
 
-クエリパラメータ（いずれか 1 つ以上指定）:
-- `name`: 名前で検索（部分一致）
-- `tag`: タグで検索（完全一致）
-- `componentType`: 指定コンポーネントを持つ GameObject を検索
+クエリパラメータ:
+- `query`: 検索クエリ文字列（任意。省略時は全 GameObject を返す）
+
+Unity Search (`SearchService` API) の `scene` プロバイダに委譲。Unity Search のサブフィルター構文をそのままサポートする。
+
+主なクエリ構文:
+
+| トークン | 例 | 説明 |
+|---------|---|------|
+| プレーンテキスト | `Main Camera` | 名前の部分一致 |
+| `t:` | `t:Camera` | コンポーネント型 |
+| `tag:` | `tag:resp` | タグ（部分一致） |
+| `tag=` | `tag=Player` | タグ（完全一致） |
+| `id:` | `id:12345` | instanceId 指定 |
+| `layer:` | `layer:5` | レイヤー番号 |
+| `path:` | `path:Canvas/Button` | 階層パス |
+| `is:` | `is:root` / `is:child` / `is:leaf` / `is:static` | 状態フィルタ |
+
+※ クエリ構文の詳細は Unity 公式の Search 機能ドキュメントを参照。
 
 レスポンス:
 ```json
 {
   "gameObjects": [
-    {"name": "Player", "instanceId": 10500, "activeSelf": true}
+    {
+      "name": "Player",
+      "instanceId": 10500,
+      "activeSelf": true,
+      "tag": "Untagged",
+      "layer": 0,
+      "isStatic": false,
+      "isLocked": false,
+      "components": ["Transform", "CharacterController"]
+    }
   ]
 }
 ```
@@ -239,14 +275,11 @@ GameObject を作成する。`Undo.RegisterCreatedObjectUndo` で Undo 対応。
 リクエストボディ:
 ```json
 {
-  "name": "MyCube",
-  "primitive": "Cube"
+  "name": "MyObject"
 }
 ```
 
 - `name`: 作成する GameObject の名前（必須）
-- `primitive`: `PrimitiveType` の名前。省略時は空の GameObject を作成
-  - 有効値: `Cube`, `Sphere`, `Capsule`, `Cylinder`, `Plane`, `Quad`
 
 レスポンス:
 ```json
@@ -259,26 +292,6 @@ GameObject を削除する。`Undo.DestroyObjectImmediate` で Undo 対応。
 リクエストボディ: `{"instanceId": 12345}`
 
 レスポンス: `{"success": true}`
-
-#### GET `/gameobject/info?instanceId=12345`
-指定した GameObject の基本情報とコンポーネント型一覧を返す（軽量）。詳細なプロパティは `/component/properties` で取得する。
-
-レスポンス:
-```json
-{
-  "name": "MyCube",
-  "instanceId": 12345,
-  "activeSelf": true,
-  "tag": "Untagged",
-  "layer": 0,
-  "components": [
-    {"type": "Transform", "index": 0},
-    {"type": "MeshFilter", "index": 1},
-    {"type": "MeshRenderer", "index": 2},
-    {"type": "BoxCollider", "index": 3}
-  ]
-}
-```
 
 #### POST `/gameobject/modify`
 GameObject のプロパティを変更する。指定したフィールドのみ更新。`Undo.RecordObject` で Undo 対応。
@@ -443,8 +456,7 @@ Unity Console の最新ログエントリを返す。
     {
       "message": "NullReferenceException: ...",
       "stackTrace": "at MyScript.Update() ...",
-      "type": "Error",
-      "timestamp": "2026-02-23T10:30:00"
+      "type": "Error"
     }
   ]
 }
@@ -543,7 +555,7 @@ Game View のスクリーンショットを取得する。`ScreenCapture.Capture
   3. どちらもなければエラーで終了
 - ログは stderr に出力（stdout は MCP プロトコル用）
 
-### MCP ツール（全 29 ツール）
+### MCP ツール（全 28 ツール）
 
 AI エージェントが混乱なく使えるよう、各ツールは明確に異なる操作に対応し重複を排除している。
 各ツールは `[McpServerToolType]` クラス内に `[McpServerTool]` メソッドとして定義。
@@ -570,14 +582,13 @@ AI エージェントが混乱なく使えるよう、各ツールは明確に�
 | `save_scene` | POST `/scene/save` | 開いているシーンを保存 |
 | `get_scene_hierarchy` | GET `/scene/hierarchy` | シーン内の GameObject 階層をツリーで取得 |
 
-#### GameObject（5）
+#### GameObject（4）
 
 | ツール | API | 説明 |
 |--------|-----|------|
-| `find_gameobjects` | GET `/gameobject/find` | 名前・タグ・コンポーネント型でシーン内検索 |
+| `get_game_objects` | GET `/gameobjects` | クエリ構文でシーン内検索（名前・タグ・コンポーネント型・instanceId・レイヤー・パス・状態） |
 | `create_gameobject` | POST `/gameobject/create` | GameObject を作成（プリミティブ指定可） |
 | `delete_gameobject` | POST `/gameobject/delete` | GameObject を削除 |
-| `get_gameobject_info` | GET `/gameobject/info` | GameObject の基本情報とコンポーネント型一覧を取得 |
 | `modify_gameobject` | POST `/gameobject/modify` | 名前変更・有効/無効・親子関係・タグ・レイヤーの変更 |
 
 #### コンポーネント（4）
@@ -624,7 +635,7 @@ AI エージェントが混乱なく使えるよう、各ツールは明確に�
 
 **採用理由:**
 - `remove_component` — `add_component` との対称性。Undo 対応により安全に削除可能
-- `get_gameobject_info` と `get_component_properties` の分離 — 前者は軽量な概要（型一覧のみ）、後者は特定コンポーネントの詳細。大量のプロパティを一度に返すことを防ぐ
+- `get_game_objects` と `get_component_properties` の分離 — 前者は GameObject の概要（型一覧のみ）、後者は特定コンポーネントの詳細。大量のプロパティを一度に返すことを防ぐ
 - `execute_menu_item` — 専用ツールでカバーできないエッジケースの汎用エスケープハッチ
 - `capture_screenshot` — マルチモーダル AI エージェントが視覚的に状態を確認するために必要
 - `get_asset_info` / `set_asset_property` — Material・ScriptableObject 操作を汎用的にカバー。専用の Material ツールやシェーダーツールは不要

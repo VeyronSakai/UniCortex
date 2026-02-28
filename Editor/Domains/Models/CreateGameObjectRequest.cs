@@ -6,6 +6,5 @@ namespace UniCortex.Editor.Domains.Models
     public class CreateGameObjectRequest
     {
         public string name;
-        public string primitive;
     }
 }
