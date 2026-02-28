@@ -1,4 +1,4 @@
-using UniCortex.Editor.Handlers.ComponentOps;
+using UniCortex.Editor.Handlers.Component;
 using UniCortex.Editor.Handlers.Console;
 using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.GameObject;

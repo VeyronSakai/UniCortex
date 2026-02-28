@@ -1,5 +1,7 @@
+using System.Text.Json;
 using NUnit.Framework;
 using ModelContextProtocol.Protocol;
+using UniCortex.Editor.Domains.Models;
 using UniCortex.Mcp.Test.Fixtures;
 
 namespace UniCortex.Mcp.Test.ComponentTools;
@@ -7,6 +9,7 @@ namespace UniCortex.Mcp.Test.ComponentTools;
 [TestFixture]
 public class ComponentToolsTest
 {
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
@@ -16,36 +19,118 @@ public class ComponentToolsTest
     }
 
     [Test]
+    public async Task AddComponent_ReturnsSuccess()
+    {
+        var ct = CancellationToken.None;
+
+        var createResult = await _fixture.GameObjectTools.CreateGameObject("AddComponentTestObj",
+            cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
+
+        try
+        {
+            var result = await _fixture.ComponentTools.AddComponent(
+                instanceId: createResponse.instanceId,
+                componentType: "UnityEngine.Rigidbody",
+                cancellationToken: ct);
+
+            Assert.That(result.IsError, Is.Not.True);
+            var text = ((TextContentBlock)result.Content[0]).Text;
+            Assert.That(text, Does.Contain("added successfully"));
+        }
+        finally
+        {
+            await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+        }
+    }
+
+    [Test]
+    public async Task RemoveComponent_ReturnsSuccess()
+    {
+        var ct = CancellationToken.None;
+
+        var createResult = await _fixture.GameObjectTools.CreateGameObject("RemoveComponentTestObj",
+            cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
+
+        try
+        {
+            await _fixture.ComponentTools.AddComponent(
+                instanceId: createResponse.instanceId,
+                componentType: "UnityEngine.Rigidbody",
+                cancellationToken: ct);
+
+            var result = await _fixture.ComponentTools.RemoveComponent(
+                instanceId: createResponse.instanceId,
+                componentType: "UnityEngine.Rigidbody",
+                cancellationToken: ct);
+
+            Assert.That(result.IsError, Is.Not.True);
+            var text = ((TextContentBlock)result.Content[0]).Text;
+            Assert.That(text, Does.Contain("removed successfully"));
+        }
+        finally
+        {
+            await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+        }
+    }
+
+    [Test]
     public async Task GetComponentProperties_ReturnsJsonWithProperties()
     {
-        // First create a GameObject to have a known target
-        var createResult = await _fixture.GameObjectTools.CreateGameObject("ComponentTestObj",
-            cancellationToken: CancellationToken.None);
-        Assert.That(createResult.IsError, Is.Not.True);
+        var ct = CancellationToken.None;
 
-        // Find the created object to get its instanceId
-        var findResult = await _fixture.GameObjectTools.GetGameObjects(query: "ComponentTestObj",
-            cancellationToken: CancellationToken.None);
-        Assert.That(findResult.IsError, Is.Not.True);
-        var findText = ((TextContentBlock)findResult.Content[0]).Text;
-        Assert.That(findText, Does.Contain("ComponentTestObj"));
+        var createResult = await _fixture.GameObjectTools.CreateGameObject("GetPropertiesTestObj",
+            cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
 
-        // Get Transform properties (every GameObject has a Transform)
-        // We need to extract instanceId from the find result — for integration tests,
-        // we just verify the tool returns a valid response structure
-        var tools = _fixture.ComponentTools;
+        try
+        {
+            var result = await _fixture.ComponentTools.GetComponentProperties(
+                instanceId: createResponse.instanceId,
+                componentType: "UnityEngine.Transform",
+                cancellationToken: ct);
 
-        // Use a known instanceId from the find result - parse it
-        // Since this is an integration test that needs a running Unity Editor,
-        // we verify the tool handles the request correctly
-        var result = await tools.GetComponentProperties(
-            instanceId: 1, // This may not exist, but we verify the tool doesn't crash
-            componentType: "Transform",
-            cancellationToken: CancellationToken.None);
+            Assert.That(result.IsError, Is.Not.True);
+            var text = ((TextContentBlock)result.Content[0]).Text;
+            Assert.That(text, Does.Contain("UnityEngine.Transform"));
+            Assert.That(text, Does.Contain("m_LocalPosition"));
+        }
+        finally
+        {
+            await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+        }
+    }
 
-        // The result may be an error (instanceId 1 may not exist) or success
-        // Either way, the tool should return a well-formed CallToolResult
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Content, Has.Count.EqualTo(1));
+    [Test]
+    public async Task SetComponentProperty_ReturnsSuccess()
+    {
+        var ct = CancellationToken.None;
+
+        var createResult = await _fixture.GameObjectTools.CreateGameObject("SetPropertyTestObj",
+            cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
+            ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
+
+        try
+        {
+            var result = await _fixture.ComponentTools.SetComponentProperty(
+                instanceId: createResponse.instanceId,
+                componentType: "UnityEngine.Transform",
+                propertyPath: "m_LocalPosition.x",
+                value: "1.5",
+                cancellationToken: ct);
+
+            Assert.That(result.IsError, Is.Not.True);
+            var text = ((TextContentBlock)result.Content[0]).Text;
+            Assert.That(text, Does.Contain("Property 'm_LocalPosition.x' set to '1.5' successfully."));
+        }
+        finally
+        {
+            await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+        }
     }
 }

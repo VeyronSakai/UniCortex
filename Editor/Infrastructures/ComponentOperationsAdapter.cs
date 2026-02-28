@@ -36,7 +36,7 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var components = go.GetComponents<Component>()
-                .Where(c => c != null && c.GetType().Name == componentType)
+                .Where(c => c != null && c.GetType().FullName == componentType)
                 .ToArray();
 
             if (components.Length == 0)
@@ -63,7 +63,7 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var components = go.GetComponents<Component>()
-                .Where(c => c != null && c.GetType().Name == componentType)
+                .Where(c => c != null && c.GetType().FullName == componentType)
                 .ToArray();
 
             if (components.Length == 0)
@@ -105,7 +105,7 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var component = go.GetComponents<Component>()
-                .FirstOrDefault(c => c != null && c.GetType().Name == componentType);
+                .FirstOrDefault(c => c != null && c.GetType().FullName == componentType);
 
             if (component == null)
             {
@@ -217,30 +217,15 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        private static Type ResolveComponentType(string typeName)
+        private static Type ResolveComponentType(string fullTypeName)
         {
-            // Try common Unity namespaces first
-            var type = Type.GetType($"UnityEngine.{typeName}, UnityEngine.CoreModule");
-            if (type != null) return type;
-
-            type = Type.GetType($"UnityEngine.{typeName}, UnityEngine.PhysicsModule");
-            if (type != null) return type;
-
-            type = Type.GetType($"UnityEngine.{typeName}, UnityEngine.UIModule");
-            if (type != null) return type;
-
-            type = Type.GetType($"UnityEngine.{typeName}, UnityEngine");
-            if (type != null) return type;
-
-            // Iterate all loaded assemblies
+            // Search all loaded assemblies by full namespace-qualified name
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (var t in assembly.GetTypes())
+                var type = assembly.GetType(fullTypeName);
+                if (type != null && typeof(Component).IsAssignableFrom(type))
                 {
-                    if (t.Name == typeName && typeof(Component).IsAssignableFrom(t))
-                    {
-                        return t;
-                    }
+                    return type;
                 }
             }
 
