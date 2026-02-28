@@ -17,7 +17,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var collector =
-                new SpyConsoleLogCollector(new List<ConsoleLogEntry> { new("test message", "", "Log", ""), });
+                new SpyConsoleLogCollector(new List<ConsoleLogEntry> { new("test message", "", "Log"), });
             var useCase = new GetConsoleLogsUseCase(dispatcher, collector);
             var handler = new ConsoleLogsHandler(useCase);
 

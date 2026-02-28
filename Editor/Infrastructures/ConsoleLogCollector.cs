@@ -103,7 +103,7 @@ namespace UniCortex.Editor.Infrastructures
                         ? message[callstackStart..]
                         : string.Empty;
 
-                    result.Add(new ConsoleLogEntry(logMessage, stackTrace, type, ""));
+                    result.Add(new ConsoleLogEntry(logMessage, stackTrace, type));
                 }
 
                 // Reverse to restore chronological order
