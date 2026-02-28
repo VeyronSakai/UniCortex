@@ -106,19 +106,9 @@ namespace UniCortex.Editor.Infrastructures
                 .ToList();
         }
 
-        public CreateGameObjectResponse Create(string name, string primitive)
+        public CreateGameObjectResponse Create(string name)
         {
-            GameObject go;
-            if (!string.IsNullOrEmpty(primitive) && Enum.TryParse<PrimitiveType>(primitive, true, out var pt))
-            {
-                go = GameObject.CreatePrimitive(pt);
-                go.name = name;
-            }
-            else
-            {
-                go = new GameObject(name);
-            }
-
+            var go = new GameObject(name);
             Undo.RegisterCreatedObjectUndo(go, "Create GameObject");
             return new CreateGameObjectResponse(go.name, go.GetInstanceID());
         }

@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.GameObjectCreate, "{\"name\":\"MyCube\",\"primitive\":\"Cube\"}");
+            var context = new FakeRequestContext("POST", ApiRoutes.GameObjectCreate, "{\"name\":\"MyCube\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

@@ -272,14 +272,11 @@ GameObject を作成する。`Undo.RegisterCreatedObjectUndo` で Undo 対応。
 リクエストボディ:
 ```json
 {
-  "name": "MyCube",
-  "primitive": "Cube"
+  "name": "MyObject"
 }
 ```
 
 - `name`: 作成する GameObject の名前（必須）
-- `primitive`: `PrimitiveType` の名前。省略時は空の GameObject を作成
-  - 有効値: `Cube`, `Sphere`, `Capsule`, `Cylinder`, `Plane`, `Quad`
 
 レスポンス:
 ```json

@@ -12,7 +12,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
 
         public int CreateCallCount { get; private set; }
         public string LastCreateName { get; private set; }
-        public string LastCreatePrimitive { get; private set; }
         public CreateGameObjectResponse CreateResult { get; set; } = new CreateGameObjectResponse("New", 1);
 
         public int DeleteCallCount { get; private set; }
@@ -33,11 +32,10 @@ namespace UniCortex.Editor.Tests.TestDoubles
             return GetResult;
         }
 
-        public CreateGameObjectResponse Create(string name, string primitive)
+        public CreateGameObjectResponse Create(string name)
         {
             CreateCallCount++;
             LastCreateName = name;
-            LastCreatePrimitive = primitive;
             return CreateResult;
         }
 

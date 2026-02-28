@@ -55,12 +55,10 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     }
 
     [McpServerTool(ReadOnly = false),
-     Description("Create a new GameObject in the current scene. Supports primitive types (Cube, Sphere, etc.)."),
+     Description("Create a new empty GameObject in the current scene."),
      UsedImplicitly]
     public async Task<CallToolResult> CreateGameObject(
         [Description("Name of the GameObject to create.")] string name,
-        [Description("Primitive type: Cube, Sphere, Capsule, Cylinder, Plane, Quad. Omit for empty GameObject.")]
-        string? primitive = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -68,7 +66,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
             var baseUrl = urlProvider.GetUrl();
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-            var request = new CreateGameObjectRequest { name = name, primitive = primitive ?? "" };
+            var request = new CreateGameObjectRequest { name = name };
             var body = JsonSerializer.Serialize(request, s_jsonOptions);
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
