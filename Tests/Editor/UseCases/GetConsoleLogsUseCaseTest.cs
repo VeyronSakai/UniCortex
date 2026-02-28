@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var dispatcher = new FakeMainThreadDispatcher();
             var logs = new List<ConsoleLogEntry>
             {
-                new("msg1", "", "Log", ""), new ConsoleLogEntry("msg2", "", "Warning", ""),
+                new("msg1", "", "Log"), new ConsoleLogEntry("msg2", "", "Warning"),
             };
 
             var collector = new SpyConsoleLogCollector(logs);
