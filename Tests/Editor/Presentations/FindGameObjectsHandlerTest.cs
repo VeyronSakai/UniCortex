@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext { HttpMethod = "GET", Path = ApiRoutes.GameObjectFind };
+            var context = new FakeRequestContext("GET", ApiRoutes.GameObjectFind);
             context.SetQueryParameter("name", "Player");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
