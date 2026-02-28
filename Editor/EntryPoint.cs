@@ -2,6 +2,7 @@ using UniCortex.Editor.Handlers.Component;
 using UniCortex.Editor.Handlers.Console;
 using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.GameObject;
+using UniCortex.Editor.Handlers.Prefab;
 using UniCortex.Editor.Handlers.Scene;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Infrastructures;
@@ -140,6 +141,14 @@ namespace UniCortex.Editor
             var setComponentPropertyUseCase = new SetComponentPropertyUseCase(s_dispatcher, componentOps);
             var setComponentPropertyHandler = new SetComponentPropertyHandler(setComponentPropertyUseCase);
 
+            var prefabOps = new PrefabOperationsAdapter();
+
+            var createPrefabUseCase = new CreatePrefabUseCase(s_dispatcher, prefabOps);
+            var createPrefabHandler = new CreatePrefabHandler(createPrefabUseCase);
+
+            var instantiatePrefabUseCase = new InstantiatePrefabUseCase(s_dispatcher, prefabOps);
+            var instantiatePrefabHandler = new InstantiatePrefabHandler(instantiatePrefabUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -162,6 +171,8 @@ namespace UniCortex.Editor
             removeComponentHandler.Register(router);
             componentPropertiesHandler.Register(router);
             setComponentPropertyHandler.Register(router);
+            createPrefabHandler.Register(router);
+            instantiatePrefabHandler.Register(router);
         }
 
         private static int FindFreePort()
