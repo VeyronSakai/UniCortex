@@ -132,7 +132,12 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
             var baseUrl = urlProvider.GetUrl();
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-            // Build JSON with only the provided fields
+            // Use Dictionary instead of the shared ModifyGameObjectRequest DTO because
+            // Unity's JsonUtility does not support Nullable<T>. The shared DTO uses
+            // non-nullable value types (bool, int), so serializing it would always
+            // include default values (false, 0) for unset fields. The Unity-side handler
+            // detects field presence via string matching, which would misinterpret these
+            // defaults as intentionally provided values.
             var fields = new Dictionary<string, object> { ["instanceId"] = instanceId };
             if (name != null) fields["name"] = name;
             if (activeSelf.HasValue) fields["activeSelf"] = activeSelf.Value;
