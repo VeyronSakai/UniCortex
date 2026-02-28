@@ -1,5 +1,6 @@
 using UniCortex.Editor.Handlers.Console;
 using UniCortex.Editor.Handlers.Editor;
+using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Scene;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Infrastructures;
@@ -110,6 +111,20 @@ namespace UniCortex.Editor
             var getSceneHierarchyUseCase = new GetSceneHierarchyUseCase(s_dispatcher, sceneManagerAdapter);
             var sceneHierarchyHandler = new SceneHierarchyHandler(getSceneHierarchyUseCase);
 
+            var gameObjectOps = new GameObjectOperationsAdapter();
+
+            var getGameObjectsUseCase = new GetGameObjectsUseCase(s_dispatcher, gameObjectOps);
+            var getGameObjectsHandler = new GetGameObjectsHandler(getGameObjectsUseCase);
+
+            var createGameObjectUseCase = new CreateGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var createGameObjectHandler = new CreateGameObjectHandler(createGameObjectUseCase);
+
+            var deleteGameObjectUseCase = new DeleteGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var deleteGameObjectHandler = new DeleteGameObjectHandler(deleteGameObjectUseCase);
+
+            var modifyGameObjectUseCase = new ModifyGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var modifyGameObjectHandler = new ModifyGameObjectHandler(modifyGameObjectUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -124,6 +139,10 @@ namespace UniCortex.Editor
             openSceneHandler.Register(router);
             saveSceneHandler.Register(router);
             sceneHierarchyHandler.Register(router);
+            getGameObjectsHandler.Register(router);
+            createGameObjectHandler.Register(router);
+            deleteGameObjectHandler.Register(router);
+            modifyGameObjectHandler.Register(router);
         }
 
         private static int FindFreePort()
