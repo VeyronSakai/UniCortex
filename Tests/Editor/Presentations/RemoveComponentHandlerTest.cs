@@ -1,10 +1,10 @@
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Editor.Handlers.ComponentOps;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using NUnit.Framework;
+using UniCortex.Editor.Handlers.Component;
 
 namespace UniCortex.Editor.Tests.Presentations
 {
@@ -22,19 +22,15 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.ComponentRemove,
-                Body = "{\"instanceId\":456,\"componentType\":\"Rigidbody\",\"componentIndex\":0}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.ComponentRemove,
+                "{\"instanceId\":456,\"componentType\":\"UnityEngine.Rigidbody\",\"componentIndex\":0}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(200, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(456, ops.LastRemoveComponentInstanceId);
-            Assert.AreEqual("Rigidbody", ops.LastRemoveComponentType);
+            Assert.AreEqual("UnityEngine.Rigidbody", ops.LastRemoveComponentType);
             Assert.AreEqual(0, ops.LastRemoveComponentIndex);
         }
 
@@ -49,12 +45,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.ComponentRemove,
-                Body = ""
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.ComponentRemove, "");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -72,12 +63,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.ComponentRemove,
-                Body = "{\"instanceId\":456}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.ComponentRemove,
+                "{\"instanceId\":456}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

@@ -36,15 +36,15 @@ public class ConsoleTools(IHttpClientFactory httpClientFactory, IUnityServerUrlP
 
             var queryParams = new List<string>();
             if (count.HasValue) queryParams.Add($"count={count.Value}");
-            if (stackTrace.HasValue) queryParams.Add($"stackTrace={stackTrace.Value.ToString().ToLower()}");
-            if (log.HasValue) queryParams.Add($"log={log.Value.ToString().ToLower()}");
-            if (warning.HasValue) queryParams.Add($"warning={warning.Value.ToString().ToLower()}");
-            if (error.HasValue) queryParams.Add($"error={error.Value.ToString().ToLower()}");
+            if (stackTrace.HasValue) queryParams.Add($"stackTrace={stackTrace.Value.ToString().ToLowerInvariant()}");
+            if (log.HasValue) queryParams.Add($"log={log.Value.ToString().ToLowerInvariant()}");
+            if (warning.HasValue) queryParams.Add($"warning={warning.Value.ToString().ToLowerInvariant()}");
+            if (error.HasValue) queryParams.Add($"error={error.Value.ToString().ToLowerInvariant()}");
 
             var url = $"{baseUrl}{ApiRoutes.ConsoleLogs}";
             if (queryParams.Count > 0)
             {
-                url += "?" + string.Join("&", queryParams);
+                url = $"{url}?{string.Join("&", queryParams)}";
             }
 
             var response = await _httpClient.GetAsync(url, cancellationToken);

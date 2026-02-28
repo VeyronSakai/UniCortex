@@ -16,11 +16,11 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<CreateGameObjectResponse> ExecuteAsync(string name, string primitive,
+        public async Task<CreateGameObjectResponse> ExecuteAsync(string name,
             CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.Create(name, primitive), cancellationToken);
+                () => _operations.Create(name), cancellationToken);
         }
     }
 }

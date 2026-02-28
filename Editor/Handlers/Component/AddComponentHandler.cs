@@ -5,20 +5,20 @@ using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
 using UnityEngine;
 
-namespace UniCortex.Editor.Handlers.ComponentOps
+namespace UniCortex.Editor.Handlers.Component
 {
-    internal sealed class RemoveComponentHandler
+    internal sealed class AddComponentHandler
     {
-        private readonly RemoveComponentUseCase _useCase;
+        private readonly AddComponentUseCase _useCase;
 
-        public RemoveComponentHandler(RemoveComponentUseCase useCase)
+        public AddComponentHandler(AddComponentUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.ComponentRemove, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.ComponentAdd, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -32,7 +32,7 @@ namespace UniCortex.Editor.Handlers.ComponentOps
                 return;
             }
 
-            var request = JsonUtility.FromJson<RemoveComponentRequest>(body);
+            var request = JsonUtility.FromJson<AddComponentRequest>(body);
 
             if (request.instanceId == 0)
             {
@@ -48,9 +48,8 @@ namespace UniCortex.Editor.Handlers.ComponentOps
                 return;
             }
 
-            await _useCase.ExecuteAsync(request.instanceId, request.componentType, request.componentIndex,
-                cancellationToken);
-            var json = JsonUtility.ToJson(new RemoveComponentResponse(true));
+            await _useCase.ExecuteAsync(request.instanceId, request.componentType, cancellationToken);
+            var json = JsonUtility.ToJson(new AddComponentResponse(true));
             await context.WriteResponseAsync(200, json);
         }
     }

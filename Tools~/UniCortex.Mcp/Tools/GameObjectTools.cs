@@ -18,14 +18,18 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
 
     [McpServerTool(ReadOnly = true),
-     Description("Find GameObjects in the current scene by name, tag, or component type."), UsedImplicitly]
-    public async Task<CallToolResult> FindGameObjects(
-        [Description("Name to search for (partial match, case-insensitive).")]
-        string? name = null,
-        [Description("Tag to search for (exact match).")]
-        string? tag = null,
-        [Description("Component type name to filter by.")]
-        string? componentType = null,
+     Description(
+         "Find GameObjects in the current scene by name, tag, or component type. " +
+         "Supports Unity Search style query syntax: plain text for name (partial match), " +
+         "t:Type for component type, tag:partial or tag=exact for tag, id:N for instance ID, " +
+         "layer:N for layer, path:A/B for hierarchy path, is:root/child/leaf/static for state filters. " +
+         "Multiple tokens can be combined: 'Camera t:Camera layer:0'."),
+     UsedImplicitly]
+    public async Task<CallToolResult> GetGameObjects(
+        [Description(
+            "Search query. Examples: 'Main Camera', 't:Camera', 'tag=Player', 'id:12345', 'is:root', 'path:Canvas/Button'. " +
+            "Multiple tokens can be combined: 'Camera t:Camera layer:0'.")]
+        string? query = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -33,14 +37,11 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
             var baseUrl = urlProvider.GetUrl();
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-            var queryParams = new List<string>();
-            if (!string.IsNullOrEmpty(name)) queryParams.Add($"name={Uri.EscapeDataString(name)}");
-            if (!string.IsNullOrEmpty(tag)) queryParams.Add($"tag={Uri.EscapeDataString(tag)}");
-            if (!string.IsNullOrEmpty(componentType))
-                queryParams.Add($"componentType={Uri.EscapeDataString(componentType)}");
-
-            var url = $"{baseUrl}{ApiRoutes.GameObjectFind}";
-            if (queryParams.Count > 0) url += "?" + string.Join("&", queryParams);
+            var url = $"{baseUrl}{ApiRoutes.GameObjects}";
+            if (!string.IsNullOrEmpty(query))
+            {
+                url += $"?query={Uri.EscapeDataString(query)}";
+            }
 
             var response = await _httpClient.GetAsync(url, cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
@@ -55,12 +56,10 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     }
 
     [McpServerTool(ReadOnly = false),
-     Description("Create a new GameObject in the current scene. Supports primitive types (Cube, Sphere, etc.)."),
+     Description("Create a new empty GameObject in the current scene."),
      UsedImplicitly]
     public async Task<CallToolResult> CreateGameObject(
         [Description("Name of the GameObject to create.")] string name,
-        [Description("Primitive type: Cube, Sphere, Capsule, Cylinder, Plane, Quad. Omit for empty GameObject.")]
-        string? primitive = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -68,7 +67,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
             var baseUrl = urlProvider.GetUrl();
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-            var request = new CreateGameObjectRequest { name = name, primitive = primitive ?? "" };
+            var request = new CreateGameObjectRequest { name = name };
             var body = JsonSerializer.Serialize(request, s_jsonOptions);
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
@@ -84,8 +83,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
         }
     }
 
-    [McpServerTool(ReadOnly = false),
-     Description("Delete a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
+    [McpServerTool(ReadOnly = false), Description("Remove a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
     public async Task<CallToolResult> DeleteGameObject(
         [Description("The instance ID of the GameObject to delete.")]
         int instanceId,
@@ -114,31 +112,6 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
         }
     }
 
-    [McpServerTool(ReadOnly = true),
-     Description("Get detailed information about a GameObject including its components."), UsedImplicitly]
-    public async Task<CallToolResult> GetGameObjectInfo(
-        [Description("The instance ID of the GameObject.")]
-        int instanceId,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var url = $"{baseUrl}{ApiRoutes.GameObjectInfo}?instanceId={instanceId}";
-            var response = await _httpClient.GetAsync(url, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-
-            return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
-        }
-        catch (Exception ex)
-        {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
-        }
-    }
-
     [McpServerTool(ReadOnly = false),
      Description(
          "Modify a GameObject's properties (name, active state, tag, layer, parent). Only specified fields are changed."),
@@ -159,7 +132,12 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
             var baseUrl = urlProvider.GetUrl();
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-            // Build JSON with only the provided fields
+            // Use Dictionary instead of the shared ModifyGameObjectRequest DTO because
+            // Unity's JsonUtility does not support Nullable<T>. The shared DTO uses
+            // non-nullable value types (bool, int), so serializing it would always
+            // include default values (false, 0) for unset fields. The Unity-side handler
+            // detects field presence via string matching, which would misinterpret these
+            // defaults as intentionally provided values.
             var fields = new Dictionary<string, object> { ["instanceId"] = instanceId };
             if (name != null) fields["name"] = name;
             if (activeSelf.HasValue) fields["activeSelf"] = activeSelf.Value;

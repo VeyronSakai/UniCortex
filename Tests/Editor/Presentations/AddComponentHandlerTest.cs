@@ -1,10 +1,10 @@
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Editor.Handlers.ComponentOps;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using NUnit.Framework;
+using UniCortex.Editor.Handlers.Component;
 
 namespace UniCortex.Editor.Tests.Presentations
 {
@@ -22,19 +22,15 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.ComponentAdd,
-                Body = "{\"instanceId\":123,\"componentType\":\"Rigidbody\"}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.ComponentAdd,
+                "{\"instanceId\":123,\"componentType\":\"UnityEngine.Rigidbody\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(200, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(123, ops.LastAddComponentInstanceId);
-            Assert.AreEqual("Rigidbody", ops.LastAddComponentType);
+            Assert.AreEqual("UnityEngine.Rigidbody", ops.LastAddComponentType);
         }
 
         [Test]
@@ -48,12 +44,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.ComponentAdd,
-                Body = ""
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.ComponentAdd, "");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -71,12 +62,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.ComponentAdd,
-                Body = "{\"instanceId\":123}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.ComponentAdd,
+                "{\"instanceId\":123}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
