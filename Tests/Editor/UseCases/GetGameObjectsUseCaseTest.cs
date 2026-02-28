@@ -8,25 +8,26 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.UseCases
 {
     [TestFixture]
-    internal sealed class FindGameObjectsUseCaseTest
+    internal sealed class GetGameObjectsUseCaseTest
     {
         [Test]
         public void ExecuteAsync_ReturnsResults_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyGameObjectOperations();
-            ops.FindResult = new List<GameObjectBasicInfo>
+            ops.GetResult = new List<GameObjectData>
             {
-                new GameObjectBasicInfo("Player", 100, true)
+                new GameObjectData("Player", 100, true, "Untagged", 0, false, false,
+                    new List<string> { "Transform" }, new List<GameObjectData>())
             };
-            var useCase = new FindGameObjectsUseCase(dispatcher, ops);
+            var useCase = new GetGameObjectsUseCase(dispatcher, ops);
 
-            var result = useCase.ExecuteAsync("Player", null, null, CancellationToken.None)
+            var result = useCase.ExecuteAsync("Player", CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(1, result.Count);
             Assert.AreEqual("Player", result[0].name);
-            Assert.AreEqual("Player", ops.LastFindName);
+            Assert.AreEqual("Player", ops.LastGetQuery);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
     }

@@ -10,31 +10,32 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class FindGameObjectsHandlerTest
+    internal sealed class GetGameObjectsHandlerTest
     {
         [Test]
-        public void HandleFind_Returns200_WithResults()
+        public void HandleGet_Returns200_WithResults()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyGameObjectOperations();
-            ops.FindResult = new List<GameObjectBasicInfo>
+            ops.GetResult = new List<GameObjectData>
             {
-                new GameObjectBasicInfo("Player", 100, true)
+                new GameObjectData("Player", 100, true, "Untagged", 0, false, false,
+                    new List<string> { "Transform" }, new List<GameObjectData>())
             };
-            var useCase = new FindGameObjectsUseCase(dispatcher, ops);
-            var handler = new FindGameObjectsHandler(useCase);
+            var useCase = new GetGameObjectsUseCase(dispatcher, ops);
+            var handler = new GetGameObjectsHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("GET", ApiRoutes.GameObjectFind);
-            context.SetQueryParameter("name", "Player");
+            var context = new FakeRequestContext("GET", ApiRoutes.GameObjects);
+            context.SetQueryParameter("query", "Player");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(200, context.ResponseStatusCode);
             StringAssert.Contains("Player", context.ResponseBody);
-            Assert.AreEqual("Player", ops.LastFindName);
+            Assert.AreEqual("Player", ops.LastGetQuery);
         }
     }
 }

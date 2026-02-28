@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class GameObjectNode
+    public class GameObjectData
     {
         public string name;
         public int instanceId;
@@ -14,10 +14,10 @@ namespace UniCortex.Editor.Domains.Models
         public bool isStatic;
         public bool isLocked;
         public List<string> components;
-        public List<GameObjectNode> children;
+        public List<GameObjectData> children;
 
-        public GameObjectNode(string name, int instanceId, bool activeSelf, string tag, int layer, bool isStatic,
-            bool isLocked, List<string> components, List<GameObjectNode> children)
+        public GameObjectData(string name, int instanceId, bool activeSelf, string tag, int layer, bool isStatic,
+            bool isLocked, List<string> components, List<GameObjectData> children)
         {
             this.name = name;
             this.instanceId = instanceId;

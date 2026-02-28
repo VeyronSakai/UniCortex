@@ -16,11 +16,24 @@ public class GameObjectToolsTest
     }
 
     [Test]
-    public async Task FindGameObjects_ReturnsJsonWithGameObjects()
+    public async Task GetGameObjects_ReturnsJsonWithGameObjects()
     {
         var tools = _fixture.GameObjectTools;
 
-        var result = await tools.FindGameObjects(cancellationToken: CancellationToken.None);
+        var result = await tools.GetGameObjects(cancellationToken: CancellationToken.None);
+
+        Assert.That(result.IsError, Is.Not.True);
+        Assert.That(result.Content, Has.Count.EqualTo(1));
+        var text = ((TextContentBlock)result.Content[0]).Text;
+        Assert.That(text, Does.Contain("gameObjects"));
+    }
+
+    [Test]
+    public async Task GetGameObjects_WithQuery_ReturnsFilteredResults()
+    {
+        var tools = _fixture.GameObjectTools;
+
+        var result = await tools.GetGameObjects(query: "t:Camera", cancellationToken: CancellationToken.None);
 
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));

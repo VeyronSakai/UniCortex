@@ -18,10 +18,10 @@ namespace UniCortex.Editor.Tests.Presentations
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
             sceneManager.HierarchyResult = new SceneHierarchyResponse("SampleScene", "Assets/Scenes/SampleScene.unity",
-                new List<GameObjectNode>
+                new List<GameObjectData>
                 {
-                    new GameObjectNode("Main Camera", 100, true, "Untagged", 0, false, false,
-                        new List<string> { "Transform", "Camera" }, new List<GameObjectNode>())
+                    new GameObjectData("Main Camera", 100, true, "Untagged", 0, false, false,
+                        new List<string> { "Transform", "Camera" }, new List<GameObjectData>())
                 });
             var useCase = new GetSceneHierarchyUseCase(dispatcher, sceneManager);
             var handler = new SceneHierarchyHandler(useCase);

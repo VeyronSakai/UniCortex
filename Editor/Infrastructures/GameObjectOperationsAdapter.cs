@@ -11,38 +11,98 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class GameObjectOperationsAdapter : IGameObjectOperations
     {
-        public List<GameObjectBasicInfo> Find(string name, string tag, string componentType)
+        public List<GameObjectData> Get(string query)
         {
+            var parsed = SceneSearchQueryParser.Parse(query);
             var scene = SceneManager.GetActiveScene();
             var rootObjects = scene.GetRootGameObjects();
-            var all = new List<GameObject>();
+
+            // If searching by instanceId, return that single object directly
+            if (parsed.instanceId.HasValue)
+            {
+                var go = EditorUtility.InstanceIDToObject(parsed.instanceId.Value) as GameObject;
+                if (go == null)
+                {
+                    return new List<GameObjectData>();
+                }
+
+                return new List<GameObjectData> { GameObjectDataBuilder.BuildNode(go.transform) };
+            }
+
+            // Collect all GameObjects as flat list with their hierarchy paths
+            var all = new List<(GameObject go, string path)>();
             foreach (var root in rootObjects)
             {
-                CollectAll(root.transform, all);
+                CollectAllWithPath(root.transform, "", all);
             }
 
-            IEnumerable<GameObject> filtered = all;
+            IEnumerable<(GameObject go, string path)> filtered = all;
 
-            if (!string.IsNullOrEmpty(name))
+            // Name filter (partial match, case-insensitive)
+            if (!string.IsNullOrEmpty(parsed.namePattern))
             {
-                filtered = filtered.Where(go => go.name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0);
+                filtered = filtered.Where(item =>
+                    item.go.name.IndexOf(parsed.namePattern, StringComparison.OrdinalIgnoreCase) >= 0);
             }
 
-            if (!string.IsNullOrEmpty(tag))
+            // Component type filter (partial match, case-insensitive)
+            if (!string.IsNullOrEmpty(parsed.componentTypePattern))
             {
-                filtered = filtered.Where(go => go.CompareTag(tag));
-            }
-
-            if (!string.IsNullOrEmpty(componentType))
-            {
-                filtered = filtered.Where(go =>
-                    go.GetComponents<Component>()
+                filtered = filtered.Where(item =>
+                    item.go.GetComponents<Component>()
                         .Where(c => c != null)
-                        .Any(c => c.GetType().Name == componentType));
+                        .Any(c => c.GetType().Name.IndexOf(parsed.componentTypePattern,
+                            StringComparison.OrdinalIgnoreCase) >= 0));
+            }
+
+            // Tag exact match
+            if (!string.IsNullOrEmpty(parsed.tagExact))
+            {
+                filtered = filtered.Where(item => item.go.CompareTag(parsed.tagExact));
+            }
+
+            // Tag partial match (case-insensitive)
+            if (!string.IsNullOrEmpty(parsed.tagPartial))
+            {
+                filtered = filtered.Where(item =>
+                    item.go.tag.IndexOf(parsed.tagPartial, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+
+            // Layer filter
+            if (parsed.layer.HasValue)
+            {
+                filtered = filtered.Where(item => item.go.layer == parsed.layer.Value);
+            }
+
+            // Path filter (partial match, case-insensitive)
+            if (!string.IsNullOrEmpty(parsed.pathPattern))
+            {
+                filtered = filtered.Where(item =>
+                    item.path.IndexOf(parsed.pathPattern, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+
+            // State filters
+            foreach (var state in parsed.stateFilters)
+            {
+                switch (state)
+                {
+                    case "root":
+                        filtered = filtered.Where(item => item.go.transform.parent == null);
+                        break;
+                    case "child":
+                        filtered = filtered.Where(item => item.go.transform.parent != null);
+                        break;
+                    case "leaf":
+                        filtered = filtered.Where(item => item.go.transform.childCount == 0);
+                        break;
+                    case "static":
+                        filtered = filtered.Where(item => item.go.isStatic);
+                        break;
+                }
             }
 
             return filtered
-                .Select(go => new GameObjectBasicInfo(go.name, go.GetInstanceID(), go.activeSelf))
+                .Select(item => GameObjectDataBuilder.BuildNode(item.go.transform))
                 .ToList();
         }
 
@@ -72,23 +132,6 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             Undo.DestroyObjectImmediate(go);
-        }
-
-        public GameObjectInfoResponse GetInfo(int instanceId)
-        {
-            var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
-            if (go == null)
-            {
-                throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
-            }
-
-            var components = go.GetComponents<Component>()
-                .Where(c => c != null)
-                .Select((c, i) => new ComponentInfoEntry(c.GetType().Name, i))
-                .ToList();
-
-            return new GameObjectInfoResponse(go.name, go.GetInstanceID(), go.activeSelf, go.tag, go.layer,
-                components);
         }
 
         public void Modify(int instanceId, string name, bool? activeSelf, string tag, int? layer,
@@ -139,12 +182,16 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        private static void CollectAll(Transform transform, List<GameObject> result)
+        private static void CollectAllWithPath(Transform transform, string parentPath,
+            List<(GameObject go, string path)> result)
         {
-            result.Add(transform.gameObject);
+            var currentPath = string.IsNullOrEmpty(parentPath)
+                ? transform.gameObject.name
+                : parentPath + "/" + transform.gameObject.name;
+            result.Add((transform.gameObject, currentPath));
             for (var i = 0; i < transform.childCount; i++)
             {
-                CollectAll(transform.GetChild(i), result);
+                CollectAllWithPath(transform.GetChild(i), currentPath, result);
             }
         }
     }

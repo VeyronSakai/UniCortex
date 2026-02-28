@@ -44,7 +44,7 @@ public class ConsoleTools(IHttpClientFactory httpClientFactory, IUnityServerUrlP
             var url = $"{baseUrl}{ApiRoutes.ConsoleLogs}";
             if (queryParams.Count > 0)
             {
-                url = $"{url}{"?" + string.Join("&", queryParams)}";
+                url = $"{url}?{string.Join("&", queryParams)}";
             }
 
             var response = await _httpClient.GetAsync(url, cancellationToken);

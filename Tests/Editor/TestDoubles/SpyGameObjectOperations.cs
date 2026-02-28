@@ -6,11 +6,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
 {
     internal sealed class SpyGameObjectOperations : IGameObjectOperations
     {
-        public int FindCallCount { get; private set; }
-        public string LastFindName { get; private set; }
-        public string LastFindTag { get; private set; }
-        public string LastFindComponentType { get; private set; }
-        public List<GameObjectBasicInfo> FindResult { get; set; } = new List<GameObjectBasicInfo>();
+        public int GetCallCount { get; private set; }
+        public string LastGetQuery { get; private set; }
+        public List<GameObjectData> GetResult { get; set; } = new List<GameObjectData>();
 
         public int CreateCallCount { get; private set; }
         public string LastCreateName { get; private set; }
@@ -20,10 +18,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int DeleteCallCount { get; private set; }
         public int LastDeleteInstanceId { get; private set; }
 
-        public int GetInfoCallCount { get; private set; }
-        public int LastGetInfoInstanceId { get; private set; }
-        public GameObjectInfoResponse GetInfoResult { get; set; }
-
         public int ModifyCallCount { get; private set; }
         public int LastModifyInstanceId { get; private set; }
         public string LastModifyName { get; private set; }
@@ -32,13 +26,11 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int? LastModifyLayer { get; private set; }
         public int? LastModifyParentInstanceId { get; private set; }
 
-        public List<GameObjectBasicInfo> Find(string name, string tag, string componentType)
+        public List<GameObjectData> Get(string query)
         {
-            FindCallCount++;
-            LastFindName = name;
-            LastFindTag = tag;
-            LastFindComponentType = componentType;
-            return FindResult;
+            GetCallCount++;
+            LastGetQuery = query;
+            return GetResult;
         }
 
         public CreateGameObjectResponse Create(string name, string primitive)
@@ -53,13 +45,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
         {
             DeleteCallCount++;
             LastDeleteInstanceId = instanceId;
-        }
-
-        public GameObjectInfoResponse GetInfo(int instanceId)
-        {
-            GetInfoCallCount++;
-            LastGetInfoInstanceId = instanceId;
-            return GetInfoResult;
         }
 
         public void Modify(int instanceId, string name, bool? activeSelf, string tag, int? layer,

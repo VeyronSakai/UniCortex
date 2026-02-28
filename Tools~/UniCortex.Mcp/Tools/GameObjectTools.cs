@@ -18,14 +18,17 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
 
     [McpServerTool(ReadOnly = true),
-     Description("Find GameObjects in the current scene by name, tag, or component type."), UsedImplicitly]
-    public async Task<CallToolResult> FindGameObjects(
-        [Description("Name to search for (partial match, case-insensitive).")]
-        string? name = null,
-        [Description("Tag to search for (exact match).")]
-        string? tag = null,
-        [Description("Component type name to filter by.")]
-        string? componentType = null,
+     Description(
+         "Find GameObjects in the current scene by name, tag, or component type. " +
+         "Supports Unity Search style query syntax: plain text for name (partial match), " +
+         "t:Type for component type, tag:partial or tag=exact for tag, id:N for instance ID, " +
+         "layer:N for layer, path:A/B for hierarchy path, is:root/child/leaf/static for state filters."),
+     UsedImplicitly]
+    public async Task<CallToolResult> GetGameObjects(
+        [Description(
+            "Search query. Examples: 'Main Camera', 't:Camera', 'tag=Player', 'id:12345', 'is:root', 'path:Canvas/Button'. " +
+            "Multiple tokens can be combined: 'Camera t:Camera layer:0'.")]
+        string? query = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -33,14 +36,11 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
             var baseUrl = urlProvider.GetUrl();
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-            var queryParams = new List<string>();
-            if (!string.IsNullOrEmpty(name)) queryParams.Add($"name={Uri.EscapeDataString(name)}");
-            if (!string.IsNullOrEmpty(tag)) queryParams.Add($"tag={Uri.EscapeDataString(tag)}");
-            if (!string.IsNullOrEmpty(componentType))
-                queryParams.Add($"componentType={Uri.EscapeDataString(componentType)}");
-
-            var url = $"{baseUrl}{ApiRoutes.GameObjectFind}";
-            if (queryParams.Count > 0) url += "?" + string.Join("&", queryParams);
+            var url = $"{baseUrl}{ApiRoutes.GameObjects}";
+            if (!string.IsNullOrEmpty(query))
+            {
+                url += $"?query={Uri.EscapeDataString(query)}";
+            }
 
             var response = await _httpClient.GetAsync(url, cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
@@ -106,31 +106,6 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
             {
                 Content = [new TextContentBlock { Text = $"GameObject {instanceId} deleted." }]
             };
-        }
-        catch (Exception ex)
-        {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
-        }
-    }
-
-    [McpServerTool(ReadOnly = true),
-     Description("Get detailed information about a GameObject including its components."), UsedImplicitly]
-    public async Task<CallToolResult> GetGameObjectInfo(
-        [Description("The instance ID of the GameObject.")]
-        int instanceId,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var url = $"{baseUrl}{ApiRoutes.GameObjectInfo}?instanceId={instanceId}";
-            var response = await _httpClient.GetAsync(url, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-
-            return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)
         {
