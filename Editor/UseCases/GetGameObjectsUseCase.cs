@@ -17,7 +17,7 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<List<GameObjectData>> ExecuteAsync(string query,
+        public async Task<List<GameObjectSearchResult>> ExecuteAsync(string query,
             CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(

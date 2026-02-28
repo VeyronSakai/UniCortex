@@ -1,5 +1,7 @@
+using System.Text.Json;
 using NUnit.Framework;
 using ModelContextProtocol.Protocol;
+using UniCortex.Editor.Domains.Models;
 using UniCortex.Mcp.Test.Fixtures;
 
 namespace UniCortex.Mcp.Test.GameObjectTools;
@@ -7,6 +9,7 @@ namespace UniCortex.Mcp.Test.GameObjectTools;
 [TestFixture]
 public class GameObjectToolsTest
 {
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
@@ -49,7 +52,17 @@ public class GameObjectToolsTest
         var createResult = await tools.CreateGameObject("TestObj", cancellationToken: CancellationToken.None);
 
         Assert.That(createResult.IsError, Is.Not.True);
-        var text = ((TextContentBlock)createResult.Content[0]).Text;
-        Assert.That(text, Does.Contain("TestObj"));
+        var createText = ((TextContentBlock)createResult.Content[0]).Text;
+        Assert.That(createText, Does.Contain("TestObj"));
+
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createText, s_jsonOptions);
+        Assert.That(createResponse, Is.Not.Null);
+
+        var deleteResult =
+            await tools.DeleteGameObject(createResponse!.instanceId, cancellationToken: CancellationToken.None);
+
+        Assert.That(deleteResult.IsError, Is.Not.True);
+        var deleteText = ((TextContentBlock)deleteResult.Content[0]).Text;
+        Assert.That(deleteText, Does.Contain("deleted"));
     }
 }

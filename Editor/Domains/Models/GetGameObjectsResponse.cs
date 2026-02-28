@@ -6,9 +6,9 @@ namespace UniCortex.Editor.Domains.Models
     [Serializable]
     public class GetGameObjectsResponse
     {
-        public List<GameObjectData> gameObjects;
+        public List<GameObjectSearchResult> gameObjects;
 
-        public GetGameObjectsResponse(List<GameObjectData> gameObjects)
+        public GetGameObjectsResponse(List<GameObjectSearchResult> gameObjects)
         {
             this.gameObjects = gameObjects;
         }

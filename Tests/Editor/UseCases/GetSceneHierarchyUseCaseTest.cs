@@ -16,10 +16,10 @@ namespace UniCortex.Editor.Tests.UseCases
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
             sceneManager.HierarchyResult = new SceneHierarchyResponse("TestScene", "Assets/Scenes/TestScene.unity",
-                new List<GameObjectData>
+                new List<GameObjectNode>
                 {
-                    new GameObjectData("Camera", 100, true, "Untagged", 0, false, false,
-                        new List<string> { "Transform", "Camera" }, new List<GameObjectData>())
+                    new GameObjectNode("Camera", 100, true, "Untagged", 0, false, false,
+                        new List<string> { "Transform", "Camera" }, new List<GameObjectNode>())
                 });
             var useCase = new GetSceneHierarchyUseCase(dispatcher, sceneManager);
 

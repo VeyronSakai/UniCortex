@@ -21,11 +21,11 @@ namespace UniCortex.Editor.Infrastructures
         {
             var scene = SceneManager.GetActiveScene();
             var rootObjects = scene.GetRootGameObjects();
-            var nodes = new List<GameObjectData>();
+            var nodes = new List<GameObjectNode>();
 
             foreach (var go in rootObjects)
             {
-                nodes.Add(GameObjectDataBuilder.BuildNode(go.transform));
+                nodes.Add(GameObjectNodeBuilder.BuildNode(go.transform));
             }
 
             return new SceneHierarchyResponse(scene.name, scene.path, nodes);

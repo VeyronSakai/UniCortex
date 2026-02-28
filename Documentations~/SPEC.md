@@ -234,18 +234,22 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
 クエリパラメータ:
 - `query`: 検索クエリ文字列（任意。省略時は全 GameObject を返す）
 
-サポートするクエリ構文:
+Unity Search (`SearchService` API) の `scene` プロバイダに委譲。Unity Search のサブフィルター構文をそのままサポートする。
+
+主なクエリ構文:
 
 | トークン | 例 | 説明 |
 |---------|---|------|
-| プレーンテキスト | `Main Camera` | 名前の部分一致（大文字小文字無視） |
-| `t:` | `t:Camera` | コンポーネント型（部分一致） |
+| プレーンテキスト | `Main Camera` | 名前の部分一致 |
+| `t:` | `t:Camera` | コンポーネント型 |
 | `tag:` | `tag:resp` | タグ（部分一致） |
 | `tag=` | `tag=Player` | タグ（完全一致） |
-| `id:` / `id=` | `id=12345` | instanceId 指定 |
+| `id:` | `id:12345` | instanceId 指定 |
 | `layer:` | `layer:5` | レイヤー番号 |
-| `path:` | `path:Canvas/Button` | 階層パス（部分一致） |
+| `path:` | `path:Canvas/Button` | 階層パス |
 | `is:` | `is:root` / `is:child` / `is:leaf` / `is:static` | 状態フィルタ |
+
+※ クエリ構文の詳細は Unity 公式の Search 機能ドキュメントを参照。
 
 レスポンス:
 ```json
@@ -259,8 +263,7 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
       "layer": 0,
       "isStatic": false,
       "isLocked": false,
-      "components": ["Transform", "CharacterController"],
-      "children": []
+      "components": ["Transform", "CharacterController"]
     }
   ]
 }

@@ -17,10 +17,10 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyGameObjectOperations();
-            ops.GetResult = new List<GameObjectData>
+            ops.GetResult = new List<GameObjectSearchResult>
             {
-                new GameObjectData("Player", 100, true, "Untagged", 0, false, false,
-                    new List<string> { "Transform" }, new List<GameObjectData>())
+                new GameObjectSearchResult("Player", 100, true, "Untagged", 0, false, false,
+                    new List<string> { "Transform" })
             };
             var useCase = new GetGameObjectsUseCase(dispatcher, ops);
             var handler = new GetGameObjectsHandler(useCase);

@@ -8,7 +8,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
     {
         public int GetCallCount { get; private set; }
         public string LastGetQuery { get; private set; }
-        public List<GameObjectData> GetResult { get; set; } = new List<GameObjectData>();
+        public List<GameObjectSearchResult> GetResult { get; set; } = new List<GameObjectSearchResult>();
 
         public int CreateCallCount { get; private set; }
         public string LastCreateName { get; private set; }
@@ -25,7 +25,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int? LastModifyLayer { get; private set; }
         public int? LastModifyParentInstanceId { get; private set; }
 
-        public List<GameObjectData> Get(string query)
+        public List<GameObjectSearchResult> Get(string query)
         {
             GetCallCount++;
             LastGetQuery = query;

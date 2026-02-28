@@ -8,9 +8,9 @@ namespace UniCortex.Editor.Domains.Models
     {
         public string sceneName;
         public string scenePath;
-        public List<GameObjectData> gameObjects;
+        public List<GameObjectNode> gameObjects;
 
-        public SceneHierarchyResponse(string sceneName, string scenePath, List<GameObjectData> gameObjects)
+        public SceneHierarchyResponse(string sceneName, string scenePath, List<GameObjectNode> gameObjects)
         {
             this.sceneName = sceneName;
             this.scenePath = scenePath;
