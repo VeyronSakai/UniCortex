@@ -82,6 +82,9 @@ namespace UniCortex.Editor.Infrastructures
             var serializedObject = new SerializedObject(component);
             var properties = new List<SerializedPropertyEntry>();
 
+            // Iterate over all visible serialized properties.
+            // enterChildren=true on the first call to enter the root,
+            // then false to stay at the top level (skip child properties of compound types).
             var iterator = serializedObject.GetIterator();
             var enterChildren = true;
             while (iterator.NextVisible(enterChildren))
@@ -90,7 +93,7 @@ namespace UniCortex.Editor.Infrastructures
                 properties.Add(new SerializedPropertyEntry(
                     iterator.propertyPath,
                     iterator.propertyType.ToString(),
-                    GetPropertyValueAsString(iterator)));
+                    SerializedPropertyValueConverter.ToValueString(iterator)));
             }
 
             return new ComponentPropertiesResponse(componentType, properties);
@@ -113,6 +116,8 @@ namespace UniCortex.Editor.Infrastructures
                     $"Component '{componentType}' not found on GameObject {instanceId}.");
             }
 
+            // Use SerializedObject/SerializedProperty to modify the component
+            // so that the change is recorded by the Undo system.
             var serializedObject = new SerializedObject(component);
             var property = serializedObject.FindProperty(propertyPath);
 
@@ -122,99 +127,10 @@ namespace UniCortex.Editor.Infrastructures
                     $"Property '{propertyPath}' not found on component '{componentType}'.");
             }
 
-            SetPropertyValue(property, value);
+            // Parse the string value and write it into the SerializedProperty,
+            // then apply the modification to persist the change.
+            SerializedPropertyValueParser.ApplyValue(property, value);
             serializedObject.ApplyModifiedProperties();
-        }
-
-        private static string GetPropertyValueAsString(SerializedProperty property)
-        {
-            switch (property.propertyType)
-            {
-                case SerializedPropertyType.Integer:
-                    return property.intValue.ToString();
-                case SerializedPropertyType.Boolean:
-                    return property.boolValue.ToString().ToLower();
-                case SerializedPropertyType.Float:
-                    return property.floatValue.ToString();
-                case SerializedPropertyType.String:
-                    return property.stringValue ?? "";
-                case SerializedPropertyType.Enum:
-                    return property.enumValueIndex >= 0 && property.enumValueIndex < property.enumDisplayNames.Length
-                        ? property.enumDisplayNames[property.enumValueIndex]
-                        : property.enumValueIndex.ToString();
-                case SerializedPropertyType.Vector2:
-                    var v2 = property.vector2Value;
-                    return $"({v2.x}, {v2.y})";
-                case SerializedPropertyType.Vector3:
-                    var v3 = property.vector3Value;
-                    return $"({v3.x}, {v3.y}, {v3.z})";
-                case SerializedPropertyType.Vector4:
-                    var v4 = property.vector4Value;
-                    return $"({v4.x}, {v4.y}, {v4.z}, {v4.w})";
-                case SerializedPropertyType.Color:
-                    var c = property.colorValue;
-                    return $"({c.r}, {c.g}, {c.b}, {c.a})";
-                case SerializedPropertyType.Rect:
-                    var r = property.rectValue;
-                    return $"(x:{r.x}, y:{r.y}, w:{r.width}, h:{r.height})";
-                case SerializedPropertyType.Bounds:
-                    var b = property.boundsValue;
-                    return $"(center:{b.center}, size:{b.size})";
-                case SerializedPropertyType.Quaternion:
-                    var q = property.quaternionValue;
-                    return $"({q.x}, {q.y}, {q.z}, {q.w})";
-                case SerializedPropertyType.ObjectReference:
-                    return property.objectReferenceValue != null
-                        ? property.objectReferenceValue.name
-                        : "null";
-                default:
-                    return property.propertyType.ToString();
-            }
-        }
-
-        private static void SetPropertyValue(SerializedProperty property, string value)
-        {
-            switch (property.propertyType)
-            {
-                case SerializedPropertyType.Integer:
-                    if (int.TryParse(value, out var intVal))
-                        property.intValue = intVal;
-                    break;
-                case SerializedPropertyType.Float:
-                    if (float.TryParse(value, out var floatVal))
-                        property.floatValue = floatVal;
-                    break;
-                case SerializedPropertyType.Boolean:
-                    property.boolValue = value == "true" || value == "True" || value == "1";
-                    break;
-                case SerializedPropertyType.String:
-                    property.stringValue = value;
-                    break;
-                case SerializedPropertyType.Enum:
-                    if (int.TryParse(value, out var enumIdx))
-                    {
-                        property.enumValueIndex = enumIdx;
-                    }
-                    else
-                    {
-                        // Try to find enum value by name
-                        var names = property.enumDisplayNames;
-                        for (var i = 0; i < names.Length; i++)
-                        {
-                            if (string.Equals(names[i], value, StringComparison.OrdinalIgnoreCase))
-                            {
-                                property.enumValueIndex = i;
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    // For other types, try to parse as float
-                    if (float.TryParse(value, out var fallbackFloat))
-                        property.floatValue = fallbackFloat;
-                    break;
-            }
         }
 
         private static Type ResolveComponentType(string fullTypeName)
