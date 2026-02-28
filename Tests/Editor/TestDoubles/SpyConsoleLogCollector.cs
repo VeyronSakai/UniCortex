@@ -14,9 +14,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public bool LastShowError { get; private set; }
         public int ClearCallCount { get; private set; }
 
-        private List<ConsoleLogEntry> _logs = new List<ConsoleLogEntry>();
+        private readonly List<ConsoleLogEntry> _logs;
 
-        public void SetLogs(List<ConsoleLogEntry> logs)
+        public SpyConsoleLogCollector(List<ConsoleLogEntry> logs)
         {
             _logs = logs;
         }

@@ -1,4 +1,4 @@
-using UniCortex.Editor.Handlers.ComponentOps;
+using UniCortex.Editor.Handlers.Component;
 using UniCortex.Editor.Handlers.Console;
 using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.GameObject;
@@ -50,9 +50,15 @@ namespace UniCortex.Editor
             RegisterHandlers(router);
 
             s_server = new HttpListenerServer(router, port);
-            s_server.Start();
-
-            ServerUrlFile.Write(port);
+            try
+            {
+                s_server.Start();
+                ServerUrlFile.Write(port);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[UniCortex] Failed to start server on port {port}: {ex.Message}");
+            }
         }
 
         private static void RegisterHandlers(RequestRouter router)
@@ -109,17 +115,14 @@ namespace UniCortex.Editor
 
             var gameObjectOps = new GameObjectOperationsAdapter();
 
-            var findGameObjectsUseCase = new FindGameObjectsUseCase(s_dispatcher, gameObjectOps);
-            var findGameObjectsHandler = new FindGameObjectsHandler(findGameObjectsUseCase);
+            var getGameObjectsUseCase = new GetGameObjectsUseCase(s_dispatcher, gameObjectOps);
+            var getGameObjectsHandler = new GetGameObjectsHandler(getGameObjectsUseCase);
 
             var createGameObjectUseCase = new CreateGameObjectUseCase(s_dispatcher, gameObjectOps);
             var createGameObjectHandler = new CreateGameObjectHandler(createGameObjectUseCase);
 
             var deleteGameObjectUseCase = new DeleteGameObjectUseCase(s_dispatcher, gameObjectOps);
             var deleteGameObjectHandler = new DeleteGameObjectHandler(deleteGameObjectUseCase);
-
-            var getGameObjectInfoUseCase = new GetGameObjectInfoUseCase(s_dispatcher, gameObjectOps);
-            var gameObjectInfoHandler = new GameObjectInfoHandler(getGameObjectInfoUseCase);
 
             var modifyGameObjectUseCase = new ModifyGameObjectUseCase(s_dispatcher, gameObjectOps);
             var modifyGameObjectHandler = new ModifyGameObjectHandler(modifyGameObjectUseCase);
@@ -160,10 +163,9 @@ namespace UniCortex.Editor
             openSceneHandler.Register(router);
             saveSceneHandler.Register(router);
             sceneHierarchyHandler.Register(router);
-            findGameObjectsHandler.Register(router);
+            getGameObjectsHandler.Register(router);
             createGameObjectHandler.Register(router);
             deleteGameObjectHandler.Register(router);
-            gameObjectInfoHandler.Register(router);
             modifyGameObjectHandler.Register(router);
             addComponentHandler.Register(router);
             removeComponentHandler.Register(router);
@@ -195,6 +197,10 @@ namespace UniCortex.Editor
                 return;
             }
 
+            // After a domain reload the TaskCompletionSource used by TestRunnerAdapter
+            // no longer exists, so there is no way to complete the HTTP response.
+            // Register SessionStoreTestCallbacks directly (without the TestCallbacks wrapper)
+            // so that test results are still persisted to SessionState via TestResultStore.
             var api = ScriptableObject.CreateInstance<TestRunnerApi>();
             api.RegisterCallbacks(new SessionStoreTestCallbacks());
             Debug.Log("[UniCortex] Re-registered test callbacks after domain reload");

@@ -5,7 +5,7 @@ using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
 using UnityEngine;
 
-namespace UniCortex.Editor.Handlers.ComponentOps
+namespace UniCortex.Editor.Handlers.Component
 {
     internal sealed class ComponentPropertiesHandler
     {

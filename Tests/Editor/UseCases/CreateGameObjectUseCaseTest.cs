@@ -17,13 +17,12 @@ namespace UniCortex.Editor.Tests.UseCases
             ops.CreateResult = new CreateGameObjectResponse("Cube", 123);
             var useCase = new CreateGameObjectUseCase(dispatcher, ops);
 
-            var result = useCase.ExecuteAsync("Cube", "Cube", CancellationToken.None)
+            var result = useCase.ExecuteAsync("NewObj", CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual("Cube", result.name);
             Assert.AreEqual(123, result.instanceId);
-            Assert.AreEqual("Cube", ops.LastCreateName);
-            Assert.AreEqual("Cube", ops.LastCreatePrimitive);
+            Assert.AreEqual("NewObj", ops.LastCreateName);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
     }

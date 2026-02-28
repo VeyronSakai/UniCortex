@@ -20,9 +20,8 @@ namespace UniCortex.Editor.Tests.Presentations
             sceneManager.HierarchyResult = new SceneHierarchyResponse("SampleScene", "Assets/Scenes/SampleScene.unity",
                 new List<GameObjectNode>
                 {
-                    new GameObjectNode("Main Camera", 100, true,
-                        new List<string> { "Transform", "Camera" },
-                        new List<GameObjectNode>())
+                    new GameObjectNode("Main Camera", 100, true, "Untagged", 0, false, false,
+                        new List<string> { "Transform", "Camera" }, new List<GameObjectNode>())
                 });
             var useCase = new GetSceneHierarchyUseCase(dispatcher, sceneManager);
             var handler = new SceneHierarchyHandler(useCase);
@@ -30,11 +29,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "GET",
-                Path = ApiRoutes.SceneHierarchy
-            };
+            var context = new FakeRequestContext("GET", ApiRoutes.SceneHierarchy);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
