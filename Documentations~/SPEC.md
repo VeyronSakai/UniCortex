@@ -229,7 +229,7 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
 ### GameObject
 
 #### GET `/gameobjects?query=...`
-シーン内の GameObject を検索する。Unity Search スタイルのクエリ構文をサポート。`/gameobject/info` の機能も統合（`id:` トークンで instanceId 指定可能）。
+シーン内の GameObject を検索する。Unity Search スタイルのクエリ構文をサポート。
 
 クエリパラメータ:
 - `query`: 検索クエリ文字列（任意。省略時は全 GameObject を返す）
