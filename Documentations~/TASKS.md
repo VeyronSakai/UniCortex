@@ -2,13 +2,13 @@
 
 実装状況の一覧。詳細な仕様は [SPEC.md](SPEC.md) を参照。
 
-> 最終更新: 2026-02-23
+> 最終更新: 2026-02-27
 
 ---
 
 ## 実装済み
 
-### REST API エンドポイント（7/30）
+### REST API エンドポイント（13/30）
 
 | エンドポイント | Handler | UseCase | テスト |
 |---------------|---------|---------|--------|
@@ -19,8 +19,14 @@
 | GET `/editor/status` | EditorStatusHandler | GetEditorStatusUseCase | UseCase |
 | POST `/editor/undo` | UndoHandler | UndoUseCase | UseCase + Handler |
 | POST `/editor/redo` | RedoHandler | RedoUseCase | UseCase + Handler |
+| POST `/tests/run` | RunTestsHandler | RunTestsUseCase | Handler |
+| GET `/console/logs` | ConsoleLogsHandler | GetConsoleLogsUseCase | UseCase + Handler |
+| POST `/console/clear` | ConsoleClearHandler | ClearConsoleLogsUseCase | UseCase + Handler |
+| POST `/scene/open` | OpenSceneHandler | OpenSceneUseCase | UseCase + Handler |
+| POST `/scene/save` | SaveSceneHandler | SaveSceneUseCase | UseCase + Handler |
+| GET `/scene/hierarchy` | SceneHierarchyHandler | GetSceneHierarchyUseCase | UseCase + Handler |
 
-### MCP ツール（6/29）
+### MCP ツール（12/29）
 
 | ツール名 | 対応 API | 状態 |
 |----------|---------|------|
@@ -30,6 +36,12 @@
 | `reload_domain` | POST `/editor/domain-reload` | 済 |
 | `undo` | POST `/editor/undo` | 済 |
 | `redo` | POST `/editor/redo` | 済 |
+| `run_tests` | POST `/tests/run` | 済 |
+| `get_console_logs` | GET `/console/logs` | 済 |
+| `clear_console_logs` | POST `/console/clear` | 済 |
+| `open_scene` | POST `/scene/open` | 済 |
+| `save_scene` | POST `/scene/save` | 済 |
+| `get_scene_hierarchy` | GET `/scene/hierarchy` | 済 |
 
 ### インフラ・基盤
 
@@ -52,9 +64,9 @@
 | 優先度 | タスク | 理由 |
 |--------|--------|------|
 | 1 | undo / redo | 既存パターンの踏襲で最小工数。Editor 制御カテゴリ完成 |
-| 2 | run_tests | 以降の全実装で MCP 経由のセルフテストが可能になる |
-| 3 | console (logs / clear) | テスト失敗時のデバッグに直結。独立性が高い |
-| 4 | scene (open / save / hierarchy) | GameObject 操作の前提となる基盤機能 |
+| 2 | ~~run_tests~~ **実装済み** | 以降の全実装で MCP 経由のセルフテストが可能になる |
+| 3 | ~~console (logs / clear)~~ **実装済み** | テスト失敗時のデバッグに直結。独立性が高い |
+| 4 | ~~scene (open / save / hierarchy)~~ **実装済み** | GameObject 操作の前提となる基盤機能 |
 | 5 | GameObject (find / create / delete / info / modify) | シーン構築の基本フロー成立 |
 | 6 | component (add / remove / properties / set-property) | GameObject 操作の次に自然な流れ |
 | 7 | prefab (create / instantiate) | GameObject + シーン操作に依存 |
@@ -64,17 +76,6 @@
 ---
 
 ## 未実装タスク
-
-### シーン（残り 3）
-
-- [ ] POST `/scene/open` + MCP `open_scene`
-  - `EditorSceneManager.OpenScene(scenePath)`
-  - リクエスト: `{"scenePath": "Assets/Scenes/Main.unity"}`
-- [ ] POST `/scene/save` + MCP `save_scene`
-  - `EditorSceneManager.SaveOpenScenes()`
-- [ ] GET `/scene/hierarchy` + MCP `get_scene_hierarchy`
-  - シーンの GameObject 階層をツリー構造で返す
-  - レスポンスに sceneName, scenePath, 再帰的な gameObjects 配列
 
 ### GameObject（残り 5）
 
@@ -122,20 +123,10 @@
 - [ ] POST `/asset/set-property` + MCP `set_asset_property`
   - SerializedObject API でアセットプロパティ変更
 
-### コンソール（残り 2）
-
-- [ ] GET `/console/logs` + MCP `get_console_logs`
-  - `Application.logMessageReceived` でログ収集、count パラメータ対応
-- [ ] POST `/console/clear` + MCP `clear_console_logs`
-  - `LogEntries.Clear()`
-
-### ユーティリティ（残り 3）
+### ユーティリティ（残り 2）
 
 - [ ] POST `/menu/execute` + MCP `execute_menu_item`
   - `EditorApplication.ExecuteMenuItem(menuPath)`
-- [x] POST `/tests/run` + MCP `run_tests`
-  - `TestRunnerApi` でテスト実行、完了まで待機して結果を返す
-  - testMode (EditMode/PlayMode) + nameFilter
 - [ ] GET `/editor/screenshot` + MCP `capture_screenshot`
   - `ScreenCapture.CaptureScreenshotAsTexture()` → PNG バイナリ返却
 
@@ -146,13 +137,13 @@
 | カテゴリ | 済 | 未 | 合計 |
 |---------|----|----|------|
 | Editor 制御 | 7 | 0 | 7 |
-| シーン | 0 | 3 | 3 |
+| シーン | 3 | 0 | 3 |
 | GameObject | 0 | 5 | 5 |
 | コンポーネント | 0 | 4 | 4 |
 | Prefab | 0 | 2 | 2 |
 | アセット | 0 | 4 | 4 |
-| コンソール | 0 | 2 | 2 |
+| コンソール | 2 | 0 | 2 |
 | ユーティリティ | 1 | 2 | 3 |
-| **合計** | **8** | **22** | **30** |
+| **合計** | **13** | **17** | **30** |
 
-MCP ツール: 7/29 実装済み（`GET /editor/status` は MCP ツール対象外）
+MCP ツール: 12/29 実装済み（`GET /editor/status` は MCP ツール対象外）

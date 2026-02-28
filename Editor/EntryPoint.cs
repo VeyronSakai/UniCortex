@@ -1,5 +1,6 @@
 using UniCortex.Editor.Handlers.Console;
 using UniCortex.Editor.Handlers.Editor;
+using UniCortex.Editor.Handlers.Scene;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
@@ -46,9 +47,15 @@ namespace UniCortex.Editor
             RegisterHandlers(router);
 
             s_server = new HttpListenerServer(router, port);
-            s_server.Start();
-
-            ServerUrlFile.Write(port);
+            try
+            {
+                s_server.Start();
+                ServerUrlFile.Write(port);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[UniCortex] Failed to start server on port {port}: {ex.Message}");
+            }
         }
 
         private static void RegisterHandlers(RequestRouter router)
@@ -92,6 +99,17 @@ namespace UniCortex.Editor
             var clearConsoleLogsUseCase = new ClearConsoleLogsUseCase(s_dispatcher, consoleLogCollector);
             var consoleClearHandler = new ConsoleClearHandler(clearConsoleLogsUseCase);
 
+            var sceneManagerAdapter = new EditorSceneManagerAdapter();
+
+            var openSceneUseCase = new OpenSceneUseCase(s_dispatcher, sceneManagerAdapter);
+            var openSceneHandler = new OpenSceneHandler(openSceneUseCase);
+
+            var saveSceneUseCase = new SaveSceneUseCase(s_dispatcher, sceneManagerAdapter);
+            var saveSceneHandler = new SaveSceneHandler(saveSceneUseCase);
+
+            var getSceneHierarchyUseCase = new GetSceneHierarchyUseCase(s_dispatcher, sceneManagerAdapter);
+            var sceneHierarchyHandler = new SceneHierarchyHandler(getSceneHierarchyUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -103,6 +121,9 @@ namespace UniCortex.Editor
             testResultHandler.Register(router);
             consoleLogsHandler.Register(router);
             consoleClearHandler.Register(router);
+            openSceneHandler.Register(router);
+            saveSceneHandler.Register(router);
+            sceneHierarchyHandler.Register(router);
         }
 
         private static int FindFreePort()
