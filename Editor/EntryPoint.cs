@@ -171,6 +171,10 @@ namespace UniCortex.Editor
                 return;
             }
 
+            // After a domain reload the TaskCompletionSource used by TestRunnerAdapter
+            // no longer exists, so there is no way to complete the HTTP response.
+            // Register SessionStoreTestCallbacks directly (without the TestCallbacks wrapper)
+            // so that test results are still persisted to SessionState via TestResultStore.
             var api = ScriptableObject.CreateInstance<TestRunnerApi>();
             api.RegisterCallbacks(new SessionStoreTestCallbacks());
             Debug.Log("[UniCortex] Re-registered test callbacks after domain reload");
