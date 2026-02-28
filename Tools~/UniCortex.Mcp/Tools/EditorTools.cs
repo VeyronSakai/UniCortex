@@ -23,7 +23,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         {
             var baseUrl = urlProvider.GetUrl();
 
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+            await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
             var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}", cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
@@ -46,7 +46,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
             var baseUrl = urlProvider.GetUrl();
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-            var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.Play, null, cancellationToken);
+            var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Play}", null, cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             while (true)
