@@ -16,18 +16,15 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleConsoleLogs_Returns200WithLogs()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var collector = new SpyConsoleLogCollector();
-            collector.SetLogs(new List<ConsoleLogEntry>
-            {
-                new ConsoleLogEntry("test message", "", "Log", ""),
-            });
+            var collector =
+                new SpyConsoleLogCollector(new List<ConsoleLogEntry> { new("test message", "", "Log"), });
             var useCase = new GetConsoleLogsUseCase(dispatcher, collector);
             var handler = new ConsoleLogsHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext { HttpMethod = "GET", Path = ApiRoutes.ConsoleLogs };
+            var context = new FakeRequestContext("GET", ApiRoutes.ConsoleLogs);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -39,14 +36,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleConsoleLogs_UsesCountQueryParameter()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var collector = new SpyConsoleLogCollector();
+            var collector = new SpyConsoleLogCollector(new List<ConsoleLogEntry>());
             var useCase = new GetConsoleLogsUseCase(dispatcher, collector);
             var handler = new ConsoleLogsHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext { HttpMethod = "GET", Path = ApiRoutes.ConsoleLogs };
+            var context = new FakeRequestContext("GET", ApiRoutes.ConsoleLogs);
             context.SetQueryParameter("count", "50");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -59,14 +56,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleConsoleLogs_DefaultsToCount100()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var collector = new SpyConsoleLogCollector();
+            var collector = new SpyConsoleLogCollector(new List<ConsoleLogEntry>());
             var useCase = new GetConsoleLogsUseCase(dispatcher, collector);
             var handler = new ConsoleLogsHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext { HttpMethod = "GET", Path = ApiRoutes.ConsoleLogs };
+            var context = new FakeRequestContext("GET", ApiRoutes.ConsoleLogs);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -78,14 +75,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleConsoleLogs_PassesStackTraceParameter()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var collector = new SpyConsoleLogCollector();
+            var collector = new SpyConsoleLogCollector(new List<ConsoleLogEntry>());
             var useCase = new GetConsoleLogsUseCase(dispatcher, collector);
             var handler = new ConsoleLogsHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext { HttpMethod = "GET", Path = ApiRoutes.ConsoleLogs };
+            var context = new FakeRequestContext("GET", ApiRoutes.ConsoleLogs);
             context.SetQueryParameter("stackTrace", "true");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -98,14 +95,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleConsoleLogs_PassesTypeFilterParameters()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var collector = new SpyConsoleLogCollector();
+            var collector = new SpyConsoleLogCollector(new List<ConsoleLogEntry>());
             var useCase = new GetConsoleLogsUseCase(dispatcher, collector);
             var handler = new ConsoleLogsHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext { HttpMethod = "GET", Path = ApiRoutes.ConsoleLogs };
+            var context = new FakeRequestContext("GET", ApiRoutes.ConsoleLogs);
             context.SetQueryParameter("log", "false");
             context.SetQueryParameter("warning", "false");
             context.SetQueryParameter("error", "true");

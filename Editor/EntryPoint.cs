@@ -48,9 +48,15 @@ namespace UniCortex.Editor
             RegisterHandlers(router);
 
             s_server = new HttpListenerServer(router, port);
-            s_server.Start();
-
-            ServerUrlFile.Write(port);
+            try
+            {
+                s_server.Start();
+                ServerUrlFile.Write(port);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[UniCortex] Failed to start server on port {port}: {ex.Message}");
+            }
         }
 
         private static void RegisterHandlers(RequestRouter router)

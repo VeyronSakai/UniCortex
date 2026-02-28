@@ -192,6 +192,10 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
       "name": "Main Camera",
       "instanceId": 10200,
       "activeSelf": true,
+      "tag": "MainCamera",
+      "layer": 0,
+      "isStatic": false,
+      "isLocked": false,
       "components": ["Transform", "Camera", "AudioListener"],
       "children": []
     },
@@ -199,12 +203,20 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
       "name": "Canvas",
       "instanceId": 10300,
       "activeSelf": true,
+      "tag": "Untagged",
+      "layer": 5,
+      "isStatic": false,
+      "isLocked": false,
       "components": ["RectTransform", "Canvas"],
       "children": [
         {
           "name": "Button",
           "instanceId": 10400,
           "activeSelf": true,
+          "tag": "Untagged",
+          "layer": 5,
+          "isStatic": false,
+          "isLocked": false,
           "components": ["RectTransform", "Image", "Button"],
           "children": []
         }
@@ -443,8 +455,7 @@ Unity Console の最新ログエントリを返す。
     {
       "message": "NullReferenceException: ...",
       "stackTrace": "at MyScript.Update() ...",
-      "type": "Error",
-      "timestamp": "2026-02-23T10:30:00"
+      "type": "Error"
     }
   ]
 }

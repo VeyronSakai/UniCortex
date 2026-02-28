@@ -13,8 +13,7 @@ namespace UniCortex.Editor.Tests.UseCases
         [Test]
         public void ExecuteAsync_AggregatesResults()
         {
-            var spy = new SpyTestRunner();
-            spy.SetResults(new List<TestResultItem>
+            var spy = new SpyTestRunner(new List<TestResultItem>
             {
                 new TestResultItem("Test1", "Passed", 0.1f),
                 new TestResultItem("Test2", "Failed", 0.2f, "assertion error"),

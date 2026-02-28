@@ -29,14 +29,15 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             _listener = new HttpListener();
+
             try
             {
                 _listener.Prefixes.Add($"http://localhost:{_port}/");
                 _listener.Start();
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.LogError($"[UniCortex] Failed to start server on port {_port}: {ex.Message}");
+                Debug.LogError($"[UniCortex] Failed to start listening on port {_port}");
 
                 try
                 {
@@ -44,11 +45,14 @@ namespace UniCortex.Editor.Infrastructures
                 }
                 catch
                 {
-                    // ignored
+                    Debug.LogError($"[UniCortex] Failed to close listener after failed start on port {_port}");
+                }
+                finally
+                {
+                    _listener = null;
                 }
 
-                _listener = null;
-                return;
+                throw;
             }
 
             _cts = new CancellationTokenSource();
@@ -73,7 +77,7 @@ namespace UniCortex.Editor.Infrastructures
             }
             catch
             {
-                // ignore errors during shutdown
+                Debug.LogError($"[UniCortex] Failed to stop listener on port {_port}");
             }
 
             _listener = null;
@@ -105,27 +109,21 @@ namespace UniCortex.Editor.Infrastructures
             var context = new HttpListenerRequestContext(httpContext);
             try
             {
-                try
-                {
-                    await _router.HandleRequestAsync(context, token);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[UniCortex] Unhandled exception: {ex}");
-                    try
-                    {
-                        await context.WriteResponseAsync(500,
-                            JsonUtility.ToJson(new ErrorResponse("Internal server error")));
-                    }
-                    catch
-                    {
-                        // ignore write errors
-                    }
-                }
+                await _router.HandleRequestAsync(context, token);
             }
             catch (Exception e)
             {
                 Debug.LogError($"[UniCortex] Request handling failed: {e}");
+
+                try
+                {
+                    await context.WriteResponseAsync(500,
+                        JsonUtility.ToJson(new ErrorResponse("Internal server error")));
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[UniCortex] Failed to write error response: {ex}");
+                }
             }
         }
     }
