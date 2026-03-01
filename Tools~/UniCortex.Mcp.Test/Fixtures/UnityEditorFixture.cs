@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Mcp.Infrastructures;
+using AssetToolsClass = UniCortex.Mcp.Tools.AssetTools;
 using ComponentToolsClass = UniCortex.Mcp.Tools.ComponentTools;
 using ConsoleToolsClass = UniCortex.Mcp.Tools.ConsoleTools;
 using EditorToolsClass = UniCortex.Mcp.Tools.EditorTools;
@@ -21,11 +22,13 @@ public sealed class UnityEditorFixture
     public GameObjectToolsClass GameObjectTools { get; }
     public ComponentToolsClass ComponentTools { get; }
     public PrefabToolsClass PrefabTools { get; }
+    public AssetToolsClass AssetTools { get; }
     public string BaseUrl { get; }
 
     private UnityEditorFixture(EditorToolsClass editorTools, TestToolsClass testTools,
         ConsoleToolsClass consoleTools, SceneToolsClass sceneTools, GameObjectToolsClass gameObjectTools,
-        ComponentToolsClass componentTools, PrefabToolsClass prefabTools, string baseUrl)
+        ComponentToolsClass componentTools, PrefabToolsClass prefabTools, AssetToolsClass assetTools,
+        string baseUrl)
     {
         EditorTools = editorTools;
         TestTools = testTools;
@@ -34,6 +37,7 @@ public sealed class UnityEditorFixture
         GameObjectTools = gameObjectTools;
         ComponentTools = componentTools;
         PrefabTools = prefabTools;
+        AssetTools = assetTools;
         BaseUrl = baseUrl;
     }
 
@@ -87,8 +91,8 @@ public sealed class UnityEditorFixture
         var gameObjectTools = new GameObjectToolsClass(httpClientFactory, urlProvider);
         var componentTools = new ComponentToolsClass(httpClientFactory, urlProvider);
         var prefabTools = new PrefabToolsClass(httpClientFactory, urlProvider);
-
+        var assetTools = new AssetToolsClass(httpClientFactory, urlProvider);
         return new UnityEditorFixture(editorTools, testTools, consoleTools, sceneTools, gameObjectTools,
-            componentTools, prefabTools, baseUrl);
+            componentTools, prefabTools, assetTools, baseUrl);
     }
 }

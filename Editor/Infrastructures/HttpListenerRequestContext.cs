@@ -42,20 +42,9 @@ namespace UniCortex.Editor.Infrastructures
             {
                 await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
             }
-            catch
-            {
-                // client may have disconnected during write
-            }
             finally
             {
-                try
-                {
-                    response.OutputStream.Close();
-                }
-                catch
-                {
-                    // client may have already disconnected
-                }
+                response.OutputStream.Close();
             }
         }
     }
