@@ -395,7 +395,7 @@ Prefab をシーンにインスタンス化する。`PrefabUtility.InstantiatePr
 
 ### アセット
 
-#### POST `/asset/refresh`
+#### POST `/asset-database/refresh`
 アセットデータベースをリフレッシュする。`AssetDatabase.Refresh()`
 
 レスポンス: `{"success": true}`
@@ -613,7 +613,7 @@ AI エージェントが混乱なく使えるよう、各ツールは明確に�
 
 | ツール | API | 説明 |
 |--------|-----|------|
-| `refresh_asset_database` | POST `/asset/refresh` | AssetDatabase をリフレッシュ |
+| `refresh_asset_database` | POST `/asset-database/refresh` | AssetDatabase をリフレッシュ |
 
 #### ScriptableObject（3）
 

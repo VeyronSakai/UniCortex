@@ -102,7 +102,7 @@
 
 ### アセット（1）
 
-- [ ] POST `/asset/refresh` + MCP `refresh_asset_database`
+- [ ] POST `/asset-database/refresh` + MCP `refresh_asset_database`
   - `AssetDatabase.Refresh()`
 
 ### ScriptableObject（3）
