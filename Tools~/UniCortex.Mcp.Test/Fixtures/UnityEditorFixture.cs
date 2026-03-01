@@ -9,6 +9,7 @@ using EditorToolsClass = UniCortex.Mcp.Tools.EditorTools;
 using GameObjectToolsClass = UniCortex.Mcp.Tools.GameObjectTools;
 using PrefabToolsClass = UniCortex.Mcp.Tools.PrefabTools;
 using SceneToolsClass = UniCortex.Mcp.Tools.SceneTools;
+using ScriptableObjectToolsClass = UniCortex.Mcp.Tools.ScriptableObjectTools;
 using TestToolsClass = UniCortex.Mcp.Tools.TestTools;
 
 namespace UniCortex.Mcp.Test.Fixtures;
@@ -23,11 +24,13 @@ public sealed class UnityEditorFixture
     public ComponentToolsClass ComponentTools { get; }
     public PrefabToolsClass PrefabTools { get; }
     public AssetToolsClass AssetTools { get; }
+    public ScriptableObjectToolsClass ScriptableObjectTools { get; }
     public string BaseUrl { get; }
 
     private UnityEditorFixture(EditorToolsClass editorTools, TestToolsClass testTools,
         ConsoleToolsClass consoleTools, SceneToolsClass sceneTools, GameObjectToolsClass gameObjectTools,
         ComponentToolsClass componentTools, PrefabToolsClass prefabTools, AssetToolsClass assetTools,
+        ScriptableObjectToolsClass scriptableObjectTools,
         string baseUrl)
     {
         EditorTools = editorTools;
@@ -38,6 +41,7 @@ public sealed class UnityEditorFixture
         ComponentTools = componentTools;
         PrefabTools = prefabTools;
         AssetTools = assetTools;
+        ScriptableObjectTools = scriptableObjectTools;
         BaseUrl = baseUrl;
     }
 
@@ -92,8 +96,9 @@ public sealed class UnityEditorFixture
         var componentTools = new ComponentToolsClass(httpClientFactory, urlProvider);
         var prefabTools = new PrefabToolsClass(httpClientFactory, urlProvider);
         var assetTools = new AssetToolsClass(httpClientFactory, urlProvider);
+        var scriptableObjectTools = new ScriptableObjectToolsClass(httpClientFactory, urlProvider);
 
         return new UnityEditorFixture(editorTools, testTools, consoleTools, sceneTools, gameObjectTools,
-            componentTools, prefabTools, assetTools, baseUrl);
+            componentTools, prefabTools, assetTools, scriptableObjectTools, baseUrl);
     }
 }

@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleRefresh_Returns200WithSuccess()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyAssetOperations();
+            var operations = new SpyAssetDatabaseOperations();
             var useCase = new RefreshAssetDatabaseUseCase(dispatcher, operations);
             var handler = new AssetRefreshHandler(useCase);
 

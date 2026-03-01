@@ -7,9 +7,9 @@ namespace UniCortex.Editor.UseCases
     internal sealed class RefreshAssetDatabaseUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IAssetOperations _operations;
+        private readonly IAssetDatabaseOperations _operations;
 
-        public RefreshAssetDatabaseUseCase(IMainThreadDispatcher dispatcher, IAssetOperations operations)
+        public RefreshAssetDatabaseUseCase(IMainThreadDispatcher dispatcher, IAssetDatabaseOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;

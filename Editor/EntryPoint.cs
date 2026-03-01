@@ -5,6 +5,7 @@ using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Prefab;
 using UniCortex.Editor.Handlers.Scene;
+using UniCortex.Editor.Handlers.ScriptableObject;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
@@ -150,19 +151,21 @@ namespace UniCortex.Editor
             var instantiatePrefabUseCase = new InstantiatePrefabUseCase(s_dispatcher, prefabOps);
             var instantiatePrefabHandler = new InstantiatePrefabHandler(instantiatePrefabUseCase);
 
-            var assetOps = new AssetOperationsAdapter();
+            var assetDbOps = new AssetDatabaseOperationsAdapter();
 
-            var refreshAssetDatabaseUseCase = new RefreshAssetDatabaseUseCase(s_dispatcher, assetOps);
+            var refreshAssetDatabaseUseCase = new RefreshAssetDatabaseUseCase(s_dispatcher, assetDbOps);
             var assetRefreshHandler = new AssetRefreshHandler(refreshAssetDatabaseUseCase);
 
-            var createAssetUseCase = new CreateAssetUseCase(s_dispatcher, assetOps);
-            var createAssetHandler = new CreateAssetHandler(createAssetUseCase);
+            var scriptableObjectOps = new ScriptableObjectOperationsAdapter();
 
-            var getAssetInfoUseCase = new GetAssetInfoUseCase(s_dispatcher, assetOps);
-            var assetInfoHandler = new AssetInfoHandler(getAssetInfoUseCase);
+            var createScriptableObjectUseCase = new CreateScriptableObjectUseCase(s_dispatcher, scriptableObjectOps);
+            var createScriptableObjectHandler = new CreateScriptableObjectHandler(createScriptableObjectUseCase);
 
-            var setAssetPropertyUseCase = new SetAssetPropertyUseCase(s_dispatcher, assetOps);
-            var setAssetPropertyHandler = new SetAssetPropertyHandler(setAssetPropertyUseCase);
+            var getScriptableObjectInfoUseCase = new GetScriptableObjectInfoUseCase(s_dispatcher, scriptableObjectOps);
+            var scriptableObjectInfoHandler = new ScriptableObjectInfoHandler(getScriptableObjectInfoUseCase);
+
+            var setScriptableObjectPropertyUseCase = new SetScriptableObjectPropertyUseCase(s_dispatcher, scriptableObjectOps);
+            var setScriptableObjectPropertyHandler = new SetScriptableObjectPropertyHandler(setScriptableObjectPropertyUseCase);
 
             pingHandler.Register(router);
             playHandler.Register(router);
@@ -189,9 +192,9 @@ namespace UniCortex.Editor
             createPrefabHandler.Register(router);
             instantiatePrefabHandler.Register(router);
             assetRefreshHandler.Register(router);
-            createAssetHandler.Register(router);
-            assetInfoHandler.Register(router);
-            setAssetPropertyHandler.Register(router);
+            createScriptableObjectHandler.Register(router);
+            scriptableObjectInfoHandler.Register(router);
+            setScriptableObjectPropertyHandler.Register(router);
         }
 
         private static int FindFreePort()

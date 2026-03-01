@@ -27,49 +27,4 @@ public class AssetToolsTest
         var text = ((TextContentBlock)result.Content[0]).Text;
         Assert.That(text, Does.Contain("refreshed"));
     }
-
-    [Test]
-    public async Task CreateAsset_ReturnsSuccess()
-    {
-        var assetTools = _fixture.AssetTools;
-        const string AssetPath = "Assets/CreateAssetTest.asset";
-
-        try
-        {
-            var result = await assetTools.CreateAsset("AllPropertyTypesScriptableObject", AssetPath, CancellationToken.None);
-
-            Assert.That(result.IsError, Is.Not.True);
-            Assert.That(result.Content, Has.Count.EqualTo(1));
-            var text = ((TextContentBlock)result.Content[0]).Text;
-            Assert.That(text, Does.Contain($"Asset created at: {AssetPath}"));
-        }
-        finally
-        {
-            UnityEditorFixture.DeleteAssetFile(AssetPath);
-        }
-    }
-
-    [Test]
-    public async Task SetAssetProperty_ReturnsSuccess()
-    {
-        var assetTools = _fixture.AssetTools;
-        const string AssetPath = "Assets/SetAssetPropertyTest.asset";
-
-        try
-        {
-            await assetTools.CreateAsset("AllPropertyTypesScriptableObject", AssetPath, CancellationToken.None);
-
-            var result = await assetTools.SetAssetProperty(AssetPath, "m_Name", "RenamedAsset",
-                CancellationToken.None);
-
-            Assert.That(result.IsError, Is.Not.True);
-            Assert.That(result.Content, Has.Count.EqualTo(1));
-            var text = ((TextContentBlock)result.Content[0]).Text;
-            Assert.That(text, Does.Contain($"Property 'm_Name' set on asset '{AssetPath}'."));
-        }
-        finally
-        {
-            UnityEditorFixture.DeleteAssetFile(AssetPath);
-        }
-    }
 }

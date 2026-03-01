@@ -400,42 +400,44 @@ Prefab をシーンにインスタンス化する。`PrefabUtility.InstantiatePr
 
 レスポンス: `{"success": true}`
 
-#### POST `/asset/create`
-新規アセットを作成する。Material, ScriptableObject 等に対応。
+### ScriptableObject
+
+#### POST `/scriptable-object/create`
+新規 ScriptableObject アセットを作成する。
 
 リクエストボディ:
 ```json
-{"type": "Material", "assetPath": "Assets/Materials/NewMat.mat"}
+{"type": "MyConfig", "assetPath": "Assets/Data/MyConfig.asset"}
 ```
 
-- `type`: `Material` またはプロジェクト内の `ScriptableObject` サブクラスの型名
+- `type`: プロジェクト内の `ScriptableObject` サブクラスの型名
 
 レスポンス: `{"success": true}`
 
-#### GET `/asset/info?assetPath=Assets/Materials/NewMat.mat`
-アセットのシリアライズ済みプロパティを返す。Material, ScriptableObject 等に対応。
+#### GET `/scriptable-object/info?assetPath=Assets/Data/MyConfig.asset`
+ScriptableObject のシリアライズ済みプロパティを返す。
 
 レスポンス:
 ```json
 {
-  "assetPath": "Assets/Materials/NewMat.mat",
-  "type": "Material",
+  "assetPath": "Assets/Data/MyConfig.asset",
+  "type": "MyConfig",
   "properties": [
-    {"path": "_Color", "type": "Color", "value": {"r": 1, "g": 1, "b": 1, "a": 1}},
-    {"path": "_MainTex", "type": "Texture", "value": null}
+    {"path": "m_Name", "type": "String", "value": "MyConfig"},
+    {"path": "myField", "type": "Integer", "value": "42"}
   ]
 }
 ```
 
-#### POST `/asset/set-property`
-アセットのシリアライズ済みプロパティを変更する。`SerializedObject` API を使用。
+#### POST `/scriptable-object/set-property`
+ScriptableObject のシリアライズ済みプロパティを変更する。`SerializedObject` API を使用。
 
 リクエストボディ:
 ```json
 {
-  "assetPath": "Assets/Materials/NewMat.mat",
-  "propertyPath": "_Color",
-  "value": "{\"r\":1,\"g\":0,\"b\":0,\"a\":1}"
+  "assetPath": "Assets/Data/MyConfig.asset",
+  "propertyPath": "myField",
+  "value": "100"
 }
 ```
 
@@ -607,14 +609,19 @@ AI エージェントが混乱なく使えるよう、各ツールは明確に�
 | `create_prefab` | POST `/prefab/create` | シーン内 GameObject を Prefab アセットとして保存 |
 | `instantiate_prefab` | POST `/prefab/instantiate` | Prefab をシーンにインスタンス化 |
 
-#### アセット（4）
+#### アセット（1）
 
 | ツール | API | 説明 |
 |--------|-----|------|
 | `refresh_asset_database` | POST `/asset/refresh` | AssetDatabase をリフレッシュ |
-| `create_asset` | POST `/asset/create` | Material・ScriptableObject 等のアセットを新規作成 |
-| `get_asset_info` | GET `/asset/info` | アセットのシリアライズ済みプロパティを取得 |
-| `set_asset_property` | POST `/asset/set-property` | アセットのプロパティを変更 |
+
+#### ScriptableObject（3）
+
+| ツール | API | 説明 |
+|--------|-----|------|
+| `create_scriptable_object` | POST `/scriptable-object/create` | ScriptableObject アセットを新規作成 |
+| `get_scriptable_object_info` | GET `/scriptable-object/info` | ScriptableObject のシリアライズ済みプロパティを取得 |
+| `set_scriptable_object_property` | POST `/scriptable-object/set-property` | ScriptableObject のプロパティを変更 |
 
 #### コンソール（2）
 

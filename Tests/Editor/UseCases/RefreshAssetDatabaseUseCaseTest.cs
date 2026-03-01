@@ -12,7 +12,7 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_CallsRefresh_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyAssetOperations();
+            var operations = new SpyAssetDatabaseOperations();
             var useCase = new RefreshAssetDatabaseUseCase(dispatcher, operations);
 
             useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();

@@ -100,16 +100,19 @@
 - [ ] POST `/prefab/instantiate` + MCP `instantiate_prefab`
   - `PrefabUtility.InstantiatePrefab()` + `Undo.RegisterCreatedObjectUndo`
 
-### アセット（残り 4）
+### アセット（1）
 
 - [ ] POST `/asset/refresh` + MCP `refresh_asset_database`
   - `AssetDatabase.Refresh()`
-- [ ] POST `/asset/create` + MCP `create_asset`
-  - Material / ScriptableObject の新規作成
-- [ ] GET `/asset/info` + MCP `get_asset_info`
-  - SerializedObject でアセットのプロパティを列挙
-- [ ] POST `/asset/set-property` + MCP `set_asset_property`
-  - SerializedObject API でアセットプロパティ変更
+
+### ScriptableObject（3）
+
+- [ ] POST `/scriptable-object/create` + MCP `create_scriptable_object`
+  - ScriptableObject の新規作成
+- [ ] GET `/scriptable-object/info` + MCP `get_scriptable_object_info`
+  - SerializedObject で ScriptableObject のプロパティを列挙
+- [ ] POST `/scriptable-object/set-property` + MCP `set_scriptable_object_property`
+  - SerializedObject API で ScriptableObject プロパティ変更
 
 ### ユーティリティ（残り 2）
 
