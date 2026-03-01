@@ -190,9 +190,6 @@ namespace UniCortex.Editor
             createPrefabHandler.Register(router);
             instantiatePrefabHandler.Register(router);
             assetRefreshHandler.Register(router);
-            createAssetHandler.Register(router);
-            assetInfoHandler.Register(router);
-            setAssetPropertyHandler.Register(router);
             executeMenuItemHandler.Register(router);
             screenshotHandler.Register(router);
         }

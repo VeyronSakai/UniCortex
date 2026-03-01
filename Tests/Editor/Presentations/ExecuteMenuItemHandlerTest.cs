@@ -22,12 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.MenuExecute,
-                Body = "{\"menuPath\":\"GameObject/3D Object/Cube\"}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.MenuExecute, "{\"menuPath\":\"GameObject/3D Object/Cube\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -47,12 +42,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.MenuExecute,
-                Body = ""
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.MenuExecute, "");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -71,12 +61,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.MenuExecute,
-                Body = "{}"
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.MenuExecute, "{}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

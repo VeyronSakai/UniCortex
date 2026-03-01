@@ -8,7 +8,7 @@
 
 ## 実装済み
 
-### REST API エンドポイント（30/30）
+### REST API エンドポイント（24/24）
 
 | エンドポイント | Handler | UseCase | テスト |
 |---------------|---------|---------|--------|
@@ -36,13 +36,10 @@
 | POST `/prefab/create` | CreatePrefabHandler | CreatePrefabUseCase | UseCase + Handler |
 | POST `/prefab/instantiate` | InstantiatePrefabHandler | InstantiatePrefabUseCase | UseCase + Handler |
 | POST `/asset/refresh` | AssetRefreshHandler | RefreshAssetDatabaseUseCase | UseCase + Handler |
-| POST `/asset/create` | CreateAssetHandler | CreateAssetUseCase | UseCase + Handler |
-| GET `/asset/info` | AssetInfoHandler | GetAssetInfoUseCase | UseCase + Handler |
-| POST `/asset/set-property` | SetAssetPropertyHandler | SetAssetPropertyUseCase | UseCase + Handler |
 | POST `/menu/execute` | ExecuteMenuItemHandler | ExecuteMenuItemUseCase | UseCase + Handler |
 | GET `/editor/screenshot` | ScreenshotHandler | CaptureScreenshotUseCase | UseCase + Handler |
 
-### MCP ツール（29/29）
+### MCP ツール（23/23）
 
 | ツール名 | 対応 API | 状態 |
 |----------|---------|------|
@@ -69,9 +66,6 @@
 | `create_prefab` | POST `/prefab/create` | 済 |
 | `instantiate_prefab` | POST `/prefab/instantiate` | 済 |
 | `refresh_asset_database` | POST `/asset/refresh` | 済 |
-| `create_asset` | POST `/asset/create` | 済 |
-| `get_asset_info` | GET `/asset/info` | 済 |
-| `set_asset_property` | POST `/asset/set-property` | 済 |
 | `execute_menu_item` | POST `/menu/execute` | 済 |
 | `capture_screenshot` | GET `/editor/screenshot` | 済 |
 
@@ -102,7 +96,7 @@
 | 5 | ~~GameObject (get_game_objects / create / delete / modify)~~ **実装済み** | シーン構築の基本フロー成立 |
 | 6 | ~~component (add / remove / properties / set-property)~~ **実装済み** | GameObject 操作の次に自然な流れ |
 | 7 | ~~prefab (create / instantiate)~~ **実装済み** | GameObject + シーン操作に依存 |
-| 8 | ~~asset (refresh / create / info / set-property)~~ **実装済み** | 独立性はあるが優先度は低め |
+| 8 | ~~asset (refresh)~~ **実装済み** | 独立性はあるが優先度は低め |
 | 9 | ~~menu execute / screenshot~~ **実装済み** | 汎用ユーティリティ、最後でよい |
 
 ---
@@ -116,9 +110,9 @@
 | GameObject | 4 | 0 | 4 |
 | コンポーネント | 4 | 0 | 4 |
 | Prefab | 2 | 0 | 2 |
-| アセット | 4 | 0 | 4 |
+| アセット | 1 | 0 | 1 |
 | コンソール | 2 | 0 | 2 |
 | ユーティリティ | 3 | 0 | 3 |
-| **合計** | **30** | **0** | **30** |
+| **合計** | **26** | **0** | **26** |
 
-MCP ツール: 29/29 実装済み（`GET /editor/status` は MCP ツール対象外）
+MCP ツール: 23/23 実装済み（`GET /editor/status` は MCP ツール対象外、`GET /tests/result` は内部 API）

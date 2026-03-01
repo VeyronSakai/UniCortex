@@ -24,7 +24,7 @@ public class AssetTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.AssetDatabaseRefresh}", null, cancellationToken);
+                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.AssetRefresh}", null, cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             return new CallToolResult

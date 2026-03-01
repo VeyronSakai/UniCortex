@@ -27,9 +27,6 @@ namespace UniCortex.Editor.Domains.Models
         public const string PrefabCreate = "/prefab/create";
         public const string PrefabInstantiate = "/prefab/instantiate";
         public const string AssetRefresh = "/asset/refresh";
-        public const string AssetCreate = "/asset/create";
-        public const string AssetInfo = "/asset/info";
-        public const string AssetSetProperty = "/asset/set-property";
         public const string MenuExecute = "/menu/execute";
         public const string Screenshot = "/editor/screenshot";
     }
