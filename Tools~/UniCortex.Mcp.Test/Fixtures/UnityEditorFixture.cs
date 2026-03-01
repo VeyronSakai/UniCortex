@@ -10,6 +10,8 @@ using GameObjectToolsClass = UniCortex.Mcp.Tools.GameObjectTools;
 using PrefabToolsClass = UniCortex.Mcp.Tools.PrefabTools;
 using SceneToolsClass = UniCortex.Mcp.Tools.SceneTools;
 using TestToolsClass = UniCortex.Mcp.Tools.TestTools;
+using MenuItemToolsClass = UniCortex.Mcp.Tools.MenuItemTools;
+using ScreenshotToolsClass = UniCortex.Mcp.Tools.ScreenshotTools;
 
 namespace UniCortex.Mcp.Test.Fixtures;
 
@@ -23,12 +25,14 @@ public sealed class UnityEditorFixture
     public ComponentToolsClass ComponentTools { get; }
     public PrefabToolsClass PrefabTools { get; }
     public AssetToolsClass AssetTools { get; }
+    public MenuItemToolsClass MenuItemTools { get; }
+    public ScreenshotToolsClass ScreenshotTools { get; }
     public string BaseUrl { get; }
 
     private UnityEditorFixture(EditorToolsClass editorTools, TestToolsClass testTools,
         ConsoleToolsClass consoleTools, SceneToolsClass sceneTools, GameObjectToolsClass gameObjectTools,
         ComponentToolsClass componentTools, PrefabToolsClass prefabTools, AssetToolsClass assetTools,
-        string baseUrl)
+        MenuItemToolsClass menuItemTools, ScreenshotToolsClass screenshotTools, string baseUrl)
     {
         EditorTools = editorTools;
         TestTools = testTools;
@@ -38,6 +42,8 @@ public sealed class UnityEditorFixture
         ComponentTools = componentTools;
         PrefabTools = prefabTools;
         AssetTools = assetTools;
+        MenuItemTools = menuItemTools;
+        ScreenshotTools = screenshotTools;
         BaseUrl = baseUrl;
     }
 
@@ -92,7 +98,10 @@ public sealed class UnityEditorFixture
         var componentTools = new ComponentToolsClass(httpClientFactory, urlProvider);
         var prefabTools = new PrefabToolsClass(httpClientFactory, urlProvider);
         var assetTools = new AssetToolsClass(httpClientFactory, urlProvider);
+        var menuItemTools = new MenuItemToolsClass(httpClientFactory, urlProvider);
+        var screenshotTools = new ScreenshotToolsClass(httpClientFactory, urlProvider);
+
         return new UnityEditorFixture(editorTools, testTools, consoleTools, sceneTools, gameObjectTools,
-            componentTools, prefabTools, assetTools, baseUrl);
+            componentTools, prefabTools, assetTools, menuItemTools, screenshotTools, baseUrl);
     }
 }

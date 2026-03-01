@@ -18,7 +18,7 @@ namespace UniCortex.Editor.Handlers.Asset
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.AssetDatabaseRefresh, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.AssetRefresh, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)

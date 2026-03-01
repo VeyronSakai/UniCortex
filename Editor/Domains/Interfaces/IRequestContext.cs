@@ -9,5 +9,6 @@ namespace UniCortex.Editor.Domains.Interfaces
         string GetQueryParameter(string name);
         Task<string> ReadBodyAsync();
         Task WriteResponseAsync(int statusCode, string json);
+        Task WriteBinaryResponseAsync(int statusCode, string contentType, byte[] data);
     }
 }
