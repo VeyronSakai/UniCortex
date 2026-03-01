@@ -11,23 +11,29 @@ namespace UniCortex.Editor.Tests.Presentations
     [TestFixture]
     internal sealed class ScreenshotHandlerTest
     {
-        [Test]
-        public void HandleScreenshot_Returns200_WithPngData()
+        private SpyScreenshotOperations _operations;
+        private RequestRouter _router;
+
+        [SetUp]
+        public void SetUp()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyScreenshotOperations
+            _operations = new SpyScreenshotOperations
             {
                 ScreenshotResult = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
             };
-            var useCase = new CaptureScreenshotUseCase(dispatcher, operations);
+            var useCase = new CaptureScreenshotUseCase(dispatcher, _operations);
             var handler = new ScreenshotHandler(useCase);
+            _router = new RequestRouter();
+            handler.Register(_router);
+        }
 
-            var router = new RequestRouter();
-            handler.Register(router);
-
+        [Test]
+        public void HandleScreenshot_Returns200_WithPngData()
+        {
             var context = new FakeRequestContext("GET", ApiRoutes.ScreenshotCapture);
 
-            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+            _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(200, context.ResponseStatusCode);
             Assert.AreEqual("image/png", context.ResponseContentType);

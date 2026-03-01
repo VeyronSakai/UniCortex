@@ -464,7 +464,17 @@ Unity Test Runner でテストを実行し、完了まで待機して結果を�
 ### スクリーンショット
 
 #### GET `/screenshot/capture`
-Game View のスクリーンショットを取得する。`ScreenCapture.CaptureScreenshotAsTexture()`
+スクリーンショットを取得する。
+
+クエリパラメータ:
+
+| パラメータ | 型 | デフォルト | 説明 |
+|-----------|------|-----------|------|
+| `source` | string | `"game"` | `"game"`: Game View、`"scene"`: Scene View |
+
+- `source=game`: Play Mode 時は `ScreenCapture.CaptureScreenshotAsTexture()`、Edit Mode 時はシーンカメラから手動レンダリング
+- `source=scene`: `SceneView.lastActiveSceneView.camera` からレンダリング
+- 無効な `source` 値の場合は 400 エラー
 
 レスポンス: PNG 画像バイナリ（`Content-Type: image/png`）
 

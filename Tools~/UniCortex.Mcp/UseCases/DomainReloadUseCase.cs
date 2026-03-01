@@ -7,7 +7,13 @@ internal static class DomainReloadUseCase
 {
     internal static async Task ReloadAsync(HttpClient httpClient, string baseUrl, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsync(baseUrl + ApiRoutes.DomainReload, null, cancellationToken);
+        // Wait for the server to become available before triggering domain reload.
+        // If Unity is already auto-recompiling (e.g. after a .cs file change),
+        // the server will be unavailable; this prevents a double RequestScriptCompilation() call
+        // that can freeze Unity.
+        await WaitForServerAsync(httpClient, baseUrl, cancellationToken);
+
+        var response = await httpClient.PostAsync($"{baseUrl}{ApiRoutes.DomainReload}", null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         // RequestScriptCompilation() is dispatched asynchronously on the Unity main thread.
