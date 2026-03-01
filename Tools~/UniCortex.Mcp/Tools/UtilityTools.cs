@@ -58,7 +58,7 @@ public class UtilityTools(IHttpClientFactory httpClientFactory, IUnityServerUrlP
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Screenshot}", cancellationToken);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
             var pngData = await response.Content.ReadAsByteArrayAsync(cancellationToken);
 
             return new CallToolResult

@@ -42,7 +42,15 @@ namespace UniCortex.Editor.Handlers.Utility
             }
 
             var success = await _useCase.ExecuteAsync(request.menuPath, cancellationToken);
-            var json = JsonUtility.ToJson(new ExecuteMenuItemResponse(success));
+
+            if (!success)
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse($"Failed to execute menu item '{request.menuPath}'."));
+                await context.WriteResponseAsync(404, errorJson);
+                return;
+            }
+
+            var json = JsonUtility.ToJson(new ExecuteMenuItemResponse(true));
             await context.WriteResponseAsync(200, json);
         }
     }

@@ -68,5 +68,24 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(400, context.ResponseStatusCode);
             StringAssert.Contains("menuPath is required", context.ResponseBody);
         }
+
+        [Test]
+        public void HandleExecute_Returns404_WhenMenuItemNotFound()
+        {
+            var dispatcher = new FakeMainThreadDispatcher();
+            var operations = new SpyUtilityOperations { ExecuteMenuItemResult = false };
+            var useCase = new ExecuteMenuItemUseCase(dispatcher, operations);
+            var handler = new ExecuteMenuItemHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var context = new FakeRequestContext("POST", ApiRoutes.MenuExecute, "{\"menuPath\":\"Invalid/Menu/Path\"}");
+
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(404, context.ResponseStatusCode);
+            StringAssert.Contains("Failed to execute menu item", context.ResponseBody);
+        }
     }
 }
