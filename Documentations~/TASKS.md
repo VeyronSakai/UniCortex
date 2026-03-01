@@ -8,7 +8,7 @@
 
 ## 実装済み
 
-### REST API エンドポイント（21/29）
+### REST API エンドポイント（21/26）
 
 | エンドポイント | Handler | UseCase | テスト |
 |---------------|---------|---------|--------|
@@ -34,7 +34,7 @@
 | GET `/component/properties` | ComponentPropertiesHandler | GetComponentPropertiesUseCase | UseCase + Handler |
 | POST `/component/set-property` | SetComponentPropertyHandler | SetComponentPropertyUseCase | UseCase + Handler |
 
-### MCP ツール（20/28）
+### MCP ツール（20/25）
 
 | ツール名 | 対応 API | 状態 |
 |----------|---------|------|
@@ -86,7 +86,7 @@
 | 5 | ~~GameObject (get_game_objects / create / delete / modify)~~ **実装済み** | シーン構築の基本フロー成立 |
 | 6 | ~~component (add / remove / properties / set-property)~~ **実装済み** | GameObject 操作の次に自然な流れ |
 | 7 | prefab (create / instantiate) | GameObject + シーン操作に依存 |
-| 8 | asset (refresh / create / info / set-property) | 独立性はあるが優先度は低め |
+| 8 | asset (refresh) | 独立性はあるが優先度は低め |
 | 9 | menu execute / screenshot | 汎用ユーティリティ、最後でよい |
 
 ---
@@ -104,15 +104,6 @@
 
 - [ ] POST `/asset-database/refresh` + MCP `refresh_asset_database`
   - `AssetDatabase.Refresh()`
-
-### ScriptableObject（3）
-
-- [ ] POST `/scriptable-object/create` + MCP `create_scriptable_object`
-  - ScriptableObject の新規作成
-- [ ] GET `/scriptable-object/info` + MCP `get_scriptable_object_info`
-  - SerializedObject で ScriptableObject のプロパティを列挙
-- [ ] POST `/scriptable-object/set-property` + MCP `set_scriptable_object_property`
-  - SerializedObject API で ScriptableObject プロパティ変更
 
 ### ユーティリティ（残り 2）
 
@@ -132,9 +123,9 @@
 | GameObject | 4 | 0 | 4 |
 | コンポーネント | 4 | 0 | 4 |
 | Prefab | 0 | 2 | 2 |
-| アセット | 0 | 4 | 4 |
+| アセット | 0 | 1 | 1 |
 | コンソール | 2 | 0 | 2 |
 | ユーティリティ | 1 | 2 | 3 |
-| **合計** | **21** | **8** | **29** |
+| **合計** | **21** | **5** | **26** |
 
-MCP ツール: 20/28 実装済み（`GET /editor/status` は MCP ツール対象外）
+MCP ツール: 20/25 実装済み（`GET /editor/status` は MCP ツール対象外）

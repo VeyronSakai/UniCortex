@@ -400,49 +400,6 @@ Prefab をシーンにインスタンス化する。`PrefabUtility.InstantiatePr
 
 レスポンス: `{"success": true}`
 
-### ScriptableObject
-
-#### POST `/scriptable-object/create`
-新規 ScriptableObject アセットを作成する。
-
-リクエストボディ:
-```json
-{"type": "MyConfig", "assetPath": "Assets/Data/MyConfig.asset"}
-```
-
-- `type`: プロジェクト内の `ScriptableObject` サブクラスの型名
-
-レスポンス: `{"success": true}`
-
-#### GET `/scriptable-object/info?assetPath=Assets/Data/MyConfig.asset`
-ScriptableObject のシリアライズ済みプロパティを返す。
-
-レスポンス:
-```json
-{
-  "assetPath": "Assets/Data/MyConfig.asset",
-  "type": "MyConfig",
-  "properties": [
-    {"path": "m_Name", "type": "String", "value": "MyConfig"},
-    {"path": "myField", "type": "Integer", "value": "42"}
-  ]
-}
-```
-
-#### POST `/scriptable-object/set-property`
-ScriptableObject のシリアライズ済みプロパティを変更する。`SerializedObject` API を使用。
-
-リクエストボディ:
-```json
-{
-  "assetPath": "Assets/Data/MyConfig.asset",
-  "propertyPath": "myField",
-  "value": "100"
-}
-```
-
-レスポンス: `{"success": true}`
-
 ### コンソール
 
 #### GET `/console/logs`
@@ -557,7 +514,7 @@ Game View のスクリーンショットを取得する。`ScreenCapture.Capture
   3. どちらもなければエラーで終了
 - ログは stderr に出力（stdout は MCP プロトコル用）
 
-### MCP ツール（全 28 ツール）
+### MCP ツール（全 25 ツール）
 
 AI エージェントが混乱なく使えるよう、各ツールは明確に異なる操作に対応し重複を排除している。
 各ツールは `[McpServerToolType]` クラス内に `[McpServerTool]` メソッドとして定義。
@@ -615,14 +572,6 @@ AI エージェントが混乱なく使えるよう、各ツールは明確に�
 |--------|-----|------|
 | `refresh_asset_database` | POST `/asset-database/refresh` | AssetDatabase をリフレッシュ |
 
-#### ScriptableObject（3）
-
-| ツール | API | 説明 |
-|--------|-----|------|
-| `create_scriptable_object` | POST `/scriptable-object/create` | ScriptableObject アセットを新規作成 |
-| `get_scriptable_object_info` | GET `/scriptable-object/info` | ScriptableObject のシリアライズ済みプロパティを取得 |
-| `set_scriptable_object_property` | POST `/scriptable-object/set-property` | ScriptableObject のプロパティを変更 |
-
 #### コンソール（2）
 
 | ツール | API | 説明 |
@@ -645,12 +594,12 @@ AI エージェントが混乱なく使えるよう、各ツールは明確に�
 - `get_game_objects` と `get_component_properties` の分離 — 前者は GameObject の概要（型一覧のみ）、後者は特定コンポーネントの詳細。大量のプロパティを一度に返すことを防ぐ
 - `execute_menu_item` — 専用ツールでカバーできないエッジケースの汎用エスケープハッチ
 - `capture_screenshot` — マルチモーダル AI エージェントが視覚的に状態を確認するために必要
-- `get_asset_info` / `set_asset_property` — Material・ScriptableObject 操作を汎用的にカバー。専用の Material ツールやシェーダーツールは不要
 
 **不採用:**
 - `execute_csharp`（任意 C# 実行） — セキュリティリスクが高い。`execute_menu_item` で大半のエッジケースをカバー可能
 - `get_editor_status` — MCP ツールとしては不要。REST API（`GET /editor/status`）として内部ポーリング用に存在
-- 専用 Material / シェーダーツール — `create_asset` + `set_asset_property` で汎用対応。シェーダーファイルはエージェントがファイルシステムで直接編集可能
+- 専用 Material / シェーダーツール — シェーダーファイルはエージェントがファイルシステムで直接編集可能
+- 専用 ScriptableObject ツール — `.asset` ファイルはエージェントがファイルシステムで直接読み書き可能。`execute_menu_item` でも代替可能
 - `find_assets` — エージェントはファイルシステムを直接検索可能
 - 専用 Transform ツール — `set_component_property` で汎用対応
 
