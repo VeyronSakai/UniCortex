@@ -7,7 +7,7 @@ namespace UniCortex.Editor.Infrastructures
     {
         public void Refresh()
         {
-            AssetDatabase.Refresh();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
         }
     }
 }
