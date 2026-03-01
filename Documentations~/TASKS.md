@@ -2,7 +2,7 @@
 
 実装状況の一覧。詳細な仕様は [SPEC.md](SPEC.md) を参照。
 
-> 最終更新: 2026-02-27
+> 最終更新: 2026-02-28
 
 ---
 
@@ -25,11 +25,10 @@
 | POST `/scene/open` | OpenSceneHandler | OpenSceneUseCase | UseCase + Handler |
 | POST `/scene/save` | SaveSceneHandler | SaveSceneUseCase | UseCase + Handler |
 | GET `/scene/hierarchy` | SceneHierarchyHandler | GetSceneHierarchyUseCase | UseCase + Handler |
-| GET `/gameobject/find` | FindGameObjectsHandler | FindGameObjectsUseCase | UseCase + Handler |
-| POST `/gameobject/create` | CreateGameObjectHandler | CreateGameObjectUseCase | UseCase + Handler |
-| POST `/gameobject/delete` | DeleteGameObjectHandler | DeleteGameObjectUseCase | UseCase + Handler |
-| GET `/gameobject/info` | GameObjectInfoHandler | GetGameObjectInfoUseCase | UseCase + Handler |
-| POST `/gameobject/modify` | ModifyGameObjectHandler | ModifyGameObjectUseCase | UseCase + Handler |
+| GET `/gameobjects` | GetGameObjectsHandler | GetGameObjectsUseCase | UseCase + Handler |
+| POST `/gameobject/create` | CreateGameObjectHandler | CreateGameObjectUseCase | — |
+| POST `/gameobject/delete` | DeleteGameObjectHandler | DeleteGameObjectUseCase | — |
+| POST `/gameobject/modify` | ModifyGameObjectHandler | ModifyGameObjectUseCase | — |
 | POST `/component/add` | AddComponentHandler | AddComponentUseCase | UseCase + Handler |
 | POST `/component/remove` | RemoveComponentHandler | RemoveComponentUseCase | UseCase + Handler |
 | GET `/component/properties` | ComponentPropertiesHandler | GetComponentPropertiesUseCase | UseCase + Handler |
@@ -59,10 +58,9 @@
 | `open_scene` | POST `/scene/open` | 済 |
 | `save_scene` | POST `/scene/save` | 済 |
 | `get_scene_hierarchy` | GET `/scene/hierarchy` | 済 |
-| `find_gameobjects` | GET `/gameobject/find` | 済 |
+| `get_game_objects` | GET `/gameobjects` | 済 |
 | `create_gameobject` | POST `/gameobject/create` | 済 |
 | `delete_gameobject` | POST `/gameobject/delete` | 済 |
-| `get_gameobject_info` | GET `/gameobject/info` | 済 |
 | `modify_gameobject` | POST `/gameobject/modify` | 済 |
 | `add_component` | POST `/component/add` | 済 |
 | `remove_component` | POST `/component/remove` | 済 |
@@ -101,7 +99,7 @@
 | 2 | ~~run_tests~~ **実装済み** | 以降の全実装で MCP 経由のセルフテストが可能になる |
 | 3 | ~~console (logs / clear)~~ **実装済み** | テスト失敗時のデバッグに直結。独立性が高い |
 | 4 | ~~scene (open / save / hierarchy)~~ **実装済み** | GameObject 操作の前提となる基盤機能 |
-| 5 | ~~GameObject (find / create / delete / info / modify)~~ **実装済み** | シーン構築の基本フロー成立 |
+| 5 | ~~GameObject (get_game_objects / create / delete / modify)~~ **実装済み** | シーン構築の基本フロー成立 |
 | 6 | ~~component (add / remove / properties / set-property)~~ **実装済み** | GameObject 操作の次に自然な流れ |
 | 7 | ~~prefab (create / instantiate)~~ **実装済み** | GameObject + シーン操作に依存 |
 | 8 | ~~asset (refresh / create / info / set-property)~~ **実装済み** | 独立性はあるが優先度は低め |
@@ -115,7 +113,7 @@
 |---------|----|----|------|
 | Editor 制御 | 7 | 0 | 7 |
 | シーン | 3 | 0 | 3 |
-| GameObject | 5 | 0 | 5 |
+| GameObject | 4 | 0 | 4 |
 | コンポーネント | 4 | 0 | 4 |
 | Prefab | 2 | 0 | 2 |
 | アセット | 4 | 0 | 4 |

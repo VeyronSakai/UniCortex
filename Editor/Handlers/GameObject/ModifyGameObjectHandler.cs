@@ -42,11 +42,11 @@ namespace UniCortex.Editor.Handlers.GameObject
             }
 
             // Determine which fields were provided in the JSON body
-            string modifyName = body.Contains("\"name\"") ? request.name : null;
-            bool? modifyActiveSelf = body.Contains("\"activeSelf\"") ? (bool?)request.activeSelf : null;
-            string modifyTag = body.Contains("\"tag\"") ? request.tag : null;
-            int? modifyLayer = body.Contains("\"layer\"") ? (int?)request.layer : null;
-            int? modifyParent = body.Contains("\"parentInstanceId\"") ? (int?)request.parentInstanceId : null;
+            var modifyName = body.Contains("\"name\"") ? request.name : null;
+            var modifyActiveSelf = body.Contains("\"activeSelf\"") ? (bool?)request.activeSelf : null;
+            var modifyTag = body.Contains("\"tag\"") ? request.tag : null;
+            var modifyLayer = body.Contains("\"layer\"") ? (int?)request.layer : null;
+            var modifyParent = body.Contains("\"parentInstanceId\"") ? (int?)request.parentInstanceId : null;
 
             await _useCase.ExecuteAsync(request.instanceId, modifyName, modifyActiveSelf, modifyTag, modifyLayer,
                 modifyParent, cancellationToken);

@@ -15,19 +15,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleRefresh_Returns200WithSuccess()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyAssetOperations();
+            var operations = new SpyAssetDatabaseOperations();
             var useCase = new RefreshAssetDatabaseUseCase(dispatcher, operations);
             var handler = new AssetRefreshHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext
-            {
-                HttpMethod = "POST",
-                Path = ApiRoutes.AssetRefresh,
-                Body = ""
-            };
+            var context = new FakeRequestContext("POST", ApiRoutes.AssetDatabaseRefresh);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

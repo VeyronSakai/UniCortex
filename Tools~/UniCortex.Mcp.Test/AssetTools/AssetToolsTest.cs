@@ -27,14 +27,4 @@ public class AssetToolsTest
         var text = ((TextContentBlock)result.Content[0]).Text;
         Assert.That(text, Does.Contain("refreshed"));
     }
-
-    [Test]
-    public async Task GetAssetInfo_ReturnsError_WhenAssetNotFound()
-    {
-        var assetTools = _fixture.AssetTools;
-
-        var result = await assetTools.GetAssetInfo("Assets/NonExistent.mat", CancellationToken.None);
-
-        Assert.That(result.IsError, Is.True);
-    }
 }

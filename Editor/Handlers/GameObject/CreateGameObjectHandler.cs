@@ -41,7 +41,7 @@ namespace UniCortex.Editor.Handlers.GameObject
                 return;
             }
 
-            var result = await _useCase.ExecuteAsync(request.name, request.primitive, cancellationToken);
+            var result = await _useCase.ExecuteAsync(request.name, cancellationToken);
             var json = JsonUtility.ToJson(result);
             await context.WriteResponseAsync(200, json);
         }

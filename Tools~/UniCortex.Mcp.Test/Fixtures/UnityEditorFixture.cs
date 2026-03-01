@@ -44,6 +44,30 @@ public sealed class UnityEditorFixture
         BaseUrl = baseUrl;
     }
 
+    /// <summary>
+    /// Deletes an asset file and its .meta from disk using UNICORTEX_PROJECT_PATH.
+    /// </summary>
+    public static void DeleteAssetFile(string assetPath)
+    {
+        var projectPath = Environment.GetEnvironmentVariable("UNICORTEX_PROJECT_PATH");
+        if (projectPath is null)
+        {
+            return;
+        }
+
+        var fullPath = Path.Combine(projectPath, assetPath);
+        if (File.Exists(fullPath))
+        {
+            File.Delete(fullPath);
+        }
+
+        var metaPath = fullPath + ".meta";
+        if (File.Exists(metaPath))
+        {
+            File.Delete(metaPath);
+        }
+    }
+
     public static async ValueTask<UnityEditorFixture> CreateAsync()
     {
         var urlProvider = new UnityServerUrlProvider();

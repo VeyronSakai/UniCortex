@@ -15,11 +15,11 @@ namespace UniCortex.Editor.Tests.UseCases
             var ops = new SpyComponentOperations();
             var useCase = new AddComponentUseCase(dispatcher, ops);
 
-            useCase.ExecuteAsync(123, "Rigidbody", CancellationToken.None).GetAwaiter().GetResult();
+            useCase.ExecuteAsync(123, "UnityEngine.Rigidbody", CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, ops.AddComponentCallCount);
             Assert.AreEqual(123, ops.LastAddComponentInstanceId);
-            Assert.AreEqual("Rigidbody", ops.LastAddComponentType);
+            Assert.AreEqual("UnityEngine.Rigidbody", ops.LastAddComponentType);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
     }

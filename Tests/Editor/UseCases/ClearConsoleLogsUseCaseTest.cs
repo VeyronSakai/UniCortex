@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.Threading;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using NUnit.Framework;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.Tests.UseCases
 {
@@ -12,7 +14,7 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_CallsClear_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var collector = new SpyConsoleLogCollector();
+            var collector = new SpyConsoleLogCollector(new List<ConsoleLogEntry>());
             var useCase = new ClearConsoleLogsUseCase(dispatcher, collector);
 
             useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
