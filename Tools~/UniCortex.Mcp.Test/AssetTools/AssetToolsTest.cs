@@ -32,11 +32,11 @@ public class AssetToolsTest
     public async Task CreateAsset_ReturnsSuccess()
     {
         var assetTools = _fixture.AssetTools;
-        const string AssetPath = "Assets/CreateAssetTest.mat";
+        const string AssetPath = "Assets/CreateAssetTest.asset";
 
         try
         {
-            var result = await assetTools.CreateAsset("Material", AssetPath, CancellationToken.None);
+            var result = await assetTools.CreateAsset("AllPropertyTypesScriptableObject", AssetPath, CancellationToken.None);
 
             Assert.That(result.IsError, Is.Not.True);
             Assert.That(result.Content, Has.Count.EqualTo(1));
@@ -53,13 +53,13 @@ public class AssetToolsTest
     public async Task SetAssetProperty_ReturnsSuccess()
     {
         var assetTools = _fixture.AssetTools;
-        const string AssetPath = "Assets/SetAssetPropertyTest.mat";
+        const string AssetPath = "Assets/SetAssetPropertyTest.asset";
 
         try
         {
-            await assetTools.CreateAsset("Material", AssetPath, CancellationToken.None);
+            await assetTools.CreateAsset("AllPropertyTypesScriptableObject", AssetPath, CancellationToken.None);
 
-            var result = await assetTools.SetAssetProperty(AssetPath, "m_Name", "RenamedMaterial",
+            var result = await assetTools.SetAssetProperty(AssetPath, "m_Name", "RenamedAsset",
                 CancellationToken.None);
 
             Assert.That(result.IsError, Is.Not.True);

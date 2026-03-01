@@ -17,22 +17,13 @@ namespace UniCortex.Editor.Infrastructures
 
         public void CreateAsset(string type, string assetPath)
         {
-            Object asset;
-
-            if (string.Equals(type, "Material", StringComparison.OrdinalIgnoreCase))
+            var scriptableType = ResolveScriptableObjectType(type);
+            if (scriptableType == null)
             {
-                asset = new Material(Shader.Find("Standard"));
+                throw new ArgumentException($"Unsupported asset type: {type}");
             }
-            else
-            {
-                var scriptableType = ResolveScriptableObjectType(type);
-                if (scriptableType == null)
-                {
-                    throw new ArgumentException($"Unsupported asset type: {type}");
-                }
 
-                asset = ScriptableObject.CreateInstance(scriptableType);
-            }
+            var asset = ScriptableObject.CreateInstance(scriptableType);
 
             AssetDatabase.CreateAsset(asset, assetPath);
             AssetDatabase.SaveAssets();

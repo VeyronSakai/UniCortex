@@ -15,12 +15,12 @@ namespace UniCortex.Editor.Tests.UseCases
             var operations = new SpyAssetOperations();
             var useCase = new CreateAssetUseCase(dispatcher, operations);
 
-            useCase.ExecuteAsync("Material", "Assets/Materials/Test.mat", CancellationToken.None)
+            useCase.ExecuteAsync("TestConfig", "Assets/TestConfig.asset", CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(1, operations.CreateAssetCallCount);
-            Assert.AreEqual("Material", operations.LastCreateType);
-            Assert.AreEqual("Assets/Materials/Test.mat", operations.LastCreateAssetPath);
+            Assert.AreEqual("TestConfig", operations.LastCreateType);
+            Assert.AreEqual("Assets/TestConfig.asset", operations.LastCreateAssetPath);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
     }

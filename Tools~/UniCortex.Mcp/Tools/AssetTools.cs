@@ -42,9 +42,9 @@ public class AssetTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
     }
 
     [McpServerTool(ReadOnly = false),
-     Description("Create a new asset (Material or ScriptableObject) at the specified path."), UsedImplicitly]
+     Description("Create a new ScriptableObject asset at the specified path."), UsedImplicitly]
     public async Task<CallToolResult> CreateAsset(
-        [Description("The asset type to create (e.g. \"Material\" or a ScriptableObject subclass name).")]
+        [Description("The ScriptableObject subclass type name to create.")]
         string type,
         [Description("The asset path where the asset should be created (e.g. \"Assets/Materials/NewMat.mat\").")]
         string assetPath,

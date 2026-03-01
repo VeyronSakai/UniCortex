@@ -23,13 +23,13 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext("POST", ApiRoutes.AssetCreate,
-                "{\"type\":\"Material\",\"assetPath\":\"Assets/Materials/Test.mat\"}");
+                "{\"type\":\"TestConfig\",\"assetPath\":\"Assets/TestConfig.asset\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(200, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
-            Assert.AreEqual("Material", operations.LastCreateType);
+            Assert.AreEqual("TestConfig", operations.LastCreateType);
         }
 
         [Test]
@@ -63,7 +63,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext("POST", ApiRoutes.AssetCreate,
-                "{\"assetPath\":\"Assets/Materials/Test.mat\"}");
+                "{\"assetPath\":\"Assets/TestConfig.asset\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
