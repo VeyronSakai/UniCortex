@@ -36,8 +36,8 @@
 | POST `/prefab/create` | CreatePrefabHandler | CreatePrefabUseCase | UseCase + Handler |
 | POST `/prefab/instantiate` | InstantiatePrefabHandler | InstantiatePrefabUseCase | UseCase + Handler |
 | POST `/asset/refresh` | AssetRefreshHandler | RefreshAssetDatabaseUseCase | UseCase + Handler |
-| POST `/menu/execute` | ExecuteMenuItemHandler | ExecuteMenuItemUseCase | UseCase + Handler |
-| GET `/editor/screenshot` | ScreenshotHandler | CaptureScreenshotUseCase | UseCase + Handler |
+| POST `/menu-item/execute` | ExecuteMenuItemHandler | ExecuteMenuItemUseCase | UseCase + Handler |
+| GET `/screenshot/capture` | ScreenshotHandler | CaptureScreenshotUseCase | UseCase + Handler |
 
 ### MCP ツール（23/23）
 
@@ -66,8 +66,8 @@
 | `create_prefab` | POST `/prefab/create` | 済 |
 | `instantiate_prefab` | POST `/prefab/instantiate` | 済 |
 | `refresh_asset_database` | POST `/asset/refresh` | 済 |
-| `execute_menu_item` | POST `/menu/execute` | 済 |
-| `capture_screenshot` | GET `/editor/screenshot` | 済 |
+| `execute_menu_item` | POST `/menu-item/execute` | 済 |
+| `capture_screenshot` | GET `/screenshot/capture` | 済 |
 
 ### インフラ・基盤
 
@@ -97,7 +97,7 @@
 | 6 | ~~component (add / remove / properties / set-property)~~ **実装済み** | GameObject 操作の次に自然な流れ |
 | 7 | ~~prefab (create / instantiate)~~ **実装済み** | GameObject + シーン操作に依存 |
 | 8 | ~~asset (refresh)~~ **実装済み** | 独立性はあるが優先度は低め |
-| 9 | ~~menu execute / screenshot~~ **実装済み** | 汎用ユーティリティ、最後でよい |
+| 9 | ~~menu execute / screenshot~~ **実装済み** | メニューアイテム・スクリーンショット、最後でよい |
 
 ---
 
@@ -112,7 +112,8 @@
 | Prefab | 2 | 0 | 2 |
 | アセット | 1 | 0 | 1 |
 | コンソール | 2 | 0 | 2 |
-| ユーティリティ | 3 | 0 | 3 |
-| **合計** | **26** | **0** | **26** |
+| メニューアイテム | 1 | 0 | 1 |
+| スクリーンショット | 1 | 0 | 1 |
+| **合計** | **25** | **0** | **25** |
 
 MCP ツール: 23/23 実装済み（`GET /editor/status` は MCP ツール対象外、`GET /tests/result` は内部 API）

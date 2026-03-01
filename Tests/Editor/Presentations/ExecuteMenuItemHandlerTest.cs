@@ -1,6 +1,6 @@
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Editor.Handlers.Utility;
+using UniCortex.Editor.Handlers.MenuItem;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
@@ -15,14 +15,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleExecute_Returns200_WhenValid()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyUtilityOperations();
+            var operations = new SpyMenuItemOperations();
             var useCase = new ExecuteMenuItemUseCase(dispatcher, operations);
             var handler = new ExecuteMenuItemHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.MenuExecute, "{\"menuPath\":\"GameObject/3D Object/Cube\"}");
+            var context = new FakeRequestContext("POST", ApiRoutes.MenuItemExecute, "{\"menuPath\":\"GameObject/3D Object/Cube\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -35,14 +35,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleExecute_Returns400_WhenBodyEmpty()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyUtilityOperations();
+            var operations = new SpyMenuItemOperations();
             var useCase = new ExecuteMenuItemUseCase(dispatcher, operations);
             var handler = new ExecuteMenuItemHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.MenuExecute, "");
+            var context = new FakeRequestContext("POST", ApiRoutes.MenuItemExecute, "");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -54,14 +54,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleExecute_Returns400_WhenMenuPathMissing()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyUtilityOperations();
+            var operations = new SpyMenuItemOperations();
             var useCase = new ExecuteMenuItemUseCase(dispatcher, operations);
             var handler = new ExecuteMenuItemHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.MenuExecute, "{}");
+            var context = new FakeRequestContext("POST", ApiRoutes.MenuItemExecute, "{}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -73,14 +73,14 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleExecute_Returns404_WhenMenuItemNotFound()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyUtilityOperations { ExecuteMenuItemResult = false };
+            var operations = new SpyMenuItemOperations { ExecuteMenuItemResult = false };
             var useCase = new ExecuteMenuItemUseCase(dispatcher, operations);
             var handler = new ExecuteMenuItemHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.MenuExecute, "{\"menuPath\":\"Invalid/Menu/Path\"}");
+            var context = new FakeRequestContext("POST", ApiRoutes.MenuItemExecute, "{\"menuPath\":\"Invalid/Menu/Path\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

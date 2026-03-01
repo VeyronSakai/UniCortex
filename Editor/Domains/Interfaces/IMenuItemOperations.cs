@@ -1,8 +1,7 @@
 namespace UniCortex.Editor.Domains.Interfaces
 {
-    internal interface IUtilityOperations
+    internal interface IMenuItemOperations
     {
         bool ExecuteMenuItem(string menuPath);
-        byte[] CaptureScreenshot();
     }
 }

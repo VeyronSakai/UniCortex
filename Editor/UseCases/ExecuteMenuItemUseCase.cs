@@ -7,9 +7,9 @@ namespace UniCortex.Editor.UseCases
     internal sealed class ExecuteMenuItemUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IUtilityOperations _operations;
+        private readonly IMenuItemOperations _operations;
 
-        public ExecuteMenuItemUseCase(IMainThreadDispatcher dispatcher, IUtilityOperations operations)
+        public ExecuteMenuItemUseCase(IMainThreadDispatcher dispatcher, IMenuItemOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;

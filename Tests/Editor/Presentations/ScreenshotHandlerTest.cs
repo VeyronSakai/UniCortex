@@ -1,6 +1,6 @@
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Editor.Handlers.Utility;
+using UniCortex.Editor.Handlers.Screenshot;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleScreenshot_Returns200_WithPngData()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyUtilityOperations
+            var operations = new SpyScreenshotOperations
             {
                 ScreenshotResult = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
             };
@@ -25,7 +25,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("GET", ApiRoutes.Screenshot);
+            var context = new FakeRequestContext("GET", ApiRoutes.ScreenshotCapture);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

@@ -12,7 +12,7 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_ReturnsScreenshotData_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyUtilityOperations
+            var operations = new SpyScreenshotOperations
             {
                 ScreenshotResult = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
             };

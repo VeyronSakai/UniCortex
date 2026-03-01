@@ -12,7 +12,7 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_CallsExecuteMenuItem_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyUtilityOperations();
+            var operations = new SpyMenuItemOperations();
             var useCase = new ExecuteMenuItemUseCase(dispatcher, operations);
 
             var result = useCase.ExecuteAsync("GameObject/3D Object/Cube", CancellationToken.None)

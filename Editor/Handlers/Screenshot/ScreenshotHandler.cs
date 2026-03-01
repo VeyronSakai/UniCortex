@@ -4,7 +4,7 @@ using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
 
-namespace UniCortex.Editor.Handlers.Utility
+namespace UniCortex.Editor.Handlers.Screenshot
 {
     internal sealed class ScreenshotHandler
     {
@@ -17,7 +17,7 @@ namespace UniCortex.Editor.Handlers.Utility
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Get, ApiRoutes.Screenshot, HandleAsync);
+            router.Register(HttpMethodType.Get, ApiRoutes.ScreenshotCapture, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)

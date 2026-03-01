@@ -1,16 +1,10 @@
 using UniCortex.Editor.Domains.Interfaces;
-using UnityEditor;
 using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    internal sealed class UtilityOperationsAdapter : IUtilityOperations
+    internal sealed class ScreenshotOperationsAdapter : IScreenshotOperations
     {
-        public bool ExecuteMenuItem(string menuPath)
-        {
-            return EditorApplication.ExecuteMenuItem(menuPath);
-        }
-
         public byte[] CaptureScreenshot()
         {
             var texture = ScreenCapture.CaptureScreenshotAsTexture();

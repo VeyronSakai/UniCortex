@@ -12,7 +12,7 @@ using UniCortex.Mcp.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class UtilityTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class MenuItemTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
@@ -34,36 +34,12 @@ public class UtilityTools(IHttpClientFactory httpClientFactory, IUnityServerUrlP
             var body = JsonSerializer.Serialize(request, s_jsonOptions);
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.MenuExecute}", content, cancellationToken);
+                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.MenuItemExecute}", content, cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             return new CallToolResult
             {
                 Content = [new TextContentBlock { Text = $"Menu item executed: {menuPath}" }]
-            };
-        }
-        catch (Exception ex)
-        {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
-        }
-    }
-
-    [McpServerTool(ReadOnly = true),
-     Description("Capture a screenshot of the Game View as a PNG image."), UsedImplicitly]
-    public async Task<CallToolResult> CaptureScreenshot(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Screenshot}", cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var pngData = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new ImageContentBlock { Data = pngData, MimeType = "image/png" }]
             };
         }
         catch (Exception ex)

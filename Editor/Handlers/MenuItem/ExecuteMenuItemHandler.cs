@@ -5,7 +5,7 @@ using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
 using UnityEngine;
 
-namespace UniCortex.Editor.Handlers.Utility
+namespace UniCortex.Editor.Handlers.MenuItem
 {
     internal sealed class ExecuteMenuItemHandler
     {
@@ -18,7 +18,7 @@ namespace UniCortex.Editor.Handlers.Utility
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.MenuExecute, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.MenuItemExecute, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)

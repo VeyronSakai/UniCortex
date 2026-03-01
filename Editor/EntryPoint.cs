@@ -6,7 +6,8 @@ using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Prefab;
 using UniCortex.Editor.Handlers.Scene;
 using UniCortex.Editor.Handlers.Tests;
-using UniCortex.Editor.Handlers.Utility;
+using UniCortex.Editor.Handlers.MenuItem;
+using UniCortex.Editor.Handlers.Screenshot;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
 using UniCortex.Editor.UseCases;
@@ -157,12 +158,13 @@ namespace UniCortex.Editor
             var assetRefreshHandler = new AssetRefreshHandler(refreshAssetDatabaseUseCase);
 
 
-            var utilityOps = new UtilityOperationsAdapter();
+            var menuItemOps = new MenuItemOperationsAdapter();
+            var screenshotOps = new ScreenshotOperationsAdapter();
 
-            var executeMenuItemUseCase = new ExecuteMenuItemUseCase(s_dispatcher, utilityOps);
+            var executeMenuItemUseCase = new ExecuteMenuItemUseCase(s_dispatcher, menuItemOps);
             var executeMenuItemHandler = new ExecuteMenuItemHandler(executeMenuItemUseCase);
 
-            var captureScreenshotUseCase = new CaptureScreenshotUseCase(s_dispatcher, utilityOps);
+            var captureScreenshotUseCase = new CaptureScreenshotUseCase(s_dispatcher, screenshotOps);
             var screenshotHandler = new ScreenshotHandler(captureScreenshotUseCase);
 
             pingHandler.Register(router);
