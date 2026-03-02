@@ -16,16 +16,25 @@ public class ScreenshotToolsTest
     }
 
     [Test]
-    public async Task CaptureScreenshot_ReturnsImage()
+    public async Task CaptureScreenshot_InPlayMode_ReturnsImage()
     {
+        var editorTools = _fixture.EditorTools;
         var screenshotTools = _fixture.ScreenshotTools;
 
-        var result = await screenshotTools.CaptureScreenshot(CancellationToken.None);
+        await editorTools.EnterPlayMode(CancellationToken.None);
+        try
+        {
+            var result = await screenshotTools.CaptureScreenshot(CancellationToken.None);
 
-        Assert.That(result.IsError, Is.Not.True);
-        Assert.That(result.Content, Has.Count.EqualTo(1));
-        var image = (ImageContentBlock)result.Content[0];
-        Assert.That(image.MimeType, Is.EqualTo("image/png"));
-        Assert.That(image.Data.Length, Is.GreaterThan(0));
+            Assert.That(result.IsError, Is.Not.True);
+            Assert.That(result.Content, Has.Count.EqualTo(1));
+            var image = (ImageContentBlock)result.Content[0];
+            Assert.That(image.MimeType, Is.EqualTo("image/png"));
+            Assert.That(image.Data.Length, Is.GreaterThan(0));
+        }
+        finally
+        {
+            await editorTools.ExitPlayMode(CancellationToken.None);
+        }
     }
 }
