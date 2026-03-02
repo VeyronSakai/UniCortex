@@ -1,7 +1,7 @@
 # UniCortex
 
 > [!CAUTION]
-> This project is in a very early stage of development. Only a small subset of features has been implemented, and the API and command structure are subject to significant changes without notice.
+> This project is still under active development. The API and command structure may change without notice.
 
 A toolkit for controlling Unity Editor externally via REST API and MCP (Model Context Protocol).
 
@@ -65,6 +65,83 @@ Alternatively, you can specify the URL directly via the `UNICORTEX_URL` environm
 }
 ```
 
+## Available MCP Tools
+
+### Editor Control
+
+| Tool | Description |
+|------|-------------|
+| `ping_editor` | Check connectivity with the Unity Editor |
+| `enter_play_mode` | Start Play Mode |
+| `exit_play_mode` | Stop Play Mode |
+| `reload_domain` | Request script recompilation (domain reload) |
+| `undo` | Undo the last operation |
+| `redo` | Redo an undone operation |
+
+### Scene
+
+| Tool | Description |
+|------|-------------|
+| `open_scene` | Open a scene by path |
+| `save_scene` | Save all open scenes |
+| `get_scene_hierarchy` | Get the GameObject hierarchy tree of the current scene |
+
+### GameObject
+
+| Tool | Description |
+|------|-------------|
+| `get_game_objects` | Search GameObjects by name, tag, component type, instanceId, layer, path, or state |
+| `create_game_object` | Create a new empty GameObject |
+| `delete_game_object` | Delete a GameObject (supports Undo) |
+| `modify_game_object` | Modify name, active state, tag, layer, or parent |
+
+### Component
+
+| Tool | Description |
+|------|-------------|
+| `add_component` | Add a component to a GameObject |
+| `remove_component` | Remove a component from a GameObject |
+| `get_component_properties` | Get serialized properties of a component |
+| `set_component_property` | Set a serialized property on a component |
+
+### Prefab
+
+| Tool | Description |
+|------|-------------|
+| `create_prefab` | Save a scene GameObject as a Prefab asset |
+| `instantiate_prefab` | Instantiate a Prefab into the scene |
+
+### Asset
+
+| Tool | Description |
+|------|-------------|
+| `refresh_asset_database` | Refresh the Unity Asset Database |
+
+### Console
+
+| Tool | Description |
+|------|-------------|
+| `get_console_logs` | Get console log entries from the Unity Editor |
+| `clear_console_logs` | Clear all console logs |
+
+### Test
+
+| Tool | Description |
+|------|-------------|
+| `run_tests` | Run Unity Test Runner tests and return results |
+
+### Menu Item
+
+| Tool | Description |
+|------|-------------|
+| `execute_menu_item` | Execute a Unity Editor menu item by path |
+
+### Screenshot
+
+| Tool | Description |
+|------|-------------|
+| `capture_screenshot` | Capture a screenshot of the Game View |
+
 ## Settings
 
 Configurable from **Project Settings > UniCortex**.
@@ -75,6 +152,16 @@ Configurable from **Project Settings > UniCortex**.
 | Current Port | — | Read-only. The port assigned at startup (random, persisted across domain reloads) |
 
 The HTTP server is assigned a random free port on each Editor launch. The port is written to `Library/UniCortex/config.json` and read automatically by the MCP server.
+
+## Architecture
+
+```
+AI Agent ←(MCP/stdio)→ MCP Server (.NET 8) ←(HTTP)→ Unity Editor HTTP Server
+```
+
+- **Unity Editor side**: C# `HttpListener` HTTP server embedded in the Editor
+- **MCP Server side**: .NET 8 + [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk)
+- **UPM Package**: `com.veyron-sakai.uni-cortex`
 
 ## Documentation
 
