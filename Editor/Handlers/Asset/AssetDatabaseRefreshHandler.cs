@@ -7,11 +7,11 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Asset
 {
-    internal sealed class AssetRefreshHandler
+    internal sealed class AssetDatabaseRefreshHandler
     {
         private readonly RefreshAssetDatabaseUseCase _useCase;
 
-        public AssetRefreshHandler(RefreshAssetDatabaseUseCase useCase)
+        public AssetDatabaseRefreshHandler(RefreshAssetDatabaseUseCase useCase)
         {
             _useCase = useCase;
         }
@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Handlers.Asset
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             await _useCase.ExecuteAsync(cancellationToken);
-            var json = JsonUtility.ToJson(new AssetRefreshResponse(true));
+            var json = JsonUtility.ToJson(new AssetDatabaseRefreshResponse(true));
             await context.WriteResponseAsync(200, json);
         }
     }

@@ -8,7 +8,7 @@
 
 ## 実装済み
 
-### REST API エンドポイント（21/26）
+### REST API エンドポイント（24/24）
 
 | エンドポイント | Handler | UseCase | テスト |
 |---------------|---------|---------|--------|
@@ -33,8 +33,13 @@
 | POST `/component/remove` | RemoveComponentHandler | RemoveComponentUseCase | UseCase + Handler |
 | GET `/component/properties` | ComponentPropertiesHandler | GetComponentPropertiesUseCase | UseCase + Handler |
 | POST `/component/set-property` | SetComponentPropertyHandler | SetComponentPropertyUseCase | UseCase + Handler |
+| POST `/prefab/create` | CreatePrefabHandler | CreatePrefabUseCase | UseCase + Handler |
+| POST `/prefab/instantiate` | InstantiatePrefabHandler | InstantiatePrefabUseCase | UseCase + Handler |
+| POST `/asset/refresh` | AssetRefreshHandler | RefreshAssetDatabaseUseCase | UseCase + Handler |
+| POST `/menu-item/execute` | ExecuteMenuItemHandler | ExecuteMenuItemUseCase | UseCase + Handler |
+| GET `/screenshot/capture` | ScreenshotHandler | CaptureScreenshotUseCase | UseCase + Handler |
 
-### MCP ツール（20/25）
+### MCP ツール（23/23）
 
 | ツール名 | 対応 API | 状態 |
 |----------|---------|------|
@@ -58,6 +63,11 @@
 | `remove_component` | POST `/component/remove` | 済 |
 | `get_component_properties` | GET `/component/properties` | 済 |
 | `set_component_property` | POST `/component/set-property` | 済 |
+| `create_prefab` | POST `/prefab/create` | 済 |
+| `instantiate_prefab` | POST `/prefab/instantiate` | 済 |
+| `refresh_asset_database` | POST `/asset/refresh` | 済 |
+| `execute_menu_item` | POST `/menu-item/execute` | 済 |
+| `capture_screenshot` | GET `/screenshot/capture` | 済 |
 
 ### インフラ・基盤
 
@@ -79,38 +89,15 @@
 
 | 優先度 | タスク | 理由 |
 |--------|--------|------|
-| 1 | undo / redo | 既存パターンの踏襲で最小工数。Editor 制御カテゴリ完成 |
+| 1 | ~~undo / redo~~ **実装済み** | 既存パターンの踏襲で最小工数。Editor 制御カテゴリ完成 |
 | 2 | ~~run_tests~~ **実装済み** | 以降の全実装で MCP 経由のセルフテストが可能になる |
 | 3 | ~~console (logs / clear)~~ **実装済み** | テスト失敗時のデバッグに直結。独立性が高い |
 | 4 | ~~scene (open / save / hierarchy)~~ **実装済み** | GameObject 操作の前提となる基盤機能 |
 | 5 | ~~GameObject (get_game_objects / create / delete / modify)~~ **実装済み** | シーン構築の基本フロー成立 |
 | 6 | ~~component (add / remove / properties / set-property)~~ **実装済み** | GameObject 操作の次に自然な流れ |
-| 7 | prefab (create / instantiate) | GameObject + シーン操作に依存 |
-| 8 | asset (refresh) | 独立性はあるが優先度は低め |
-| 9 | menu execute / screenshot | 汎用ユーティリティ、最後でよい |
-
----
-
-## 未実装タスク
-
-### Prefab（残り 2）
-
-- [ ] POST `/prefab/create` + MCP `create_prefab`
-  - `PrefabUtility.SaveAsPrefabAsset()`
-- [ ] POST `/prefab/instantiate` + MCP `instantiate_prefab`
-  - `PrefabUtility.InstantiatePrefab()` + `Undo.RegisterCreatedObjectUndo`
-
-### アセット（1）
-
-- [ ] POST `/asset-database/refresh` + MCP `refresh_asset_database`
-  - `AssetDatabase.Refresh()`
-
-### ユーティリティ（残り 2）
-
-- [ ] POST `/menu/execute` + MCP `execute_menu_item`
-  - `EditorApplication.ExecuteMenuItem(menuPath)`
-- [ ] GET `/editor/screenshot` + MCP `capture_screenshot`
-  - `ScreenCapture.CaptureScreenshotAsTexture()` → PNG バイナリ返却
+| 7 | ~~prefab (create / instantiate)~~ **実装済み** | GameObject + シーン操作に依存 |
+| 8 | ~~asset (refresh)~~ **実装済み** | 独立性はあるが優先度は低め |
+| 9 | ~~menu execute / screenshot~~ **実装済み** | メニューアイテム・スクリーンショット、最後でよい |
 
 ---
 
@@ -122,10 +109,11 @@
 | シーン | 3 | 0 | 3 |
 | GameObject | 4 | 0 | 4 |
 | コンポーネント | 4 | 0 | 4 |
-| Prefab | 0 | 2 | 2 |
-| アセット | 0 | 1 | 1 |
+| Prefab | 2 | 0 | 2 |
+| アセット | 1 | 0 | 1 |
 | コンソール | 2 | 0 | 2 |
-| ユーティリティ | 1 | 2 | 3 |
-| **合計** | **21** | **5** | **26** |
+| メニューアイテム | 1 | 0 | 1 |
+| スクリーンショット | 1 | 0 | 1 |
+| **合計** | **25** | **0** | **25** |
 
-MCP ツール: 20/25 実装済み（`GET /editor/status` は MCP ツール対象外）
+MCP ツール: 23/23 実装済み（`GET /editor/status` は MCP ツール対象外、`GET /tests/result` は内部 API）

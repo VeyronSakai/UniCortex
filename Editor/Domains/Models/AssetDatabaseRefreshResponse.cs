@@ -3,11 +3,11 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class AssetRefreshResponse
+    public class AssetDatabaseRefreshResponse
     {
         public bool success;
 
-        public AssetRefreshResponse(bool success)
+        public AssetDatabaseRefreshResponse(bool success)
         {
             this.success = success;
         }

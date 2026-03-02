@@ -55,5 +55,16 @@ namespace UniCortex.Editor.Tests.TestDoubles
             ResponseBody = json;
             return Task.CompletedTask;
         }
+
+        public byte[] ResponseBinaryData { get; private set; }
+        public string ResponseContentType { get; private set; }
+
+        public Task WriteBinaryResponseAsync(int statusCode, string contentType, byte[] data)
+        {
+            ResponseStatusCode = statusCode;
+            ResponseContentType = contentType;
+            ResponseBinaryData = data;
+            return Task.CompletedTask;
+        }
     }
 }

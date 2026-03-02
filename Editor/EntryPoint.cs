@@ -6,6 +6,8 @@ using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Prefab;
 using UniCortex.Editor.Handlers.Scene;
 using UniCortex.Editor.Handlers.Tests;
+using UniCortex.Editor.Handlers.MenuItem;
+using UniCortex.Editor.Handlers.Screenshot;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
 using UniCortex.Editor.UseCases;
@@ -153,8 +155,17 @@ namespace UniCortex.Editor
             var assetDbOps = new AssetDatabaseOperationsAdapter();
 
             var refreshAssetDatabaseUseCase = new RefreshAssetDatabaseUseCase(s_dispatcher, assetDbOps);
-            var assetRefreshHandler = new AssetRefreshHandler(refreshAssetDatabaseUseCase);
+            var assetRefreshHandler = new AssetDatabaseRefreshHandler(refreshAssetDatabaseUseCase);
 
+
+            var menuItemOps = new MenuItemOperationsAdapter();
+            var screenshotOps = new ScreenshotOperationsAdapter();
+
+            var executeMenuItemUseCase = new ExecuteMenuItemUseCase(s_dispatcher, menuItemOps);
+            var executeMenuItemHandler = new ExecuteMenuItemHandler(executeMenuItemUseCase);
+
+            var captureScreenshotUseCase = new CaptureScreenshotUseCase(s_dispatcher, screenshotOps);
+            var screenshotHandler = new ScreenshotHandler(captureScreenshotUseCase);
 
             pingHandler.Register(router);
             playHandler.Register(router);
@@ -181,6 +192,8 @@ namespace UniCortex.Editor
             createPrefabHandler.Register(router);
             instantiatePrefabHandler.Register(router);
             assetRefreshHandler.Register(router);
+            executeMenuItemHandler.Register(router);
+            screenshotHandler.Register(router);
         }
 
         private static int FindFreePort()

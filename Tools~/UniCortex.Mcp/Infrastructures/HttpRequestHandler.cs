@@ -47,7 +47,7 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
                     logged = true;
                 }
 
-                await Task.Delay(100, cancellationToken);
+                await Task.Delay(1000, cancellationToken);
             }
         }
     }

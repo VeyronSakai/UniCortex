@@ -30,7 +30,9 @@ internal static class HttpResponseMessageExtensions
         }
         catch
         {
-            // Failed to read/parse body — fall through to default
+            // The response body may be empty, non-JSON, or unreadable due to network issues.
+            // Swallow the exception so the caller receives a clear HTTP error instead of
+            // an unrelated deserialization/IO exception.
         }
 
         throw new HttpRequestException(

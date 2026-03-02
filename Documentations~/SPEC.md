@@ -428,9 +428,9 @@ Unity Console のログをクリアする。`LogEntries.Clear()`
 
 レスポンス: `{"success": true}`
 
-### ユーティリティ
+### メニューアイテム
 
-#### POST `/menu/execute`
+#### POST `/menu-item/execute`
 Unity のメニューアイテムを実行する。`EditorApplication.ExecuteMenuItem()`
 
 リクエストボディ: `{"menuPath": "GameObject/3D Object/Cube"}`
@@ -461,8 +461,20 @@ Unity Test Runner でテストを実行し、完了まで待機して結果を�
 }
 ```
 
-#### GET `/editor/screenshot`
-Game View のスクリーンショットを取得する。`ScreenCapture.CaptureScreenshotAsTexture()`
+### スクリーンショット
+
+#### GET `/screenshot/capture`
+スクリーンショットを取得する。
+
+クエリパラメータ:
+
+| パラメータ | 型 | デフォルト | 説明 |
+|-----------|------|-----------|------|
+| `source` | string | `"game"` | `"game"`: Game View、`"scene"`: Scene View |
+
+- `source=game`: Play Mode 時は `ScreenCapture.CaptureScreenshotAsTexture()`、Edit Mode 時はシーンカメラから手動レンダリング
+- `source=scene`: `SceneView.lastActiveSceneView.camera` からレンダリング
+- 無効な `source` 値の場合は 400 エラー
 
 レスポンス: PNG 画像バイナリ（`Content-Type: image/png`）
 
@@ -579,13 +591,23 @@ AI エージェントが混乱なく使えるよう、各ツールは明確に�
 | `get_console_logs` | GET `/console/logs` | Unity Console のログを取得 |
 | `clear_console_logs` | POST `/console/clear` | Unity Console のログをクリア |
 
-#### ユーティリティ（3）
+#### テスト（1）
 
 | ツール | API | 説明 |
 |--------|-----|------|
-| `execute_menu_item` | POST `/menu/execute` | Unity メニューアイテムをパス指定で実行 |
 | `run_tests` | POST `/tests/run` | Test Runner でテスト実行し結果を返す |
-| `capture_screenshot` | GET `/editor/screenshot` | Game View のスクリーンショットを取得 |
+
+#### メニューアイテム（1）
+
+| ツール | API | 説明 |
+|--------|-----|------|
+| `execute_menu_item` | POST `/menu-item/execute` | Unity メニューアイテムをパス指定で実行 |
+
+#### スクリーンショット（1）
+
+| ツール | API | 説明 |
+|--------|-----|------|
+| `capture_screenshot` | GET `/screenshot/capture` | Game View のスクリーンショットを取得 |
 
 #### 設計判断
 
