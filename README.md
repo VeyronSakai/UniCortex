@@ -27,7 +27,7 @@ https://github.com/VeyronSakai/UniCortex.git
 
 ### MCP Server Setup
 
-Add the following to `.mcp.json` in the Unity project root:
+Add the following MCP server configuration to your MCP client's settings file (e.g., `.mcp.json`, `claude_desktop_config.json`, etc.). Refer to your client's documentation for the exact configuration location.
 
 ```json
 {
@@ -44,7 +44,9 @@ Add the following to `.mcp.json` in the Unity project root:
 }
 ```
 
-Replace `/path/to/your/unity/project` with the absolute path of your Unity project (set it in both `args` and `UNICORTEX_PROJECT_PATH`). The MCP server reads the port number from `Library/UniCortex/config.json` (written automatically when Unity Editor starts) and connects to the HTTP server.
+Replace `/path/to/your/unity/project` with the absolute path of your Unity project (set it in both `args` and `UNICORTEX_PROJECT_PATH`). After saving the configuration, restart the client to apply the changes.
+
+The MCP server reads the port number from `Library/UniCortex/config.json` (written automatically when Unity Editor starts) and connects to the HTTP server.
 
 No pre-build or tool installation is required. The MCP server is built and started automatically via `dotnet run`.
 
