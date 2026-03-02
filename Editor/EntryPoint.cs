@@ -155,7 +155,7 @@ namespace UniCortex.Editor
             var assetDbOps = new AssetDatabaseOperationsAdapter();
 
             var refreshAssetDatabaseUseCase = new RefreshAssetDatabaseUseCase(s_dispatcher, assetDbOps);
-            var assetRefreshHandler = new AssetRefreshHandler(refreshAssetDatabaseUseCase);
+            var assetRefreshHandler = new AssetDatabaseRefreshHandler(refreshAssetDatabaseUseCase);
 
 
             var menuItemOps = new MenuItemOperationsAdapter();

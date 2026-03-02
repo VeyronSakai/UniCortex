@@ -7,24 +7,24 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Asset
 {
-    internal sealed class AssetRefreshHandler
+    internal sealed class AssetDatabaseRefreshHandler
     {
         private readonly RefreshAssetDatabaseUseCase _useCase;
 
-        public AssetRefreshHandler(RefreshAssetDatabaseUseCase useCase)
+        public AssetDatabaseRefreshHandler(RefreshAssetDatabaseUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.AssetRefresh, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.AssetDatabaseRefresh, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             await _useCase.ExecuteAsync(cancellationToken);
-            var json = JsonUtility.ToJson(new AssetRefreshResponse(true));
+            var json = JsonUtility.ToJson(new AssetDatabaseRefreshResponse(true));
             await context.WriteResponseAsync(200, json);
         }
     }

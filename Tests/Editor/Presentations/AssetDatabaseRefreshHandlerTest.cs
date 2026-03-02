@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class AssetRefreshHandlerTest
+    internal sealed class AssetDatabaseRefreshHandlerTest
     {
         [Test]
         public void HandleRefresh_Returns200WithSuccess()
@@ -17,12 +17,12 @@ namespace UniCortex.Editor.Tests.Presentations
             var dispatcher = new FakeMainThreadDispatcher();
             var operations = new SpyAssetDatabaseOperations();
             var useCase = new RefreshAssetDatabaseUseCase(dispatcher, operations);
-            var handler = new AssetRefreshHandler(useCase);
+            var handler = new AssetDatabaseRefreshHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.AssetRefresh);
+            var context = new FakeRequestContext("POST", ApiRoutes.AssetDatabaseRefresh);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
