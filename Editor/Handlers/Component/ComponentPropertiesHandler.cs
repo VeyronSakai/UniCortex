@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Handlers.Component
             if (string.IsNullOrEmpty(instanceIdParam) || !int.TryParse(instanceIdParam, out var instanceId))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId query parameter is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
@@ -35,7 +35,7 @@ namespace UniCortex.Editor.Handlers.Component
             if (string.IsNullOrEmpty(componentType))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("componentType query parameter is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
@@ -48,7 +48,7 @@ namespace UniCortex.Editor.Handlers.Component
 
             var result = await _useCase.ExecuteAsync(instanceId, componentType, componentIndex, cancellationToken);
             var json = JsonUtility.ToJson(result);
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

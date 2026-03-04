@@ -25,7 +25,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(200, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("pong", context.ResponseBody);
         }
     }

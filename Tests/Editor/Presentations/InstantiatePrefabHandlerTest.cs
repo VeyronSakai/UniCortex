@@ -30,7 +30,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(200, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("MyCube", context.ResponseBody);
             StringAssert.Contains("56789", context.ResponseBody);
         }
@@ -50,7 +50,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(400, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("assetPath is required", context.ResponseBody);
         }
 
@@ -69,7 +69,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(400, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("assetPath is required", context.ResponseBody);
         }
     }

@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(200, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(12345, operations.LastCreateInstanceId);
             Assert.AreEqual("Assets/Prefabs/Test.prefab", operations.LastCreateAssetPath);
@@ -48,7 +48,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(400, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("instanceId and assetPath are required", context.ResponseBody);
         }
 
@@ -68,7 +68,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(400, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("assetPath is required", context.ResponseBody);
         }
     }

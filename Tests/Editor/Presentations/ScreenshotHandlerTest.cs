@@ -35,7 +35,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(200, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual("image/png", context.ResponseContentType);
             Assert.AreEqual(4, context.ResponseBinaryData.Length);
             Assert.AreEqual(0x89, context.ResponseBinaryData[0]);

@@ -26,7 +26,7 @@ namespace UniCortex.Editor.Handlers.Editor
             // Write the response before executing the use case.
             // Domain reload invalidates the HTTP context before WriteResponseAsync can be called.
             var json = JsonUtility.ToJson(new DomainReloadResponse(success: true));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             await _useCase.ExecuteAsync(cancellationToken);
         }
     }

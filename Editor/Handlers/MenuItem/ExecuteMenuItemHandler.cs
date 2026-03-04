@@ -28,7 +28,7 @@ namespace UniCortex.Editor.Handlers.MenuItem
             if (string.IsNullOrEmpty(body))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("menuPath is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
@@ -37,7 +37,7 @@ namespace UniCortex.Editor.Handlers.MenuItem
             if (string.IsNullOrEmpty(request.menuPath))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("menuPath is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
@@ -46,12 +46,12 @@ namespace UniCortex.Editor.Handlers.MenuItem
             if (!success)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse($"Failed to execute menu item '{request.menuPath}'."));
-                await context.WriteResponseAsync(404, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.NotFound, errorJson);
                 return;
             }
 
             var json = JsonUtility.ToJson(new ExecuteMenuItemResponse(true));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace UniCortex.Editor.Handlers.Asset
         {
             await _useCase.ExecuteAsync(cancellationToken);
             var json = JsonUtility.ToJson(new AssetDatabaseRefreshResponse(true));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

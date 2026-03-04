@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Handlers.Screenshot
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var pngData = await _useCase.ExecuteAsync(cancellationToken);
-            await context.WriteBinaryResponseAsync(200, "image/png", pngData);
+            await context.WriteBinaryResponseAsync(HttpStatusCodes.Ok, "image/png", pngData);
         }
     }
 }

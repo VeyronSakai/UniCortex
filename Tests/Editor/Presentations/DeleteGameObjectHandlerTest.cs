@@ -26,7 +26,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(200, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(12345, ops.LastDeleteInstanceId);
         }
@@ -46,7 +46,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(400, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
         }
     }
 }

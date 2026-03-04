@@ -28,7 +28,7 @@ namespace UniCortex.Editor.Handlers.GameObject
             if (string.IsNullOrEmpty(body))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
@@ -37,13 +37,13 @@ namespace UniCortex.Editor.Handlers.GameObject
             if (request.instanceId == 0)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             await _useCase.ExecuteAsync(request.instanceId, cancellationToken);
             var json = JsonUtility.ToJson(new DeleteGameObjectResponse(true));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }
