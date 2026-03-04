@@ -100,9 +100,15 @@ jobs:
     env:
       VERSION: ${{ needs.update-draft.outputs.tag_name }}
     steps:
+      - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2
+        id: create-github-app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: main
+          token: ${{ steps.create-github-app-token.outputs.token }}
       - name: Validate version in package.json
         run: |
           package_version=$(jq -r '.version' "${PACKAGE_JSON_PATH}")
