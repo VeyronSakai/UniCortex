@@ -25,6 +25,14 @@ namespace UniCortex.Editor
 
         static EntryPoint()
         {
+            // AssetImportWorkerProcess runs in a separate process with its own SessionState,
+            // so it would pick a new port via FindFreePort() and overwrite Library/UniCortex/config.json,
+            // causing the MCP server to connect to a port that doesn't belong to the main Editor.
+            if (AssetDatabase.IsAssetImportWorkerProcess())
+            {
+                return;
+            }
+
             AssemblyReloadEvents.beforeAssemblyReload += Shutdown;
             EditorApplication.quitting += OnQuit;
 
