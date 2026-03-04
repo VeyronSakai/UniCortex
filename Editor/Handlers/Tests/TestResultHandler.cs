@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Handlers.Tests
         private async Task HandleGetResultAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var json = TestResultStore.GetResult();
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

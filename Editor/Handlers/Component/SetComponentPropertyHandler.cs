@@ -29,7 +29,7 @@ namespace UniCortex.Editor.Handlers.Component
             {
                 var errorJson = JsonUtility.ToJson(
                     new ErrorResponse("instanceId, componentType, propertyPath, and value are required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
@@ -38,35 +38,35 @@ namespace UniCortex.Editor.Handlers.Component
             if (request.instanceId == 0)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             if (string.IsNullOrEmpty(request.componentType))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("componentType is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             if (string.IsNullOrEmpty(request.propertyPath))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("propertyPath is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             if (request.value == null)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("value is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             await _useCase.ExecuteAsync(request.instanceId, request.componentType, request.propertyPath,
                 request.value, cancellationToken);
             var json = JsonUtility.ToJson(new SetComponentPropertyResponse(true));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

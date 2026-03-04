@@ -25,7 +25,7 @@ namespace UniCortex.Editor.Handlers.Editor
         {
             var result = await _useCase.ExecuteAsync(cancellationToken);
             var json = JsonUtility.ToJson(result);
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

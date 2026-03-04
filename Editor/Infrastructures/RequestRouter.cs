@@ -31,7 +31,7 @@ namespace UniCortex.Editor.Infrastructures
 
             if (!Enum.TryParse<HttpMethodType>(rawMethod, ignoreCase: true, out var method))
             {
-                await context.WriteResponseAsync(405, JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
+                await context.WriteResponseAsync(HttpStatusCodes.MethodNotAllowed, JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
                 return;
             }
 
@@ -43,17 +43,17 @@ namespace UniCortex.Editor.Infrastructures
                 }
                 else if (_knownPaths.Contains(path))
                 {
-                    await context.WriteResponseAsync(405, JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
+                    await context.WriteResponseAsync(HttpStatusCodes.MethodNotAllowed, JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
                 }
                 else
                 {
-                    await context.WriteResponseAsync(404, JsonUtility.ToJson(new ErrorResponse("Not found")));
+                    await context.WriteResponseAsync(HttpStatusCodes.NotFound, JsonUtility.ToJson(new ErrorResponse("Not found")));
                 }
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[UniCortex] {rawMethod} {path} failed: {ex}");
-                await context.WriteResponseAsync(500, JsonUtility.ToJson(new ErrorResponse(ex.Message)));
+                await context.WriteResponseAsync(HttpStatusCodes.InternalServerError, JsonUtility.ToJson(new ErrorResponse(ex.Message)));
             }
         }
 

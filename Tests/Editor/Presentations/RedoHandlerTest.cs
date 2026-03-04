@@ -26,7 +26,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(200, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("success", context.ResponseBody);
             Assert.AreEqual(1, undo.PerformRedoCallCount);
             Assert.AreEqual(0, undo.PerformUndoCallCount);

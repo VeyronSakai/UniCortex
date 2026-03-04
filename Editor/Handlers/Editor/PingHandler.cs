@@ -25,7 +25,7 @@ namespace UniCortex.Editor.Handlers.Editor
         {
             var message = await _useCase.ExecuteAsync(cancellationToken);
             var json = JsonUtility.ToJson(new PingResponse(status: "ok", message: message));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

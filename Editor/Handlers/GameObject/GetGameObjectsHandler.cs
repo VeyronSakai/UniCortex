@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Handlers.GameObject
 
             var result = await _useCase.ExecuteAsync(query, cancellationToken);
             var json = JsonUtility.ToJson(new GetGameObjectsResponse(result));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

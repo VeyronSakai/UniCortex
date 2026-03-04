@@ -25,7 +25,7 @@ namespace UniCortex.Editor.Handlers.Scene
         {
             var success = await _useCase.ExecuteAsync(cancellationToken);
             var json = JsonUtility.ToJson(new SaveSceneResponse(success));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

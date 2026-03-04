@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(200, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(456, ops.LastRemoveComponentInstanceId);
             Assert.AreEqual("UnityEngine.Rigidbody", ops.LastRemoveComponentType);
@@ -49,7 +49,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(400, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
         }
 
         [Test]
@@ -68,7 +68,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(400, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("componentType is required", context.ResponseBody);
         }
     }

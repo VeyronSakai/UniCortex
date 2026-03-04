@@ -117,7 +117,7 @@ namespace UniCortex.Editor.Infrastructures
 
                 try
                 {
-                    await context.WriteResponseAsync(500,
+                    await context.WriteResponseAsync(HttpStatusCodes.InternalServerError,
                         JsonUtility.ToJson(new ErrorResponse("Internal server error")));
                 }
                 catch (Exception ex)

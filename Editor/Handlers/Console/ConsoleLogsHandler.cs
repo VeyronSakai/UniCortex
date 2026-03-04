@@ -38,7 +38,7 @@ namespace UniCortex.Editor.Handlers.Console
             var logs = await _useCase.ExecuteAsync(count, includeStackTrace, showLog, showWarning, showError,
                 cancellationToken);
             var json = JsonUtility.ToJson(new ConsoleLogsResponse(logs));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
 
         private static bool ParseBool(string value, bool defaultValue)

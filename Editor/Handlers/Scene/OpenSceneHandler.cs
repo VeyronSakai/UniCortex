@@ -28,7 +28,7 @@ namespace UniCortex.Editor.Handlers.Scene
             if (string.IsNullOrEmpty(body))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("scenePath is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
@@ -37,13 +37,13 @@ namespace UniCortex.Editor.Handlers.Scene
             if (string.IsNullOrEmpty(request.scenePath))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("scenePath is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             await _useCase.ExecuteAsync(request.scenePath, cancellationToken);
             var json = JsonUtility.ToJson(new OpenSceneResponse(true));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

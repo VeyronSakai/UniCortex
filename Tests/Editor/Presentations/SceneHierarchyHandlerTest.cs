@@ -33,7 +33,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(200, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("SampleScene", context.ResponseBody);
             StringAssert.Contains("Main Camera", context.ResponseBody);
             Assert.AreEqual(1, sceneManager.GetHierarchyCallCount);

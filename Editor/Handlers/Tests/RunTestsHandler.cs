@@ -44,7 +44,7 @@ namespace UniCortex.Editor.Handlers.Tests
 
             var response = await _useCase.ExecuteAsync(testMode, nameFilter, cancellationToken);
             var json = JsonUtility.ToJson(response);
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

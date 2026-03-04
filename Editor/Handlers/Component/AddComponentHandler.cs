@@ -28,7 +28,7 @@ namespace UniCortex.Editor.Handlers.Component
             if (string.IsNullOrEmpty(body))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId and componentType are required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
@@ -37,20 +37,20 @@ namespace UniCortex.Editor.Handlers.Component
             if (request.instanceId == 0)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             if (string.IsNullOrEmpty(request.componentType))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("componentType is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             await _useCase.ExecuteAsync(request.instanceId, request.componentType, cancellationToken);
             var json = JsonUtility.ToJson(new AddComponentResponse(true));
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

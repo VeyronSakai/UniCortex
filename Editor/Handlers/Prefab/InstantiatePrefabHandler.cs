@@ -28,7 +28,7 @@ namespace UniCortex.Editor.Handlers.Prefab
             if (string.IsNullOrEmpty(body))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("assetPath is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
@@ -37,13 +37,13 @@ namespace UniCortex.Editor.Handlers.Prefab
             if (string.IsNullOrEmpty(request.assetPath))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("assetPath is required."));
-                await context.WriteResponseAsync(400, errorJson);
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             var result = await _useCase.ExecuteAsync(request.assetPath, cancellationToken);
             var json = JsonUtility.ToJson(result);
-            await context.WriteResponseAsync(200, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }
