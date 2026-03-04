@@ -41,7 +41,7 @@ public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
         }
         catch (Exception ex)
         {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
+            return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
 
@@ -65,7 +65,7 @@ public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
         }
         catch (Exception ex)
         {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
+            return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
 
@@ -86,7 +86,7 @@ public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
         }
         catch (Exception ex)
         {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
+            return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
 }

@@ -51,7 +51,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
         }
         catch (Exception ex)
         {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
+            return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
 
@@ -79,7 +79,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
         }
         catch (Exception ex)
         {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
+            return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
 
@@ -108,7 +108,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
         }
         catch (Exception ex)
         {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
+            return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
 
@@ -158,7 +158,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
         }
         catch (Exception ex)
         {
-            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = ex.ToString() }] };
+            return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
 }
