@@ -19,7 +19,7 @@ public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
 
     [McpServerTool(ReadOnly = false),
      Description("Open a scene in the Unity Editor by its asset path."), UsedImplicitly]
-    public async Task<CallToolResult> OpenScene(
+    public async ValueTask<CallToolResult> OpenScene(
         [Description("The asset path of the scene to open (e.g. \"Assets/Scenes/Main.unity\").")]
         string scenePath,
         CancellationToken cancellationToken = default)
@@ -47,7 +47,7 @@ public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
 
     [McpServerTool(ReadOnly = false),
      Description("Save all open scenes in the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> SaveScene(CancellationToken cancellationToken = default)
+    public async ValueTask<CallToolResult> SaveScene(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -71,7 +71,7 @@ public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
 
     [McpServerTool(ReadOnly = true),
      Description("Get the GameObject hierarchy of the current scene in the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> GetSceneHierarchy(CancellationToken cancellationToken = default)
+    public async ValueTask<CallToolResult> GetSceneHierarchy(CancellationToken cancellationToken = default)
     {
         try
         {

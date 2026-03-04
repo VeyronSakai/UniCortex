@@ -25,7 +25,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
          "layer:N for layer, path:A/B for hierarchy path, is:root/child/leaf/static for state filters. " +
          "Multiple tokens can be combined: 'Camera t:Camera layer:0'."),
      UsedImplicitly]
-    public async Task<CallToolResult> GetGameObjects(
+    public async ValueTask<CallToolResult> GetGameObjects(
         [Description(
             "Search query. Examples: 'Main Camera', 't:Camera', 'tag=Player', 'id:12345', 'is:root', 'path:Canvas/Button'. " +
             "Multiple tokens can be combined: 'Camera t:Camera layer:0'.")]
@@ -58,7 +58,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     [McpServerTool(ReadOnly = false),
      Description("Create a new empty GameObject in the current scene."),
      UsedImplicitly]
-    public async Task<CallToolResult> CreateGameObject(
+    public async ValueTask<CallToolResult> CreateGameObject(
         [Description("Name of the GameObject to create.")] string name,
         CancellationToken cancellationToken = default)
     {
@@ -84,7 +84,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     }
 
     [McpServerTool(ReadOnly = false), Description("Remove a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
-    public async Task<CallToolResult> DeleteGameObject(
+    public async ValueTask<CallToolResult> DeleteGameObject(
         [Description("The instance ID of the GameObject to delete.")]
         int instanceId,
         CancellationToken cancellationToken = default)
@@ -116,7 +116,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
      Description(
          "Modify a GameObject's properties (name, active state, tag, layer, parent). Only specified fields are changed."),
      UsedImplicitly]
-    public async Task<CallToolResult> ModifyGameObject(
+    public async ValueTask<CallToolResult> ModifyGameObject(
         [Description("The instance ID of the GameObject to modify.")]
         int instanceId,
         [Description("New name for the GameObject.")] string? name = null,

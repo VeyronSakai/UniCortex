@@ -10,13 +10,13 @@ public class ScreenshotToolsTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test]
-    public async Task CaptureScreenshot_InPlayMode_ReturnsImage()
+    public async ValueTask CaptureScreenshot_InPlayMode_ReturnsImage()
     {
         var editorTools = _fixture.EditorTools;
         var screenshotTools = _fixture.ScreenshotTools;

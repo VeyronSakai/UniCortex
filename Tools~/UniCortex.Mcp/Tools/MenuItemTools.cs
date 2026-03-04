@@ -20,7 +20,7 @@ public class MenuItemTools(IHttpClientFactory httpClientFactory, IUnityServerUrl
     [McpServerTool(ReadOnly = false),
      Description("Execute a Unity Editor menu item by its path (e.g. \"GameObject/3D Object/Cube\")."),
      UsedImplicitly]
-    public async Task<CallToolResult> ExecuteMenuItem(
+    public async ValueTask<CallToolResult> ExecuteMenuItem(
         [Description("The full menu path (e.g. \"GameObject/3D Object/Cube\", \"File/Save\").")]
         string menuPath,
         CancellationToken cancellationToken = default)

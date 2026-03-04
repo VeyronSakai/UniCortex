@@ -10,13 +10,13 @@ public class MenuItemToolsTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test]
-    public async Task ExecuteMenuItem_ReturnsSuccess()
+    public async ValueTask ExecuteMenuItem_ReturnsSuccess()
     {
         var menuItemTools = _fixture.MenuItemTools;
 

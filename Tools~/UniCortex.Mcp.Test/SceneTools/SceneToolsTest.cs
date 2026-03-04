@@ -10,13 +10,13 @@ public class SceneToolsTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test]
-    public async Task GetSceneHierarchy_ReturnsJsonWithSceneInfo()
+    public async ValueTask GetSceneHierarchy_ReturnsJsonWithSceneInfo()
     {
         var sceneTools = _fixture.SceneTools;
 
@@ -33,7 +33,7 @@ public class SceneToolsTest
     }
 
     [Test]
-    public async Task OpenScene_ReturnsSuccess()
+    public async ValueTask OpenScene_ReturnsSuccess()
     {
         var sceneTools = _fixture.SceneTools;
 
@@ -46,7 +46,7 @@ public class SceneToolsTest
     }
 
     [Test]
-    public async Task SaveScene_ReturnsSuccess()
+    public async ValueTask SaveScene_ReturnsSuccess()
     {
         var sceneTools = _fixture.SceneTools;
 

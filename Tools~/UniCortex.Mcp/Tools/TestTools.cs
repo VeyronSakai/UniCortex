@@ -18,7 +18,7 @@ public class TestTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProv
 
     [McpServerTool(ReadOnly = true),
      Description("Run Unity Test Runner tests and wait for completion."), UsedImplicitly]
-    public async Task<CallToolResult> RunTests(
+    public async ValueTask<CallToolResult> RunTests(
         [Description("Test mode: 'EditMode' or 'PlayMode'. Defaults to 'EditMode'.")]
         string? testMode = null,
         [Description("Test name filter. Omit to run all tests.")]

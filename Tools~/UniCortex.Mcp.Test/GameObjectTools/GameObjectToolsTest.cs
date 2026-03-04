@@ -13,13 +13,13 @@ public class GameObjectToolsTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test]
-    public async Task GetGameObjects_ReturnsJsonWithGameObjects()
+    public async ValueTask GetGameObjects_ReturnsJsonWithGameObjects()
     {
         var tools = _fixture.GameObjectTools;
 
@@ -32,7 +32,7 @@ public class GameObjectToolsTest
     }
 
     [Test]
-    public async Task GetGameObjects_WithQuery_ReturnsFilteredResults()
+    public async ValueTask GetGameObjects_WithQuery_ReturnsFilteredResults()
     {
         var tools = _fixture.GameObjectTools;
 
@@ -45,7 +45,7 @@ public class GameObjectToolsTest
     }
 
     [Test]
-    public async Task CreateAndDeleteGameObject_WorksEndToEnd()
+    public async ValueTask CreateAndDeleteGameObject_WorksEndToEnd()
     {
         var tools = _fixture.GameObjectTools;
 
@@ -67,7 +67,7 @@ public class GameObjectToolsTest
     }
 
     [Test]
-    public async Task ModifyGameObject_ChangeName_ReturnsSuccess()
+    public async ValueTask ModifyGameObject_ChangeName_ReturnsSuccess()
     {
         var tools = _fixture.GameObjectTools;
         var ct = CancellationToken.None;
@@ -96,7 +96,7 @@ public class GameObjectToolsTest
     }
 
     [Test]
-    public async Task ModifyGameObject_ChangeActiveSelf_ReturnsSuccess()
+    public async ValueTask ModifyGameObject_ChangeActiveSelf_ReturnsSuccess()
     {
         var tools = _fixture.GameObjectTools;
         var ct = CancellationToken.None;
@@ -121,7 +121,7 @@ public class GameObjectToolsTest
     }
 
     [Test]
-    public async Task ModifyGameObject_ChangeTag_ReturnsSuccess()
+    public async ValueTask ModifyGameObject_ChangeTag_ReturnsSuccess()
     {
         var tools = _fixture.GameObjectTools;
         var ct = CancellationToken.None;
@@ -146,7 +146,7 @@ public class GameObjectToolsTest
     }
 
     [Test]
-    public async Task ModifyGameObject_ChangeLayer_ReturnsSuccess()
+    public async ValueTask ModifyGameObject_ChangeLayer_ReturnsSuccess()
     {
         var tools = _fixture.GameObjectTools;
         var ct = CancellationToken.None;
@@ -171,7 +171,7 @@ public class GameObjectToolsTest
     }
 
     [Test]
-    public async Task ModifyGameObject_ChangeParent_ReturnsSuccess()
+    public async ValueTask ModifyGameObject_ChangeParent_ReturnsSuccess()
     {
         var tools = _fixture.GameObjectTools;
         var ct = CancellationToken.None;
@@ -201,7 +201,7 @@ public class GameObjectToolsTest
     }
 
     [Test]
-    public async Task ModifyGameObject_MultipleProperties_ReturnsSuccess()
+    public async ValueTask ModifyGameObject_MultipleProperties_ReturnsSuccess()
     {
         var tools = _fixture.GameObjectTools;
         var ct = CancellationToken.None;

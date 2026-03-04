@@ -10,13 +10,13 @@ public class PingTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test]
-    public async Task PingEditor_ReturnsSuccessWithPong()
+    public async ValueTask PingEditor_ReturnsSuccessWithPong()
     {
         // Arrange
         var editorTools = _fixture.EditorTools;

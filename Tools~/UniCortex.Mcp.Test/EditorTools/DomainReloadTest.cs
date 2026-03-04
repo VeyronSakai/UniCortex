@@ -10,13 +10,13 @@ public class DomainReloadTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test, CancelAfter(120_000)]
-    public async Task ReloadDomain_ReturnsSuccess()
+    public async ValueTask ReloadDomain_ReturnsSuccess()
     {
         // Arrange
         var editorTools = _fixture.EditorTools;
@@ -32,7 +32,7 @@ public class DomainReloadTest
     }
 
     [Test, CancelAfter(120_000), Order(2)]
-    public async Task PingEditor_SucceedsAfterDomainReload()
+    public async ValueTask PingEditor_SucceedsAfterDomainReload()
     {
         // Arrange
         var editorTools = _fixture.EditorTools;

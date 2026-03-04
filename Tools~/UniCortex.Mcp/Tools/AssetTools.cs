@@ -16,7 +16,7 @@ public class AssetTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
 
     [McpServerTool(ReadOnly = false),
      Description("Refresh the Unity Asset Database."), UsedImplicitly]
-    public async Task<CallToolResult> RefreshAssetDatabase(CancellationToken cancellationToken = default)
+    public async ValueTask<CallToolResult> RefreshAssetDatabase(CancellationToken cancellationToken = default)
     {
         try
         {
