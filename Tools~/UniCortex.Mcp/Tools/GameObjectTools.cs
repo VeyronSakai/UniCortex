@@ -25,7 +25,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
          "layer:N for layer, path:A/B for hierarchy path, is:root/child/leaf/static for state filters. " +
          "Multiple tokens can be combined: 'Camera t:Camera layer:0'."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> GetGameObjects(
+    public async ValueTask<CallToolResult> FindGameObjects(
         [Description(
             "Search query. Examples: 'Main Camera', 't:Camera', 'tag=Player', 'id:12345', 'is:root', 'path:Canvas/Button'. " +
             "Multiple tokens can be combined: 'Camera t:Camera layer:0'.")]

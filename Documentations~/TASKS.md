@@ -55,7 +55,7 @@
 | `open_scene` | POST `/scene/open` | 済 |
 | `save_scene` | POST `/scene/save` | 済 |
 | `get_scene_hierarchy` | GET `/scene/hierarchy` | 済 |
-| `get_game_objects` | GET `/gameobjects` | 済 |
+| `find_game_objects` | GET `/gameobjects` | 済 |
 | `create_gameobject` | POST `/gameobject/create` | 済 |
 | `delete_gameobject` | POST `/gameobject/delete` | 済 |
 | `modify_gameobject` | POST `/gameobject/modify` | 済 |

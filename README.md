@@ -93,7 +93,7 @@ Alternatively, you can specify the URL directly via the `UNICORTEX_URL` environm
 
 | Tool | Description |
 |------|-------------|
-| `get_game_objects` | Search GameObjects by name, tag, component type, instanceId, layer, path, or state |
+| `find_game_objects` | Search GameObjects by name, tag, component type, instanceId, layer, path, or state |
 | `create_game_object` | Create a new empty GameObject |
 | `delete_game_object` | Delete a GameObject (supports Undo) |
 | `modify_game_object` | Modify name, active state, tag, layer, or parent |
