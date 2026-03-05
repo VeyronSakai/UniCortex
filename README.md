@@ -10,7 +10,7 @@ Primarily designed for AI agents (Claude Code, Codex CLI, etc.) to operate Unity
 ## Requirements
 
 - Unity 2022.3 or later
-- .NET 8 SDK (for MCP server)
+- .NET 10 SDK (for MCP server)
 
 ## Installation
 
@@ -159,11 +159,11 @@ The HTTP server is assigned a random free port on each Editor launch. The port i
 ## Architecture
 
 ```
-AI Agent ←(MCP/stdio)→ MCP Server (.NET 8) ←(HTTP)→ Unity Editor HTTP Server
+AI Agent ←(MCP/stdio)→ MCP Server (.NET 10) ←(HTTP)→ Unity Editor HTTP Server
 ```
 
 - **Unity Editor side**: C# `HttpListener` HTTP server embedded in the Editor
-- **MCP Server side**: .NET 8 + [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk)
+- **MCP Server side**: .NET 10 + [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk)
 - **UPM Package**: `com.veyron-sakai.uni-cortex`
 
 ## Documentation
