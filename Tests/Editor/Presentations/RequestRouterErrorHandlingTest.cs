@@ -1,10 +1,13 @@
 using System;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace UniCortex.Editor.Tests.Presentations
 {
@@ -47,6 +50,8 @@ namespace UniCortex.Editor.Tests.Presentations
                 (_, _) => Task.FromException(new InvalidOperationException("sensitive internal details")));
 
             var context = new FakeRequestContext("GET", "/test/failure");
+
+            LogAssert.Expect(LogType.Error, new Regex(@"\[UniCortex\].*failed"));
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
