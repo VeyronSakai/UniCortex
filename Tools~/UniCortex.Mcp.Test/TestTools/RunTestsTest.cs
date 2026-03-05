@@ -26,7 +26,7 @@ public class RunTestsTest
         var testTools = _fixture.TestTools;
 
         // Act
-        var result = await testTools.RunTests(testMode: "EditMode", cancellationToken: CancellationToken.None);
+        var result = await testTools.RunTestsAsync(testMode: "EditMode", cancellationToken: CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);
@@ -44,7 +44,7 @@ public class RunTestsTest
         var testTools = _fixture.TestTools;
 
         // Act
-        var result = await testTools.RunTests(testMode: "PlayMode", cancellationToken: CancellationToken.None);
+        var result = await testTools.RunTestsAsync(testMode: "PlayMode", cancellationToken: CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);
@@ -61,7 +61,7 @@ public class RunTestsTest
         var testTools = _fixture.TestTools;
 
         // Act — filter to a test name that is unlikely to match anything
-        var result = await testTools.RunTests(
+        var result = await testTools.RunTestsAsync(
             testMode: "EditMode",
             nameFilter: "NonExistentTestName_12345",
             cancellationToken: CancellationToken.None);

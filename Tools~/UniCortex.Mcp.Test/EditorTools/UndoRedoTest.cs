@@ -22,7 +22,7 @@ public class UndoRedoTest
         var editorTools = _fixture.EditorTools;
 
         // Act
-        var result = await editorTools.Undo(CancellationToken.None);
+        var result = await editorTools.UndoAsync(CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);
@@ -38,7 +38,7 @@ public class UndoRedoTest
         var editorTools = _fixture.EditorTools;
 
         // Act
-        var result = await editorTools.Redo(CancellationToken.None);
+        var result = await editorTools.RedoAsync(CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);

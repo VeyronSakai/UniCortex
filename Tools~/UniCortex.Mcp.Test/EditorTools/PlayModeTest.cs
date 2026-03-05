@@ -45,7 +45,7 @@ public class PlayModeTest
         var editorTools = _fixture.EditorTools;
 
         // Act
-        var result = await editorTools.EnterPlayMode(CancellationToken.None);
+        var result = await editorTools.EnterPlayModeAsync(CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);
@@ -61,7 +61,7 @@ public class PlayModeTest
         var editorTools = _fixture.EditorTools;
 
         // Act
-        var result = await editorTools.ExitPlayMode(CancellationToken.None);
+        var result = await editorTools.ExitPlayModeAsync(CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);

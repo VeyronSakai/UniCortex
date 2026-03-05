@@ -24,13 +24,13 @@ public class PrefabToolsTest
         var ct = CancellationToken.None;
 
         var createResult =
-            await _fixture.GameObjectTools.CreateGameObject("CreatePrefabTestObj", cancellationToken: ct);
+            await _fixture.GameObjectTools.CreateGameObjectAsync("CreatePrefabTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
             ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
 
         try
         {
-            var result = await _fixture.PrefabTools.CreatePrefab(
+            var result = await _fixture.PrefabTools.CreatePrefabAsync(
                 createResponse.instanceId,
                 "Assets/CreatePrefabTest.prefab",
                 ct);
@@ -41,7 +41,7 @@ public class PrefabToolsTest
         }
         finally
         {
-            await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+            await _fixture.GameObjectTools.DeleteGameObjectAsync(createResponse.instanceId, cancellationToken: ct);
             UnityEditorFixture.DeleteAssetFile("Assets/CreatePrefabTest.prefab");
         }
     }
@@ -52,11 +52,11 @@ public class PrefabToolsTest
         var ct = CancellationToken.None;
 
         var createResult =
-            await _fixture.GameObjectTools.CreateGameObject("InstantiatePrefabTestObj", cancellationToken: ct);
+            await _fixture.GameObjectTools.CreateGameObjectAsync("InstantiatePrefabTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
             ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
 
-        await _fixture.PrefabTools.CreatePrefab(
+        await _fixture.PrefabTools.CreatePrefabAsync(
             createResponse.instanceId,
             "Assets/InstantiatePrefabTest.prefab",
             ct);
@@ -64,7 +64,7 @@ public class PrefabToolsTest
         var instantiatedId = 0;
         try
         {
-            var result = await _fixture.PrefabTools.InstantiatePrefab(
+            var result = await _fixture.PrefabTools.InstantiatePrefabAsync(
                 "Assets/InstantiatePrefabTest.prefab",
                 ct);
 
@@ -81,10 +81,10 @@ public class PrefabToolsTest
         {
             if (instantiatedId != 0)
             {
-                await _fixture.GameObjectTools.DeleteGameObject(instantiatedId, cancellationToken: ct);
+                await _fixture.GameObjectTools.DeleteGameObjectAsync(instantiatedId, cancellationToken: ct);
             }
 
-            await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+            await _fixture.GameObjectTools.DeleteGameObjectAsync(createResponse.instanceId, cancellationToken: ct);
             UnityEditorFixture.DeleteAssetFile("Assets/InstantiatePrefabTest.prefab");
         }
     }

@@ -17,9 +17,9 @@ public class PrefabTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
 
-    [McpServerTool(ReadOnly = false),
+    [McpServerTool(Name = "create_prefab", ReadOnly = false),
      Description("Create a Prefab asset from a GameObject in the scene."), UsedImplicitly]
-    public async ValueTask<CallToolResult> CreatePrefab(
+    public async ValueTask<CallToolResult> CreatePrefabAsync(
         [Description("The instance ID of the GameObject to save as a Prefab.")]
         int instanceId,
         [Description("The asset path where the Prefab should be saved (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
@@ -49,10 +49,10 @@ public class PrefabTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         }
     }
 
-    [McpServerTool(ReadOnly = false),
+    [McpServerTool(Name = "instantiate_prefab", ReadOnly = false),
      Description("Instantiate a Prefab into the current scene. Returns the new GameObject's name and instance ID."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> InstantiatePrefab(
+    public async ValueTask<CallToolResult> InstantiatePrefabAsync(
         [Description("The asset path of the Prefab to instantiate (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
         string assetPath,
         CancellationToken cancellationToken = default)

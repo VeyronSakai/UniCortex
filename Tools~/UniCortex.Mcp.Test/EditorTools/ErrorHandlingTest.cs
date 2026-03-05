@@ -13,7 +13,7 @@ public class ErrorHandlingTest
     {
         var tools = new UniCortex.Mcp.Tools.EditorTools(new DummyHttpClientFactory(), new ThrowingUrlProvider());
 
-        var result = await tools.PingEditor(CancellationToken.None);
+        var result = await tools.PingEditorAsync(CancellationToken.None);
 
         Assert.That(result.IsError, Is.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));
