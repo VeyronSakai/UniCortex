@@ -10,13 +10,13 @@ public class AssetToolsTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test]
-    public async Task RefreshAssetDatabase_ReturnsSuccess()
+    public async ValueTask RefreshAssetDatabase_ReturnsSuccess()
     {
         var assetTools = _fixture.AssetTools;
 

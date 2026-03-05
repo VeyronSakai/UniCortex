@@ -10,13 +10,13 @@ public class UndoRedoTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test, CancelAfter(120_000)]
-    public async Task Undo_ReturnsSuccess()
+    public async ValueTask Undo_ReturnsSuccess()
     {
         // Arrange
         var editorTools = _fixture.EditorTools;
@@ -32,7 +32,7 @@ public class UndoRedoTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async Task Redo_ReturnsSuccess()
+    public async ValueTask Redo_ReturnsSuccess()
     {
         // Arrange
         var editorTools = _fixture.EditorTools;

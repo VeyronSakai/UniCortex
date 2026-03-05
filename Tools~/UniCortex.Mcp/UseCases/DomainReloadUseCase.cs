@@ -5,7 +5,7 @@ namespace UniCortex.Mcp.UseCases;
 
 internal static class DomainReloadUseCase
 {
-    internal static async Task ReloadAsync(HttpClient httpClient, string baseUrl, CancellationToken cancellationToken)
+    internal static async ValueTask ReloadAsync(HttpClient httpClient, string baseUrl, CancellationToken cancellationToken)
     {
         // Wait for the server to become available before triggering domain reload.
         // If Unity is already auto-recompiling (e.g. after a .cs file change),
@@ -28,7 +28,7 @@ internal static class DomainReloadUseCase
     /// Poll GET /ping until the server responds with a non-empty body.
     /// HttpRequestHandler handles retries for GET requests during domain reload.
     /// </summary>
-    internal static async Task WaitForServerAsync(HttpClient httpClient, string baseUrl,
+    internal static async ValueTask WaitForServerAsync(HttpClient httpClient, string baseUrl,
         CancellationToken cancellationToken)
     {
         var pingResponse = await httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}", cancellationToken);

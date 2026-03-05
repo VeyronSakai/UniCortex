@@ -15,7 +15,7 @@ public class PlayModeTest
     private HttpClient _rawClient = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
         _rawClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
@@ -39,7 +39,7 @@ public class PlayModeTest
     }
 
     [Test, Order(1)]
-    public async Task EnterPlayMode_ReturnsSuccess()
+    public async ValueTask EnterPlayMode_ReturnsSuccess()
     {
         // Arrange
         var editorTools = _fixture.EditorTools;
@@ -55,7 +55,7 @@ public class PlayModeTest
     }
 
     [Test, Order(2)]
-    public async Task ExitPlayMode_ReturnsSuccess()
+    public async ValueTask ExitPlayMode_ReturnsSuccess()
     {
         // Arrange
         var editorTools = _fixture.EditorTools;
@@ -71,7 +71,7 @@ public class PlayModeTest
     }
 
     [OneTimeTearDown]
-    public async Task OneTimeTearDown()
+    public async ValueTask OneTimeTearDown()
     {
         // Safety: ensure play mode is stopped
         try
@@ -94,7 +94,7 @@ public class PlayModeTest
         }
     }
 
-    private async Task WaitForPlayModeState(bool expectedPlaying)
+    private async ValueTask WaitForPlayModeState(bool expectedPlaying)
     {
         for (var i = 0; i < 30; i++)
         {

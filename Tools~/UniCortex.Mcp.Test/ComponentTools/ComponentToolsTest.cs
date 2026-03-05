@@ -13,13 +13,13 @@ public class ComponentToolsTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test]
-    public async Task AddComponent_ReturnsSuccess()
+    public async ValueTask AddComponent_ReturnsSuccess()
     {
         var ct = CancellationToken.None;
 
@@ -46,7 +46,7 @@ public class ComponentToolsTest
     }
 
     [Test]
-    public async Task RemoveComponent_ReturnsSuccess()
+    public async ValueTask RemoveComponent_ReturnsSuccess()
     {
         var ct = CancellationToken.None;
 
@@ -78,7 +78,7 @@ public class ComponentToolsTest
     }
 
     [Test]
-    public async Task GetComponentProperties_ReturnsJsonWithProperties()
+    public async ValueTask GetComponentProperties_ReturnsJsonWithProperties()
     {
         var ct = CancellationToken.None;
 
@@ -106,7 +106,7 @@ public class ComponentToolsTest
     }
 
     [Test]
-    public async Task SetComponentProperty_ReturnsSuccess()
+    public async ValueTask SetComponentProperty_ReturnsSuccess()
     {
         var ct = CancellationToken.None;
 

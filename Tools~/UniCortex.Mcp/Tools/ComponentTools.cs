@@ -19,7 +19,7 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
 
     [McpServerTool(ReadOnly = false),
      Description("Add a component to a GameObject. Supports Undo."), UsedImplicitly]
-    public async Task<CallToolResult> AddComponent(
+    public async ValueTask<CallToolResult> AddComponent(
         [Description("The instance ID of the GameObject.")] int instanceId,
         [Description("The fully-qualified component type name including namespace (e.g. UnityEngine.Rigidbody, UnityEngine.BoxCollider).")]
         string componentType,
@@ -50,7 +50,7 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
 
     [McpServerTool(ReadOnly = false),
      Description("Remove a component from a GameObject. Supports Undo."), UsedImplicitly]
-    public async Task<CallToolResult> RemoveComponent(
+    public async ValueTask<CallToolResult> RemoveComponent(
         [Description("The instance ID of the GameObject.")] int instanceId,
         [Description("The fully-qualified component type name including namespace (e.g. UnityEngine.Rigidbody).")]
         string componentType,
@@ -86,7 +86,7 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
 
     [McpServerTool(ReadOnly = true),
      Description("Get serialized properties of a component on a GameObject."), UsedImplicitly]
-    public async Task<CallToolResult> GetComponentProperties(
+    public async ValueTask<CallToolResult> GetComponentProperties(
         [Description("The instance ID of the GameObject.")] int instanceId,
         [Description("The fully-qualified component type name including namespace (e.g. UnityEngine.Transform, UnityEngine.Rigidbody).")]
         string componentType,
@@ -116,7 +116,7 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
     [McpServerTool(ReadOnly = false),
      Description("Set a serialized property on a component. Uses SerializedProperty API with automatic Undo."),
      UsedImplicitly]
-    public async Task<CallToolResult> SetComponentProperty(
+    public async ValueTask<CallToolResult> SetComponentProperty(
         [Description("The instance ID of the GameObject.")] int instanceId,
         [Description("The fully-qualified component type name including namespace (e.g. UnityEngine.Transform).")] string componentType,
         [Description("The property path (e.g. m_LocalPosition.x).")]

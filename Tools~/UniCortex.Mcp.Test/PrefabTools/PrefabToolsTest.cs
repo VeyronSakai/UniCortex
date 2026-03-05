@@ -13,13 +13,13 @@ public class PrefabToolsTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test]
-    public async Task CreatePrefab_ReturnsSuccess_WhenGameObjectExists()
+    public async ValueTask CreatePrefab_ReturnsSuccess_WhenGameObjectExists()
     {
         var ct = CancellationToken.None;
 
@@ -47,7 +47,7 @@ public class PrefabToolsTest
     }
 
     [Test]
-    public async Task InstantiatePrefab_ReturnsSuccess_WhenPrefabExists()
+    public async ValueTask InstantiatePrefab_ReturnsSuccess_WhenPrefabExists()
     {
         var ct = CancellationToken.None;
 

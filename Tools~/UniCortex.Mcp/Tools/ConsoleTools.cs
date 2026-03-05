@@ -16,7 +16,7 @@ public class ConsoleTools(IHttpClientFactory httpClientFactory, IUnityServerUrlP
 
     [McpServerTool(ReadOnly = true),
      Description("Get console log entries from the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> GetConsoleLogs(
+    public async ValueTask<CallToolResult> GetConsoleLogs(
         [Description("Number of recent log entries to retrieve. Defaults to 100.")]
         int? count = null,
         [Description("Include stack traces in the output. Defaults to false.")]
@@ -61,7 +61,7 @@ public class ConsoleTools(IHttpClientFactory httpClientFactory, IUnityServerUrlP
 
     [McpServerTool(ReadOnly = false),
      Description("Clear all console logs in the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> ClearConsoleLogs(CancellationToken cancellationToken = default)
+    public async ValueTask<CallToolResult> ClearConsoleLogs(CancellationToken cancellationToken = default)
     {
         try
         {

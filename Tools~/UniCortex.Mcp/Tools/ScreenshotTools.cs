@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Text;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
@@ -18,7 +17,7 @@ public class ScreenshotTools(IHttpClientFactory httpClientFactory, IUnityServerU
     [McpServerTool(ReadOnly = true),
      Description("Capture a screenshot of the Game View as a PNG image. Only available in Play Mode."),
      UsedImplicitly]
-    public async Task<CallToolResult> CaptureScreenshot(
+    public async ValueTask<CallToolResult> CaptureScreenshot(
         CancellationToken cancellationToken = default)
     {
         try
@@ -32,12 +31,9 @@ public class ScreenshotTools(IHttpClientFactory httpClientFactory, IUnityServerU
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
             var pngData = await response.Content.ReadAsByteArrayAsync(cancellationToken);
 
-            // ImageContentBlock.Data expects Base64-encoded string as UTF-8 bytes.
-            var base64Data = Encoding.UTF8.GetBytes(Convert.ToBase64String(pngData));
-
             return new CallToolResult
             {
-                Content = [new ImageContentBlock { Data = base64Data, MimeType = "image/png" }]
+                Content = [ImageContentBlock.FromBytes(pngData, "image/png")]
             };
         }
         catch (Exception ex)

@@ -14,13 +14,13 @@ public class RunTestsTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test, CancelAfter(300_000)]
-    public async Task RunTests_EditMode_ReturnsJsonWithResults()
+    public async ValueTask RunTests_EditMode_ReturnsJsonWithResults()
     {
         // Arrange
         var testTools = _fixture.TestTools;
@@ -38,7 +38,7 @@ public class RunTestsTest
     }
 
     [Test, CancelAfter(300_000)]
-    public async Task RunTests_PlayMode_ReturnsJson()
+    public async ValueTask RunTests_PlayMode_ReturnsJson()
     {
         // Arrange
         var testTools = _fixture.TestTools;
@@ -55,7 +55,7 @@ public class RunTestsTest
     }
 
     [Test, CancelAfter(300_000)]
-    public async Task RunTests_WithNameFilter_ReturnsFilteredResults()
+    public async ValueTask RunTests_WithNameFilter_ReturnsFilteredResults()
     {
         // Arrange
         var testTools = _fixture.TestTools;

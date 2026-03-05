@@ -17,7 +17,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     private readonly JsonSerializerOptions _jsonOptions = new() { IncludeFields = true };
 
     [McpServerTool(ReadOnly = true), Description("Check connectivity with the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> PingEditor(CancellationToken cancellationToken)
+    public async ValueTask<CallToolResult> PingEditor(CancellationToken cancellationToken)
     {
         try
         {
@@ -39,7 +39,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     }
 
     [McpServerTool(ReadOnly = false), Description("Start Play Mode in the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> EnterPlayMode(CancellationToken cancellationToken)
+    public async ValueTask<CallToolResult> EnterPlayMode(CancellationToken cancellationToken)
     {
         try
         {
@@ -72,7 +72,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     }
 
     [McpServerTool(ReadOnly = false), Description("Stop Play Mode in the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> ExitPlayMode(CancellationToken cancellationToken)
+    public async ValueTask<CallToolResult> ExitPlayMode(CancellationToken cancellationToken)
     {
         try
         {
@@ -102,7 +102,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     }
 
     [McpServerTool(ReadOnly = false), Description("Perform Undo in the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> Undo(CancellationToken cancellationToken)
+    public async ValueTask<CallToolResult> Undo(CancellationToken cancellationToken)
     {
         try
         {
@@ -120,7 +120,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     }
 
     [McpServerTool(ReadOnly = false), Description("Perform Redo in the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> Redo(CancellationToken cancellationToken)
+    public async ValueTask<CallToolResult> Redo(CancellationToken cancellationToken)
     {
         try
         {
@@ -138,7 +138,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
 
     [McpServerTool(ReadOnly = false),
      Description("Request a domain reload (script recompilation) in the Unity Editor."), UsedImplicitly]
-    public async Task<CallToolResult> ReloadDomain(CancellationToken cancellationToken)
+    public async ValueTask<CallToolResult> ReloadDomain(CancellationToken cancellationToken)
     {
         try
         {

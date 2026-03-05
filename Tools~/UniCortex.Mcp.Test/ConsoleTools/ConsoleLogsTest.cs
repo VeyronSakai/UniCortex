@@ -10,13 +10,13 @@ public class ConsoleLogsTest
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
     [Test]
-    public async Task GetConsoleLogs_ReturnsJsonWithLogs()
+    public async ValueTask GetConsoleLogs_ReturnsJsonWithLogs()
     {
         var consoleTools = _fixture.ConsoleTools;
 
@@ -29,7 +29,7 @@ public class ConsoleLogsTest
     }
 
     [Test]
-    public async Task GetConsoleLogs_WithCount_ReturnsLimitedEntries()
+    public async ValueTask GetConsoleLogs_WithCount_ReturnsLimitedEntries()
     {
         var consoleTools = _fixture.ConsoleTools;
 
@@ -42,7 +42,7 @@ public class ConsoleLogsTest
     }
 
     [Test]
-    public async Task ClearConsoleLogs_ReturnsSuccess()
+    public async ValueTask ClearConsoleLogs_ReturnsSuccess()
     {
         var consoleTools = _fixture.ConsoleTools;
 

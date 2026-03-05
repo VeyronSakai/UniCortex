@@ -12,7 +12,7 @@ internal static class HttpResponseMessageExtensions
     /// Throws <see cref="HttpRequestException"/> with the error message from the Unity Editor
     /// response body when the status code indicates failure.
     /// </summary>
-    internal static async Task EnsureSuccessWithErrorBodyAsync(
+    internal static async ValueTask EnsureSuccessWithErrorBodyAsync(
         this HttpResponseMessage response,
         CancellationToken cancellationToken)
     {
