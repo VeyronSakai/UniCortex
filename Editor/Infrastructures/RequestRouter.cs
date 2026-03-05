@@ -50,10 +50,17 @@ namespace UniCortex.Editor.Infrastructures
                     await context.WriteResponseAsync(HttpStatusCodes.NotFound, JsonUtility.ToJson(new ErrorResponse("Not found")));
                 }
             }
+            catch (ArgumentException ex)
+            {
+                Debug.LogWarning($"[UniCortex] {rawMethod} {path} invalid request: {ex.Message}");
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest,
+                    JsonUtility.ToJson(new ErrorResponse("Invalid request body.")));
+            }
             catch (Exception ex)
             {
                 Debug.LogError($"[UniCortex] {rawMethod} {path} failed: {ex}");
-                await context.WriteResponseAsync(HttpStatusCodes.InternalServerError, JsonUtility.ToJson(new ErrorResponse(ex.Message)));
+                await context.WriteResponseAsync(HttpStatusCodes.InternalServerError,
+                    JsonUtility.ToJson(new ErrorResponse("Internal server error")));
             }
         }
 
