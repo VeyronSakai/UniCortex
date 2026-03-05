@@ -17,7 +17,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
 
-    [McpServerTool(ReadOnly = true),
+    [McpServerTool(Name = "find_game_objects", ReadOnly = true),
      Description(
          "Find GameObjects in the current scene by name, tag, or component type. " +
          "Supports Unity Search style query syntax: plain text for name (partial match), " +
@@ -25,7 +25,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
          "layer:N for layer, path:A/B for hierarchy path, is:root/child/leaf/static for state filters. " +
          "Multiple tokens can be combined: 'Camera t:Camera layer:0'."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> FindGameObjects(
+    public async ValueTask<CallToolResult> FindGameObjectsAsync(
         [Description(
             "Search query. Examples: 'Main Camera', 't:Camera', 'tag=Player', 'id:12345', 'is:root', 'path:Canvas/Button'. " +
             "Multiple tokens can be combined: 'Camera t:Camera layer:0'.")]
@@ -55,10 +55,10 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
         }
     }
 
-    [McpServerTool(ReadOnly = false),
+    [McpServerTool(Name = "create_game_object", ReadOnly = false),
      Description("Create a new empty GameObject in the current scene."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> CreateGameObject(
+    public async ValueTask<CallToolResult> CreateGameObjectAsync(
         [Description("Name of the GameObject to create.")] string name,
         CancellationToken cancellationToken = default)
     {
@@ -83,8 +83,8 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
         }
     }
 
-    [McpServerTool(ReadOnly = false), Description("Remove a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
-    public async ValueTask<CallToolResult> DeleteGameObject(
+    [McpServerTool(Name = "delete_game_object", ReadOnly = false), Description("Remove a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
+    public async ValueTask<CallToolResult> DeleteGameObjectAsync(
         [Description("The instance ID of the GameObject to delete.")]
         int instanceId,
         CancellationToken cancellationToken = default)
@@ -112,11 +112,11 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
         }
     }
 
-    [McpServerTool(ReadOnly = false),
+    [McpServerTool(Name = "modify_game_object", ReadOnly = false),
      Description(
          "Modify a GameObject's properties (name, active state, tag, layer, parent). Only specified fields are changed."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> ModifyGameObject(
+    public async ValueTask<CallToolResult> ModifyGameObjectAsync(
         [Description("The instance ID of the GameObject to modify.")]
         int instanceId,
         [Description("New name for the GameObject.")] string? name = null,

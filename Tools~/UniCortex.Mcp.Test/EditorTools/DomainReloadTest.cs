@@ -22,7 +22,7 @@ public class DomainReloadTest
         var editorTools = _fixture.EditorTools;
 
         // Act
-        var result = await editorTools.ReloadDomain(CancellationToken.None);
+        var result = await editorTools.ReloadDomainAsync(CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);
@@ -38,7 +38,7 @@ public class DomainReloadTest
         var editorTools = _fixture.EditorTools;
 
         // Act
-        var result = await editorTools.PingEditor(CancellationToken.None);
+        var result = await editorTools.PingEditorAsync(CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);

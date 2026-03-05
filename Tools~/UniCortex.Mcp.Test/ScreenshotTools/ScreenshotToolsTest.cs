@@ -21,10 +21,10 @@ public class ScreenshotToolsTest
         var editorTools = _fixture.EditorTools;
         var screenshotTools = _fixture.ScreenshotTools;
 
-        await editorTools.EnterPlayMode(CancellationToken.None);
+        await editorTools.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var result = await screenshotTools.CaptureScreenshot(CancellationToken.None);
+            var result = await screenshotTools.CaptureScreenshotAsync(CancellationToken.None);
 
             Assert.That(result.IsError, Is.Not.True);
             Assert.That(result.Content, Has.Count.EqualTo(1));
@@ -34,7 +34,7 @@ public class ScreenshotToolsTest
         }
         finally
         {
-            await editorTools.ExitPlayMode(CancellationToken.None);
+            await editorTools.ExitPlayModeAsync(CancellationToken.None);
         }
     }
 }

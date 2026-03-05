@@ -20,7 +20,7 @@ public class ConsoleLogsTest
     {
         var consoleTools = _fixture.ConsoleTools;
 
-        var result = await consoleTools.GetConsoleLogs(cancellationToken: CancellationToken.None);
+        var result = await consoleTools.GetConsoleLogsAsync(cancellationToken: CancellationToken.None);
 
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));
@@ -33,7 +33,7 @@ public class ConsoleLogsTest
     {
         var consoleTools = _fixture.ConsoleTools;
 
-        var result = await consoleTools.GetConsoleLogs(count: 5, cancellationToken: CancellationToken.None);
+        var result = await consoleTools.GetConsoleLogsAsync(count: 5, cancellationToken: CancellationToken.None);
 
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));
@@ -46,7 +46,7 @@ public class ConsoleLogsTest
     {
         var consoleTools = _fixture.ConsoleTools;
 
-        var result = await consoleTools.ClearConsoleLogs(CancellationToken.None);
+        var result = await consoleTools.ClearConsoleLogsAsync(CancellationToken.None);
 
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));

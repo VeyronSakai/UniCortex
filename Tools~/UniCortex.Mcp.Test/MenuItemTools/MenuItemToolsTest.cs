@@ -20,7 +20,7 @@ public class MenuItemToolsTest
     {
         var menuItemTools = _fixture.MenuItemTools;
 
-        var result = await menuItemTools.ExecuteMenuItem("Edit/Select All", CancellationToken.None);
+        var result = await menuItemTools.ExecuteMenuItemAsync("Edit/Select All", CancellationToken.None);
 
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));

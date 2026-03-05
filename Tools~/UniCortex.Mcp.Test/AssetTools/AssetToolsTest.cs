@@ -20,7 +20,7 @@ public class AssetToolsTest
     {
         var assetTools = _fixture.AssetTools;
 
-        var result = await assetTools.RefreshAssetDatabase(CancellationToken.None);
+        var result = await assetTools.RefreshAssetDatabaseAsync(CancellationToken.None);
 
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));

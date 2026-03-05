@@ -14,9 +14,9 @@ public class AssetTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
 
-    [McpServerTool(ReadOnly = false),
+    [McpServerTool(Name = "refresh_asset_database", ReadOnly = false),
      Description("Refresh the Unity Asset Database."), UsedImplicitly]
-    public async ValueTask<CallToolResult> RefreshAssetDatabase(CancellationToken cancellationToken = default)
+    public async ValueTask<CallToolResult> RefreshAssetDatabaseAsync(CancellationToken cancellationToken = default)
     {
         try
         {

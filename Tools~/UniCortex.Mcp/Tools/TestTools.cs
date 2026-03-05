@@ -16,9 +16,9 @@ public class TestTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProv
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
     private readonly JsonSerializerOptions _jsonOptions = new() { IncludeFields = true };
 
-    [McpServerTool(ReadOnly = true),
+    [McpServerTool(Name = "run_tests", ReadOnly = true),
      Description("Run Unity Test Runner tests and wait for completion."), UsedImplicitly]
-    public async ValueTask<CallToolResult> RunTests(
+    public async ValueTask<CallToolResult> RunTestsAsync(
         [Description("Test mode: 'EditMode' or 'PlayMode'. Defaults to 'EditMode'.")]
         string? testMode = null,
         [Description("Test name filter. Omit to run all tests.")]

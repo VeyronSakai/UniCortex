@@ -17,10 +17,10 @@ public class MenuItemTools(IHttpClientFactory httpClientFactory, IUnityServerUrl
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
 
-    [McpServerTool(ReadOnly = false),
+    [McpServerTool(Name = "execute_menu_item", ReadOnly = false),
      Description("Execute a Unity Editor menu item by its path (e.g. \"GameObject/3D Object/Cube\")."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> ExecuteMenuItem(
+    public async ValueTask<CallToolResult> ExecuteMenuItemAsync(
         [Description("The full menu path (e.g. \"GameObject/3D Object/Cube\", \"File/Save\").")]
         string menuPath,
         CancellationToken cancellationToken = default)

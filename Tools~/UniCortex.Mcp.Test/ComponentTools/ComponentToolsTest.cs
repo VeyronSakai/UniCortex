@@ -23,14 +23,14 @@ public class ComponentToolsTest
     {
         var ct = CancellationToken.None;
 
-        var createResult = await _fixture.GameObjectTools.CreateGameObject("AddComponentTestObj",
+        var createResult = await _fixture.GameObjectTools.CreateGameObjectAsync("AddComponentTestObj",
             cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
             ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
 
         try
         {
-            var result = await _fixture.ComponentTools.AddComponent(
+            var result = await _fixture.ComponentTools.AddComponentAsync(
                 instanceId: createResponse.instanceId,
                 componentType: "UnityEngine.Rigidbody",
                 cancellationToken: ct);
@@ -41,7 +41,7 @@ public class ComponentToolsTest
         }
         finally
         {
-            await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+            await _fixture.GameObjectTools.DeleteGameObjectAsync(createResponse.instanceId, cancellationToken: ct);
         }
     }
 
@@ -50,19 +50,19 @@ public class ComponentToolsTest
     {
         var ct = CancellationToken.None;
 
-        var createResult = await _fixture.GameObjectTools.CreateGameObject("RemoveComponentTestObj",
+        var createResult = await _fixture.GameObjectTools.CreateGameObjectAsync("RemoveComponentTestObj",
             cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
             ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
 
         try
         {
-            await _fixture.ComponentTools.AddComponent(
+            await _fixture.ComponentTools.AddComponentAsync(
                 instanceId: createResponse.instanceId,
                 componentType: "UnityEngine.Rigidbody",
                 cancellationToken: ct);
 
-            var result = await _fixture.ComponentTools.RemoveComponent(
+            var result = await _fixture.ComponentTools.RemoveComponentAsync(
                 instanceId: createResponse.instanceId,
                 componentType: "UnityEngine.Rigidbody",
                 cancellationToken: ct);
@@ -73,7 +73,7 @@ public class ComponentToolsTest
         }
         finally
         {
-            await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+            await _fixture.GameObjectTools.DeleteGameObjectAsync(createResponse.instanceId, cancellationToken: ct);
         }
     }
 
@@ -82,14 +82,14 @@ public class ComponentToolsTest
     {
         var ct = CancellationToken.None;
 
-        var createResult = await _fixture.GameObjectTools.CreateGameObject("GetPropertiesTestObj",
+        var createResult = await _fixture.GameObjectTools.CreateGameObjectAsync("GetPropertiesTestObj",
             cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
             ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
 
         try
         {
-            var result = await _fixture.ComponentTools.GetComponentProperties(
+            var result = await _fixture.ComponentTools.GetComponentPropertiesAsync(
                 instanceId: createResponse.instanceId,
                 componentType: "UnityEngine.Transform",
                 cancellationToken: ct);
@@ -101,7 +101,7 @@ public class ComponentToolsTest
         }
         finally
         {
-            await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+            await _fixture.GameObjectTools.DeleteGameObjectAsync(createResponse.instanceId, cancellationToken: ct);
         }
     }
 
@@ -110,14 +110,14 @@ public class ComponentToolsTest
     {
         var ct = CancellationToken.None;
 
-        var createResult = await _fixture.GameObjectTools.CreateGameObject("SetPropertyTestObj",
+        var createResult = await _fixture.GameObjectTools.CreateGameObjectAsync("SetPropertyTestObj",
             cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(
             ((TextContentBlock)createResult.Content[0]).Text, s_jsonOptions)!;
 
         try
         {
-            var result = await _fixture.ComponentTools.SetComponentProperty(
+            var result = await _fixture.ComponentTools.SetComponentPropertyAsync(
                 instanceId: createResponse.instanceId,
                 componentType: "UnityEngine.Transform",
                 propertyPath: "m_LocalPosition.x",
@@ -130,7 +130,7 @@ public class ComponentToolsTest
         }
         finally
         {
-            await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
+            await _fixture.GameObjectTools.DeleteGameObjectAsync(createResponse.instanceId, cancellationToken: ct);
         }
     }
 }

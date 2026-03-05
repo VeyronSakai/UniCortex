@@ -14,10 +14,10 @@ public class ScreenshotTools(IHttpClientFactory httpClientFactory, IUnityServerU
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
 
-    [McpServerTool(ReadOnly = true),
+    [McpServerTool(Name = "capture_screenshot", ReadOnly = true),
      Description("Capture a screenshot of the Game View as a PNG image. Only available in Play Mode."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> CaptureScreenshot(
+    public async ValueTask<CallToolResult> CaptureScreenshotAsync(
         CancellationToken cancellationToken = default)
     {
         try

@@ -17,9 +17,9 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
 
-    [McpServerTool(ReadOnly = false),
+    [McpServerTool(Name = "add_component", ReadOnly = false),
      Description("Add a component to a GameObject. Supports Undo."), UsedImplicitly]
-    public async ValueTask<CallToolResult> AddComponent(
+    public async ValueTask<CallToolResult> AddComponentAsync(
         [Description("The instance ID of the GameObject.")] int instanceId,
         [Description("The fully-qualified component type name including namespace (e.g. UnityEngine.Rigidbody, UnityEngine.BoxCollider).")]
         string componentType,
@@ -48,9 +48,9 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
         }
     }
 
-    [McpServerTool(ReadOnly = false),
+    [McpServerTool(Name = "remove_component", ReadOnly = false),
      Description("Remove a component from a GameObject. Supports Undo."), UsedImplicitly]
-    public async ValueTask<CallToolResult> RemoveComponent(
+    public async ValueTask<CallToolResult> RemoveComponentAsync(
         [Description("The instance ID of the GameObject.")] int instanceId,
         [Description("The fully-qualified component type name including namespace (e.g. UnityEngine.Rigidbody).")]
         string componentType,
@@ -84,9 +84,9 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
         }
     }
 
-    [McpServerTool(ReadOnly = true),
+    [McpServerTool(Name = "get_component_properties", ReadOnly = true),
      Description("Get serialized properties of a component on a GameObject."), UsedImplicitly]
-    public async ValueTask<CallToolResult> GetComponentProperties(
+    public async ValueTask<CallToolResult> GetComponentPropertiesAsync(
         [Description("The instance ID of the GameObject.")] int instanceId,
         [Description("The fully-qualified component type name including namespace (e.g. UnityEngine.Transform, UnityEngine.Rigidbody).")]
         string componentType,
@@ -113,10 +113,10 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
         }
     }
 
-    [McpServerTool(ReadOnly = false),
+    [McpServerTool(Name = "set_component_property", ReadOnly = false),
      Description("Set a serialized property on a component. Uses SerializedProperty API with automatic Undo."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> SetComponentProperty(
+    public async ValueTask<CallToolResult> SetComponentPropertyAsync(
         [Description("The instance ID of the GameObject.")] int instanceId,
         [Description("The fully-qualified component type name including namespace (e.g. UnityEngine.Transform).")] string componentType,
         [Description("The property path (e.g. m_LocalPosition.x).")]
