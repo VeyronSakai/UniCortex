@@ -7,12 +7,12 @@ namespace UniCortex.Mcp.Test.ScreenshotTools;
 [TestFixture]
 public class ScreenshotToolsTest
 {
-    private UnityEditorFixture _fixture = null!;
+    private ScreenshotToolsFixture _fixture = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await ScreenshotToolsFixture.CreateAsync();
     }
 
     [Test]

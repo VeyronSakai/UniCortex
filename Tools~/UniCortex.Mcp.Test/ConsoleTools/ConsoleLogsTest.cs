@@ -7,12 +7,12 @@ namespace UniCortex.Mcp.Test.ConsoleTools;
 [TestFixture]
 public class ConsoleLogsTest
 {
-    private UnityEditorFixture _fixture = null!;
+    private ConsoleToolsFixture _fixture = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await ConsoleToolsFixture.CreateAsync();
     }
 
     [Test]

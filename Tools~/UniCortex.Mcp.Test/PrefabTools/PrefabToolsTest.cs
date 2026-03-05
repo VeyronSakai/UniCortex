@@ -10,12 +10,12 @@ namespace UniCortex.Mcp.Test.PrefabTools;
 public class PrefabToolsTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-    private UnityEditorFixture _fixture = null!;
+    private PrefabToolsFixture _fixture = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await PrefabToolsFixture.CreateAsync();
     }
 
     [Test]
@@ -42,7 +42,7 @@ public class PrefabToolsTest
         finally
         {
             await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
-            UnityEditorFixture.DeleteAssetFile("Assets/CreatePrefabTest.prefab");
+            PrefabToolsFixture.DeleteAssetFile("Assets/CreatePrefabTest.prefab");
         }
     }
 
@@ -85,7 +85,7 @@ public class PrefabToolsTest
             }
 
             await _fixture.GameObjectTools.DeleteGameObject(createResponse.instanceId, cancellationToken: ct);
-            UnityEditorFixture.DeleteAssetFile("Assets/InstantiatePrefabTest.prefab");
+            PrefabToolsFixture.DeleteAssetFile("Assets/InstantiatePrefabTest.prefab");
         }
     }
 }

@@ -7,12 +7,12 @@ namespace UniCortex.Mcp.Test.AssetTools;
 [TestFixture]
 public class AssetToolsTest
 {
-    private UnityEditorFixture _fixture = null!;
+    private AssetToolsFixture _fixture = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await AssetToolsFixture.CreateAsync();
     }
 
     [Test]

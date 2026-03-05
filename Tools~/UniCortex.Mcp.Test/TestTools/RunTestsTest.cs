@@ -11,12 +11,12 @@ public class RunTestsTest
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { IncludeFields = true };
 
-    private UnityEditorFixture _fixture = null!;
+    private TestToolsFixture _fixture = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await TestToolsFixture.CreateAsync();
     }
 
     [Test, CancelAfter(300_000)]

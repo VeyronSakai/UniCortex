@@ -7,12 +7,12 @@ namespace UniCortex.Mcp.Test.EditorTools;
 [TestFixture]
 public class DomainReloadTest
 {
-    private UnityEditorFixture _fixture = null!;
+    private EditorToolsFixture _fixture = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await EditorToolsFixture.CreateAsync();
     }
 
     [Test, CancelAfter(120_000)]

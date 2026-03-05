@@ -10,12 +10,12 @@ namespace UniCortex.Mcp.Test.ComponentTools;
 public class ComponentToolsTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-    private UnityEditorFixture _fixture = null!;
+    private ComponentToolsFixture _fixture = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await ComponentToolsFixture.CreateAsync();
     }
 
     [Test]

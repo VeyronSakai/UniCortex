@@ -7,12 +7,12 @@ namespace UniCortex.Mcp.Test.SceneTools;
 [TestFixture]
 public class SceneToolsTest
 {
-    private UnityEditorFixture _fixture = null!;
+    private SceneToolsFixture _fixture = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await SceneToolsFixture.CreateAsync();
     }
 
     [Test]

@@ -7,12 +7,12 @@ namespace UniCortex.Mcp.Test.MenuItemTools;
 [TestFixture]
 public class MenuItemToolsTest
 {
-    private UnityEditorFixture _fixture = null!;
+    private MenuItemToolsFixture _fixture = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await MenuItemToolsFixture.CreateAsync();
     }
 
     [Test]

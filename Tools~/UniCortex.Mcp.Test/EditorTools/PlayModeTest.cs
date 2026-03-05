@@ -11,13 +11,13 @@ namespace UniCortex.Mcp.Test.EditorTools;
 public class PlayModeTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-    private UnityEditorFixture _fixture = null!;
+    private EditorToolsFixture _fixture = null!;
     private HttpClient _rawClient = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await EditorToolsFixture.CreateAsync();
         _rawClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
         // Ensure not in play mode before tests

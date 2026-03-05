@@ -10,12 +10,12 @@ namespace UniCortex.Mcp.Test.GameObjectTools;
 public class GameObjectToolsTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-    private UnityEditorFixture _fixture = null!;
+    private GameObjectToolsFixture _fixture = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
-        _fixture = await UnityEditorFixture.CreateAsync();
+        _fixture = await GameObjectToolsFixture.CreateAsync();
     }
 
     [Test]
