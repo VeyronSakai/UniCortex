@@ -10,18 +10,14 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class RequestRouter : IRequestRouter
     {
-        private readonly
-            Dictionary<(HttpMethodType method, string path), Func<IRequestContext, CancellationToken, Task>>
-            _handlers = new();
-
-        private readonly HashSet<string> _knownPaths = new();
+        private readonly Dictionary<(HttpMethodType method, string path),
+            Func<IRequestContext, CancellationToken, Task>> _handlers = new();
 
         public void Register(HttpMethodType method, string path,
             Func<IRequestContext, CancellationToken, Task> handler)
         {
             var normalized = NormalizePath(path);
             _handlers[(method, normalized)] = handler;
-            _knownPaths.Add(normalized);
         }
 
         public async Task HandleRequestAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -42,11 +38,6 @@ namespace UniCortex.Editor.Infrastructures
                 {
                     await handler(context, cancellationToken);
                 }
-                else if (_knownPaths.Contains(path))
-                {
-                    await context.WriteResponseAsync(HttpStatusCodes.MethodNotAllowed,
-                        JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
-                }
                 else
                 {
                     await context.WriteResponseAsync(HttpStatusCodes.NotFound,
@@ -57,7 +48,12 @@ namespace UniCortex.Editor.Infrastructures
             {
                 Debug.LogWarning($"[UniCortex] {rawMethod} {path} invalid request: {ex.Message}");
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest,
-                    JsonUtility.ToJson(new ErrorResponse("Invalid request body.")));
+                    JsonUtility.ToJson(new ErrorResponse($"Invalid request: {ex.Message}")));
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.LogWarning($"[UniCortex] {rawMethod} {path} request was cancelled");
+                throw;
             }
             catch (Exception ex)
             {
