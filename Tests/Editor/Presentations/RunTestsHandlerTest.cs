@@ -27,14 +27,14 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext("POST", ApiRoutes.TestsRun,
-                "{\"testMode\":\"EditMode\",\"nameFilter\":\"\"}");
+                "{\"testMode\":\"EditMode\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("\"passed\":1", context.ResponseBody);
             StringAssert.Contains("\"failed\":1", context.ResponseBody);
-            Assert.AreEqual("EditMode", spy.LastTestMode);
+            Assert.AreEqual(TestModes.EditMode, spy.LastTestMode);
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace UniCortex.Editor.Tests.Presentations
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual("EditMode", spy.LastTestMode);
+            Assert.AreEqual(TestModes.EditMode, spy.LastTestMode);
         }
 
         [Test]
@@ -70,7 +70,31 @@ namespace UniCortex.Editor.Tests.Presentations
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual("EditMode", spy.LastTestMode);
+            Assert.AreEqual(TestModes.EditMode, spy.LastTestMode);
+        }
+
+        [Test]
+        public void HandleRunTests_ParsesNewFilterFields()
+        {
+            var spy = new SpyTestRunner();
+            var useCase = new RunTestsUseCase(spy);
+            var handler = new RunTestsHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var json = "{\"testMode\":\"EditMode\","
+                       + "\"testNames\":[\"TestA\",\"TestB\"],"
+                       + "\"categoryNames\":[\"Smoke\"]}";
+            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun, json);
+
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(new List<string> { "TestA", "TestB" }, spy.LastRequest.testNames);
+            Assert.AreEqual(new List<string> { "Smoke" }, spy.LastRequest.categoryNames);
+            Assert.AreEqual(0, spy.LastRequest.groupNames?.Count ?? 0);
+            Assert.AreEqual(0, spy.LastRequest.assemblyNames?.Count ?? 0);
         }
     }
 }
