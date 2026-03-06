@@ -55,27 +55,6 @@ public class RunTestsTest
     }
 
     [Test, CancelAfter(300_000)]
-    public async ValueTask RunTests_WithNameFilter_ReturnsFilteredResults()
-    {
-        // Arrange
-        var testTools = _fixture.TestTools;
-
-        // Act — filter to a test name that is unlikely to match anything
-        var result = await testTools.RunTestsAsync(
-            testMode: TestModes.EditMode,
-            nameFilter: "NonExistentTestName_12345",
-            cancellationToken: CancellationToken.None);
-
-        // Assert
-        Assert.That(result.IsError, Is.Not.True);
-        Assert.That(result.Content, Has.Count.EqualTo(1));
-        var json = ((TextContentBlock)result.Content[0]).Text;
-        var response = JsonSerializer.Deserialize<RunTestsResponse>(json, JsonOptions);
-        Assert.That(response, Is.Not.Null);
-        Assert.That(response!.results, Has.Count.EqualTo(0));
-    }
-
-    [Test, CancelAfter(300_000)]
     public async ValueTask RunTests_WithTestNames_NonExistent_ReturnsZeroResults()
     {
         // Arrange

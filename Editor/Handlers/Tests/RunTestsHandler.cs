@@ -41,8 +41,6 @@ namespace UniCortex.Editor.Handlers.Tests
                 request.testMode = TestModes.EditMode;
             }
 
-            request.nameFilter ??= "";
-
             var response = await _useCase.ExecuteAsync(request, cancellationToken);
             var json = JsonUtility.ToJson(response);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);

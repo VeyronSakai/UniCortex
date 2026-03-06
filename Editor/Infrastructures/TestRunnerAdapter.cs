@@ -43,10 +43,6 @@ namespace UniCortex.Editor.Infrastructures
                     {
                         filter.testNames = request.testNames.ToArray();
                     }
-                    else if (!string.IsNullOrEmpty(request.nameFilter))
-                    {
-                        filter.testNames = new[] { request.nameFilter };
-                    }
 
                     if (request.groupNames != null && request.groupNames.Count > 0)
                     {
@@ -63,7 +59,7 @@ namespace UniCortex.Editor.Infrastructures
                         filter.assemblyNames = request.assemblyNames.ToArray();
                     }
 
-                    Debug.Log($"[UniCortex] Running tests: mode={request.testMode}, filter={request.nameFilter}");
+                    Debug.Log($"[UniCortex] Running tests: mode={request.testMode}");
                     testRunnerApi.Execute(new ExecutionSettings(filter));
                 }, cancellationToken);
 

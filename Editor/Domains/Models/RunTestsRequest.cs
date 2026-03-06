@@ -9,7 +9,6 @@ namespace UniCortex.Editor.Domains.Models
     public class RunTestsRequest
     {
         public string testMode;
-        public string nameFilter;
         public List<string>? testNames;
         public List<string>? groupNames;
         public List<string>? categoryNames;
@@ -17,14 +16,12 @@ namespace UniCortex.Editor.Domains.Models
 
         public RunTestsRequest(
             string testMode = TestModes.EditMode,
-            string nameFilter = "",
             List<string>? testNames = null,
             List<string>? groupNames = null,
             List<string>? categoryNames = null,
             List<string>? assemblyNames = null)
         {
             this.testMode = testMode;
-            this.nameFilter = nameFilter;
             this.testNames = testNames;
             this.groupNames = groupNames;
             this.categoryNames = categoryNames;

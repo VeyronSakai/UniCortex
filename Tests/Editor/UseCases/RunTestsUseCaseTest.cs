@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Tests.UseCases
             });
             var useCase = new RunTestsUseCase(spy);
 
-            var result = useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode, ""), CancellationToken.None)
+            var result = useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(2, result.passed);
@@ -38,12 +38,11 @@ namespace UniCortex.Editor.Tests.UseCases
             var spy = new SpyTestRunner();
             var useCase = new RunTestsUseCase(spy);
 
-            useCase.ExecuteAsync(new RunTestsRequest(TestModes.PlayMode, "MyTest"), CancellationToken.None)
+            useCase.ExecuteAsync(new RunTestsRequest(TestModes.PlayMode), CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(1, spy.RunTestsCallCount);
             Assert.AreEqual(TestModes.PlayMode, spy.LastTestMode);
-            Assert.AreEqual("MyTest", spy.LastNameFilter);
         }
 
         [Test]
@@ -52,7 +51,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var spy = new SpyTestRunner();
             var useCase = new RunTestsUseCase(spy);
 
-            var result = useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode, ""), CancellationToken.None)
+            var result = useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(0, result.passed);
@@ -68,7 +67,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var useCase = new RunTestsUseCase(spy);
 
             var request = new RunTestsRequest(
-                TestModes.EditMode, "",
+                TestModes.EditMode,
                 testNames: new List<string> { "TestA", "TestB" },
                 groupNames: new List<string> { "Group1" },
                 categoryNames: new List<string> { "Smoke" },

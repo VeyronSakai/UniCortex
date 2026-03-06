@@ -11,7 +11,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int RunTestsCallCount { get; private set; }
         public RunTestsRequest LastRequest { get; private set; }
         public string LastTestMode => LastRequest?.testMode;
-        public string LastNameFilter => LastRequest?.nameFilter;
 
         private readonly IReadOnlyList<TestResultItem> _results;
 

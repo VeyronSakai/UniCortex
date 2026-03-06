@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext("POST", ApiRoutes.TestsRun,
-                "{\"testMode\":\"EditMode\",\"nameFilter\":\"\"}");
+                "{\"testMode\":\"EditMode\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -83,7 +83,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var json = "{\"testMode\":\"EditMode\",\"nameFilter\":\"\","
+            var json = "{\"testMode\":\"EditMode\","
                        + "\"testNames\":[\"TestA\",\"TestB\"],"
                        + "\"categoryNames\":[\"Smoke\"]}";
             var context = new FakeRequestContext("POST", ApiRoutes.TestsRun, json);
