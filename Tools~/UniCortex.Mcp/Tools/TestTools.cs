@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using UniCortex.Editor.Domains.Models;
+using UniCortex.Mcp.Domains;
 using UniCortex.Mcp.Domains.Interfaces;
 using UniCortex.Mcp.Extensions;
 using UniCortex.Mcp.UseCases;
@@ -13,8 +14,7 @@ namespace UniCortex.Mcp.Tools;
 [McpServerToolType, UsedImplicitly]
 public class TestTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
-    private readonly JsonSerializerOptions _jsonOptions = new() { IncludeFields = true };
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 
     [McpServerTool(Name = "run_tests", ReadOnly = true),
      Description("Run Unity Test Runner tests and wait for completion."), UsedImplicitly]
@@ -31,7 +31,7 @@ public class TestTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProv
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var request = new RunTestsRequest(testMode ?? "EditMode", nameFilter ?? "");
-            var json = JsonSerializer.Serialize(request, _jsonOptions);
+            var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
             string responseJson;

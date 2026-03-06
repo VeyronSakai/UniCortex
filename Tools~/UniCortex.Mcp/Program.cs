@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using UniCortex.Mcp.Domains.Interfaces;
+using UniCortex.Mcp.Domains;
 using UniCortex.Mcp.Infrastructures;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -14,7 +15,7 @@ builder.Logging.AddConsole(options =>
 
 builder.Services.AddTransient<HttpRequestHandler>();
 builder.Services.AddTransient<IUnityServerUrlProvider, UnityServerUrlProvider>();
-builder.Services.AddHttpClient("UniCortex", client =>
+builder.Services.AddHttpClient(HttpClientNames.UniCortex, client =>
     {
         // Test runs can take several minutes, so increase the default timeout.
         client.Timeout = TimeSpan.FromMinutes(10);

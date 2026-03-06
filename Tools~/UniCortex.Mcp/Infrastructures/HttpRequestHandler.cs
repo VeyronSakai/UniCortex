@@ -9,12 +9,6 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        // Non-idempotent requests (POST, etc.) must not be retried to avoid duplicate side effects.
-        if (request.Method != HttpMethod.Get)
-        {
-            return await base.SendAsync(request, cancellationToken);
-        }
-
         var startTime = DateTime.UtcNow;
         var logged = false;
 

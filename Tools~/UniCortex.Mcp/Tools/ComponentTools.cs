@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using UniCortex.Editor.Domains.Models;
+using UniCortex.Mcp.Domains;
 using UniCortex.Mcp.Domains.Interfaces;
 using UniCortex.Mcp.Extensions;
 using UniCortex.Mcp.UseCases;
@@ -14,8 +15,7 @@ namespace UniCortex.Mcp.Tools;
 [McpServerToolType, UsedImplicitly]
 public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 
     [McpServerTool(Name = "add_component", ReadOnly = false),
      Description("Add a component to a GameObject. Supports Undo."), UsedImplicitly]
@@ -31,7 +31,7 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var request = new AddComponentRequest { instanceId = instanceId, componentType = componentType };
-            var body = JsonSerializer.Serialize(request, s_jsonOptions);
+            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
                 await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentAdd}", content, cancellationToken);
@@ -67,7 +67,7 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
             {
                 instanceId = instanceId, componentType = componentType, componentIndex = componentIndex
             };
-            var body = JsonSerializer.Serialize(request, s_jsonOptions);
+            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
                 await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentRemove}", content, cancellationToken);
@@ -137,7 +137,7 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
                 propertyPath = propertyPath,
                 value = value
             };
-            var body = JsonSerializer.Serialize(request, s_jsonOptions);
+            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
                 await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentSetProperty}", content, cancellationToken);

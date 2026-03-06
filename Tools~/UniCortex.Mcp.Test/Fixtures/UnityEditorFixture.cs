@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UniCortex.Editor.Domains.Models;
+using UniCortex.Mcp.Domains;
 using UniCortex.Mcp.Infrastructures;
 using AssetToolsClass = UniCortex.Mcp.Tools.AssetTools;
 using ComponentToolsClass = UniCortex.Mcp.Tools.ComponentTools;
@@ -76,20 +77,25 @@ public sealed class UnityEditorFixture
         var urlProvider = new UnityServerUrlProvider();
         var baseUrl = urlProvider.GetUrl();
 
-        // Connection check with a plain HttpClient (no retry handler)
-        using var checkClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-        var response = await checkClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}");
-        response.EnsureSuccessStatusCode();
-
         // Build DI container
         var services = new ServiceCollection();
         services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Information));
         services.AddTransient<HttpRequestHandler>();
-        services.AddHttpClient("UniCortex")
+        services.AddHttpClient(HttpClientNames.UniCortex, client =>
+            {
+                client.Timeout = TimeSpan.FromMinutes(10);
+            })
             .AddHttpMessageHandler<HttpRequestHandler>();
 
         var provider = services.BuildServiceProvider();
         var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
+
+        // Connection check using the retry-capable HttpClient.
+        // HttpRequestHandler automatically retries during domain reloads.
+        var checkClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
+        var pingResponse = await checkClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}");
+        pingResponse.EnsureSuccessStatusCode();
+
         var editorTools = new EditorToolsClass(httpClientFactory, urlProvider);
         var testTools = new TestToolsClass(httpClientFactory, urlProvider);
         var consoleTools = new ConsoleToolsClass(httpClientFactory, urlProvider);

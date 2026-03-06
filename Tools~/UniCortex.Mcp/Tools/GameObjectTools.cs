@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using UniCortex.Editor.Domains.Models;
+using UniCortex.Mcp.Domains;
 using UniCortex.Mcp.Domains.Interfaces;
 using UniCortex.Mcp.Extensions;
 using UniCortex.Mcp.UseCases;
@@ -14,8 +15,7 @@ namespace UniCortex.Mcp.Tools;
 [McpServerToolType, UsedImplicitly]
 public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 
     [McpServerTool(Name = "find_game_objects", ReadOnly = true),
      Description(
@@ -68,7 +68,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var request = new CreateGameObjectRequest { name = name };
-            var body = JsonSerializer.Serialize(request, s_jsonOptions);
+            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
                 await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.GameObjectCreate}", content, cancellationToken);
@@ -95,7 +95,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var request = new DeleteGameObjectRequest { instanceId = instanceId };
-            var body = JsonSerializer.Serialize(request, s_jsonOptions);
+            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
                 await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.GameObjectDelete}", content, cancellationToken);
