@@ -68,8 +68,7 @@ public class PrefabToolsTest
                 "Assets/InstantiatePrefabTest.prefab",
                 ct);
 
-            Assert.That(result.IsError, Is.Not.True,
-                () => ((TextContentBlock)result.Content[0]).Text);
+            Assert.That(result.IsError, Is.Not.True);
             var text = ((TextContentBlock)result.Content[0]).Text;
             Assert.That(text, Does.Contain("InstantiatePrefabTest"));
 
