@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Domains.Models
         public List<string>? assemblyNames;
 
         public RunTestsRequest(
-            string testMode = "EditMode",
+            string testMode = TestModes.EditMode,
             string nameFilter = "",
             List<string>? testNames = null,
             List<string>? groupNames = null,

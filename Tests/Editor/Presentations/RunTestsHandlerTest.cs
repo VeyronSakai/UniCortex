@@ -34,7 +34,7 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("\"passed\":1", context.ResponseBody);
             StringAssert.Contains("\"failed\":1", context.ResponseBody);
-            Assert.AreEqual("EditMode", spy.LastTestMode);
+            Assert.AreEqual(TestModes.EditMode, spy.LastTestMode);
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace UniCortex.Editor.Tests.Presentations
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual("EditMode", spy.LastTestMode);
+            Assert.AreEqual(TestModes.EditMode, spy.LastTestMode);
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace UniCortex.Editor.Tests.Presentations
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual("EditMode", spy.LastTestMode);
+            Assert.AreEqual(TestModes.EditMode, spy.LastTestMode);
         }
 
         [Test]

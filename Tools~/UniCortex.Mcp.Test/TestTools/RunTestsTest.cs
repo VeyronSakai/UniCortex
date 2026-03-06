@@ -26,7 +26,7 @@ public class RunTestsTest
         var testTools = _fixture.TestTools;
 
         // Act
-        var result = await testTools.RunTestsAsync(testMode: "EditMode", cancellationToken: CancellationToken.None);
+        var result = await testTools.RunTestsAsync(testMode: TestModes.EditMode, cancellationToken: CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);
@@ -44,7 +44,7 @@ public class RunTestsTest
         var testTools = _fixture.TestTools;
 
         // Act
-        var result = await testTools.RunTestsAsync(testMode: "PlayMode", cancellationToken: CancellationToken.None);
+        var result = await testTools.RunTestsAsync(testMode: TestModes.PlayMode, cancellationToken: CancellationToken.None);
 
         // Assert
         Assert.That(result.IsError, Is.Not.True);
@@ -62,7 +62,7 @@ public class RunTestsTest
 
         // Act — filter to a test name that is unlikely to match anything
         var result = await testTools.RunTestsAsync(
-            testMode: "EditMode",
+            testMode: TestModes.EditMode,
             nameFilter: "NonExistentTestName_12345",
             cancellationToken: CancellationToken.None);
 
@@ -83,7 +83,7 @@ public class RunTestsTest
 
         // Act
         var result = await testTools.RunTestsAsync(
-            testMode: "EditMode",
+            testMode: TestModes.EditMode,
             testNames: ["NonExistentTest_A", "NonExistentTest_B"],
             cancellationToken: CancellationToken.None);
 
@@ -103,7 +103,7 @@ public class RunTestsTest
 
         // Act
         var result = await testTools.RunTestsAsync(
-            testMode: "EditMode",
+            testMode: TestModes.EditMode,
             categoryNames: ["NonExistentCategory_99999"],
             cancellationToken: CancellationToken.None);
 
@@ -123,7 +123,7 @@ public class RunTestsTest
 
         // Act
         var result = await testTools.RunTestsAsync(
-            testMode: "EditMode",
+            testMode: TestModes.EditMode,
             assemblyNames: ["NonExistentAssembly_99999"],
             cancellationToken: CancellationToken.None);
 

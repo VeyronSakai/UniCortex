@@ -38,7 +38,7 @@ namespace UniCortex.Editor.Handlers.Tests
 
             if (string.IsNullOrEmpty(request.testMode))
             {
-                request.testMode = "EditMode";
+                request.testMode = TestModes.EditMode;
             }
 
             request.nameFilter ??= "";

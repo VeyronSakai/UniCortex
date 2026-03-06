@@ -39,7 +39,7 @@ public class TestTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProv
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var request = new RunTestsRequest(
-                testMode ?? "EditMode",
+                testMode ?? TestModes.EditMode,
                 nameFilter ?? "",
                 testNames != null ? new List<string>(testNames) : null,
                 groupNames != null ? new List<string>(groupNames) : null,

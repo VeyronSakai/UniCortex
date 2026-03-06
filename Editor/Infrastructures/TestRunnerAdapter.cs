@@ -36,7 +36,7 @@ namespace UniCortex.Editor.Infrastructures
 
                     var filter = new Filter
                     {
-                        testMode = request.testMode == "PlayMode" ? TestMode.PlayMode : TestMode.EditMode,
+                        testMode = request.testMode == TestModes.PlayMode ? TestMode.PlayMode : TestMode.EditMode,
                     };
 
                     if (request.testNames != null && request.testNames.Count > 0)
