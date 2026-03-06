@@ -74,4 +74,64 @@ public class RunTestsTest
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.results, Has.Count.EqualTo(0));
     }
+
+    [Test, CancelAfter(300_000)]
+    public async ValueTask RunTests_WithTestNames_NonExistent_ReturnsZeroResults()
+    {
+        // Arrange
+        var testTools = _fixture.TestTools;
+
+        // Act
+        var result = await testTools.RunTestsAsync(
+            testMode: "EditMode",
+            testNames: ["NonExistentTest_A", "NonExistentTest_B"],
+            cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.That(result.IsError, Is.Not.True);
+        var json = ((TextContentBlock)result.Content[0]).Text;
+        var response = JsonSerializer.Deserialize<RunTestsResponse>(json, JsonOptions);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.results, Has.Count.EqualTo(0));
+    }
+
+    [Test, CancelAfter(300_000)]
+    public async ValueTask RunTests_WithCategoryNames_NonExistent_ReturnsZeroResults()
+    {
+        // Arrange
+        var testTools = _fixture.TestTools;
+
+        // Act
+        var result = await testTools.RunTestsAsync(
+            testMode: "EditMode",
+            categoryNames: ["NonExistentCategory_99999"],
+            cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.That(result.IsError, Is.Not.True);
+        var json = ((TextContentBlock)result.Content[0]).Text;
+        var response = JsonSerializer.Deserialize<RunTestsResponse>(json, JsonOptions);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.results, Has.Count.EqualTo(0));
+    }
+
+    [Test, CancelAfter(300_000)]
+    public async ValueTask RunTests_WithAssemblyNames_NonExistent_ReturnsZeroResults()
+    {
+        // Arrange
+        var testTools = _fixture.TestTools;
+
+        // Act
+        var result = await testTools.RunTestsAsync(
+            testMode: "EditMode",
+            assemblyNames: ["NonExistentAssembly_99999"],
+            cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.That(result.IsError, Is.Not.True);
+        var json = ((TextContentBlock)result.Content[0]).Text;
+        var response = JsonSerializer.Deserialize<RunTestsResponse>(json, JsonOptions);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.results, Has.Count.EqualTo(0));
+    }
 }

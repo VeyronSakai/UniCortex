@@ -72,5 +72,29 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual("EditMode", spy.LastTestMode);
         }
+
+        [Test]
+        public void HandleRunTests_ParsesNewFilterFields()
+        {
+            var spy = new SpyTestRunner();
+            var useCase = new RunTestsUseCase(spy);
+            var handler = new RunTestsHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var json = "{\"testMode\":\"EditMode\",\"nameFilter\":\"\","
+                       + "\"testNames\":[\"TestA\",\"TestB\"],"
+                       + "\"categoryNames\":[\"Smoke\"]}";
+            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun, json);
+
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(new List<string> { "TestA", "TestB" }, spy.LastRequest.testNames);
+            Assert.AreEqual(new List<string> { "Smoke" }, spy.LastRequest.categoryNames);
+            Assert.AreEqual(0, spy.LastRequest.groupNames?.Count ?? 0);
+            Assert.AreEqual(0, spy.LastRequest.assemblyNames?.Count ?? 0);
+        }
     }
 }

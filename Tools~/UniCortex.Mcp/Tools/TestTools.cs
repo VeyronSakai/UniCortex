@@ -21,8 +21,16 @@ public class TestTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProv
     public async ValueTask<CallToolResult> RunTestsAsync(
         [Description("Test mode: 'EditMode' or 'PlayMode'. Defaults to 'EditMode'.")]
         string? testMode = null,
-        [Description("Test name filter. Omit to run all tests.")]
+        [Description("Test name filter (single string). Omit to run all tests. If testNames is specified, this is ignored.")]
         string? nameFilter = null,
+        [Description("Array of full test names to run (e.g. [\"MyTests.TestA\", \"MyTests.TestB\"]). Overrides nameFilter.")]
+        string[]? testNames = null,
+        [Description("Array of test group names to filter by.")]
+        string[]? groupNames = null,
+        [Description("Array of test category names to filter by (e.g. [\"Smoke\", \"Integration\"]).")]
+        string[]? categoryNames = null,
+        [Description("Array of test assembly names to filter by (e.g. [\"MyTests\"]).")]
+        string[]? assemblyNames = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -30,7 +38,13 @@ public class TestTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProv
             var baseUrl = urlProvider.GetUrl();
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-            var request = new RunTestsRequest(testMode ?? "EditMode", nameFilter ?? "");
+            var request = new RunTestsRequest(
+                testMode ?? "EditMode",
+                nameFilter ?? "",
+                testNames != null ? new List<string>(testNames) : null,
+                groupNames != null ? new List<string>(groupNames) : null,
+                categoryNames != null ? new List<string>(categoryNames) : null,
+                assemblyNames != null ? new List<string>(assemblyNames) : null);
             var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 

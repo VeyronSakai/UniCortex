@@ -16,10 +16,10 @@ namespace UniCortex.Editor.UseCases
             _testRunner = testRunner;
         }
 
-        public async Task<RunTestsResponse> ExecuteAsync(string testMode, string nameFilter,
+        public async Task<RunTestsResponse> ExecuteAsync(RunTestsRequest request,
             CancellationToken cancellationToken)
         {
-            var items = await _testRunner.RunTestsAsync(testMode, nameFilter, cancellationToken);
+            var items = await _testRunner.RunTestsAsync(request, cancellationToken);
 
             var passed = items.Count(i => i.Status == "Passed");
             var failed = items.Count(i => i.Status == "Failed");

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using UniCortex.Editor.Domains.Interfaces;
+using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using NUnit.Framework;
@@ -22,7 +23,7 @@ namespace UniCortex.Editor.Tests.UseCases
             });
             var useCase = new RunTestsUseCase(spy);
 
-            var result = useCase.ExecuteAsync("EditMode", "", CancellationToken.None)
+            var result = useCase.ExecuteAsync(new RunTestsRequest("EditMode", ""), CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(2, result.passed);
@@ -37,7 +38,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var spy = new SpyTestRunner();
             var useCase = new RunTestsUseCase(spy);
 
-            useCase.ExecuteAsync("PlayMode", "MyTest", CancellationToken.None)
+            useCase.ExecuteAsync(new RunTestsRequest("PlayMode", "MyTest"), CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(1, spy.RunTestsCallCount);
@@ -51,13 +52,35 @@ namespace UniCortex.Editor.Tests.UseCases
             var spy = new SpyTestRunner();
             var useCase = new RunTestsUseCase(spy);
 
-            var result = useCase.ExecuteAsync("EditMode", "", CancellationToken.None)
+            var result = useCase.ExecuteAsync(new RunTestsRequest("EditMode", ""), CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(0, result.passed);
             Assert.AreEqual(0, result.failed);
             Assert.AreEqual(0, result.skipped);
             Assert.AreEqual(0, result.results.Count);
+        }
+
+        [Test]
+        public void ExecuteAsync_PassesNewFilterFieldsToTestRunner()
+        {
+            var spy = new SpyTestRunner();
+            var useCase = new RunTestsUseCase(spy);
+
+            var request = new RunTestsRequest(
+                "EditMode", "",
+                testNames: new List<string> { "TestA", "TestB" },
+                groupNames: new List<string> { "Group1" },
+                categoryNames: new List<string> { "Smoke" },
+                assemblyNames: new List<string> { "MyAssembly" });
+
+            useCase.ExecuteAsync(request, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, spy.RunTestsCallCount);
+            Assert.AreEqual(new List<string> { "TestA", "TestB" }, spy.LastRequest.testNames);
+            Assert.AreEqual(new List<string> { "Group1" }, spy.LastRequest.groupNames);
+            Assert.AreEqual(new List<string> { "Smoke" }, spy.LastRequest.categoryNames);
+            Assert.AreEqual(new List<string> { "MyAssembly" }, spy.LastRequest.assemblyNames);
         }
     }
 }

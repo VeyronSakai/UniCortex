@@ -25,24 +25,25 @@ namespace UniCortex.Editor.Handlers.Tests
         {
             var body = await context.ReadBodyAsync();
 
-            var testMode = "EditMode";
-            var nameFilter = "";
+            var request = new RunTestsRequest();
 
             if (!string.IsNullOrEmpty(body))
             {
-                var request = JsonUtility.FromJson<RunTestsRequest>(body);
-                if (request != null)
+                var parsed = JsonUtility.FromJson<RunTestsRequest>(body);
+                if (parsed != null)
                 {
-                    if (!string.IsNullOrEmpty(request.testMode))
-                    {
-                        testMode = request.testMode;
-                    }
-
-                    nameFilter = request.nameFilter ?? "";
+                    request = parsed;
                 }
             }
 
-            var response = await _useCase.ExecuteAsync(testMode, nameFilter, cancellationToken);
+            if (string.IsNullOrEmpty(request.testMode))
+            {
+                request.testMode = "EditMode";
+            }
+
+            request.nameFilter ??= "";
+
+            var response = await _useCase.ExecuteAsync(request, cancellationToken);
             var json = JsonUtility.ToJson(response);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
