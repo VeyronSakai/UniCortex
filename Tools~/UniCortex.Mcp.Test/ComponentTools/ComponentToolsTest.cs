@@ -124,7 +124,8 @@ public class ComponentToolsTest
                 value: "1.5",
                 cancellationToken: ct);
 
-            Assert.That(result.IsError, Is.Not.True);
+            Assert.That(result.IsError, Is.Not.True,
+                () => ((TextContentBlock)result.Content[0]).Text);
             var text = ((TextContentBlock)result.Content[0]).Text;
             Assert.That(text, Does.Contain("Property 'm_LocalPosition.x' set to '1.5' successfully."));
         }

@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using UniCortex.Editor.Domains.Models;
+using UniCortex.Mcp.Domains;
 using UniCortex.Mcp.Domains.Interfaces;
 using UniCortex.Mcp.Extensions;
 using UniCortex.Mcp.UseCases;
@@ -14,8 +15,7 @@ namespace UniCortex.Mcp.Tools;
 [McpServerToolType, UsedImplicitly]
 public class MenuItemTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 
     [McpServerTool(Name = "execute_menu_item", ReadOnly = false),
      Description("Execute a Unity Editor menu item by its path (e.g. \"GameObject/3D Object/Cube\")."),
@@ -31,7 +31,7 @@ public class MenuItemTools(IHttpClientFactory httpClientFactory, IUnityServerUrl
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var request = new ExecuteMenuItemRequest { menuPath = menuPath };
-            var body = JsonSerializer.Serialize(request, s_jsonOptions);
+            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
                 await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.MenuItemExecute}", content, cancellationToken);

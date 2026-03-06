@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using UniCortex.Editor.Domains.Models;
+using UniCortex.Mcp.Domains;
 using UniCortex.Mcp.Domains.Interfaces;
 using UniCortex.Mcp.Extensions;
 using UniCortex.Mcp.UseCases;
@@ -14,8 +15,7 @@ namespace UniCortex.Mcp.Tools;
 [McpServerToolType, UsedImplicitly]
 public class PrefabTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 
     [McpServerTool(Name = "create_prefab", ReadOnly = false),
      Description("Create a Prefab asset from a GameObject in the scene."), UsedImplicitly]
@@ -32,7 +32,7 @@ public class PrefabTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var request = new CreatePrefabRequest { instanceId = instanceId, assetPath = assetPath };
-            var body = JsonSerializer.Serialize(request, s_jsonOptions);
+            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
                 await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.PrefabCreate}", content, cancellationToken);
@@ -63,7 +63,7 @@ public class PrefabTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
             await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
             var request = new InstantiatePrefabRequest { assetPath = assetPath };
-            var body = JsonSerializer.Serialize(request, s_jsonOptions);
+            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             var response =
                 await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.PrefabInstantiate}", content, cancellationToken);

@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using UniCortex.Editor.Domains.Models;
+using UniCortex.Mcp.Domains;
 using UniCortex.Mcp.Domains.Interfaces;
 using UniCortex.Mcp.Extensions;
 using UniCortex.Mcp.UseCases;
@@ -12,7 +13,7 @@ namespace UniCortex.Mcp.Tools;
 [McpServerToolType, UsedImplicitly]
 public class ConsoleTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UniCortex");
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 
     [McpServerTool(Name = "get_console_logs", ReadOnly = true),
      Description("Get console log entries from the Unity Editor."), UsedImplicitly]
