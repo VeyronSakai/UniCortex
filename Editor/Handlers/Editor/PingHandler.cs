@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Handlers.Editor
 
         private async Task HandlePingAsync(IRequestContext context, CancellationToken cancellationToken)
         {
-            var verbose = string.Equals(context.GetQueryParameter("verbose"), "true",
+            var verbose = string.Equals(context.GetQueryParameter(QueryParameterNames.Verbose), "true",
                 System.StringComparison.OrdinalIgnoreCase);
             var message = await _useCase.ExecuteAsync(verbose, cancellationToken);
             var json = JsonUtility.ToJson(new PingResponse(status: "ok", message: message));

@@ -26,7 +26,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
 
             await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
-            var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}?verbose=true", cancellationToken);
+            var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}?{QueryParameterNames.Verbose}=true", cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken);

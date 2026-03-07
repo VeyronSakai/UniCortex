@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext("GET", ApiRoutes.Ping);
-            context.SetQueryParameter("verbose", "true");
+            context.SetQueryParameter(QueryParameterNames.Verbose, "true");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
