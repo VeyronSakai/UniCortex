@@ -5,7 +5,8 @@ namespace UniCortex.Mcp.UseCases;
 
 internal static class DomainReloadUseCase
 {
-    internal static async ValueTask ReloadAsync(HttpClient httpClient, string baseUrl, CancellationToken cancellationToken)
+    internal static async ValueTask ReloadAsync(HttpClient httpClient, string baseUrl,
+        CancellationToken cancellationToken)
     {
         // Wait for the server to become available before triggering domain reload.
         // If Unity is already auto-recompiling (e.g. after a .cs file change),

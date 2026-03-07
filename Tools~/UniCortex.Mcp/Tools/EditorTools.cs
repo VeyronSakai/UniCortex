@@ -16,7 +16,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 
-    [McpServerTool(Name = "ping_editor", ReadOnly = true), Description("Check connectivity with the Unity Editor."), UsedImplicitly]
+    [McpServerTool(Name = "ping_editor", ReadOnly = true), Description("Check connectivity with the Unity Editor."),
+     UsedImplicitly]
     public async ValueTask<CallToolResult> PingEditorAsync(CancellationToken cancellationToken)
     {
         try
@@ -25,11 +26,12 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
 
             await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
-            var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}", cancellationToken);
+            var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}?{QueryParameterNames.Verbose}=true", cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            var ping = JsonSerializer.Deserialize<PingResponse>(json, new JsonSerializerOptions { IncludeFields = true })!;
+            var ping = JsonSerializer.Deserialize<PingResponse>(json,
+                new JsonSerializerOptions { IncludeFields = true })!;
             return new CallToolResult { Content = [new TextContentBlock { Text = ping.message }] };
         }
         catch (Exception ex)
@@ -38,7 +40,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         }
     }
 
-    [McpServerTool(Name = "enter_play_mode", ReadOnly = false), Description("Start Play Mode in the Unity Editor."), UsedImplicitly]
+    [McpServerTool(Name = "enter_play_mode", ReadOnly = false), Description("Start Play Mode in the Unity Editor."),
+     UsedImplicitly]
     public async ValueTask<CallToolResult> EnterPlayModeAsync(CancellationToken cancellationToken)
     {
         try
@@ -55,7 +58,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
                     cancellationToken);
                 await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
                 var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-                var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, new JsonSerializerOptions { IncludeFields = true })!;
+                var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson,
+                    new JsonSerializerOptions { IncludeFields = true })!;
                 if (status.isPlaying)
                 {
                     return new CallToolResult
@@ -71,7 +75,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         }
     }
 
-    [McpServerTool(Name = "exit_play_mode", ReadOnly = false), Description("Stop Play Mode in the Unity Editor."), UsedImplicitly]
+    [McpServerTool(Name = "exit_play_mode", ReadOnly = false), Description("Stop Play Mode in the Unity Editor."),
+     UsedImplicitly]
     public async ValueTask<CallToolResult> ExitPlayModeAsync(CancellationToken cancellationToken)
     {
         try
@@ -85,7 +90,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
                 var statusResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Status, cancellationToken);
                 await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
                 var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-                var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, new JsonSerializerOptions { IncludeFields = true })!;
+                var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson,
+                    new JsonSerializerOptions { IncludeFields = true })!;
                 if (!status.isPlaying)
                 {
                     return new CallToolResult
@@ -148,7 +154,7 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
 
             // Poll /ping to wait for the server to come back after domain reload.
             // DomainReloadRetryHandler handles retries during the reload.
-            var pingResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Ping, cancellationToken);
+            var pingResponse = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}", cancellationToken);
             await pingResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
             return new CallToolResult
