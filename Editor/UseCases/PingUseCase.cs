@@ -14,9 +14,13 @@ namespace UniCortex.Editor.UseCases
             _dispatcher = dispatcher;
         }
 
-        public async Task<string> ExecuteAsync(CancellationToken cancellationToken)
+        public async Task<string> ExecuteAsync(bool verbose, CancellationToken cancellationToken)
         {
-            await _dispatcher.RunOnMainThreadAsync(() => Debug.Log("pong"), cancellationToken);
+            if (verbose)
+            {
+                await _dispatcher.RunOnMainThreadAsync(() => Debug.Log("pong"), cancellationToken);
+            }
+
             return "pong";
         }
     }
