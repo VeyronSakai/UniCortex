@@ -18,9 +18,11 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var spy = new SpyTestRunner(new List<TestResultItem>
             {
-                new("Test1", "Passed", 0.1f), new("Test2", "Failed", 0.2f, "error"),
+                new("Test1", TestStatuses.Passed, 0.1f), new("Test2", TestStatuses.Failed, 0.2f, "error"),
             });
-            var useCase = new RunTestsUseCase(spy);
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -41,7 +43,9 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleRunTests_DefaultsToEditMode_WhenTestModeNotSpecified()
         {
             var spy = new SpyTestRunner();
-            var useCase = new RunTestsUseCase(spy);
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -59,7 +63,9 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleRunTests_DefaultsToEditMode_WhenBodyIsEmpty()
         {
             var spy = new SpyTestRunner();
-            var useCase = new RunTestsUseCase(spy);
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -77,7 +83,9 @@ namespace UniCortex.Editor.Tests.Presentations
         public void HandleRunTests_ParsesNewFilterFields()
         {
             var spy = new SpyTestRunner();
-            var useCase = new RunTestsUseCase(spy);
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -95,6 +103,28 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(new List<string> { "Smoke" }, spy.LastRequest.categoryNames);
             Assert.AreEqual(0, spy.LastRequest.groupNames?.Count ?? 0);
             Assert.AreEqual(0, spy.LastRequest.assemblyNames?.Count ?? 0);
+        }
+
+        [Test]
+        public void HandleRunTests_Returns400_WhenInPlayMode()
+        {
+            var spy = new SpyTestRunner();
+            var editorApp = new SpyEditorApplication { IsPlaying = true };
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
+            var handler = new RunTestsHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun,
+                "{\"testMode\":\"EditMode\"}");
+
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            StringAssert.Contains("Cannot run tests during play mode", context.ResponseBody);
+            Assert.AreEqual(0, spy.RunTestsCallCount);
         }
     }
 }

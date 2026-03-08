@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
+using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Tests.TestDoubles;
@@ -16,12 +17,14 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             var spy = new SpyTestRunner(new List<TestResultItem>
             {
-                new TestResultItem("Test1", "Passed", 0.1f),
-                new TestResultItem("Test2", "Failed", 0.2f, "assertion error"),
-                new TestResultItem("Test3", "Passed", 0.05f),
+                new TestResultItem("Test1", TestStatuses.Passed, 0.1f),
+                new TestResultItem("Test2", TestStatuses.Failed, 0.2f, "assertion error"),
+                new TestResultItem("Test3", TestStatuses.Passed, 0.05f),
                 new TestResultItem("Test4", "Skipped", 0f),
             });
-            var useCase = new RunTestsUseCase(spy);
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
 
             var result = useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
                 .GetAwaiter().GetResult();
@@ -36,7 +39,9 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_PassesParametersToTestRunner()
         {
             var spy = new SpyTestRunner();
-            var useCase = new RunTestsUseCase(spy);
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
 
             useCase.ExecuteAsync(new RunTestsRequest(TestModes.PlayMode), CancellationToken.None)
                 .GetAwaiter().GetResult();
@@ -49,7 +54,9 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_WithEmptyResults_ReturnsZeroCounts()
         {
             var spy = new SpyTestRunner();
-            var useCase = new RunTestsUseCase(spy);
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
 
             var result = useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
                 .GetAwaiter().GetResult();
@@ -64,7 +71,9 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_PassesNewFilterFieldsToTestRunner()
         {
             var spy = new SpyTestRunner();
-            var useCase = new RunTestsUseCase(spy);
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
 
             var request = new RunTestsRequest(
                 TestModes.EditMode,
@@ -80,6 +89,22 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(new List<string> { "Group1" }, spy.LastRequest.groupNames);
             Assert.AreEqual(new List<string> { "Smoke" }, spy.LastRequest.categoryNames);
             Assert.AreEqual(new List<string> { "MyAssembly" }, spy.LastRequest.assemblyNames);
+        }
+
+        [Test]
+        public void ExecuteAsync_ThrowsInvalidOperationException_WhenInPlayMode()
+        {
+            var spy = new SpyTestRunner();
+            var editorApp = new SpyEditorApplication { IsPlaying = true };
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
+
+            var ex = Assert.Throws<PlayModeException>(() =>
+                useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
+                    .GetAwaiter().GetResult());
+
+            StringAssert.Contains("Cannot run tests during play mode", ex.Message);
+            Assert.AreEqual(0, spy.RunTestsCallCount);
         }
     }
 }

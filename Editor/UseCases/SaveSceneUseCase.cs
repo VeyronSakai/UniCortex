@@ -1,6 +1,6 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
+using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.UseCases
@@ -25,7 +25,7 @@ namespace UniCortex.Editor.UseCases
             {
                 if (_editorApplication.IsPlaying)
                 {
-                    throw new InvalidOperationException("Cannot save scene during play mode.");
+                    throw new PlayModeException("Cannot save scene during play mode.");
                 }
 
                 return _sceneManager.SaveOpenScenes();
