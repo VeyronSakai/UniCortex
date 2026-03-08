@@ -1,6 +1,6 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
+using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
@@ -48,7 +48,7 @@ namespace UniCortex.Editor.Handlers.Tests
                 var json = JsonUtility.ToJson(response);
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }
-            catch (InvalidOperationException ex)
+            catch (PlayModeException ex)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);

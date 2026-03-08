@@ -101,7 +101,7 @@ namespace UniCortex.Editor
             var redoHandler = new RedoHandler(redoUseCase);
 
             var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher);
-            var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, editorApplication);
+            var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, s_dispatcher, editorApplication);
             var runTestsHandler = new RunTestsHandler(runTestsUseCase);
             var testResultHandler = new TestResultHandler();
 

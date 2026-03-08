@@ -1,5 +1,5 @@
-using System;
 using System.Threading;
+using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using NUnit.Framework;
@@ -32,7 +32,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var editorApp = new SpyEditorApplication { IsPlaying = true };
             var useCase = new SaveSceneUseCase(dispatcher, sceneManager, editorApp);
 
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.Throws<PlayModeException>(() =>
                 useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult());
             Assert.AreEqual(0, sceneManager.SaveOpenScenesCallCount);
         }

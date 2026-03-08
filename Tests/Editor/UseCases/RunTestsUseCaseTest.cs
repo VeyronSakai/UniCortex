@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Threading;
+using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Tests.TestDoubles;
@@ -23,7 +23,8 @@ namespace UniCortex.Editor.Tests.UseCases
                 new TestResultItem("Test4", "Skipped", 0f),
             });
             var editorApp = new SpyEditorApplication();
-            var useCase = new RunTestsUseCase(spy, editorApp);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
 
             var result = useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
                 .GetAwaiter().GetResult();
@@ -39,7 +40,8 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
-            var useCase = new RunTestsUseCase(spy, editorApp);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
 
             useCase.ExecuteAsync(new RunTestsRequest(TestModes.PlayMode), CancellationToken.None)
                 .GetAwaiter().GetResult();
@@ -53,7 +55,8 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
-            var useCase = new RunTestsUseCase(spy, editorApp);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
 
             var result = useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
                 .GetAwaiter().GetResult();
@@ -69,7 +72,8 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
-            var useCase = new RunTestsUseCase(spy, editorApp);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
 
             var request = new RunTestsRequest(
                 TestModes.EditMode,
@@ -92,9 +96,10 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication { IsPlaying = true };
-            var useCase = new RunTestsUseCase(spy, editorApp);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
 
-            var ex = Assert.Throws<InvalidOperationException>(() =>
+            var ex = Assert.Throws<PlayModeException>(() =>
                 useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
                     .GetAwaiter().GetResult());
 

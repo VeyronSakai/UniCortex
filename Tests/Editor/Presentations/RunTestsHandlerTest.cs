@@ -21,7 +21,8 @@ namespace UniCortex.Editor.Tests.Presentations
                 new("Test1", "Passed", 0.1f), new("Test2", "Failed", 0.2f, "error"),
             });
             var editorApp = new SpyEditorApplication();
-            var useCase = new RunTestsUseCase(spy, editorApp);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -43,7 +44,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
-            var useCase = new RunTestsUseCase(spy, editorApp);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -62,7 +64,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
-            var useCase = new RunTestsUseCase(spy, editorApp);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -81,7 +84,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
-            var useCase = new RunTestsUseCase(spy, editorApp);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -106,7 +110,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication { IsPlaying = true };
-            var useCase = new RunTestsUseCase(spy, editorApp);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
