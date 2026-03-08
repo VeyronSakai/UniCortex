@@ -28,7 +28,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun,
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TestsRun,
                 "{\"testMode\":\"EditMode\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -51,7 +51,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun, "{}");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TestsRun, "{}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -71,7 +71,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TestsRun);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -94,7 +94,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var json = "{\"testMode\":\"EditMode\","
                        + "\"testNames\":[\"TestA\",\"TestB\"],"
                        + "\"categoryNames\":[\"Smoke\"]}";
-            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun, json);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TestsRun, json);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -117,7 +117,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.TestsRun,
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TestsRun,
                 "{\"testMode\":\"EditMode\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();

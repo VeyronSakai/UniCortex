@@ -1,8 +1,10 @@
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.Infrastructures
 {
@@ -13,9 +15,10 @@ namespace UniCortex.Editor.Infrastructures
         public HttpListenerRequestContext(HttpListenerContext context)
         {
             _context = context;
+            HttpMethod = (HttpMethodType)Enum.Parse(typeof(HttpMethodType), context.Request.HttpMethod, true);
         }
 
-        public string HttpMethod => _context.Request.HttpMethod;
+        public HttpMethodType HttpMethod { get; }
 
         public string Path => _context.Request.Url.AbsolutePath;
 

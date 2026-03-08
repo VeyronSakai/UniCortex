@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.GameObjectModify, "{\"instanceId\":123,\"name\":\"NewName\"}");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameObjectModify, "{\"instanceId\":123,\"name\":\"NewName\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -44,7 +44,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.GameObjectModify);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameObjectModify);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
