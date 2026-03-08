@@ -3,10 +3,10 @@ using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 using UniCortex.Editor.Domains.Models;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
-public class TestServiceTest
+public class TestUseCaseTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
@@ -20,7 +20,7 @@ public class TestServiceTest
     [Test, CancelAfter(300_000)]
     public async ValueTask Run_EditMode_ReturnsJsonWithResults()
     {
-        var json = await _fixture.TestService.RunAsync(testMode: TestModes.EditMode,
+        var json = await _fixture.TestUseCase.RunAsync(testMode: TestModes.EditMode,
             cancellationToken: CancellationToken.None);
 
         var response = JsonSerializer.Deserialize<RunTestsResponse>(json, s_jsonOptions);
@@ -31,7 +31,7 @@ public class TestServiceTest
     [Test, CancelAfter(300_000)]
     public async ValueTask Run_PlayMode_ReturnsJson()
     {
-        var json = await _fixture.TestService.RunAsync(testMode: TestModes.PlayMode,
+        var json = await _fixture.TestUseCase.RunAsync(testMode: TestModes.PlayMode,
             cancellationToken: CancellationToken.None);
 
         var response = JsonSerializer.Deserialize<RunTestsResponse>(json, s_jsonOptions);
@@ -41,7 +41,7 @@ public class TestServiceTest
     [Test, CancelAfter(300_000)]
     public async ValueTask Run_WithTestNames_NonExistent_ReturnsZeroResults()
     {
-        var json = await _fixture.TestService.RunAsync(
+        var json = await _fixture.TestUseCase.RunAsync(
             testMode: TestModes.EditMode,
             testNames: ["NonExistentTest_A", "NonExistentTest_B"],
             cancellationToken: CancellationToken.None);
@@ -54,7 +54,7 @@ public class TestServiceTest
     [Test, CancelAfter(300_000)]
     public async ValueTask Run_WithCategoryNames_NonExistent_ReturnsZeroResults()
     {
-        var json = await _fixture.TestService.RunAsync(
+        var json = await _fixture.TestUseCase.RunAsync(
             testMode: TestModes.EditMode,
             categoryNames: ["NonExistentCategory_99999"],
             cancellationToken: CancellationToken.None);
@@ -67,7 +67,7 @@ public class TestServiceTest
     [Test, CancelAfter(300_000)]
     public async ValueTask Run_WithAssemblyNames_NonExistent_ReturnsZeroResults()
     {
-        var json = await _fixture.TestService.RunAsync(
+        var json = await _fixture.TestUseCase.RunAsync(
             testMode: TestModes.EditMode,
             assemblyNames: ["NonExistentAssembly_99999"],
             cancellationToken: CancellationToken.None);

@@ -2,12 +2,12 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class SceneTools(SceneService sceneService)
+public class SceneTools(SceneUseCase sceneService)
 {
     [McpServerTool(Name = "create_scene", ReadOnly = false),
      Description("Create a new empty scene and save it at the specified asset path."), UsedImplicitly]

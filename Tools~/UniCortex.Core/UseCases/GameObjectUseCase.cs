@@ -3,12 +3,11 @@ using System.Text.Json;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Extensions;
-using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
 
-namespace UniCortex.Core.Services;
+namespace UniCortex.Core.UseCases;
 
-public class GameObjectService(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class GameObjectUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 

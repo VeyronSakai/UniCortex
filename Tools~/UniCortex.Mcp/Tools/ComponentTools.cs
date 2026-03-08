@@ -2,12 +2,12 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class ComponentTools(ComponentService componentService)
+public class ComponentTools(ComponentUseCase componentService)
 {
     [McpServerTool(Name = "add_component", ReadOnly = false),
      Description("Add a component to a GameObject. Supports Undo."), UsedImplicitly]

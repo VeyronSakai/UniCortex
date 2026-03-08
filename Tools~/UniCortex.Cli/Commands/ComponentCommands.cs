@@ -1,9 +1,9 @@
 using ConsoleAppFramework;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class ComponentCommands(ComponentService componentService)
+public class ComponentCommands(ComponentUseCase componentService)
 {
     /// <summary>Add a component to a GameObject.</summary>
     [Command("add")]

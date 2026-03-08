@@ -3,11 +3,11 @@ using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 using UniCortex.Editor.Domains.Models;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.SingleInstance)]
-public class PlayModeServiceTest
+public class PlayModeUseCaseTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
@@ -40,7 +40,7 @@ public class PlayModeServiceTest
     [Test, Order(1)]
     public async ValueTask EnterPlayMode_ReturnsSuccess()
     {
-        var message = await _fixture.EditorService.EnterPlayModeAsync(CancellationToken.None);
+        var message = await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
 
         Assert.That(message, Does.Contain("started"));
     }
@@ -48,7 +48,7 @@ public class PlayModeServiceTest
     [Test, Order(2)]
     public async ValueTask ExitPlayMode_ReturnsSuccess()
     {
-        var message = await _fixture.EditorService.ExitPlayModeAsync(CancellationToken.None);
+        var message = await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
 
         Assert.That(message, Does.Contain("stopped"));
     }

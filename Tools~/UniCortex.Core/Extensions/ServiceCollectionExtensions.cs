@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Infrastructures;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Core.Extensions;
 
@@ -19,16 +19,16 @@ public static class ServiceCollectionExtensions
             })
             .AddHttpMessageHandler<HttpRequestHandler>();
 
-        services.AddTransient<EditorService>();
-        services.AddTransient<GameObjectService>();
-        services.AddTransient<ComponentService>();
-        services.AddTransient<SceneService>();
-        services.AddTransient<PrefabService>();
-        services.AddTransient<TestService>();
-        services.AddTransient<ConsoleService>();
-        services.AddTransient<AssetService>();
-        services.AddTransient<MenuItemService>();
-        services.AddTransient<ScreenshotService>();
+        services.AddTransient<EditorUseCase>();
+        services.AddTransient<GameObjectUseCase>();
+        services.AddTransient<ComponentUseCase>();
+        services.AddTransient<SceneUseCase>();
+        services.AddTransient<PrefabUseCase>();
+        services.AddTransient<TestUseCase>();
+        services.AddTransient<ConsoleUseCase>();
+        services.AddTransient<AssetUseCase>();
+        services.AddTransient<MenuItemUseCase>();
+        services.AddTransient<ScreenshotUseCase>();
 
         return services;
     }

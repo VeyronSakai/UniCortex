@@ -1,9 +1,9 @@
 using ConsoleAppFramework;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class ConsoleCommands(ConsoleService consoleService)
+public class ConsoleCommands(ConsoleUseCase consoleService)
 {
     /// <summary>Get console log entries from the Unity Editor.</summary>
     [Command("logs")]

@@ -1,9 +1,9 @@
 using ConsoleAppFramework;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class EditorCommands(EditorService editorService)
+public class EditorCommands(EditorUseCase editorService)
 {
     /// <summary>Check connectivity with the Unity Editor.</summary>
     [Command("ping")]

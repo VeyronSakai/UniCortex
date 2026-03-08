@@ -1,9 +1,9 @@
 using ConsoleAppFramework;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class PrefabCommands(PrefabService prefabService)
+public class PrefabCommands(PrefabUseCase prefabService)
 {
     /// <summary>Create a Prefab asset from a GameObject in the scene.</summary>
     [Command("create")]

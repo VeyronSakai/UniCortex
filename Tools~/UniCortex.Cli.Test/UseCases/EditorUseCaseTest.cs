@@ -1,10 +1,10 @@
 using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
-public class EditorServiceTest
+public class EditorUseCaseTest
 {
     private UnityEditorFixture _fixture = null!;
 
@@ -17,7 +17,7 @@ public class EditorServiceTest
     [Test]
     public async ValueTask Ping_ReturnsSuccessWithPong()
     {
-        var message = await _fixture.EditorService.PingAsync(CancellationToken.None);
+        var message = await _fixture.EditorUseCase.PingAsync(CancellationToken.None);
 
         Assert.That(message, Does.Contain("pong"));
     }
@@ -25,7 +25,7 @@ public class EditorServiceTest
     [Test, CancelAfter(120_000)]
     public async ValueTask Undo_ReturnsSuccess()
     {
-        var message = await _fixture.EditorService.UndoAsync(CancellationToken.None);
+        var message = await _fixture.EditorUseCase.UndoAsync(CancellationToken.None);
 
         Assert.That(message, Does.Contain("successfully"));
     }
@@ -33,7 +33,7 @@ public class EditorServiceTest
     [Test, CancelAfter(120_000)]
     public async ValueTask Redo_ReturnsSuccess()
     {
-        var message = await _fixture.EditorService.RedoAsync(CancellationToken.None);
+        var message = await _fixture.EditorUseCase.RedoAsync(CancellationToken.None);
 
         Assert.That(message, Does.Contain("successfully"));
     }
@@ -41,7 +41,7 @@ public class EditorServiceTest
     [Test, CancelAfter(120_000)]
     public async ValueTask ReloadDomain_ReturnsSuccess()
     {
-        var message = await _fixture.EditorService.ReloadDomainAsync(CancellationToken.None);
+        var message = await _fixture.EditorUseCase.ReloadDomainAsync(CancellationToken.None);
 
         Assert.That(message, Does.Contain("completed"));
     }
@@ -49,7 +49,7 @@ public class EditorServiceTest
     [Test, CancelAfter(120_000), Order(2)]
     public async ValueTask Ping_SucceedsAfterDomainReload()
     {
-        var message = await _fixture.EditorService.PingAsync(CancellationToken.None);
+        var message = await _fixture.EditorUseCase.PingAsync(CancellationToken.None);
 
         Assert.That(message, Does.Contain("pong"));
     }

@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Extensions;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
 using AssetToolsClass = UniCortex.Mcp.Tools.AssetTools;
 using ComponentToolsClass = UniCortex.Mcp.Tools.ComponentTools;
@@ -91,16 +91,16 @@ public sealed class UnityEditorFixture
         var pingResponse = await checkClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}");
         pingResponse.EnsureSuccessStatusCode();
 
-        var editorTools = new EditorToolsClass(provider.GetRequiredService<EditorService>());
-        var testTools = new TestToolsClass(provider.GetRequiredService<TestService>());
-        var consoleTools = new ConsoleToolsClass(provider.GetRequiredService<ConsoleService>());
-        var sceneTools = new SceneToolsClass(provider.GetRequiredService<SceneService>());
-        var gameObjectTools = new GameObjectToolsClass(provider.GetRequiredService<GameObjectService>());
-        var componentTools = new ComponentToolsClass(provider.GetRequiredService<ComponentService>());
-        var prefabTools = new PrefabToolsClass(provider.GetRequiredService<PrefabService>());
-        var assetTools = new AssetToolsClass(provider.GetRequiredService<AssetService>());
-        var menuItemTools = new MenuItemToolsClass(provider.GetRequiredService<MenuItemService>());
-        var screenshotTools = new ScreenshotToolsClass(provider.GetRequiredService<ScreenshotService>());
+        var editorTools = new EditorToolsClass(provider.GetRequiredService<EditorUseCase>());
+        var testTools = new TestToolsClass(provider.GetRequiredService<TestUseCase>());
+        var consoleTools = new ConsoleToolsClass(provider.GetRequiredService<ConsoleUseCase>());
+        var sceneTools = new SceneToolsClass(provider.GetRequiredService<SceneUseCase>());
+        var gameObjectTools = new GameObjectToolsClass(provider.GetRequiredService<GameObjectUseCase>());
+        var componentTools = new ComponentToolsClass(provider.GetRequiredService<ComponentUseCase>());
+        var prefabTools = new PrefabToolsClass(provider.GetRequiredService<PrefabUseCase>());
+        var assetTools = new AssetToolsClass(provider.GetRequiredService<AssetUseCase>());
+        var menuItemTools = new MenuItemToolsClass(provider.GetRequiredService<MenuItemUseCase>());
+        var screenshotTools = new ScreenshotToolsClass(provider.GetRequiredService<ScreenshotUseCase>());
 
         return new UnityEditorFixture(editorTools, testTools, consoleTools, sceneTools, gameObjectTools,
             componentTools, prefabTools, assetTools, menuItemTools, screenshotTools, baseUrl);

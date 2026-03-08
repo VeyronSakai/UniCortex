@@ -1,7 +1,7 @@
 using ModelContextProtocol.Protocol;
 using NUnit.Framework;
 using UniCortex.Core.Domains.Interfaces;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Test.EditorTools;
 
@@ -11,7 +11,7 @@ public class ErrorHandlingTest
     [Test]
     public async Task PingEditor_ReturnsMessageOnly_WhenUrlProviderThrows()
     {
-        var editorService = new EditorService(new DummyHttpClientFactory(), new ThrowingUrlProvider());
+        var editorService = new EditorUseCase(new DummyHttpClientFactory(), new ThrowingUrlProvider());
         var tools = new UniCortex.Mcp.Tools.EditorTools(editorService);
 
         var result = await tools.PingEditorAsync(CancellationToken.None);

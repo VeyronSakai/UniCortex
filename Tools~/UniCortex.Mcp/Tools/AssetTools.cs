@@ -2,12 +2,12 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class AssetTools(AssetService assetService)
+public class AssetTools(AssetUseCase assetService)
 {
     [McpServerTool(Name = "refresh_asset_database", ReadOnly = false),
      Description("Refresh the Unity Asset Database."), UsedImplicitly]

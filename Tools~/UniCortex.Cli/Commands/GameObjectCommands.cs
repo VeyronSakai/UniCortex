@@ -1,9 +1,9 @@
 using ConsoleAppFramework;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class GameObjectCommands(GameObjectService gameObjectService)
+public class GameObjectCommands(GameObjectUseCase gameObjectService)
 {
     /// <summary>Find GameObjects in the current scene.</summary>
     [Command("find")]

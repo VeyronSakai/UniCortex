@@ -1,9 +1,9 @@
 using ConsoleAppFramework;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class SceneCommands(SceneService sceneService)
+public class SceneCommands(SceneUseCase sceneService)
 {
     /// <summary>Create a new empty scene and save it at the specified asset path.</summary>
     [Command("create")]

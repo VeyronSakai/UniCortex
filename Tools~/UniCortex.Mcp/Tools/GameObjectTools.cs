@@ -2,12 +2,12 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class GameObjectTools(GameObjectService gameObjectService)
+public class GameObjectTools(GameObjectUseCase gameObjectService)
 {
     [McpServerTool(Name = "find_game_objects", ReadOnly = true),
      Description(

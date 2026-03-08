@@ -1,10 +1,10 @@
 using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
-public class SceneServiceTest
+public class SceneUseCaseTest
 {
     private const string TestScenePath = "Assets/Scenes/SceneToolsTestScene.unity";
 
@@ -14,10 +14,10 @@ public class SceneServiceTest
     public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
-        await _fixture.SceneService.CreateAsync(TestScenePath, CancellationToken.None);
-        await _fixture.AssetService.RefreshAsync(CancellationToken.None);
+        await _fixture.SceneUseCase.CreateAsync(TestScenePath, CancellationToken.None);
+        await _fixture.AssetUseCase.RefreshAsync(CancellationToken.None);
         // Save after refresh to prevent "Scene(s) Have Been Modified" dialog
-        await _fixture.SceneService.SaveAsync(CancellationToken.None);
+        await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
     }
 
     [OneTimeTearDown]
@@ -25,16 +25,16 @@ public class SceneServiceTest
     {
         // Save the scene to prevent "Scene(s) Have Been Modified" dialog on next scene open.
         // Do NOT call RefreshAsync after deleting to prevent "modified externally" dialog.
-        await _fixture.SceneService.SaveAsync(CancellationToken.None);
+        await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 
     [Test]
     public async ValueTask GetHierarchy_ReturnsJsonWithSceneInfo()
     {
-        await _fixture.SceneService.OpenAsync(TestScenePath, CancellationToken.None);
+        await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
 
-        var json = await _fixture.SceneService.GetHierarchyAsync(CancellationToken.None);
+        var json = await _fixture.SceneUseCase.GetHierarchyAsync(CancellationToken.None);
 
         Assert.That(json, Does.Contain("sceneName"));
         Assert.That(json, Does.Contain("gameObjects"));
@@ -43,7 +43,7 @@ public class SceneServiceTest
     [Test]
     public async ValueTask Open_ReturnsSuccess()
     {
-        var message = await _fixture.SceneService.OpenAsync(TestScenePath, CancellationToken.None);
+        var message = await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
 
         Assert.That(message, Does.Contain("Scene opened"));
     }
@@ -51,9 +51,9 @@ public class SceneServiceTest
     [Test]
     public async ValueTask Save_ReturnsSuccess()
     {
-        await _fixture.SceneService.OpenAsync(TestScenePath, CancellationToken.None);
+        await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
 
-        var message = await _fixture.SceneService.SaveAsync(CancellationToken.None);
+        var message = await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
 
         Assert.That(message, Does.Contain("saved successfully"));
     }
@@ -65,7 +65,7 @@ public class SceneServiceTest
 
         try
         {
-            var message = await _fixture.SceneService.CreateAsync(newScenePath, CancellationToken.None);
+            var message = await _fixture.SceneUseCase.CreateAsync(newScenePath, CancellationToken.None);
 
             Assert.That(message, Does.Contain("Scene created"));
         }
@@ -73,8 +73,8 @@ public class SceneServiceTest
         {
             // Re-open TestScenePath before cleanup to restore active scene.
             // Do NOT call RefreshAsync after deleting to prevent "modified externally" dialog.
-            await _fixture.SceneService.OpenAsync(TestScenePath, CancellationToken.None);
-            await _fixture.SceneService.SaveAsync(CancellationToken.None);
+            await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
+            await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
             UnityEditorFixture.DeleteAssetFile(newScenePath);
         }
     }

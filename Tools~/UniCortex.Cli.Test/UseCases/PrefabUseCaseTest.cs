@@ -3,10 +3,10 @@ using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 using UniCortex.Editor.Domains.Models;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
-public class PrefabServiceTest
+public class PrefabUseCaseTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
@@ -22,19 +22,19 @@ public class PrefabServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("CreatePrefabTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("CreatePrefabTestObj", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
         {
-            var message = await _fixture.PrefabService.CreateAsync(
+            var message = await _fixture.PrefabUseCase.CreateAsync(
                 createResponse.instanceId, "Assets/CreatePrefabTest.prefab", ct);
 
             Assert.That(message, Does.Contain("Prefab created at: Assets/CreatePrefabTest.prefab"));
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
             UnityEditorFixture.DeleteAssetFile("Assets/CreatePrefabTest.prefab");
         }
     }
@@ -44,16 +44,16 @@ public class PrefabServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("InstantiatePrefabTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("InstantiatePrefabTestObj", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
-        await _fixture.PrefabService.CreateAsync(
+        await _fixture.PrefabUseCase.CreateAsync(
             createResponse.instanceId, "Assets/InstantiatePrefabTest.prefab", ct);
 
         var instantiatedId = 0;
         try
         {
-            var json = await _fixture.PrefabService.InstantiateAsync(
+            var json = await _fixture.PrefabUseCase.InstantiateAsync(
                 "Assets/InstantiatePrefabTest.prefab", ct);
 
             Assert.That(json, Does.Contain("InstantiatePrefabTest"));
@@ -67,10 +67,10 @@ public class PrefabServiceTest
         {
             if (instantiatedId != 0)
             {
-                await _fixture.GameObjectService.DeleteAsync(instantiatedId, ct);
+                await _fixture.GameObjectUseCase.DeleteAsync(instantiatedId, ct);
             }
 
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
             UnityEditorFixture.DeleteAssetFile("Assets/InstantiatePrefabTest.prefab");
         }
     }

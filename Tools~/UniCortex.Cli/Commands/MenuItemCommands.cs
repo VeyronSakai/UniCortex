@@ -1,9 +1,9 @@
 using ConsoleAppFramework;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class MenuItemCommands(MenuItemService menuItemService)
+public class MenuItemCommands(MenuItemUseCase menuItemService)
 {
     /// <summary>Execute a Unity Editor menu item by its path.</summary>
     [Command("execute")]

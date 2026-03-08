@@ -3,10 +3,10 @@ using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 using UniCortex.Editor.Domains.Models;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
-public class GameObjectServiceTest
+public class GameObjectUseCaseTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
@@ -20,7 +20,7 @@ public class GameObjectServiceTest
     [Test]
     public async ValueTask Find_ReturnsJsonWithGameObjects()
     {
-        var result = await _fixture.GameObjectService.FindAsync(null, CancellationToken.None);
+        var result = await _fixture.GameObjectUseCase.FindAsync(null, CancellationToken.None);
 
         Assert.That(result, Does.Contain("gameObjects"));
     }
@@ -28,7 +28,7 @@ public class GameObjectServiceTest
     [Test]
     public async ValueTask Find_WithQuery_ReturnsFilteredResults()
     {
-        var result = await _fixture.GameObjectService.FindAsync("t:Camera", CancellationToken.None);
+        var result = await _fixture.GameObjectUseCase.FindAsync("t:Camera", CancellationToken.None);
 
         Assert.That(result, Does.Contain("gameObjects"));
     }
@@ -36,7 +36,7 @@ public class GameObjectServiceTest
     [Test]
     public async ValueTask CreateAndDelete_WorksEndToEnd()
     {
-        var createJson = await _fixture.GameObjectService.CreateAsync("TestObj", CancellationToken.None);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("TestObj", CancellationToken.None);
 
         Assert.That(createJson, Does.Contain("TestObj"));
 
@@ -44,7 +44,7 @@ public class GameObjectServiceTest
         Assert.That(createResponse, Is.Not.Null);
 
         var deleteMessage =
-            await _fixture.GameObjectService.DeleteAsync(createResponse!.instanceId, CancellationToken.None);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse!.instanceId, CancellationToken.None);
 
         Assert.That(deleteMessage, Does.Contain("deleted"));
     }
@@ -54,19 +54,19 @@ public class GameObjectServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("ModifyNameTest", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyNameTest", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
         {
-            var message = await _fixture.GameObjectService.ModifyAsync(createResponse.instanceId,
+            var message = await _fixture.GameObjectUseCase.ModifyAsync(createResponse.instanceId,
                 name: "RenamedObj", cancellationToken: ct);
 
             Assert.That(message, Does.Contain("modified successfully"));
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
 
@@ -75,19 +75,19 @@ public class GameObjectServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("ModifyActiveTest", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyActiveTest", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
         {
-            var message = await _fixture.GameObjectService.ModifyAsync(createResponse.instanceId,
+            var message = await _fixture.GameObjectUseCase.ModifyAsync(createResponse.instanceId,
                 activeSelf: false, cancellationToken: ct);
 
             Assert.That(message, Does.Contain("modified successfully"));
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
 
@@ -96,19 +96,19 @@ public class GameObjectServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("ModifyTagTest", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyTagTest", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
         {
-            var message = await _fixture.GameObjectService.ModifyAsync(createResponse.instanceId,
+            var message = await _fixture.GameObjectUseCase.ModifyAsync(createResponse.instanceId,
                 tag: "EditorOnly", cancellationToken: ct);
 
             Assert.That(message, Does.Contain("modified successfully"));
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
 
@@ -117,19 +117,19 @@ public class GameObjectServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("ModifyLayerTest", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyLayerTest", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
         {
-            var message = await _fixture.GameObjectService.ModifyAsync(createResponse.instanceId,
+            var message = await _fixture.GameObjectUseCase.ModifyAsync(createResponse.instanceId,
                 layer: 1, cancellationToken: ct);
 
             Assert.That(message, Does.Contain("modified successfully"));
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
 
@@ -138,23 +138,23 @@ public class GameObjectServiceTest
     {
         var ct = CancellationToken.None;
 
-        var parentJson = await _fixture.GameObjectService.CreateAsync("ParentObj", ct);
+        var parentJson = await _fixture.GameObjectUseCase.CreateAsync("ParentObj", ct);
         var parentResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(parentJson, s_jsonOptions)!;
 
-        var childJson = await _fixture.GameObjectService.CreateAsync("ChildObj", ct);
+        var childJson = await _fixture.GameObjectUseCase.CreateAsync("ChildObj", ct);
         var childResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(childJson, s_jsonOptions)!;
 
         try
         {
-            var message = await _fixture.GameObjectService.ModifyAsync(childResponse.instanceId,
+            var message = await _fixture.GameObjectUseCase.ModifyAsync(childResponse.instanceId,
                 parentInstanceId: parentResponse.instanceId, cancellationToken: ct);
 
             Assert.That(message, Does.Contain("modified successfully"));
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(childResponse.instanceId, ct);
-            await _fixture.GameObjectService.DeleteAsync(parentResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(childResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(parentResponse.instanceId, ct);
         }
     }
 
@@ -163,12 +163,12 @@ public class GameObjectServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("ModifyMultiTest", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyMultiTest", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
         {
-            var message = await _fixture.GameObjectService.ModifyAsync(createResponse.instanceId,
+            var message = await _fixture.GameObjectUseCase.ModifyAsync(createResponse.instanceId,
                 name: "MultiModified", activeSelf: false, tag: "EditorOnly", layer: 1,
                 cancellationToken: ct);
 
@@ -176,7 +176,7 @@ public class GameObjectServiceTest
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
 }

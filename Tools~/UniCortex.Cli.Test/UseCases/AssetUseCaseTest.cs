@@ -1,10 +1,10 @@
 using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
-public class AssetServiceTest
+public class AssetUseCaseTest
 {
     private UnityEditorFixture _fixture = null!;
 
@@ -17,7 +17,7 @@ public class AssetServiceTest
     [Test]
     public async ValueTask Refresh_ReturnsSuccess()
     {
-        var message = await _fixture.AssetService.RefreshAsync(CancellationToken.None);
+        var message = await _fixture.AssetUseCase.RefreshAsync(CancellationToken.None);
 
         Assert.That(message, Does.Contain("refreshed"));
     }

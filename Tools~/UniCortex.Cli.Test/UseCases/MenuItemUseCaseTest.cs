@@ -1,10 +1,10 @@
 using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
-public class MenuItemServiceTest
+public class MenuItemUseCaseTest
 {
     private UnityEditorFixture _fixture = null!;
 
@@ -17,7 +17,7 @@ public class MenuItemServiceTest
     [Test]
     public async ValueTask Execute_ReturnsSuccess()
     {
-        var message = await _fixture.MenuItemService.ExecuteAsync("Edit/Select All",
+        var message = await _fixture.MenuItemUseCase.ExecuteAsync("Edit/Select All",
             CancellationToken.None);
 
         Assert.That(message, Does.Contain("executed"));

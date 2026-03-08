@@ -2,13 +2,13 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class TestTools(TestService testService)
+public class TestTools(TestUseCase testService)
 {
     [McpServerTool(Name = "run_tests", ReadOnly = true),
      Description("Run Unity Test Runner tests and wait for completion."), UsedImplicitly]

@@ -3,10 +3,10 @@ using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 using UniCortex.Editor.Domains.Models;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
-public class ComponentServiceTest
+public class ComponentUseCaseTest
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
@@ -22,19 +22,19 @@ public class ComponentServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("AddComponentTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("AddComponentTestObj", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
         {
-            var message = await _fixture.ComponentService.AddAsync(
+            var message = await _fixture.ComponentUseCase.AddAsync(
                 createResponse.instanceId, "UnityEngine.Rigidbody", ct);
 
             Assert.That(message, Does.Contain("added successfully"));
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
 
@@ -43,22 +43,22 @@ public class ComponentServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("RemoveComponentTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("RemoveComponentTestObj", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
         {
-            await _fixture.ComponentService.AddAsync(
+            await _fixture.ComponentUseCase.AddAsync(
                 createResponse.instanceId, "UnityEngine.Rigidbody", ct);
 
-            var message = await _fixture.ComponentService.RemoveAsync(
+            var message = await _fixture.ComponentUseCase.RemoveAsync(
                 createResponse.instanceId, "UnityEngine.Rigidbody", cancellationToken: ct);
 
             Assert.That(message, Does.Contain("removed successfully"));
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
 
@@ -67,12 +67,12 @@ public class ComponentServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("GetPropertiesTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("GetPropertiesTestObj", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
         {
-            var json = await _fixture.ComponentService.GetPropertiesAsync(
+            var json = await _fixture.ComponentUseCase.GetPropertiesAsync(
                 createResponse.instanceId, "UnityEngine.Transform", cancellationToken: ct);
 
             Assert.That(json, Does.Contain("UnityEngine.Transform"));
@@ -80,7 +80,7 @@ public class ComponentServiceTest
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
 
@@ -89,12 +89,12 @@ public class ComponentServiceTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectService.CreateAsync("SetPropertyTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("SetPropertyTestObj", ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
         {
-            var message = await _fixture.ComponentService.SetPropertyAsync(
+            var message = await _fixture.ComponentUseCase.SetPropertyAsync(
                 createResponse.instanceId, "UnityEngine.Transform",
                 "m_LocalPosition.x", "1.5", ct);
 
@@ -102,7 +102,7 @@ public class ComponentServiceTest
         }
         finally
         {
-            await _fixture.GameObjectService.DeleteAsync(createResponse.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
 }

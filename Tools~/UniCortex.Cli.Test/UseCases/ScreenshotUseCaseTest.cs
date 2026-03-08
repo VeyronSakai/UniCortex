@@ -1,10 +1,10 @@
 using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
-public class ScreenshotServiceTest
+public class ScreenshotUseCaseTest
 {
     private UnityEditorFixture _fixture = null!;
 
@@ -17,16 +17,16 @@ public class ScreenshotServiceTest
     [Test]
     public async ValueTask Capture_InPlayMode_ReturnsPngData()
     {
-        await _fixture.EditorService.EnterPlayModeAsync(CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var pngData = await _fixture.ScreenshotService.CaptureAsync(CancellationToken.None);
+            var pngData = await _fixture.ScreenshotUseCase.CaptureAsync(CancellationToken.None);
 
             Assert.That(pngData.Length, Is.GreaterThan(0));
         }
         finally
         {
-            await _fixture.EditorService.ExitPlayModeAsync(CancellationToken.None);
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
         }
     }
 }

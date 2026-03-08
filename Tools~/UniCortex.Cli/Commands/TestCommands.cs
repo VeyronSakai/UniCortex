@@ -1,9 +1,9 @@
 using ConsoleAppFramework;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class TestCommands(TestService testService)
+public class TestCommands(TestUseCase testService)
 {
     /// <summary>Run Unity Test Runner tests and wait for completion.</summary>
     [Command("run")]

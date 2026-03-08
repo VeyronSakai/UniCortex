@@ -1,10 +1,10 @@
 using NUnit.Framework;
 using UniCortex.Cli.Test.Fixtures;
 
-namespace UniCortex.Cli.Test.Services;
+namespace UniCortex.Cli.Test.UseCases;
 
 [TestFixture]
-public class ConsoleServiceTest
+public class ConsoleUseCaseTest
 {
     private UnityEditorFixture _fixture = null!;
 
@@ -17,7 +17,7 @@ public class ConsoleServiceTest
     [Test]
     public async ValueTask GetLogs_ReturnsJsonWithLogs()
     {
-        var json = await _fixture.ConsoleService.GetLogsAsync(cancellationToken: CancellationToken.None);
+        var json = await _fixture.ConsoleUseCase.GetLogsAsync(cancellationToken: CancellationToken.None);
 
         Assert.That(json, Does.Contain("logs"));
     }
@@ -25,7 +25,7 @@ public class ConsoleServiceTest
     [Test]
     public async ValueTask GetLogs_WithCount_ReturnsLimitedEntries()
     {
-        var json = await _fixture.ConsoleService.GetLogsAsync(count: 5,
+        var json = await _fixture.ConsoleUseCase.GetLogsAsync(count: 5,
             cancellationToken: CancellationToken.None);
 
         Assert.That(json, Does.Contain("logs"));
@@ -34,7 +34,7 @@ public class ConsoleServiceTest
     [Test]
     public async ValueTask Clear_ReturnsSuccess()
     {
-        var message = await _fixture.ConsoleService.ClearAsync(CancellationToken.None);
+        var message = await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
         Assert.That(message, Does.Contain("cleared successfully"));
     }

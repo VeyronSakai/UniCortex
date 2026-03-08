@@ -3,37 +3,37 @@ using Microsoft.Extensions.Logging;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Extensions;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Cli.Test.Fixtures;
 
 public sealed class UnityEditorFixture
 {
-    public EditorService EditorService { get; }
-    public TestService TestService { get; }
-    public ConsoleService ConsoleService { get; }
-    public SceneService SceneService { get; }
-    public GameObjectService GameObjectService { get; }
-    public ComponentService ComponentService { get; }
-    public PrefabService PrefabService { get; }
-    public AssetService AssetService { get; }
-    public MenuItemService MenuItemService { get; }
-    public ScreenshotService ScreenshotService { get; }
+    public EditorUseCase EditorUseCase { get; }
+    public TestUseCase TestUseCase { get; }
+    public ConsoleUseCase ConsoleUseCase { get; }
+    public SceneUseCase SceneUseCase { get; }
+    public GameObjectUseCase GameObjectUseCase { get; }
+    public ComponentUseCase ComponentUseCase { get; }
+    public PrefabUseCase PrefabUseCase { get; }
+    public AssetUseCase AssetUseCase { get; }
+    public MenuItemUseCase MenuItemUseCase { get; }
+    public ScreenshotUseCase ScreenshotUseCase { get; }
     public string BaseUrl { get; }
 
     private UnityEditorFixture(ServiceProvider provider, string baseUrl)
     {
-        EditorService = provider.GetRequiredService<EditorService>();
-        TestService = provider.GetRequiredService<TestService>();
-        ConsoleService = provider.GetRequiredService<ConsoleService>();
-        SceneService = provider.GetRequiredService<SceneService>();
-        GameObjectService = provider.GetRequiredService<GameObjectService>();
-        ComponentService = provider.GetRequiredService<ComponentService>();
-        PrefabService = provider.GetRequiredService<PrefabService>();
-        AssetService = provider.GetRequiredService<AssetService>();
-        MenuItemService = provider.GetRequiredService<MenuItemService>();
-        ScreenshotService = provider.GetRequiredService<ScreenshotService>();
+        EditorUseCase = provider.GetRequiredService<EditorUseCase>();
+        TestUseCase = provider.GetRequiredService<TestUseCase>();
+        ConsoleUseCase = provider.GetRequiredService<ConsoleUseCase>();
+        SceneUseCase = provider.GetRequiredService<SceneUseCase>();
+        GameObjectUseCase = provider.GetRequiredService<GameObjectUseCase>();
+        ComponentUseCase = provider.GetRequiredService<ComponentUseCase>();
+        PrefabUseCase = provider.GetRequiredService<PrefabUseCase>();
+        AssetUseCase = provider.GetRequiredService<AssetUseCase>();
+        MenuItemUseCase = provider.GetRequiredService<MenuItemUseCase>();
+        ScreenshotUseCase = provider.GetRequiredService<ScreenshotUseCase>();
         BaseUrl = baseUrl;
     }
 

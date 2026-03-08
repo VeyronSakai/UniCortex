@@ -2,12 +2,12 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class ScreenshotTools(ScreenshotService screenshotService)
+public class ScreenshotTools(ScreenshotUseCase screenshotService)
 {
     [McpServerTool(Name = "capture_screenshot", ReadOnly = true),
      Description("Capture a screenshot of the Game View as a PNG image. Only available in Play Mode."),

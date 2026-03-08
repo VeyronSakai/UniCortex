@@ -2,12 +2,12 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class PrefabTools(PrefabService prefabService)
+public class PrefabTools(PrefabUseCase prefabService)
 {
     [McpServerTool(Name = "create_prefab", ReadOnly = false),
      Description("Create a Prefab asset from a GameObject in the scene."), UsedImplicitly]

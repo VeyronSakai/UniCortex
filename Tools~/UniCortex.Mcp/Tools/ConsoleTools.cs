@@ -2,12 +2,12 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class ConsoleTools(ConsoleService consoleService)
+public class ConsoleTools(ConsoleUseCase consoleService)
 {
     [McpServerTool(Name = "get_console_logs", ReadOnly = true),
      Description("Get console log entries from the Unity Editor."), UsedImplicitly]

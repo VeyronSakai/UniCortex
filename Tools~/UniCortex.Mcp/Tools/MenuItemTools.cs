@@ -2,12 +2,12 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Core.Services;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class MenuItemTools(MenuItemService menuItemService)
+public class MenuItemTools(MenuItemUseCase menuItemService)
 {
     [McpServerTool(Name = "execute_menu_item", ReadOnly = false),
      Description("Execute a Unity Editor menu item by its path (e.g. \"GameObject/3D Object/Cube\")."),
