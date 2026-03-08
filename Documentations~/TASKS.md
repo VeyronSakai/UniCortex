@@ -2,13 +2,13 @@
 
 実装状況の一覧。詳細な仕様は [SPEC.md](SPEC.md) を参照。
 
-> 最終更新: 2026-02-28
+> 最終更新: 2026-03-08
 
 ---
 
 ## 実装済み
 
-### REST API エンドポイント（24/24）
+### REST API エンドポイント（25/25）
 
 | エンドポイント | Handler | UseCase | テスト |
 |---------------|---------|---------|--------|
@@ -22,6 +22,7 @@
 | POST `/tests/run` | RunTestsHandler | RunTestsUseCase | Handler |
 | GET `/console/logs` | ConsoleLogsHandler | GetConsoleLogsUseCase | UseCase + Handler |
 | POST `/console/clear` | ConsoleClearHandler | ClearConsoleLogsUseCase | UseCase + Handler |
+| POST `/scene/create` | CreateSceneHandler | CreateSceneUseCase | Handler |
 | POST `/scene/open` | OpenSceneHandler | OpenSceneUseCase | UseCase + Handler |
 | POST `/scene/save` | SaveSceneHandler | SaveSceneUseCase | UseCase + Handler |
 | GET `/scene/hierarchy` | SceneHierarchyHandler | GetSceneHierarchyUseCase | UseCase + Handler |
@@ -39,7 +40,7 @@
 | POST `/menu-item/execute` | ExecuteMenuItemHandler | ExecuteMenuItemUseCase | UseCase + Handler |
 | GET `/screenshot/capture` | ScreenshotHandler | CaptureScreenshotUseCase | UseCase + Handler |
 
-### MCP ツール（23/23）
+### MCP ツール（24/24）
 
 | ツール名 | 対応 API | 状態 |
 |----------|---------|------|
@@ -52,6 +53,7 @@
 | `run_tests` | POST `/tests/run` | 済 |
 | `get_console_logs` | GET `/console/logs` | 済 |
 | `clear_console_logs` | POST `/console/clear` | 済 |
+| `create_scene` | POST `/scene/create` | 済 |
 | `open_scene` | POST `/scene/open` | 済 |
 | `save_scene` | POST `/scene/save` | 済 |
 | `get_scene_hierarchy` | GET `/scene/hierarchy` | 済 |
@@ -106,7 +108,7 @@
 | カテゴリ | 済 | 未 | 合計 |
 |---------|----|----|------|
 | Editor 制御 | 7 | 0 | 7 |
-| シーン | 3 | 0 | 3 |
+| シーン | 4 | 0 | 4 |
 | GameObject | 4 | 0 | 4 |
 | コンポーネント | 4 | 0 | 4 |
 | Prefab | 2 | 0 | 2 |
@@ -114,6 +116,6 @@
 | コンソール | 2 | 0 | 2 |
 | メニューアイテム | 1 | 0 | 1 |
 | スクリーンショット | 1 | 0 | 1 |
-| **合計** | **25** | **0** | **25** |
+| **合計** | **26** | **0** | **26** |
 
-MCP ツール: 23/23 実装済み（`GET /editor/status` は MCP ツール対象外、`GET /tests/result` は内部 API）
+MCP ツール: 24/24 実装済み（`GET /editor/status` は MCP ツール対象外、`GET /tests/result` は内部 API）
