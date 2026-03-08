@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -41,9 +42,24 @@ namespace UniCortex.Editor.Handlers.Scene
                 return;
             }
 
-            await _useCase.ExecuteAsync(request.scenePath, cancellationToken);
-            var json = JsonUtility.ToJson(new CreateSceneResponse(true));
-            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            try
+            {
+                var success = await _useCase.ExecuteAsync(request.scenePath, cancellationToken);
+                if (!success)
+                {
+                    var errorJson = JsonUtility.ToJson(new ErrorResponse("Failed to create scene."));
+                    await context.WriteResponseAsync(HttpStatusCodes.InternalServerError, errorJson);
+                    return;
+                }
+
+                var json = JsonUtility.ToJson(new CreateSceneResponse(true));
+                await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+            }
         }
     }
 }
