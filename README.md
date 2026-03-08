@@ -3,14 +3,14 @@
 > [!CAUTION]
 > This project is still under active development. The API and command structure may change without notice.
 
-A toolkit for controlling Unity Editor externally via REST API and MCP (Model Context Protocol).
+A toolkit for controlling Unity Editor externally via REST API, MCP (Model Context Protocol), and CLI.
 
-Primarily designed for AI agents (Claude Code, Codex CLI, etc.) to operate Unity Editor through MCP.
+Primarily designed for AI agents (Claude Code, Codex CLI, etc.) to operate Unity Editor through MCP. Also provides a CLI tool for terminal-based control.
 
 ## Requirements
 
 - Unity 2022.3 or later
-- .NET 10 SDK (for MCP server)
+- .NET 10 SDK (for MCP server and CLI)
 
 ## Installation
 
@@ -67,6 +67,35 @@ Alternatively, you can specify the URL directly via the `UNICORTEX_URL` environm
   }
 }
 ```
+
+## CLI Usage
+
+UniCortex also provides a CLI tool for controlling Unity Editor from the terminal:
+
+```bash
+# Set the Unity project path
+export UNICORTEX_PROJECT_PATH=/path/to/your/unity/project
+
+# Run CLI commands
+dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- editor ping
+dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- scene hierarchy
+dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- gameobject find "t:Camera"
+```
+
+### CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `editor ping\|play\|stop\|undo\|redo\|reload-domain` | Editor control |
+| `scene create\|open\|save\|hierarchy` | Scene operations |
+| `gameobject find\|create\|delete\|modify` | GameObject operations |
+| `component add\|remove\|properties\|set-property` | Component operations |
+| `prefab create\|instantiate` | Prefab operations |
+| `test run` | Run Unity tests |
+| `console logs\|clear` | Console log management |
+| `asset refresh` | Refresh Asset Database |
+| `menu execute` | Execute menu items |
+| `screenshot capture` | Capture Game View screenshot |
 
 ## Available MCP Tools
 
@@ -161,23 +190,42 @@ The HTTP server is assigned a random free port on each Editor launch. The port i
 
 ```
 AI Agent ←(MCP/stdio)→ MCP Server (.NET 10) ←(HTTP)→ Unity Editor HTTP Server
+Terminal ←(CLI)→ CLI Tool (.NET 10) ←(HTTP)→ Unity Editor HTTP Server
+
+UniCortex.Core (shared library)
+  ├── UniCortex.Mcp (MCP server)
+  └── UniCortex.Cli (CLI tool)
 ```
 
 - **Unity Editor side**: C# `HttpListener` HTTP server embedded in the Editor
-- **MCP Server side**: .NET 10 + [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk)
+- **Shared Core**: `UniCortex.Core` — service layer and HTTP infrastructure shared by MCP and CLI
+- **MCP Server**: `UniCortex.Mcp` — .NET 10 + [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk)
+- **CLI Tool**: `UniCortex.Cli` — .NET 10 + [ConsoleAppFramework](https://github.com/Cysharp/ConsoleAppFramework)
 - **UPM Package**: `com.veyron-sakai.uni-cortex`
 
 ## Documentation
 
 - [`Documentations~/SPEC.md`](Documentations~/SPEC.md) — Full API endpoint and MCP tool definitions
-- [`Documentations~/TASKS.md`](Documentations~/TASKS.md) — Implementation task list and progress
 
 ## Contributing
 
 When developing this package locally:
 
 ```bash
+# Build all projects
+dotnet build Tools~/UniCortex.Core/
+dotnet build Tools~/UniCortex.Mcp/
+dotnet build Tools~/UniCortex.Cli/
+
+# Run tests
+UNICORTEX_PROJECT_PATH=$(pwd)/Samples~ dotnet test Tools~/UniCortex.Mcp.Test/
+UNICORTEX_PROJECT_PATH=$(pwd)/Samples~ dotnet test Tools~/UniCortex.Cli.Test/
+
+# Run MCP server
 dotnet run --project Tools~/UniCortex.Mcp/
+
+# Run CLI
+dotnet run --project Tools~/UniCortex.Cli/ -- editor ping
 ```
 
 ## License
