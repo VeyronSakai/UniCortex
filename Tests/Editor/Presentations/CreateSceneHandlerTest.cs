@@ -68,5 +68,25 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("scenePath is required", context.ResponseBody);
         }
+
+        [Test]
+        public void HandleCreateScene_Returns500_WhenSceneCreationFails()
+        {
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager { CreateSceneResult = false };
+            var useCase = new CreateSceneUseCase(dispatcher, sceneManager);
+            var handler = new CreateSceneHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var context = new FakeRequestContext("POST", ApiRoutes.SceneCreate,
+                "{\"scenePath\":\"Assets/Scenes/New.unity\"}");
+
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(HttpStatusCodes.InternalServerError, context.ResponseStatusCode);
+            StringAssert.Contains("Failed to create scene", context.ResponseBody);
+        }
     }
 }

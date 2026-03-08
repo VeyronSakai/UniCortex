@@ -7,13 +7,13 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class EditorSceneManagerAdapter : IEditorSceneManager
     {
-        public void CreateScene(string scenePath)
+        public bool CreateScene(string scenePath)
         {
             SaveIfDirty();
             var scene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
                 UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
                 UnityEditor.SceneManagement.NewSceneMode.Single);
-            UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, scenePath);
+            return UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, scenePath);
         }
 
         public void OpenScene(string scenePath)
@@ -31,7 +31,12 @@ namespace UniCortex.Editor.Infrastructures
             {
                 if (SceneManager.GetSceneAt(i).isDirty)
                 {
-                    UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
+                    if (!UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes())
+                    {
+                        throw new System.InvalidOperationException(
+                            "Failed to save open scenes before scene operation.");
+                    }
+
                     return;
                 }
             }

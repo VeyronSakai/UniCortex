@@ -64,7 +64,13 @@ namespace UniCortex.Editor.Infrastructures
                     // Skip during play mode as SaveOpenScenes throws InvalidOperationException.
                     if (!UnityEditor.EditorApplication.isPlaying)
                     {
-                        UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
+                        if (!UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes())
+                        {
+                            const string message =
+                                "[UniCortex] Failed to save open scenes before running tests. Aborting test run.";
+                            Debug.LogError(message);
+                            throw new System.InvalidOperationException(message);
+                        }
                     }
 
                     Debug.Log($"[UniCortex] Running tests: mode={request.testMode}");

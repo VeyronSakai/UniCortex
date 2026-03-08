@@ -15,9 +15,10 @@ namespace UniCortex.Editor.UseCases
             _sceneManager = sceneManager;
         }
 
-        public async Task ExecuteAsync(string scenePath, CancellationToken cancellationToken = default)
+        public async Task<bool> ExecuteAsync(string scenePath, CancellationToken cancellationToken = default)
         {
-            await _dispatcher.RunOnMainThreadAsync(() => _sceneManager.CreateScene(scenePath), cancellationToken);
+            return await _dispatcher.RunOnMainThreadAsync(() => _sceneManager.CreateScene(scenePath),
+                cancellationToken);
         }
     }
 }
