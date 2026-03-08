@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -41,9 +42,17 @@ namespace UniCortex.Editor.Handlers.Tests
                 request.testMode = TestModes.EditMode;
             }
 
-            var response = await _useCase.ExecuteAsync(request, cancellationToken);
-            var json = JsonUtility.ToJson(response);
-            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            try
+            {
+                var response = await _useCase.ExecuteAsync(request, cancellationToken);
+                var json = JsonUtility.ToJson(response);
+                await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+            }
         }
     }
 }

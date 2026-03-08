@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -10,15 +11,21 @@ namespace UniCortex.Editor.UseCases
     internal sealed class RunTestsUseCase
     {
         private readonly ITestRunner _testRunner;
+        private readonly IEditorApplication _editorApplication;
 
-        public RunTestsUseCase(ITestRunner testRunner)
+        public RunTestsUseCase(ITestRunner testRunner, IEditorApplication editorApplication)
         {
             _testRunner = testRunner;
+            _editorApplication = editorApplication;
         }
 
         public async Task<RunTestsResponse> ExecuteAsync(RunTestsRequest request,
             CancellationToken cancellationToken)
         {
+            if (_editorApplication.IsPlaying)
+            {
+                throw new InvalidOperationException("Cannot run tests during play mode.");
+            }
             var items = await _testRunner.RunTestsAsync(request, cancellationToken);
 
             var passed = items.Count(i => i.Status == "Passed");
