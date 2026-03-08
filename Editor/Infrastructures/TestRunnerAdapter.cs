@@ -59,6 +59,14 @@ namespace UniCortex.Editor.Infrastructures
                         filter.assemblyNames = request.assemblyNames.ToArray();
                     }
 
+                    // Save all open scenes before running tests to prevent
+                    // "Scene(s) Have Been Modified" dialog from Unity Test Runner's SaveModifiedSceneTask.
+                    // Skip during play mode as SaveOpenScenes throws InvalidOperationException.
+                    if (!UnityEditor.EditorApplication.isPlaying)
+                    {
+                        UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
+                    }
+
                     Debug.Log($"[UniCortex] Running tests: mode={request.testMode}");
                     testRunnerApi.Execute(new ExecutionSettings(filter));
                 }, cancellationToken);

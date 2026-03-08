@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -23,9 +24,17 @@ namespace UniCortex.Editor.Handlers.Scene
 
         private async Task HandleSaveSceneAsync(IRequestContext context, CancellationToken cancellationToken)
         {
-            var success = await _useCase.ExecuteAsync(cancellationToken);
-            var json = JsonUtility.ToJson(new SaveSceneResponse(success));
-            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            try
+            {
+                var success = await _useCase.ExecuteAsync(cancellationToken);
+                var json = JsonUtility.ToJson(new SaveSceneResponse(success));
+                await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+            }
         }
     }
 }

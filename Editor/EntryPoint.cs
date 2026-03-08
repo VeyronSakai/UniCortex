@@ -115,10 +115,13 @@ namespace UniCortex.Editor
 
             var sceneManagerAdapter = new EditorSceneManagerAdapter();
 
+            var createSceneUseCase = new CreateSceneUseCase(s_dispatcher, sceneManagerAdapter);
+            var createSceneHandler = new CreateSceneHandler(createSceneUseCase);
+
             var openSceneUseCase = new OpenSceneUseCase(s_dispatcher, sceneManagerAdapter);
             var openSceneHandler = new OpenSceneHandler(openSceneUseCase);
 
-            var saveSceneUseCase = new SaveSceneUseCase(s_dispatcher, sceneManagerAdapter);
+            var saveSceneUseCase = new SaveSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
             var saveSceneHandler = new SaveSceneHandler(saveSceneUseCase);
 
             var getSceneHierarchyUseCase = new GetSceneHierarchyUseCase(s_dispatcher, sceneManagerAdapter);
@@ -186,6 +189,7 @@ namespace UniCortex.Editor
             testResultHandler.Register(router);
             consoleLogsHandler.Register(router);
             consoleClearHandler.Register(router);
+            createSceneHandler.Register(router);
             openSceneHandler.Register(router);
             saveSceneHandler.Register(router);
             sceneHierarchyHandler.Register(router);
