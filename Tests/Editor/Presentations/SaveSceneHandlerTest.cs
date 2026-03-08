@@ -16,7 +16,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            var useCase = new SaveSceneUseCase(dispatcher, sceneManager);
+            var editorApp = new SpyEditorApplication();
+            var useCase = new SaveSceneUseCase(dispatcher, sceneManager, editorApp);
             var handler = new SaveSceneHandler(useCase);
 
             var router = new RequestRouter();
@@ -29,6 +30,27 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(1, sceneManager.SaveOpenScenesCallCount);
+        }
+
+        [Test]
+        public void HandleSaveScene_Returns400_WhenInPlayMode()
+        {
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager();
+            var editorApp = new SpyEditorApplication { IsPlaying = true };
+            var useCase = new SaveSceneUseCase(dispatcher, sceneManager, editorApp);
+            var handler = new SaveSceneHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var context = new FakeRequestContext("POST", ApiRoutes.SceneSave);
+
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            StringAssert.Contains("Cannot save scene during play mode", context.ResponseBody);
+            Assert.AreEqual(0, sceneManager.SaveOpenScenesCallCount);
         }
     }
 }

@@ -59,6 +59,20 @@ namespace UniCortex.Editor.Infrastructures
                         filter.assemblyNames = request.assemblyNames.ToArray();
                     }
 
+                    // Save all open scenes before running tests to prevent
+                    // "Scene(s) Have Been Modified" dialog from Unity Test Runner's SaveModifiedSceneTask.
+                    // Skip during play mode as SaveOpenScenes throws InvalidOperationException.
+                    if (!UnityEditor.EditorApplication.isPlaying)
+                    {
+                        if (!UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes())
+                        {
+                            const string message =
+                                "[UniCortex] Failed to save open scenes before running tests. Aborting test run.";
+                            Debug.LogError(message);
+                            throw new System.InvalidOperationException(message);
+                        }
+                    }
+
                     Debug.Log($"[UniCortex] Running tests: mode={request.testMode}");
                     testRunnerApi.Execute(new ExecutionSettings(filter));
                 }, cancellationToken);

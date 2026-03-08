@@ -17,6 +17,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string TestsResult = "/tests/result";
         public const string ConsoleLogs = "/console/logs";
         public const string ConsoleClear = "/console/clear";
+        public const string SceneCreate = "/scene/create";
         public const string SceneOpen = "/scene/open";
         public const string SceneSave = "/scene/save";
         public const string SceneHierarchy = "/scene/hierarchy";

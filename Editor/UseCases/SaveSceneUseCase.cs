@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -8,16 +9,27 @@ namespace UniCortex.Editor.UseCases
     {
         private readonly IMainThreadDispatcher _dispatcher;
         private readonly IEditorSceneManager _sceneManager;
+        private readonly IEditorApplication _editorApplication;
 
-        public SaveSceneUseCase(IMainThreadDispatcher dispatcher, IEditorSceneManager sceneManager)
+        public SaveSceneUseCase(IMainThreadDispatcher dispatcher, IEditorSceneManager sceneManager,
+            IEditorApplication editorApplication)
         {
             _dispatcher = dispatcher;
             _sceneManager = sceneManager;
+            _editorApplication = editorApplication;
         }
 
         public async Task<bool> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            return await _dispatcher.RunOnMainThreadAsync(() => _sceneManager.SaveOpenScenes(), cancellationToken);
+            return await _dispatcher.RunOnMainThreadAsync(() =>
+            {
+                if (_editorApplication.IsPlaying)
+                {
+                    throw new InvalidOperationException("Cannot save scene during play mode.");
+                }
+
+                return _sceneManager.SaveOpenScenes();
+            }, cancellationToken);
         }
     }
 }
