@@ -1,22 +1,14 @@
 using System.ComponentModel;
-using System.Text;
-using System.Text.Json;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Editor.Domains.Models;
-using UniCortex.Mcp.Domains;
-using UniCortex.Mcp.Domains.Interfaces;
-using UniCortex.Mcp.Extensions;
-using UniCortex.Mcp.UseCases;
+using UniCortex.Core.Services;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class PrefabTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class PrefabTools(PrefabService prefabService)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     [McpServerTool(Name = "create_prefab", ReadOnly = false),
      Description("Create a Prefab asset from a GameObject in the scene."), UsedImplicitly]
     public async ValueTask<CallToolResult> CreatePrefabAsync(
@@ -28,20 +20,8 @@ public class PrefabTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var request = new CreatePrefabRequest { instanceId = instanceId, assetPath = assetPath };
-            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.PrefabCreate}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"Prefab created at: {assetPath}" }]
-            };
+            var message = await prefabService.CreateAsync(instanceId, assetPath, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -59,17 +39,7 @@ public class PrefabTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var request = new InstantiatePrefabRequest { assetPath = assetPath };
-            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.PrefabInstantiate}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-
+            var json = await prefabService.InstantiateAsync(assetPath, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)

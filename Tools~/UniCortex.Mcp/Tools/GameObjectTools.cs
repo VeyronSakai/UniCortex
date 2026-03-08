@@ -1,22 +1,14 @@
 using System.ComponentModel;
-using System.Text;
-using System.Text.Json;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Editor.Domains.Models;
-using UniCortex.Mcp.Domains;
-using UniCortex.Mcp.Domains.Interfaces;
-using UniCortex.Mcp.Extensions;
-using UniCortex.Mcp.UseCases;
+using UniCortex.Core.Services;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class GameObjectTools(GameObjectService gameObjectService)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     [McpServerTool(Name = "find_game_objects", ReadOnly = true),
      Description(
          "Find GameObjects in the current scene by name, tag, or component type. " +
@@ -34,19 +26,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var url = $"{baseUrl}{ApiRoutes.GameObjects}";
-            if (!string.IsNullOrEmpty(query))
-            {
-                url += $"?query={Uri.EscapeDataString(query)}";
-            }
-
-            var response = await _httpClient.GetAsync(url, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-
+            var json = await gameObjectService.FindAsync(query, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)
@@ -64,17 +44,7 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var request = new CreateGameObjectRequest { name = name };
-            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.GameObjectCreate}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-
+            var json = await gameObjectService.CreateAsync(name, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)
@@ -91,20 +61,8 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var request = new DeleteGameObjectRequest { instanceId = instanceId };
-            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.GameObjectDelete}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"GameObject {instanceId} deleted." }]
-            };
+            var message = await gameObjectService.DeleteAsync(instanceId, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -129,32 +87,9 @@ public class GameObjectTools(IHttpClientFactory httpClientFactory, IUnityServerU
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            // Use Dictionary instead of the shared ModifyGameObjectRequest DTO because
-            // Unity's JsonUtility does not support Nullable<T>. The shared DTO uses
-            // non-nullable value types (bool, int), so serializing it would always
-            // include default values (false, 0) for unset fields. The Unity-side handler
-            // detects field presence via string matching, which would misinterpret these
-            // defaults as intentionally provided values.
-            var fields = new Dictionary<string, object> { ["instanceId"] = instanceId };
-            if (name != null) fields["name"] = name;
-            if (activeSelf.HasValue) fields["activeSelf"] = activeSelf.Value;
-            if (tag != null) fields["tag"] = tag;
-            if (layer.HasValue) fields["layer"] = layer.Value;
-            if (parentInstanceId.HasValue) fields["parentInstanceId"] = parentInstanceId.Value;
-
-            var body = JsonSerializer.Serialize(fields);
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.GameObjectModify}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = "GameObject modified successfully." }]
-            };
+            var message = await gameObjectService.ModifyAsync(instanceId, name, activeSelf, tag, layer,
+                parentInstanceId, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {

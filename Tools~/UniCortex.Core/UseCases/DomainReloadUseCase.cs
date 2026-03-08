@@ -1,11 +1,11 @@
+using UniCortex.Core.Extensions;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Mcp.Extensions;
 
-namespace UniCortex.Mcp.UseCases;
+namespace UniCortex.Core.UseCases;
 
-internal static class DomainReloadUseCase
+public static class DomainReloadUseCase
 {
-    internal static async ValueTask ReloadAsync(HttpClient httpClient, string baseUrl,
+    public static async ValueTask ReloadAsync(HttpClient httpClient, string baseUrl,
         CancellationToken cancellationToken)
     {
         // Wait for the server to become available before triggering domain reload.
@@ -29,7 +29,7 @@ internal static class DomainReloadUseCase
     /// Poll GET /ping until the server responds with a non-empty body.
     /// HttpRequestHandler handles retries for GET requests during domain reload.
     /// </summary>
-    internal static async ValueTask WaitForServerAsync(HttpClient httpClient, string baseUrl,
+    public static async ValueTask WaitForServerAsync(HttpClient httpClient, string baseUrl,
         CancellationToken cancellationToken)
     {
         var pingResponse = await httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}", cancellationToken);

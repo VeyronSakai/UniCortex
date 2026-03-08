@@ -1,10 +1,10 @@
 using System.Text.Json;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Mcp.Domains.Interfaces;
 
-namespace UniCortex.Mcp.Infrastructures;
+namespace UniCortex.Core.Infrastructures;
 
-internal sealed class UnityServerUrlProvider : IUnityServerUrlProvider
+public sealed class UnityServerUrlProvider : IUnityServerUrlProvider
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
 
