@@ -35,9 +35,9 @@ namespace UniCortex.Editor.UseCases
 
             var items = await _testRunner.RunTestsAsync(request, cancellationToken);
 
-            var passed = items.Count(i => i.Status == "Passed");
-            var failed = items.Count(i => i.Status == "Failed");
-            var skipped = items.Count(i => i.Status != "Passed" && i.Status != "Failed");
+            var passed = items.Count(i => i.Status == TestStatuses.Passed);
+            var failed = items.Count(i => i.Status == TestStatuses.Failed);
+            var skipped = items.Count(i => i.Status != TestStatuses.Passed && i.Status != TestStatuses.Failed);
 
             var results = new List<TestResultEntry>(items.Count);
             foreach (var item in items)

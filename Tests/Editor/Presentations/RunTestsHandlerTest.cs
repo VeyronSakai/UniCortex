@@ -18,7 +18,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var spy = new SpyTestRunner(new List<TestResultItem>
             {
-                new("Test1", "Passed", 0.1f), new("Test2", "Failed", 0.2f, "error"),
+                new("Test1", TestStatuses.Passed, 0.1f), new("Test2", TestStatuses.Failed, 0.2f, "error"),
             });
             var editorApp = new SpyEditorApplication();
             var dispatcher = new FakeMainThreadDispatcher();

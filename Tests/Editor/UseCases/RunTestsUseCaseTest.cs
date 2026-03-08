@@ -17,9 +17,9 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             var spy = new SpyTestRunner(new List<TestResultItem>
             {
-                new TestResultItem("Test1", "Passed", 0.1f),
-                new TestResultItem("Test2", "Failed", 0.2f, "assertion error"),
-                new TestResultItem("Test3", "Passed", 0.05f),
+                new TestResultItem("Test1", TestStatuses.Passed, 0.1f),
+                new TestResultItem("Test2", TestStatuses.Failed, 0.2f, "assertion error"),
+                new TestResultItem("Test3", TestStatuses.Passed, 0.05f),
                 new TestResultItem("Test4", "Skipped", 0f),
             });
             var editorApp = new SpyEditorApplication();

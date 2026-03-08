@@ -25,10 +25,10 @@ namespace UniCortex.Editor.Infrastructures
                 entries.Add(new TestResultEntry(item.Name, item.Status, item.Duration, item.Message));
                 switch (item.Status)
                 {
-                    case "Passed":
+                    case TestStatuses.Passed:
                         passed++;
                         break;
-                    case "Failed":
+                    case TestStatuses.Failed:
                         failed++;
                         break;
                     default:
