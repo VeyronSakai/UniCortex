@@ -1,10 +1,11 @@
 using System.Threading.Tasks;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.Domains.Interfaces
 {
     internal interface IRequestContext
     {
-        string HttpMethod { get; }
+        HttpMethodType HttpMethod { get; }
         string Path { get; }
         string GetQueryParameter(string name);
         Task<string> ReadBodyAsync();

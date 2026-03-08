@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.SceneOpen, "{\"scenePath\":\"Assets/Scenes/Main.unity\"}");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.SceneOpen, "{\"scenePath\":\"Assets/Scenes/Main.unity\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -42,7 +42,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.SceneOpen, "{}");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.SceneOpen, "{}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -61,7 +61,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.SceneOpen, "");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.SceneOpen, "");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

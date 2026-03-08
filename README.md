@@ -85,6 +85,7 @@ Alternatively, you can specify the URL directly via the `UNICORTEX_URL` environm
 
 | Tool | Description |
 |------|-------------|
+| `create_scene` | Create a new empty scene and save it at the specified asset path |
 | `open_scene` | Open a scene by path |
 | `save_scene` | Save all open scenes |
 | `get_scene_hierarchy` | Get the GameObject hierarchy tree of the current scene |

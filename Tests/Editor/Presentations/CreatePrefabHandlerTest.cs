@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.PrefabCreate,
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.PrefabCreate,
                 "{\"instanceId\":12345,\"assetPath\":\"Assets/Prefabs/Test.prefab\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -44,7 +44,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.PrefabCreate);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.PrefabCreate);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -63,7 +63,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.PrefabCreate,
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.PrefabCreate,
                 "{\"instanceId\":12345}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();

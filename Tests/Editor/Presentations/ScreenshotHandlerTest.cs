@@ -31,7 +31,7 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void HandleScreenshot_Returns200_WithPngData()
         {
-            var context = new FakeRequestContext("GET", ApiRoutes.ScreenshotCapture);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.ScreenshotCapture);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

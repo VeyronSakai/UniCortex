@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("GET", ApiRoutes.ConsoleLogs);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.ConsoleLogs);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -43,7 +43,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("GET", ApiRoutes.ConsoleLogs);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.ConsoleLogs);
             context.SetQueryParameter("count", "50");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -63,7 +63,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("GET", ApiRoutes.ConsoleLogs);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.ConsoleLogs);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -82,7 +82,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("GET", ApiRoutes.ConsoleLogs);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.ConsoleLogs);
             context.SetQueryParameter("stackTrace", "true");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -102,7 +102,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("GET", ApiRoutes.ConsoleLogs);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.ConsoleLogs);
             context.SetQueryParameter("log", "false");
             context.SetQueryParameter("warning", "false");
             context.SetQueryParameter("error", "true");

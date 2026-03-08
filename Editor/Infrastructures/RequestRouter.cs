@@ -22,15 +22,8 @@ namespace UniCortex.Editor.Infrastructures
 
         public async Task HandleRequestAsync(IRequestContext context, CancellationToken cancellationToken)
         {
-            var rawMethod = context.HttpMethod;
+            var method = context.HttpMethod;
             var path = NormalizePath(context.Path);
-
-            if (!Enum.TryParse<HttpMethodType>(rawMethod, ignoreCase: true, out var method))
-            {
-                await context.WriteResponseAsync(HttpStatusCodes.MethodNotAllowed,
-                    JsonUtility.ToJson(new ErrorResponse("Method not allowed")));
-                return;
-            }
 
             try
             {
@@ -46,18 +39,18 @@ namespace UniCortex.Editor.Infrastructures
             }
             catch (ArgumentException ex)
             {
-                Debug.LogWarning($"[UniCortex] {rawMethod} {path} invalid request: {ex.Message}");
+                Debug.LogWarning($"[UniCortex] {method} {path} invalid request: {ex.Message}");
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest,
                     JsonUtility.ToJson(new ErrorResponse($"Invalid request: {ex.Message}")));
             }
             catch (OperationCanceledException)
             {
-                Debug.LogWarning($"[UniCortex] {rawMethod} {path} request was cancelled");
+                Debug.LogWarning($"[UniCortex] {method} {path} request was cancelled");
                 throw;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[UniCortex] {rawMethod} {path} failed: {ex}");
+                Debug.LogError($"[UniCortex] {method} {path} failed: {ex}");
                 await context.WriteResponseAsync(HttpStatusCodes.InternalServerError,
                     JsonUtility.ToJson(new ErrorResponse("Internal server error")));
             }

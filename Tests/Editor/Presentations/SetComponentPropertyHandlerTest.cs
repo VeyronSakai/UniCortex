@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.ComponentSetProperty,
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.ComponentSetProperty,
                 "{\"instanceId\":123,\"componentType\":\"UnityEngine.Transform\",\"propertyPath\":\"m_LocalPosition.x\",\"value\":\"1.5\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -46,7 +46,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.ComponentSetProperty, "");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.ComponentSetProperty, "");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -64,7 +64,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.ComponentSetProperty,
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.ComponentSetProperty,
                 "{\"instanceId\":123,\"componentType\":\"UnityEngine.Transform\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();

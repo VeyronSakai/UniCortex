@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.ConsoleClear);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.ConsoleClear);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -42,7 +42,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("POST", ApiRoutes.ConsoleClear);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.ConsoleClear);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

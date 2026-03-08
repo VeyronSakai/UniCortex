@@ -29,7 +29,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("GET", ApiRoutes.SceneHierarchy);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.SceneHierarchy);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

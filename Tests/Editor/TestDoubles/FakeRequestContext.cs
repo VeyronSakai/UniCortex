@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.Tests.TestDoubles
 {
@@ -17,14 +18,14 @@ namespace UniCortex.Editor.Tests.TestDoubles
     // safest approach.
     internal sealed class FakeRequestContext : IRequestContext
     {
-        public string HttpMethod { get; }
+        public HttpMethodType HttpMethod { get; }
         public string Path { get; }
         public string Body { get; }
 
         public int ResponseStatusCode { get; private set; }
         public string ResponseBody { get; private set; }
 
-        public FakeRequestContext(string httpMethod, string path, string body = "")
+        public FakeRequestContext(HttpMethodType httpMethod, string path, string body = "")
         {
             HttpMethod = httpMethod;
             Path = path;

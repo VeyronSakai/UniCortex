@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("GET", ApiRoutes.Ping);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.Ping);
             context.SetQueryParameter(QueryParameterNames.Verbose, "true");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -42,7 +42,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext("GET", ApiRoutes.Ping);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.Ping);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
