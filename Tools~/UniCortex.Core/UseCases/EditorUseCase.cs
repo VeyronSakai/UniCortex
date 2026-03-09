@@ -31,41 +31,40 @@ public class EditorUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrl
         var baseUrl = urlProvider.GetUrl();
         await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
+        var statusResponse = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}", cancellationToken);
+        await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
+        var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson,
+            new JsonSerializerOptions { IncludeFields = true })!;
+        if (status.isPlaying)
+        {
+            throw new InvalidOperationException("Editor is already in play mode.");
+        }
+
         var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Play}", null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
-        while (true)
-        {
-            var statusResponse = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}", cancellationToken);
-            await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-            var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson,
-                new JsonSerializerOptions { IncludeFields = true })!;
-            if (status.isPlaying)
-            {
-                return "Play mode started successfully.";
-            }
-        }
+        return "Play mode started successfully.";
     }
 
     public async ValueTask<string> ExitPlayModeAsync(CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.Stop, null, cancellationToken);
+
+        var statusResponse = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}", cancellationToken);
+        await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
+        var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson,
+            new JsonSerializerOptions { IncludeFields = true })!;
+        if (!status.isPlaying)
+        {
+            throw new InvalidOperationException("Editor is not in play mode.");
+        }
+
+        var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Stop}", null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
-        while (true)
-        {
-            var statusResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Status, cancellationToken);
-            await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-            var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson,
-                new JsonSerializerOptions { IncludeFields = true })!;
-            if (!status.isPlaying)
-            {
-                return "Play mode stopped successfully.";
-            }
-        }
+        return "Play mode stopped successfully.";
     }
 
     public async ValueTask<string> UndoAsync(CancellationToken cancellationToken)

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UniCortex.Core.Domains;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Extensions;
 using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
@@ -81,7 +82,7 @@ public sealed class UnityEditorFixture
         services.AddUniCortexCore();
 
         var provider = services.BuildServiceProvider();
-        var urlProvider = provider.GetRequiredService<Core.Domains.Interfaces.IUnityServerUrlProvider>();
+        var urlProvider = provider.GetRequiredService<IUnityServerUrlProvider>();
         var baseUrl = urlProvider.GetUrl();
 
         // Connection check using the retry-capable HttpClient.

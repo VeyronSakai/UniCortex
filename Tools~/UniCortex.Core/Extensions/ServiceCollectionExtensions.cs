@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient(HttpClientNames.UniCortex, client =>
             {
                 // Test runs can take several minutes, so increase the default timeout.
-                client.Timeout = TimeSpan.FromMinutes(10);
+                client.Timeout = TimeSpan.FromMinutes(3);
             })
             .AddHttpMessageHandler<HttpRequestHandler>();
 
