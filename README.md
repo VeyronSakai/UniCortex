@@ -217,7 +217,7 @@ dotnet build Tools~/UniCortex.Core/
 dotnet build Tools~/UniCortex.Mcp/
 dotnet build Tools~/UniCortex.Cli/
 
-# Run tests
+# Run tests (do NOT run MCP and CLI tests simultaneously)
 UNICORTEX_PROJECT_PATH=$(pwd)/Samples~ dotnet test Tools~/UniCortex.Mcp.Test/
 UNICORTEX_PROJECT_PATH=$(pwd)/Samples~ dotnet test Tools~/UniCortex.Cli.Test/
 

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UniCortex.Core.Domains;
@@ -79,5 +80,38 @@ public sealed class UnityEditorFixture
         pingResponse.EnsureSuccessStatusCode();
 
         return new UnityEditorFixture(provider, baseUrl);
+    }
+
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
+
+    /// <summary>
+    /// Ensures the editor is not in play mode before performing scene operations.
+    /// </summary>
+    public async ValueTask EnsureNotInPlayModeAsync(CancellationToken cancellationToken)
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+
+        for (var attempt = 0; attempt < 60; attempt++)
+        {
+            try
+            {
+                var statusResponse = await client.GetAsync($"{BaseUrl}{ApiRoutes.Status}", cancellationToken);
+                var json = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
+                var status = JsonSerializer.Deserialize<EditorStatusResponse>(json, s_jsonOptions);
+                if (status is not { isPlaying: true })
+                {
+                    return;
+                }
+
+                // In play mode — request stop and poll
+                await client.PostAsync($"{BaseUrl}{ApiRoutes.Stop}", null, cancellationToken);
+                await Task.Delay(500, cancellationToken);
+            }
+            catch
+            {
+                // Server may be reloading domain; retry after delay
+                await Task.Delay(500, cancellationToken);
+            }
+        }
     }
 }

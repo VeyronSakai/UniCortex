@@ -8,6 +8,8 @@ namespace UniCortex.Cli.Test.UseCases;
 [TestFixture]
 public class ComponentUseCaseTest
 {
+    private const string TestScenePath = "Assets/Scenes/ComponentUseCaseTestScene.unity";
+
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
 
@@ -15,6 +17,16 @@ public class ComponentUseCaseTest
     public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
+        await _fixture.EnsureNotInPlayModeAsync(CancellationToken.None);
+        await _fixture.SceneUseCase.CreateAsync(TestScenePath, CancellationToken.None);
+        await _fixture.AssetUseCase.RefreshAsync(CancellationToken.None);
+        await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 
     [Test]

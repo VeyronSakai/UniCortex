@@ -14,6 +14,7 @@ public class SceneUseCaseTest
     public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
+        await _fixture.EnsureNotInPlayModeAsync(CancellationToken.None);
         await _fixture.SceneUseCase.CreateAsync(TestScenePath, CancellationToken.None);
         await _fixture.AssetUseCase.RefreshAsync(CancellationToken.None);
         // Save after refresh to prevent "Scene(s) Have Been Modified" dialog
@@ -21,11 +22,8 @@ public class SceneUseCaseTest
     }
 
     [OneTimeTearDown]
-    public async ValueTask OneTimeTearDown()
+    public void OneTimeTearDown()
     {
-        // Save the scene to prevent "Scene(s) Have Been Modified" dialog on next scene open.
-        // Do NOT call RefreshAsync after deleting to prevent "modified externally" dialog.
-        await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 

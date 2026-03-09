@@ -9,6 +9,8 @@ namespace UniCortex.Mcp.Test.ComponentTools;
 [TestFixture]
 public class ComponentToolsTest
 {
+    private const string TestScenePath = "Assets/Scenes/ComponentToolsTestScene.unity";
+
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
 
@@ -16,6 +18,16 @@ public class ComponentToolsTest
     public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
+        await _fixture.EnsureNotInPlayModeAsync(CancellationToken.None);
+        await _fixture.SceneTools.CreateSceneAsync(TestScenePath, CancellationToken.None);
+        await _fixture.AssetTools.RefreshAssetDatabaseAsync(CancellationToken.None);
+        await _fixture.SceneTools.SaveSceneAsync(CancellationToken.None);
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 
     [Test]

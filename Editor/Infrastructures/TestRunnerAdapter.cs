@@ -59,18 +59,13 @@ namespace UniCortex.Editor.Infrastructures
                         filter.assemblyNames = request.assemblyNames.ToArray();
                     }
 
-                    // Save all open scenes before running tests to prevent
+                    // Save all open dirty scenes before running tests to prevent
                     // "Scene(s) Have Been Modified" dialog from Unity Test Runner's SaveModifiedSceneTask.
                     // Skip during play mode as SaveOpenScenes throws InvalidOperationException.
+                    // For Untitled scenes (no path), save to a temp path to clear the dirty flag.
                     if (!UnityEditor.EditorApplication.isPlaying)
                     {
-                        if (!UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes())
-                        {
-                            const string message =
-                                "[UniCortex] Failed to save open scenes before running tests. Aborting test run.";
-                            Debug.LogError(message);
-                            throw new System.InvalidOperationException(message);
-                        }
+                        SaveDirtyScenesBeforeTestRun();
                     }
 
                     Debug.Log($"[UniCortex] Running tests: mode={request.testMode}");
@@ -78,6 +73,33 @@ namespace UniCortex.Editor.Infrastructures
                 }, cancellationToken);
 
                 return await tcs.Task;
+            }
+        }
+
+        private static void SaveDirtyScenesBeforeTestRun()
+        {
+            var sceneCount = UnityEngine.SceneManagement.SceneManager.sceneCount;
+            for (var i = 0; i < sceneCount; i++)
+            {
+                var scene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+                if (!scene.isDirty) continue;
+
+                if (string.IsNullOrEmpty(scene.path))
+                {
+                    // Save Untitled scene to a temp path to clear the dirty flag,
+                    // preventing the "Save Scene" dialog.
+                    UnityEditor.SceneManagement.EditorSceneManager.SaveScene(
+                        scene, "Assets/_UniCortex_Temp_Scene.unity");
+                    continue;
+                }
+
+                if (!UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene))
+                {
+                    const string message =
+                        "[UniCortex] Failed to save open scenes before running tests. Aborting test run.";
+                    Debug.LogError(message);
+                    throw new System.InvalidOperationException(message);
+                }
             }
         }
 
