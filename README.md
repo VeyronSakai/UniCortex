@@ -228,6 +228,9 @@ dotnet run --project Tools~/UniCortex.Mcp/
 dotnet run --project Tools~/UniCortex.Cli/ -- editor ping
 ```
 
+> [!WARNING]
+> Never run the MCP tests and CLI tests in parallel against the same Unity Editor instance. Both test suites communicate with the same HTTP server, so running them simultaneously will cause interference and unpredictable failures. Always run them sequentially.
+
 ## License
 
 MIT License - [LICENSE.txt](LICENSE.txt)
