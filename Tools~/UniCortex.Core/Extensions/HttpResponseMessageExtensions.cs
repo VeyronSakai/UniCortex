@@ -5,8 +5,6 @@ namespace UniCortex.Core.Extensions;
 
 public static class HttpResponseMessageExtensions
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-
     /// <summary>
     /// Throws <see cref="HttpRequestException"/> with the error message from the Unity Editor
     /// response body when the status code indicates failure.
@@ -20,11 +18,12 @@ public static class HttpResponseMessageExtensions
             return;
         }
 
+        var jsonOptions = new JsonSerializerOptions { IncludeFields = true };
         string? errorMessage = null;
         try
         {
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
-            var error = JsonSerializer.Deserialize<ErrorResponse>(body, s_jsonOptions);
+            var error = JsonSerializer.Deserialize<ErrorResponse>(body, jsonOptions);
             errorMessage = error?.error;
         }
         catch

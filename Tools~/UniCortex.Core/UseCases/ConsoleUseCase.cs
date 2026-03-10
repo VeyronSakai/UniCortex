@@ -29,7 +29,7 @@ public class ConsoleUseCase(IHttpClientFactory httpClientFactory, IUnityServerUr
             url = $"{url}?{string.Join("&", queryParams)}";
         }
 
-        var response = await _httpClient.GetAsync(url, cancellationToken);
+        using var response = await _httpClient.GetAsync(url, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
@@ -39,7 +39,7 @@ public class ConsoleUseCase(IHttpClientFactory httpClientFactory, IUnityServerUr
         var baseUrl = urlProvider.GetUrl();
         await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ConsoleClear}", null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return "Console logs cleared successfully.";

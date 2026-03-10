@@ -17,6 +17,8 @@ public class ScreenshotUseCaseTest
     [Test]
     public async ValueTask Capture_InPlayMode_ReturnsPngData()
     {
+        // Ensure a scene with a Camera is active before entering play mode
+        await _fixture.SceneUseCase.OpenAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {

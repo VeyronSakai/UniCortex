@@ -80,6 +80,8 @@ namespace UniCortex.Editor
             var pingUseCase = new PingUseCase(s_dispatcher);
             var pingHandler = new PingHandler(pingUseCase);
 
+            var sceneManagerAdapter = new EditorSceneManagerAdapter();
+
             var playUseCase = new PlayUseCase(s_dispatcher, editorApplication);
             var playHandler = new PlayHandler(playUseCase);
 
@@ -112,8 +114,6 @@ namespace UniCortex.Editor
 
             var clearConsoleLogsUseCase = new ClearConsoleLogsUseCase(s_dispatcher, consoleLogCollector);
             var consoleClearHandler = new ConsoleClearHandler(clearConsoleLogsUseCase);
-
-            var sceneManagerAdapter = new EditorSceneManagerAdapter();
 
             var createSceneUseCase = new CreateSceneUseCase(s_dispatcher, sceneManagerAdapter);
             var createSceneHandler = new CreateSceneHandler(createSceneUseCase);

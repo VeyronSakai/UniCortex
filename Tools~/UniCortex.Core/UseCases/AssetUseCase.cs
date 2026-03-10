@@ -14,7 +14,7 @@ public class AssetUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
         var baseUrl = urlProvider.GetUrl();
         await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.AssetDatabaseRefresh}", null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return "Asset database refreshed.";

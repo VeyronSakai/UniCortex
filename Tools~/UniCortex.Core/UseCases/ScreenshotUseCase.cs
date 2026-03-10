@@ -16,7 +16,7 @@ public class ScreenshotUseCase(IHttpClientFactory httpClientFactory, IUnityServe
 
         var url = $"{baseUrl}{ApiRoutes.ScreenshotCapture}";
 
-        var response = await _httpClient.GetAsync(url, cancellationToken);
+        using var response = await _httpClient.GetAsync(url, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return await response.Content.ReadAsByteArrayAsync(cancellationToken);
     }

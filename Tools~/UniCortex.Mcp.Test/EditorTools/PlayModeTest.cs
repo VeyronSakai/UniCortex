@@ -15,15 +15,8 @@ public class PlayModeTest
     {
         _fixture = await UnityEditorFixture.CreateAsync();
 
-        // Ensure not in play mode before tests
-        try
-        {
-            await _fixture.EditorTools.ExitPlayModeAsync(CancellationToken.None);
-        }
-        catch
-        {
-            // Already not in play mode
-        }
+        // Ensure not in play mode before tests (idempotent: no-op if already stopped)
+        await _fixture.EditorTools.ExitPlayModeAsync(CancellationToken.None);
     }
 
     [Test, Order(1)]
@@ -51,14 +44,7 @@ public class PlayModeTest
     [OneTimeTearDown]
     public async ValueTask OneTimeTearDown()
     {
-        // Safety: ensure play mode is stopped
-        try
-        {
-            await _fixture.EditorTools.ExitPlayModeAsync(CancellationToken.None);
-        }
-        catch
-        {
-            // Best effort cleanup
-        }
+        // Safety: ensure play mode is stopped (idempotent: no-op if already stopped)
+        await _fixture.EditorTools.ExitPlayModeAsync(CancellationToken.None);
     }
 }

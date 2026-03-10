@@ -21,6 +21,8 @@ public class ScreenshotToolsTest
         var editorTools = _fixture.EditorTools;
         var screenshotTools = _fixture.ScreenshotTools;
 
+        // Ensure a scene with a Camera is active before entering play mode
+        await _fixture.SceneTools.OpenSceneAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
         await editorTools.EnterPlayModeAsync(CancellationToken.None);
         try
         {

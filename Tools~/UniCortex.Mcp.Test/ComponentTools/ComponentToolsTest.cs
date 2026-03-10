@@ -9,6 +9,8 @@ namespace UniCortex.Mcp.Test.ComponentTools;
 [TestFixture]
 public class ComponentToolsTest
 {
+    private const string TestScenePath = "Assets/Scenes/ComponentToolsTestScene.unity";
+
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
 
@@ -16,6 +18,23 @@ public class ComponentToolsTest
     public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
+    }
+
+    [SetUp]
+    public async ValueTask SetUp()
+    {
+        await _fixture.SceneTools.CreateSceneAsync(TestScenePath, CancellationToken.None);
+        await _fixture.AssetTools.RefreshAssetDatabaseAsync(CancellationToken.None);
+        await _fixture.SceneTools.SaveSceneAsync(CancellationToken.None);
+    }
+
+    [TearDown]
+    public async ValueTask TearDown()
+    {
+        // Open SampleScene first so the test scene is unloaded from Unity.
+        // OpenScene calls SaveIfDirty(), which would recreate the file if we deleted it first.
+        await _fixture.SceneTools.OpenSceneAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
+        UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 
     [Test]
