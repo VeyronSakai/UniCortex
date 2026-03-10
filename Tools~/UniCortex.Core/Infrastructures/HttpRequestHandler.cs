@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace UniCortex.Mcp.Infrastructures;
+namespace UniCortex.Core.Infrastructures;
 
 public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : DelegatingHandler
 {

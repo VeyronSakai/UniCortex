@@ -1,18 +1,15 @@
-using System.Net.Http.Json;
 using System.Text.Json;
 using UniCortex.Editor.Domains.Models;
 
-namespace UniCortex.Mcp.Extensions;
+namespace UniCortex.Core.Extensions;
 
-internal static class HttpResponseMessageExtensions
+public static class HttpResponseMessageExtensions
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-
     /// <summary>
     /// Throws <see cref="HttpRequestException"/> with the error message from the Unity Editor
     /// response body when the status code indicates failure.
     /// </summary>
-    internal static async ValueTask EnsureSuccessWithErrorBodyAsync(
+    public static async ValueTask EnsureSuccessWithErrorBodyAsync(
         this HttpResponseMessage response,
         CancellationToken cancellationToken)
     {
@@ -21,11 +18,12 @@ internal static class HttpResponseMessageExtensions
             return;
         }
 
+        var jsonOptions = new JsonSerializerOptions { IncludeFields = true };
         string? errorMessage = null;
         try
         {
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
-            var error = JsonSerializer.Deserialize<ErrorResponse>(body, s_jsonOptions);
+            var error = JsonSerializer.Deserialize<ErrorResponse>(body, jsonOptions);
             errorMessage = error?.error;
         }
         catch

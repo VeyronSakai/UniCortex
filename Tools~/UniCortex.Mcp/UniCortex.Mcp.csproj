@@ -10,10 +10,9 @@
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
     <PackageReference Include="ModelContextProtocol" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="../../Editor/Domains/Models/**/*.cs" LinkBase="Models" />
+    <ProjectReference Include="../UniCortex.Core/UniCortex.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="UniCortex.Mcp.Test" />

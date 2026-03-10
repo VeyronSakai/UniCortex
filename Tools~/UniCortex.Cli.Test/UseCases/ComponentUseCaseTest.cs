@@ -1,0 +1,127 @@
+using System.Text.Json;
+using NUnit.Framework;
+using UniCortex.Cli.Test.Fixtures;
+using UniCortex.Editor.Domains.Models;
+
+namespace UniCortex.Cli.Test.UseCases;
+
+[TestFixture]
+public class ComponentUseCaseTest
+{
+    private const string TestScenePath = "Assets/Scenes/ComponentToolsTestScene.unity";
+
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
+    private UnityEditorFixture _fixture = null!;
+
+    [OneTimeSetUp]
+    public async ValueTask OneTimeSetUp()
+    {
+        _fixture = await UnityEditorFixture.CreateAsync();
+    }
+
+    [SetUp]
+    public async ValueTask SetUp()
+    {
+        await _fixture.SceneUseCase.CreateAsync(TestScenePath, CancellationToken.None);
+        await _fixture.AssetUseCase.RefreshAsync(CancellationToken.None);
+        await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
+    }
+
+    [TearDown]
+    public async ValueTask TearDown()
+    {
+        // Open SampleScene first so the test scene is unloaded from Unity.
+        // OpenScene calls SaveIfDirty(), which would recreate the file if we deleted it first.
+        await _fixture.SceneUseCase.OpenAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
+        UnityEditorFixture.DeleteAssetFile(TestScenePath);
+    }
+
+    [Test]
+    public async ValueTask Add_ReturnsSuccess()
+    {
+        var ct = CancellationToken.None;
+
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("AddComponentTestObj", ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+
+        try
+        {
+            var message = await _fixture.ComponentUseCase.AddAsync(
+                createResponse.instanceId, "UnityEngine.Rigidbody", ct);
+
+            Assert.That(message, Does.Contain("added successfully"));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
+        }
+    }
+
+    [Test]
+    public async ValueTask Remove_ReturnsSuccess()
+    {
+        var ct = CancellationToken.None;
+
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("RemoveComponentTestObj", ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+
+        try
+        {
+            await _fixture.ComponentUseCase.AddAsync(
+                createResponse.instanceId, "UnityEngine.Rigidbody", ct);
+
+            var message = await _fixture.ComponentUseCase.RemoveAsync(
+                createResponse.instanceId, "UnityEngine.Rigidbody", cancellationToken: ct);
+
+            Assert.That(message, Does.Contain("removed successfully"));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
+        }
+    }
+
+    [Test]
+    public async ValueTask GetProperties_ReturnsJsonWithProperties()
+    {
+        var ct = CancellationToken.None;
+
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("GetPropertiesTestObj", ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+
+        try
+        {
+            var json = await _fixture.ComponentUseCase.GetPropertiesAsync(
+                createResponse.instanceId, "UnityEngine.Transform", cancellationToken: ct);
+
+            Assert.That(json, Does.Contain("UnityEngine.Transform"));
+            Assert.That(json, Does.Contain("m_LocalPosition"));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
+        }
+    }
+
+    [Test]
+    public async ValueTask SetProperty_ReturnsSuccess()
+    {
+        var ct = CancellationToken.None;
+
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("SetPropertyTestObj", ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+
+        try
+        {
+            var message = await _fixture.ComponentUseCase.SetPropertyAsync(
+                createResponse.instanceId, "UnityEngine.Transform",
+                "m_LocalPosition.x", "1.5", ct);
+
+            Assert.That(message, Does.Contain("Property 'm_LocalPosition.x' set to '1.5' successfully."));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
+        }
+    }
+}

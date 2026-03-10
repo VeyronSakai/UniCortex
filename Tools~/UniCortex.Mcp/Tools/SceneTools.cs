@@ -1,22 +1,14 @@
 using System.ComponentModel;
-using System.Text;
-using System.Text.Json;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Editor.Domains.Models;
-using UniCortex.Mcp.Domains;
-using UniCortex.Mcp.Domains.Interfaces;
-using UniCortex.Mcp.Extensions;
-using UniCortex.Mcp.UseCases;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class SceneTools(SceneUseCase sceneService)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     [McpServerTool(Name = "create_scene", ReadOnly = false),
      Description("Create a new empty scene and save it at the specified asset path."), UsedImplicitly]
     public async ValueTask<CallToolResult> CreateSceneAsync(
@@ -26,18 +18,8 @@ public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var body = JsonSerializer.Serialize(new CreateSceneRequest { scenePath = scenePath }, new JsonSerializerOptions { IncludeFields = true });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.SceneCreate}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"Scene created: {scenePath}" }]
-            };
+            var message = await sceneService.CreateAsync(scenePath, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -54,18 +36,8 @@ public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var body = JsonSerializer.Serialize(new OpenSceneRequest { scenePath = scenePath }, new JsonSerializerOptions { IncludeFields = true });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.SceneOpen}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"Scene opened: {scenePath}" }]
-            };
+            var message = await sceneService.OpenAsync(scenePath, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -79,17 +51,8 @@ public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.SceneSave}", null, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = "Scene saved successfully." }]
-            };
+            var message = await sceneService.SaveAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -103,13 +66,7 @@ public class SceneTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPro
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.SceneHierarchy}", cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-
+            var json = await sceneService.GetHierarchyAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)

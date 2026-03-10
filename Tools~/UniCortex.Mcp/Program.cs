@@ -1,9 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using UniCortex.Mcp.Domains.Interfaces;
-using UniCortex.Mcp.Domains;
-using UniCortex.Mcp.Infrastructures;
+using UniCortex.Core.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -13,14 +11,7 @@ builder.Logging.AddConsole(options =>
     options.LogToStandardErrorThreshold = LogLevel.Trace;
 });
 
-builder.Services.AddTransient<HttpRequestHandler>();
-builder.Services.AddTransient<IUnityServerUrlProvider, UnityServerUrlProvider>();
-builder.Services.AddHttpClient(HttpClientNames.UniCortex, client =>
-    {
-        // Test runs can take several minutes, so increase the default timeout.
-        client.Timeout = TimeSpan.FromMinutes(10);
-    })
-    .AddHttpMessageHandler<HttpRequestHandler>();
+builder.Services.AddUniCortexCore();
 
 builder.Services
     .AddMcpServer()

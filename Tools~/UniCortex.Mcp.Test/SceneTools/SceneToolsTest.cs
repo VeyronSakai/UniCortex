@@ -24,9 +24,9 @@ public class SceneToolsTest
     [OneTimeTearDown]
     public async ValueTask OneTimeTearDown()
     {
-        // Save the scene to prevent "Scene(s) Have Been Modified" dialog on next scene open.
-        // Do NOT call RefreshAssetDatabase after deleting to prevent "modified externally" dialog.
-        await _fixture.SceneTools.SaveSceneAsync(CancellationToken.None);
+        // Open SampleScene first so the test scene is unloaded from Unity.
+        // OpenScene calls SaveIfDirty(), which would recreate the file if we deleted it first.
+        await _fixture.SceneTools.OpenSceneAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 

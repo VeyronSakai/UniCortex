@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using UniCortex.Core.Domains;
+using UniCortex.Core.Domains.Interfaces;
+using UniCortex.Core.Extensions;
+using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Mcp.Domains;
-using UniCortex.Mcp.Infrastructures;
 using AssetToolsClass = UniCortex.Mcp.Tools.AssetTools;
 using ComponentToolsClass = UniCortex.Mcp.Tools.ComponentTools;
 using ConsoleToolsClass = UniCortex.Mcp.Tools.ConsoleTools;
@@ -74,38 +76,32 @@ public sealed class UnityEditorFixture
 
     public static async ValueTask<UnityEditorFixture> CreateAsync()
     {
-        var urlProvider = new UnityServerUrlProvider();
-        var baseUrl = urlProvider.GetUrl();
-
         // Build DI container
         var services = new ServiceCollection();
         services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Information));
-        services.AddTransient<HttpRequestHandler>();
-        services.AddHttpClient(HttpClientNames.UniCortex, client =>
-            {
-                client.Timeout = TimeSpan.FromMinutes(10);
-            })
-            .AddHttpMessageHandler<HttpRequestHandler>();
+        services.AddUniCortexCore();
 
         var provider = services.BuildServiceProvider();
-        var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
+        var urlProvider = provider.GetRequiredService<IUnityServerUrlProvider>();
+        var baseUrl = urlProvider.GetUrl();
 
         // Connection check using the retry-capable HttpClient.
         // HttpRequestHandler automatically retries during domain reloads.
+        var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
         var checkClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
         var pingResponse = await checkClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}");
         pingResponse.EnsureSuccessStatusCode();
 
-        var editorTools = new EditorToolsClass(httpClientFactory, urlProvider);
-        var testTools = new TestToolsClass(httpClientFactory, urlProvider);
-        var consoleTools = new ConsoleToolsClass(httpClientFactory, urlProvider);
-        var sceneTools = new SceneToolsClass(httpClientFactory, urlProvider);
-        var gameObjectTools = new GameObjectToolsClass(httpClientFactory, urlProvider);
-        var componentTools = new ComponentToolsClass(httpClientFactory, urlProvider);
-        var prefabTools = new PrefabToolsClass(httpClientFactory, urlProvider);
-        var assetTools = new AssetToolsClass(httpClientFactory, urlProvider);
-        var menuItemTools = new MenuItemToolsClass(httpClientFactory, urlProvider);
-        var screenshotTools = new ScreenshotToolsClass(httpClientFactory, urlProvider);
+        var editorTools = new EditorToolsClass(provider.GetRequiredService<EditorUseCase>());
+        var testTools = new TestToolsClass(provider.GetRequiredService<TestUseCase>());
+        var consoleTools = new ConsoleToolsClass(provider.GetRequiredService<ConsoleUseCase>());
+        var sceneTools = new SceneToolsClass(provider.GetRequiredService<SceneUseCase>());
+        var gameObjectTools = new GameObjectToolsClass(provider.GetRequiredService<GameObjectUseCase>());
+        var componentTools = new ComponentToolsClass(provider.GetRequiredService<ComponentUseCase>());
+        var prefabTools = new PrefabToolsClass(provider.GetRequiredService<PrefabUseCase>());
+        var assetTools = new AssetToolsClass(provider.GetRequiredService<AssetUseCase>());
+        var menuItemTools = new MenuItemToolsClass(provider.GetRequiredService<MenuItemUseCase>());
+        var screenshotTools = new ScreenshotToolsClass(provider.GetRequiredService<ScreenshotUseCase>());
 
         return new UnityEditorFixture(editorTools, testTools, consoleTools, sceneTools, gameObjectTools,
             componentTools, prefabTools, assetTools, menuItemTools, screenshotTools, baseUrl);

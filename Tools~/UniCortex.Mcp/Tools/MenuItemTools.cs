@@ -1,22 +1,14 @@
 using System.ComponentModel;
-using System.Text;
-using System.Text.Json;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Editor.Domains.Models;
-using UniCortex.Mcp.Domains;
-using UniCortex.Mcp.Domains.Interfaces;
-using UniCortex.Mcp.Extensions;
-using UniCortex.Mcp.UseCases;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class MenuItemTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class MenuItemTools(MenuItemUseCase menuItemService)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     [McpServerTool(Name = "execute_menu_item", ReadOnly = false),
      Description("Execute a Unity Editor menu item by its path (e.g. \"GameObject/3D Object/Cube\")."),
      UsedImplicitly]
@@ -27,20 +19,8 @@ public class MenuItemTools(IHttpClientFactory httpClientFactory, IUnityServerUrl
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var request = new ExecuteMenuItemRequest { menuPath = menuPath };
-            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.MenuItemExecute}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"Menu item executed: {menuPath}" }]
-            };
+            var message = await menuItemService.ExecuteAsync(menuPath, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {

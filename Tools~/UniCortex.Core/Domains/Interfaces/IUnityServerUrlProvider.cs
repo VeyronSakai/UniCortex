@@ -1,4 +1,4 @@
-namespace UniCortex.Mcp.Domains.Interfaces;
+namespace UniCortex.Core.Domains.Interfaces;
 
 public interface IUnityServerUrlProvider
 {

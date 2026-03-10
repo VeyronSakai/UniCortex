@@ -1,38 +1,22 @@
 using System.ComponentModel;
-using System.Text.Json;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Editor.Domains.Models;
-using UniCortex.Mcp.Domains;
-using UniCortex.Mcp.Domains.Interfaces;
-using UniCortex.Mcp.Extensions;
-using UniCortex.Mcp.UseCases;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class EditorTools(EditorUseCase editorService)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     [McpServerTool(Name = "ping_editor", ReadOnly = true), Description("Check connectivity with the Unity Editor."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> PingEditorAsync(CancellationToken cancellationToken)
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-
-            await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
-            var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}?{QueryParameterNames.Verbose}=true", cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            var ping = JsonSerializer.Deserialize<PingResponse>(json,
-                new JsonSerializerOptions { IncludeFields = true })!;
-            return new CallToolResult { Content = [new TextContentBlock { Text = ping.message }] };
+            var message = await editorService.PingAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -46,28 +30,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Play}", null, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            while (true)
-            {
-                var statusResponse = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}",
-                    cancellationToken);
-                await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-                var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-                var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson,
-                    new JsonSerializerOptions { IncludeFields = true })!;
-                if (status.isPlaying)
-                {
-                    return new CallToolResult
-                    {
-                        Content = [new TextContentBlock { Text = "Play mode started successfully." }]
-                    };
-                }
-            }
+            var message = await editorService.EnterPlayModeAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -81,25 +45,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.Stop, null, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            while (true)
-            {
-                var statusResponse = await _httpClient.GetAsync(baseUrl + ApiRoutes.Status, cancellationToken);
-                await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-                var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-                var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson,
-                    new JsonSerializerOptions { IncludeFields = true })!;
-                if (!status.isPlaying)
-                {
-                    return new CallToolResult
-                    {
-                        Content = [new TextContentBlock { Text = "Play mode stopped successfully." }]
-                    };
-                }
-            }
+            var message = await editorService.ExitPlayModeAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -112,12 +59,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Undo}", null,
-                cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult { Content = [new TextContentBlock { Text = "Undo performed successfully." }] };
+            var message = await editorService.UndoAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -130,11 +73,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Redo}", null, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult { Content = [new TextContentBlock { Text = "Redo performed successfully." }] };
+            var message = await editorService.RedoAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -148,19 +88,8 @@ public class EditorTools(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            var response = await _httpClient.PostAsync(baseUrl + ApiRoutes.DomainReload, null, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            // Poll /ping to wait for the server to come back after domain reload.
-            // DomainReloadRetryHandler handles retries during the reload.
-            var pingResponse = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}", cancellationToken);
-            await pingResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = "Domain reload completed successfully." }]
-            };
+            var message = await editorService.ReloadDomainAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {

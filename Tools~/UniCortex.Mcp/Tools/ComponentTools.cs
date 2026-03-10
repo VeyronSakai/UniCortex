@@ -1,22 +1,14 @@
 using System.ComponentModel;
-using System.Text;
-using System.Text.Json;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Editor.Domains.Models;
-using UniCortex.Mcp.Domains;
-using UniCortex.Mcp.Domains.Interfaces;
-using UniCortex.Mcp.Extensions;
-using UniCortex.Mcp.UseCases;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class ComponentTools(ComponentUseCase componentService)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     [McpServerTool(Name = "add_component", ReadOnly = false),
      Description("Add a component to a GameObject. Supports Undo."), UsedImplicitly]
     public async ValueTask<CallToolResult> AddComponentAsync(
@@ -27,20 +19,8 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var request = new AddComponentRequest { instanceId = instanceId, componentType = componentType };
-            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentAdd}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"Component '{componentType}' added successfully." }]
-            };
+            var message = await componentService.AddAsync(instanceId, componentType, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -60,23 +40,9 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var request = new RemoveComponentRequest
-            {
-                instanceId = instanceId, componentType = componentType, componentIndex = componentIndex
-            };
-            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentRemove}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"Component '{componentType}' removed successfully." }]
-            };
+            var message = await componentService.RemoveAsync(instanceId, componentType, componentIndex,
+                cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {
@@ -96,15 +62,8 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var url =
-                $"{baseUrl}{ApiRoutes.ComponentProperties}?instanceId={instanceId}&componentType={Uri.EscapeDataString(componentType)}&componentIndex={componentIndex}";
-            var response = await _httpClient.GetAsync(url, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-
+            var json = await componentService.GetPropertiesAsync(instanceId, componentType, componentIndex,
+                cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)
@@ -127,29 +86,9 @@ public class ComponentTools(IHttpClientFactory httpClientFactory, IUnityServerUr
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var request = new SetComponentPropertyRequest
-            {
-                instanceId = instanceId,
-                componentType = componentType,
-                propertyPath = propertyPath,
-                value = value
-            };
-            var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var response =
-                await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentSetProperty}", content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-            return new CallToolResult
-            {
-                Content =
-                [
-                    new TextContentBlock { Text = $"Property '{propertyPath}' set to '{value}' successfully." }
-                ]
-            };
+            var message = await componentService.SetPropertyAsync(instanceId, componentType, propertyPath,
+                value, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
         {

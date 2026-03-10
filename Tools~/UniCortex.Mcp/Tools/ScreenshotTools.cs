@@ -2,19 +2,13 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using UniCortex.Editor.Domains.Models;
-using UniCortex.Mcp.Domains;
-using UniCortex.Mcp.Domains.Interfaces;
-using UniCortex.Mcp.Extensions;
-using UniCortex.Mcp.UseCases;
+using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class ScreenshotTools(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class ScreenshotTools(ScreenshotUseCase screenshotService)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     [McpServerTool(Name = "capture_screenshot", ReadOnly = true),
      Description("Capture a screenshot of the Game View as a PNG image. Only available in Play Mode."),
      UsedImplicitly]
@@ -23,15 +17,7 @@ public class ScreenshotTools(IHttpClientFactory httpClientFactory, IUnityServerU
     {
         try
         {
-            var baseUrl = urlProvider.GetUrl();
-            await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
-
-            var url = $"{baseUrl}{ApiRoutes.ScreenshotCapture}";
-
-            var response = await _httpClient.GetAsync(url, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            var pngData = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-
+            var pngData = await screenshotService.CaptureAsync(cancellationToken);
             return new CallToolResult
             {
                 Content = [ImageContentBlock.FromBytes(pngData, "image/png")]
