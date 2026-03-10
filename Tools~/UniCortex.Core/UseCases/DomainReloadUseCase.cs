@@ -14,13 +14,13 @@ public static class DomainReloadUseCase
         // that can freeze Unity.
         await WaitForServerAsync(httpClient, baseUrl, cancellationToken);
 
-        var response = await httpClient.PostAsync($"{baseUrl}{ApiRoutes.DomainReload}", null, cancellationToken);
+        using var response = await httpClient.PostAsync($"{baseUrl}{ApiRoutes.DomainReload}", null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         // RequestScriptCompilation() is dispatched asynchronously on the Unity main thread.
         // Wait briefly so that compilation starts and the server becomes unavailable
         // before we begin polling /ping.
-        await Task.Delay(1000, cancellationToken);
+        await Task.Delay(100, cancellationToken);
 
         await WaitForServerAsync(httpClient, baseUrl, cancellationToken);
     }
@@ -32,7 +32,7 @@ public static class DomainReloadUseCase
     public static async ValueTask WaitForServerAsync(HttpClient httpClient, string baseUrl,
         CancellationToken cancellationToken)
     {
-        var pingResponse = await httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}", cancellationToken);
+        using var pingResponse = await httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}", cancellationToken);
         await pingResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
     }
 }

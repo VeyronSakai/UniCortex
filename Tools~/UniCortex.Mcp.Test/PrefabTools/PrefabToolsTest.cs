@@ -30,6 +30,21 @@ public class PrefabToolsTest
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 
+    [SetUp]
+    public async ValueTask SetUp()
+    {
+        await _fixture.SceneTools.CreateSceneAsync(TestScenePath, CancellationToken.None);
+        await _fixture.AssetTools.RefreshAssetDatabaseAsync(CancellationToken.None);
+        await _fixture.SceneTools.SaveSceneAsync(CancellationToken.None);
+    }
+
+    [TearDown]
+    public async ValueTask TearDown()
+    {
+        await _fixture.SceneTools.OpenSceneAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
+        UnityEditorFixture.DeleteAssetFile(TestScenePath);
+    }
+
     [Test]
     public async ValueTask CreatePrefab_ReturnsSuccess_WhenGameObjectExists()
     {

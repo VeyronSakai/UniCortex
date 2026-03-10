@@ -13,6 +13,7 @@
     <Compile Include="../../Editor/Domains/Models/**/*.cs" LinkBase="Models" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="UniCortex.Core.Test" />
+    <InternalsVisibleTo Include="UniCortex.Mcp.Test" />
+    <InternalsVisibleTo Include="UniCortex.Cli.Test" />
   </ItemGroup>
 </Project>

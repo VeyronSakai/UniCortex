@@ -9,7 +9,6 @@ namespace UniCortex.Cli.Test.UseCases;
 public class PrefabUseCaseTest
 {
     private const string TestScenePath = "Assets/Scenes/PrefabUseCaseTestScene.unity";
-
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
 
@@ -26,6 +25,21 @@ public class PrefabUseCaseTest
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
+        UnityEditorFixture.DeleteAssetFile(TestScenePath);
+    }
+
+    [SetUp]
+    public async ValueTask SetUp()
+    {
+        await _fixture.SceneUseCase.CreateAsync(TestScenePath, CancellationToken.None);
+        await _fixture.AssetUseCase.RefreshAsync(CancellationToken.None);
+        await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
+    }
+
+    [TearDown]
+    public async ValueTask TearDown()
+    {
+        await _fixture.SceneUseCase.OpenAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 

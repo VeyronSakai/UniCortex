@@ -19,7 +19,7 @@ public class MenuItemUseCase(IHttpClientFactory httpClientFactory, IUnityServerU
         var request = new ExecuteMenuItemRequest { menuPath = menuPath };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.MenuItemExecute}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return $"Menu item executed: {menuPath}";

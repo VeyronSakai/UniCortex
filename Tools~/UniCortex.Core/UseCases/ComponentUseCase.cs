@@ -20,7 +20,7 @@ public class ComponentUseCase(IHttpClientFactory httpClientFactory, IUnityServer
         var request = new AddComponentRequest { instanceId = instanceId, componentType = componentType };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentAdd}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return $"Component '{componentType}' added successfully.";
@@ -38,7 +38,7 @@ public class ComponentUseCase(IHttpClientFactory httpClientFactory, IUnityServer
         };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentRemove}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return $"Component '{componentType}' removed successfully.";
@@ -52,7 +52,7 @@ public class ComponentUseCase(IHttpClientFactory httpClientFactory, IUnityServer
 
         var url =
             $"{baseUrl}{ApiRoutes.ComponentProperties}?instanceId={instanceId}&componentType={Uri.EscapeDataString(componentType)}&componentIndex={componentIndex}";
-        var response = await _httpClient.GetAsync(url, cancellationToken);
+        using var response = await _httpClient.GetAsync(url, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
@@ -72,7 +72,7 @@ public class ComponentUseCase(IHttpClientFactory httpClientFactory, IUnityServer
         };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentSetProperty}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return $"Property '{propertyPath}' set to '{value}' successfully.";

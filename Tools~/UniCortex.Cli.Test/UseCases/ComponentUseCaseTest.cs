@@ -9,7 +9,6 @@ namespace UniCortex.Cli.Test.UseCases;
 public class ComponentUseCaseTest
 {
     private const string TestScenePath = "Assets/Scenes/ComponentUseCaseTestScene.unity";
-
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
 
@@ -26,6 +25,23 @@ public class ComponentUseCaseTest
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
+        UnityEditorFixture.DeleteAssetFile(TestScenePath);
+    }
+
+    [SetUp]
+    public async ValueTask SetUp()
+    {
+        await _fixture.SceneUseCase.CreateAsync(TestScenePath, CancellationToken.None);
+        await _fixture.AssetUseCase.RefreshAsync(CancellationToken.None);
+        await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
+    }
+
+    [TearDown]
+    public async ValueTask TearDown()
+    {
+        // Open SampleScene first so the test scene is unloaded from Unity.
+        // OpenScene calls SaveIfDirty(), which would recreate the file if we deleted it first.
+        await _fixture.SceneUseCase.OpenAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 

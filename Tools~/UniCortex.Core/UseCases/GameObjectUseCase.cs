@@ -22,7 +22,7 @@ public class GameObjectUseCase(IHttpClientFactory httpClientFactory, IUnityServe
             url += $"?query={Uri.EscapeDataString(query)}";
         }
 
-        var response = await _httpClient.GetAsync(url, cancellationToken);
+        using var response = await _httpClient.GetAsync(url, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
@@ -35,7 +35,7 @@ public class GameObjectUseCase(IHttpClientFactory httpClientFactory, IUnityServe
         var request = new CreateGameObjectRequest { name = name };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.GameObjectCreate}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return await response.Content.ReadAsStringAsync(cancellationToken);
@@ -49,7 +49,7 @@ public class GameObjectUseCase(IHttpClientFactory httpClientFactory, IUnityServe
         var request = new DeleteGameObjectRequest { instanceId = instanceId };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.GameObjectDelete}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return $"GameObject {instanceId} deleted.";
@@ -77,7 +77,7 @@ public class GameObjectUseCase(IHttpClientFactory httpClientFactory, IUnityServe
 
         var body = JsonSerializer.Serialize(fields);
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.GameObjectModify}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return "GameObject modified successfully.";

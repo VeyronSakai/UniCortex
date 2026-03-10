@@ -14,7 +14,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IUnityServerUrlProvider, UnityServerUrlProvider>();
         services.AddHttpClient(HttpClientNames.UniCortex, client =>
             {
-                // Test runs can take several minutes, so increase the default timeout.
+                // Test runs and domain reloads can take several minutes.
+                // HttpRequestHandler retries during reloads, so this must exceed the max retry window.
                 client.Timeout = TimeSpan.FromMinutes(10);
             })
             .AddHttpMessageHandler<HttpRequestHandler>();

@@ -19,7 +19,7 @@ public class SceneUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
         var body = JsonSerializer.Serialize(new CreateSceneRequest { scenePath = scenePath },
             new JsonSerializerOptions { IncludeFields = true });
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.SceneCreate}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return $"Scene created: {scenePath}";
@@ -33,7 +33,7 @@ public class SceneUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
         var body = JsonSerializer.Serialize(new OpenSceneRequest { scenePath = scenePath },
             new JsonSerializerOptions { IncludeFields = true });
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.SceneOpen}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return $"Scene opened: {scenePath}";
@@ -44,7 +44,7 @@ public class SceneUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
         var baseUrl = urlProvider.GetUrl();
         await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-        var response =
+        using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.SceneSave}", null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return "Scene saved successfully.";
@@ -55,7 +55,7 @@ public class SceneUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
         var baseUrl = urlProvider.GetUrl();
         await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
 
-        var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.SceneHierarchy}", cancellationToken);
+        using var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.SceneHierarchy}", cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }

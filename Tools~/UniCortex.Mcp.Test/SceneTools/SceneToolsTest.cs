@@ -23,8 +23,11 @@ public class SceneToolsTest
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
+    public async ValueTask OneTimeTearDown()
     {
+        // Open SampleScene first so the test scene is unloaded from Unity.
+        // OpenScene calls SaveIfDirty(), which would recreate the file if we deleted it first.
+        await _fixture.SceneTools.OpenSceneAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 

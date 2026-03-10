@@ -1,7 +1,5 @@
 using NUnit.Framework;
-using System.Text.Json;
 using ModelContextProtocol.Protocol;
-using UniCortex.Editor.Domains.Models;
 using UniCortex.Mcp.Test.Fixtures;
 
 namespace UniCortex.Mcp.Test.EditorTools;
@@ -10,44 +8,22 @@ namespace UniCortex.Mcp.Test.EditorTools;
 [FixtureLifeCycle(LifeCycle.SingleInstance)]
 public class PlayModeTest
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
-    private HttpClient _rawClient = null!;
 
     [OneTimeSetUp]
     public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
-        _rawClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
-        // Ensure not in play mode before tests
-        try
-        {
-            var statusResponse = await _rawClient.GetAsync($"{_fixture.BaseUrl}{ApiRoutes.Status}");
-            var json = await statusResponse.Content.ReadAsStringAsync();
-            var status = JsonSerializer.Deserialize<EditorStatusResponse>(json, s_jsonOptions);
-            if (status is { isPlaying: true })
-            {
-                await _rawClient.PostAsync($"{_fixture.BaseUrl}{ApiRoutes.Stop}", null);
-                await WaitForPlayModeState(false);
-            }
-        }
-        catch
-        {
-            // Already handled by fixture's connection check
-        }
+        // Ensure not in play mode before tests (idempotent: no-op if already stopped)
+        await _fixture.EditorTools.ExitPlayModeAsync(CancellationToken.None);
     }
 
     [Test, Order(1)]
     public async ValueTask EnterPlayMode_ReturnsSuccess()
     {
-        // Arrange
-        var editorTools = _fixture.EditorTools;
+        var result = await _fixture.EditorTools.EnterPlayModeAsync(CancellationToken.None);
 
-        // Act
-        var result = await editorTools.EnterPlayModeAsync(CancellationToken.None);
-
-        // Assert
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));
         var text = ((TextContentBlock)result.Content[0]).Text;
@@ -57,13 +33,8 @@ public class PlayModeTest
     [Test, Order(2)]
     public async ValueTask ExitPlayMode_ReturnsSuccess()
     {
-        // Arrange
-        var editorTools = _fixture.EditorTools;
+        var result = await _fixture.EditorTools.ExitPlayModeAsync(CancellationToken.None);
 
-        // Act
-        var result = await editorTools.ExitPlayModeAsync(CancellationToken.None);
-
-        // Assert
         Assert.That(result.IsError, Is.Not.True);
         Assert.That(result.Content, Has.Count.EqualTo(1));
         var text = ((TextContentBlock)result.Content[0]).Text;
@@ -73,46 +44,7 @@ public class PlayModeTest
     [OneTimeTearDown]
     public async ValueTask OneTimeTearDown()
     {
-        // Safety: ensure play mode is stopped
-        try
-        {
-            var statusResponse = await _rawClient.GetAsync($"{_fixture.BaseUrl}{ApiRoutes.Status}");
-            var json = await statusResponse.Content.ReadAsStringAsync();
-            var status = JsonSerializer.Deserialize<EditorStatusResponse>(json, s_jsonOptions);
-            if (status is { isPlaying: true })
-            {
-                await _rawClient.PostAsync($"{_fixture.BaseUrl}{ApiRoutes.Stop}", null);
-            }
-        }
-        catch
-        {
-            // Best effort cleanup
-        }
-        finally
-        {
-            _rawClient.Dispose();
-        }
-    }
-
-    private async ValueTask WaitForPlayModeState(bool expectedPlaying)
-    {
-        for (var i = 0; i < 30; i++)
-        {
-            await Task.Delay(500);
-            try
-            {
-                var response = await _rawClient.GetAsync($"{_fixture.BaseUrl}{ApiRoutes.Status}");
-                var json = await response.Content.ReadAsStringAsync();
-                var status = JsonSerializer.Deserialize<EditorStatusResponse>(json, s_jsonOptions);
-                if (status?.isPlaying == expectedPlaying)
-                {
-                    return;
-                }
-            }
-            catch
-            {
-                // Retry
-            }
-        }
+        // Safety: ensure play mode is stopped (idempotent: no-op if already stopped)
+        await _fixture.EditorTools.ExitPlayModeAsync(CancellationToken.None);
     }
 }

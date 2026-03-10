@@ -30,7 +30,7 @@ public class TestUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         string responseJson;
         try
         {
-            var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TestsRun}", content,
+            using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TestsRun}", content,
                 cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
             responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -48,7 +48,7 @@ public class TestUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         if (string.IsNullOrEmpty(responseJson))
         {
             await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-            var resultResponse =
+            using var resultResponse =
                 await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.TestsResult}", cancellationToken);
             await resultResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
             responseJson = await resultResponse.Content.ReadAsStringAsync(cancellationToken);
