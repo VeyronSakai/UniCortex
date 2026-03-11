@@ -41,10 +41,7 @@ namespace UniCortex.Editor
 
             ReregisterTestCallbacksIfNeeded();
 
-            if (UniCortexSettings.instance.AutoStart)
-            {
-                StartServer();
-            }
+            StartServer();
         }
 
         private static void StartServer()
