@@ -16,7 +16,7 @@ public class TestUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         CancellationToken cancellationToken = default)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var request = new RunTestsRequest(
             testMode ?? TestModes.EditMode,
@@ -47,7 +47,7 @@ public class TestUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         // automatically polls until results are stored in SessionState.
         if (string.IsNullOrEmpty(responseJson))
         {
-            await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+            await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
             using var resultResponse =
                 await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.TestsResult}", cancellationToken);
             await resultResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);

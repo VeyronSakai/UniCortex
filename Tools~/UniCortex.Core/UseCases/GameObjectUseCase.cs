@@ -14,7 +14,7 @@ public class GameObjectUseCase(IHttpClientFactory httpClientFactory, IUnityServe
     public async ValueTask<string> FindAsync(string? query, CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var url = $"{baseUrl}{ApiRoutes.GameObjects}";
         if (!string.IsNullOrEmpty(query))
@@ -30,7 +30,7 @@ public class GameObjectUseCase(IHttpClientFactory httpClientFactory, IUnityServe
     public async ValueTask<string> CreateAsync(string name, CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var request = new CreateGameObjectRequest { name = name };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
@@ -44,7 +44,7 @@ public class GameObjectUseCase(IHttpClientFactory httpClientFactory, IUnityServe
     public async ValueTask<string> DeleteAsync(int instanceId, CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var request = new DeleteGameObjectRequest { instanceId = instanceId };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
@@ -60,7 +60,7 @@ public class GameObjectUseCase(IHttpClientFactory httpClientFactory, IUnityServe
         CancellationToken cancellationToken = default)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         // Use Dictionary instead of the shared ModifyGameObjectRequest DTO because
         // Unity's JsonUtility does not support Nullable<T>. The shared DTO uses
