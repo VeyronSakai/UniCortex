@@ -12,7 +12,7 @@ public class AssetUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
     public async ValueTask<string> RefreshAsync(CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.AssetDatabaseRefresh}", null, cancellationToken);

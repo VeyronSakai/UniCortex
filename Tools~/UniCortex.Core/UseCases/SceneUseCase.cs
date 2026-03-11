@@ -14,7 +14,7 @@ public class SceneUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
     public async ValueTask<string> CreateAsync(string scenePath, CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var body = JsonSerializer.Serialize(new CreateSceneRequest { scenePath = scenePath },
             new JsonSerializerOptions { IncludeFields = true });
@@ -28,7 +28,7 @@ public class SceneUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
     public async ValueTask<string> OpenAsync(string scenePath, CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var body = JsonSerializer.Serialize(new OpenSceneRequest { scenePath = scenePath },
             new JsonSerializerOptions { IncludeFields = true });
@@ -42,7 +42,7 @@ public class SceneUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
     public async ValueTask<string> SaveAsync(CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.SceneSave}", null, cancellationToken);
@@ -53,7 +53,7 @@ public class SceneUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
     public async ValueTask<string> GetHierarchyAsync(CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         using var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.SceneHierarchy}", cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
