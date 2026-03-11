@@ -11,7 +11,7 @@ var app = ConsoleApp.Create()
         {
             b.ClearProviders();
             b.AddConsole(options => { options.LogToStandardErrorThreshold = LogLevel.Trace; });
-            b.SetMinimumLevel(LogLevel.Information);
+            b.SetMinimumLevel(LogLevel.Warning);
         });
         services.AddUniCortexCore();
     });
