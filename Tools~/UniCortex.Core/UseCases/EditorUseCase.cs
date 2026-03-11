@@ -10,7 +10,6 @@ public class EditorUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrl
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private static readonly TimeSpan s_pollInterval = TimeSpan.FromMilliseconds(500);
-    private static readonly TimeSpan s_pollTimeout = TimeSpan.FromSeconds(30);
 
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 
@@ -124,8 +123,7 @@ public class EditorUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrl
     private async ValueTask WaitForPlayModeStateAsync(string baseUrl, bool expectedPlaying,
         CancellationToken cancellationToken)
     {
-        var deadline = DateTime.UtcNow + s_pollTimeout;
-        while (DateTime.UtcNow < deadline)
+        while (true)
         {
             await Task.Delay(s_pollInterval, cancellationToken);
             if (await GetIsPlayingAsync(baseUrl, cancellationToken) == expectedPlaying)
@@ -133,8 +131,5 @@ public class EditorUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrl
                 return;
             }
         }
-
-        throw new TimeoutException(
-            $"Timed out waiting for Editor to {(expectedPlaying ? "enter" : "exit")} play mode.");
     }
 }
