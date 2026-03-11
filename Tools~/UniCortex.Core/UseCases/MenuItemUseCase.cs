@@ -14,7 +14,7 @@ public class MenuItemUseCase(IHttpClientFactory httpClientFactory, IUnityServerU
     public async ValueTask<string> ExecuteAsync(string menuPath, CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var request = new ExecuteMenuItemRequest { menuPath = menuPath };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });

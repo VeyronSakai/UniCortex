@@ -16,7 +16,7 @@ public class TestUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         CancellationToken cancellationToken = default)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var request = new RunTestsRequest(
             testMode ?? TestModes.EditMode,

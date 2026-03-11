@@ -15,7 +15,7 @@ public class ComponentUseCase(IHttpClientFactory httpClientFactory, IUnityServer
         CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var request = new AddComponentRequest { instanceId = instanceId, componentType = componentType };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
@@ -30,7 +30,7 @@ public class ComponentUseCase(IHttpClientFactory httpClientFactory, IUnityServer
         int componentIndex = 0, CancellationToken cancellationToken = default)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var request = new RemoveComponentRequest
         {
@@ -48,7 +48,7 @@ public class ComponentUseCase(IHttpClientFactory httpClientFactory, IUnityServer
         int componentIndex = 0, CancellationToken cancellationToken = default)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var url =
             $"{baseUrl}{ApiRoutes.ComponentProperties}?instanceId={instanceId}&componentType={Uri.EscapeDataString(componentType)}&componentIndex={componentIndex}";
@@ -61,7 +61,7 @@ public class ComponentUseCase(IHttpClientFactory httpClientFactory, IUnityServer
         string propertyPath, string value, CancellationToken cancellationToken = default)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var request = new SetComponentPropertyRequest
         {

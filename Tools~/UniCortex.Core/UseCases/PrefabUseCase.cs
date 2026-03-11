@@ -15,7 +15,7 @@ public class PrefabUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrl
         CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var request = new CreatePrefabRequest { instanceId = instanceId, assetPath = assetPath };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
@@ -29,7 +29,7 @@ public class PrefabUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrl
     public async ValueTask<string> InstantiateAsync(string assetPath, CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var request = new InstantiatePrefabRequest { assetPath = assetPath };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });

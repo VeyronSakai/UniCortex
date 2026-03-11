@@ -14,7 +14,7 @@ public class ConsoleUseCase(IHttpClientFactory httpClientFactory, IUnityServerUr
         CancellationToken cancellationToken = default)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var queryParams = new List<string>();
         if (count.HasValue) queryParams.Add($"count={count.Value}");
@@ -37,7 +37,7 @@ public class ConsoleUseCase(IHttpClientFactory httpClientFactory, IUnityServerUr
     public async ValueTask<string> ClearAsync(CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ConsoleClear}", null, cancellationToken);
