@@ -1,3 +1,8 @@
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]

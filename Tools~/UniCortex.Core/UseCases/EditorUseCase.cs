@@ -94,7 +94,7 @@ public class EditorUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrl
         // RequestScriptCompilation() is dispatched asynchronously on the Unity main thread.
         // Wait briefly so that compilation starts and the server becomes unavailable
         // before we begin polling /ping.
-        await Task.Delay(1000, cancellationToken);
+        await Task.Delay(100, cancellationToken);
 
         await WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
