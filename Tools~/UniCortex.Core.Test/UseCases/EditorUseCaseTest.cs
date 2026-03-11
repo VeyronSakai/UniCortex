@@ -1,7 +1,7 @@
 using NUnit.Framework;
-using UniCortex.Cli.Test.Fixtures;
+using UniCortex.Core.Test.Fixtures;
 
-namespace UniCortex.Cli.Test.UseCases;
+namespace UniCortex.Core.Test.UseCases;
 
 [TestFixture]
 public class EditorUseCaseTest

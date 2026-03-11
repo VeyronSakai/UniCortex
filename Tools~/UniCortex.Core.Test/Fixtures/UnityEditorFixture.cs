@@ -6,7 +6,7 @@ using UniCortex.Core.Extensions;
 using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
 
-namespace UniCortex.Cli.Test.Fixtures;
+namespace UniCortex.Core.Test.Fixtures;
 
 public sealed class UnityEditorFixture
 {
