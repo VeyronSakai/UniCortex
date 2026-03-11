@@ -218,8 +218,7 @@ dotnet build Tools~/UniCortex.Mcp/
 dotnet build Tools~/UniCortex.Cli/
 
 # Run tests
-UNICORTEX_PROJECT_PATH=$(pwd)/Samples~ dotnet test Tools~/UniCortex.Mcp.Test/
-UNICORTEX_PROJECT_PATH=$(pwd)/Samples~ dotnet test Tools~/UniCortex.Cli.Test/
+UNICORTEX_PROJECT_PATH=$(pwd)/Samples~ dotnet test Tools~/UniCortex.Core.Test/
 
 # Run MCP server
 dotnet run --project Tools~/UniCortex.Mcp/
@@ -227,9 +226,6 @@ dotnet run --project Tools~/UniCortex.Mcp/
 # Run CLI
 dotnet run --project Tools~/UniCortex.Cli/ -- editor ping
 ```
-
-> [!WARNING]
-> Never run the MCP tests and CLI tests in parallel against the same Unity Editor instance. Both test suites communicate with the same HTTP server, so running them simultaneously will cause interference and unpredictable failures. Always run them sequentially.
 
 ## License
 
