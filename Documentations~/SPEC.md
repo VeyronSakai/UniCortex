@@ -43,10 +43,9 @@ UniCortex/
 │   │   └── UseCases/            ← 10 ユースケースクラス
 │   ├── UniCortex.Mcp/           ← MCP サーバー（Core の薄いラッパー）
 │   │   └── Tools/               ← MCP ツール定義
-│   ├── UniCortex.Mcp.Test/      ← MCP サーバーテスト
+│   ├── UniCortex.Core.Test/     ← Core インテグレーションテスト
 │   ├── UniCortex.Cli/           ← CLI ツール
 │   │   └── Commands/            ← CLI コマンド定義
-│   └── UniCortex.Cli.Test/      ← CLI テスト
 ├── Tests~/
 │   └── Editor/
 │       ├── TestDoubles/         ← Fake, Spy 等のテストダブル

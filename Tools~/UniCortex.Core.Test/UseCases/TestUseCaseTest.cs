@@ -1,9 +1,9 @@
 using System.Text.Json;
 using NUnit.Framework;
-using UniCortex.Cli.Test.Fixtures;
+using UniCortex.Core.Test.Fixtures;
 using UniCortex.Editor.Domains.Models;
 
-namespace UniCortex.Cli.Test.UseCases;
+namespace UniCortex.Core.Test.UseCases;
 
 [TestFixture]
 public class TestUseCaseTest
