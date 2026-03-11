@@ -9,8 +9,8 @@ namespace UniCortex.Core.UseCases;
 public class EditorUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
-    private static readonly TimeSpan s_pollInterval = TimeSpan.FromMilliseconds(500);
-    private static readonly TimeSpan s_pollTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan s_pollInterval = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan s_pollTimeout = TimeSpan.FromMinutes(10);
 
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 
