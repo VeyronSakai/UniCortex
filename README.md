@@ -74,12 +74,12 @@ UniCortex also provides a CLI tool for controlling Unity Editor from the termina
 
 ```bash
 # Set the Unity project path
-export UNICORTEX_PROJECT_PATH=/path/to/your/unity/project
+export UNICORTEX_PROJECT_PATH="/path/to/your/unity/project"
 
 # Run CLI commands
-dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- editor ping
-dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- scene hierarchy
-dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- gameobject find "t:Camera"
+dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-sakai.uni-cortex@*/Tools~/UniCortex.Cli/" -- editor ping
+dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-sakai.uni-cortex@*/Tools~/UniCortex.Cli/" -- scene hierarchy
+dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-sakai.uni-cortex@*/Tools~/UniCortex.Cli/" -- gameobject find "t:Camera"
 ```
 
 ### CLI Commands
