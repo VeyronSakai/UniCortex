@@ -12,7 +12,7 @@ public class ScreenshotUseCase(IHttpClientFactory httpClientFactory, IUnityServe
     public async ValueTask<byte[]> CaptureAsync(CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
-        await DomainReloadUseCase.ReloadAsync(_httpClient, baseUrl, cancellationToken);
+        await DomainReloadUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
         var url = $"{baseUrl}{ApiRoutes.ScreenshotCapture}";
 
