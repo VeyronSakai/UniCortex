@@ -30,7 +30,7 @@ public class PrefabUseCaseTest
     [TearDown]
     public async ValueTask TearDown()
     {
-        await _fixture.SceneUseCase.OpenAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 

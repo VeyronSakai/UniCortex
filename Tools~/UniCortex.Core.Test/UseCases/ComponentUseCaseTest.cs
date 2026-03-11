@@ -32,7 +32,7 @@ public class ComponentUseCaseTest
     {
         // Open SampleScene first so the test scene is unloaded from Unity.
         // OpenScene calls SaveIfDirty(), which would recreate the file if we deleted it first.
-        await _fixture.SceneUseCase.OpenAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None);
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
 
