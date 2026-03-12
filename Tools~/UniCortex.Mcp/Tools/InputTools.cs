@@ -62,4 +62,62 @@ public class InputTools(InputUseCase inputService)
             return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
+
+    [McpServerTool(Name = "send_input_system_key_event", ReadOnly = false),
+     Description(
+         "Send a keyboard event via Unity Input System (com.unity.inputsystem) in Play Mode. " +
+         "Uses InputState.Change() to simulate device-level input. " +
+         "Triggers Input System actions (InputAction, PlayerInput) and Keyboard.current key states. " +
+         "Requires the Input System package to be installed. " +
+         "Does NOT work with legacy UnityEngine.Input.GetKey()."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> SendInputSystemKeyEventAsync(
+        [Description("Input System Key enum name (e.g. \"Space\", \"A\", \"LeftArrow\", \"Return\", \"LeftShift\").")]
+        string key,
+        [Description("Event type: \"press\" (default) or \"release\".")]
+        string eventType = "press",
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var message =
+                await inputService.SendInputSystemKeyEventAsync(key, eventType, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
+    [McpServerTool(Name = "send_input_system_mouse_event", ReadOnly = false),
+     Description(
+         "Send a mouse event via Unity Input System (com.unity.inputsystem) in Play Mode. " +
+         "Uses InputState.Change() to simulate device-level input. " +
+         "Triggers Input System actions (InputAction, PlayerInput) and Mouse.current states. " +
+         "Requires the Input System package to be installed. " +
+         "Does NOT work with legacy UnityEngine.Input.GetMouseButton()."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> SendInputSystemMouseEventAsync(
+        [Description("X coordinate in screen space.")]
+        float x,
+        [Description("Y coordinate in screen space.")]
+        float y,
+        [Description("Mouse button: 0=left (default), 1=right, 2=middle.")]
+        int button = 0,
+        [Description("Event type: \"press\" (default), \"release\", or \"move\" (position only, no button).")]
+        string eventType = "press",
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var message =
+                await inputService.SendInputSystemMouseEventAsync(x, y, button, eventType, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
 }

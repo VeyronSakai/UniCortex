@@ -40,4 +40,35 @@ public class InputUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlP
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return $"Mouse event sent: ({x}, {y}) button={button} ({eventType})";
     }
+
+    public async ValueTask<string> SendInputSystemKeyEventAsync(string key, string eventType,
+        CancellationToken cancellationToken)
+    {
+        var baseUrl = urlProvider.GetUrl();
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+
+        var request = new SendInputSystemKeyEventRequest { key = key, eventType = eventType };
+        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
+        var content = new StringContent(body, Encoding.UTF8, "application/json");
+        using var response =
+            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.InputSystemKey}", content, cancellationToken);
+        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        return $"Input System key event sent: {key} ({eventType})";
+    }
+
+    public async ValueTask<string> SendInputSystemMouseEventAsync(float x, float y, int button, string eventType,
+        CancellationToken cancellationToken)
+    {
+        var baseUrl = urlProvider.GetUrl();
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+
+        var request = new SendInputSystemMouseEventRequest
+            { x = x, y = y, button = button, eventType = eventType };
+        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
+        var content = new StringContent(body, Encoding.UTF8, "application/json");
+        using var response =
+            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.InputSystemMouse}", content, cancellationToken);
+        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        return $"Input System mouse event sent: ({x}, {y}) button={button} ({eventType})";
+    }
 }

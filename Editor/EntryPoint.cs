@@ -1,3 +1,5 @@
+using System;
+using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Handlers.Asset;
 using UniCortex.Editor.Handlers.Component;
 using UniCortex.Editor.Handlers.Console;
@@ -184,6 +186,18 @@ namespace UniCortex.Editor
             var sendMouseEventUseCase = new SendMouseEventUseCase(s_dispatcher, inputSimOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
 
+            var inputSystemSimOps = CreateInputSystemSimulationOps();
+
+            var sendInputSystemKeyEventUseCase =
+                new SendInputSystemKeyEventUseCase(s_dispatcher, inputSystemSimOps);
+            var sendInputSystemKeyEventHandler =
+                new SendInputSystemKeyEventHandler(sendInputSystemKeyEventUseCase);
+
+            var sendInputSystemMouseEventUseCase =
+                new SendInputSystemMouseEventUseCase(s_dispatcher, inputSystemSimOps);
+            var sendInputSystemMouseEventHandler =
+                new SendInputSystemMouseEventHandler(sendInputSystemMouseEventUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -214,6 +228,22 @@ namespace UniCortex.Editor
             screenshotHandler.Register(router);
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
+            sendInputSystemKeyEventHandler.Register(router);
+            sendInputSystemMouseEventHandler.Register(router);
+        }
+
+        private static IInputSystemSimulationOperations CreateInputSystemSimulationOps()
+        {
+            // Try to load the real adapter from the optional UniCortex.Editor.InputSystem assembly.
+            // That assembly only compiles when the Input System package is installed.
+            var adapterType = Type.GetType(
+                "UniCortex.Editor.InputSystem.InputSystemSimulationOperationsAdapter, UniCortex.Editor.InputSystem");
+            if (adapterType != null)
+            {
+                return (IInputSystemSimulationOperations)Activator.CreateInstance(adapterType);
+            }
+
+            return new InputSystemNotSupportedAdapter();
         }
 
         private static int FindFreePort()

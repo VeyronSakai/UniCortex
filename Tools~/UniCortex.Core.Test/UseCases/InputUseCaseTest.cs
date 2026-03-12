@@ -33,4 +33,26 @@ public class InputUseCaseTest
 
         Assert.That(ex!.Message, Does.Contain("Play Mode"));
     }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendInputSystemKeyEvent_ReturnsError_WhenNotInPlayMode()
+    {
+        // The error message varies depending on whether Input System is installed:
+        // - "Play Mode" when installed but not in Play Mode
+        // - "Input System package" when not installed
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.SendInputSystemKeyEventAsync("Space", "press", CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Play Mode").Or.Contain("Input System"));
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendInputSystemMouseEvent_ReturnsError_WhenNotInPlayMode()
+    {
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.SendInputSystemMouseEventAsync(100f, 200f, 0, "press",
+                CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Play Mode").Or.Contain("Input System"));
+    }
 }
