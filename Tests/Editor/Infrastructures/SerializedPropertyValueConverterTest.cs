@@ -162,7 +162,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void ObjectReference_NonNull_ReturnsName()
+        public void ObjectReference_SceneObject_ReturnsInstanceId()
         {
             var go = new GameObject("TestObj");
             try
@@ -170,7 +170,8 @@ namespace UniCortex.Editor.Tests.Infrastructures
                 _so.objectReferenceField = go;
                 _serializedObject.Update();
                 var prop = _serializedObject.FindProperty("objectReferenceField");
-                Assert.AreEqual("TestObj", SerializedPropertyValueConverter.ToValueString(prop));
+                Assert.AreEqual(go.GetInstanceID().ToString(),
+                    SerializedPropertyValueConverter.ToValueString(prop));
             }
             finally
             {

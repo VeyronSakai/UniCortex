@@ -375,14 +375,61 @@ namespace UniCortex.Editor.Tests.Infrastructures
             Assert.AreEqual(new Vector3Int(1, 2, 3), _so.vector3IntField);
         }
 
-        // --- Unsupported type ---
+        // --- ObjectReference ---
 
         [Test]
-        public void ObjectReference_ThrowsArgumentException()
+        public void ObjectReference_SetByInstanceId()
+        {
+            var tempGo = new GameObject("RefTarget");
+            try
+            {
+                var prop = FindProperty("objectReferenceField");
+                SerializedPropertyValueParser.ApplyValue(prop, tempGo.GetInstanceID().ToString());
+                _serializedObject.ApplyModifiedProperties();
+                _serializedObject.Update();
+                Assert.AreEqual(tempGo, _so.objectReferenceField);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(tempGo);
+            }
+        }
+
+        [Test]
+        public void ObjectReference_SetNull()
+        {
+            var tempGo = new GameObject("RefTarget");
+            try
+            {
+                _so.objectReferenceField = tempGo;
+                _serializedObject.Update();
+
+                var prop = FindProperty("objectReferenceField");
+                SerializedPropertyValueParser.ApplyValue(prop, "null");
+                _serializedObject.ApplyModifiedProperties();
+                _serializedObject.Update();
+                Assert.IsNull(_so.objectReferenceField);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(tempGo);
+            }
+        }
+
+        [Test]
+        public void ObjectReference_InvalidInstanceId_ThrowsArgumentException()
         {
             var prop = FindProperty("objectReferenceField");
             Assert.Throws<ArgumentException>(() =>
-                SerializedPropertyValueParser.ApplyValue(prop, "anything"));
+                SerializedPropertyValueParser.ApplyValue(prop, "999999999"));
+        }
+
+        [Test]
+        public void ObjectReference_InvalidValue_ThrowsArgumentException()
+        {
+            var prop = FindProperty("objectReferenceField");
+            Assert.Throws<ArgumentException>(() =>
+                SerializedPropertyValueParser.ApplyValue(prop, "nonexistent/path/to/nothing"));
         }
 
         // --- Helpers ---

@@ -175,6 +175,11 @@ namespace UniCortex.Editor.Infrastructures
                     property.hash128Value = Hash128.Parse(value);
                     break;
 
+                case SerializedPropertyType.ObjectReference:
+                case SerializedPropertyType.ExposedReference:
+                    ApplyObjectReference(property, value);
+                    break;
+
                 default:
                     throw new ArgumentException(
                         $"Unsupported property type '{property.propertyType}' for property '{property.propertyPath}'.");
@@ -288,6 +293,43 @@ namespace UniCortex.Editor.Infrastructures
 
             throw new ArgumentException(
                 $"Cannot parse '{value}' as enum for property '{property.propertyPath}'. Valid names: {string.Join(", ", names)}");
+        }
+
+        /// <summary>
+        /// Resolves an object reference from a string value and writes it into the property.
+        /// Accepts: "null" to clear, an integer instanceId, or an asset path (e.g. "Assets/...").
+        /// </summary>
+        private static void ApplyObjectReference(SerializedProperty property, string value)
+        {
+            if (string.Equals(value, "null", StringComparison.OrdinalIgnoreCase))
+            {
+                property.objectReferenceValue = null;
+                return;
+            }
+
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var instanceId))
+            {
+                var obj = EditorUtility.InstanceIDToObject(instanceId);
+                if (obj == null)
+                {
+                    throw new ArgumentException(
+                        $"No object found with instanceId {instanceId} for property '{property.propertyPath}'.");
+                }
+
+                property.objectReferenceValue = obj;
+                return;
+            }
+
+            var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(value);
+            if (asset != null)
+            {
+                property.objectReferenceValue = asset;
+                return;
+            }
+
+            throw new ArgumentException(
+                $"Cannot resolve '{value}' as an object reference for property '{property.propertyPath}'. " +
+                "Use an instanceId (integer), an asset path (e.g. 'Assets/...'), or 'null'.");
         }
 
         /// <summary>
