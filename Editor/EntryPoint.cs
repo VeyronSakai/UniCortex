@@ -1,5 +1,3 @@
-using System;
-using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Handlers.Asset;
 using UniCortex.Editor.Handlers.Component;
 using UniCortex.Editor.Handlers.Console;
@@ -186,7 +184,11 @@ namespace UniCortex.Editor
             var sendMouseEventUseCase = new SendMouseEventUseCase(s_dispatcher, inputSimOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
 
-            var inputSystemSimOps = CreateInputSystemSimulationOps();
+#if UNICORTEX_INPUT_SYSTEM
+            var inputSystemSimOps = new InputSystemSimulationOperationsAdapter();
+#else
+            var inputSystemSimOps = new InputSystemNotSupportedAdapter();
+#endif
 
             var sendInputSystemKeyEventUseCase =
                 new SendInputSystemKeyEventUseCase(s_dispatcher, inputSystemSimOps);
@@ -230,20 +232,6 @@ namespace UniCortex.Editor
             sendMouseEventHandler.Register(router);
             sendInputSystemKeyEventHandler.Register(router);
             sendInputSystemMouseEventHandler.Register(router);
-        }
-
-        private static IInputSystemSimulationOperations CreateInputSystemSimulationOps()
-        {
-            // Try to load the real adapter from the optional UniCortex.Editor.InputSystem assembly.
-            // That assembly only compiles when the Input System package is installed.
-            var adapterType = Type.GetType(
-                "UniCortex.Editor.InputSystem.InputSystemSimulationOperationsAdapter, UniCortex.Editor.InputSystem");
-            if (adapterType != null)
-            {
-                return (IInputSystemSimulationOperations)Activator.CreateInstance(adapterType);
-            }
-
-            return new InputSystemNotSupportedAdapter();
         }
 
         private static int FindFreePort()

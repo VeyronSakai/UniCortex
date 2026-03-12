@@ -3,9 +3,17 @@
     "rootNamespace": "UniCortex.Editor",
     "references": [
         "UnityEditor.TestRunner",
-        "UnityEngine.TestRunner"
+        "UnityEngine.TestRunner",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [
         "Editor"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1.0.0",
+            "define": "UNICORTEX_INPUT_SYSTEM"
+        }
     ]
 }
