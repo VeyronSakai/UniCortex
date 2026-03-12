@@ -30,5 +30,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string AssetDatabaseRefresh = "/asset-database/refresh";
         public const string MenuItemExecute = "/menu-item/execute";
         public const string ScreenshotCapture = "/screenshot/capture";
+        public const string InputKey = "/input/key";
+        public const string InputMouse = "/input/mouse";
     }
 }
