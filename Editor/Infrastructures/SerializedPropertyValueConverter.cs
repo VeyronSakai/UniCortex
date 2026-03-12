@@ -1,5 +1,6 @@
 using System.Globalization;
 using UnityEditor;
+using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
 {
@@ -44,9 +45,7 @@ namespace UniCortex.Editor.Infrastructures
                     var q = property.quaternionValue;
                     return $"({q.x}, {q.y}, {q.z}, {q.w})";
                 case SerializedPropertyType.ObjectReference:
-                    return property.objectReferenceValue != null
-                        ? property.objectReferenceValue.name
-                        : "null";
+                    return ObjectReferenceToValueString(property);
                 case SerializedPropertyType.LayerMask:
                 case SerializedPropertyType.ArraySize:
                     return property.intValue.ToString();
@@ -72,9 +71,7 @@ namespace UniCortex.Editor.Infrastructures
                 case SerializedPropertyType.Hash128:
                     return property.hash128Value.ToString();
                 case SerializedPropertyType.ExposedReference:
-                    return property.objectReferenceValue != null
-                        ? property.objectReferenceValue.name
-                        : "null";
+                    return ObjectReferenceToValueString(property);
                 case SerializedPropertyType.ManagedReference:
                     return property.managedReferenceFullTypename;
                 case SerializedPropertyType.FixedBufferSize:
@@ -82,6 +79,22 @@ namespace UniCortex.Editor.Infrastructures
                 default:
                     return property.propertyType.ToString();
             }
+        }
+
+        /// <summary>
+        /// Returns a string representation of an ObjectReference / ExposedReference that can be
+        /// fed back into <see cref="SerializedPropertyValueParser.ApplyValue"/> for round-tripping.
+        /// Asset references are returned as their asset path; scene objects as their instanceId.
+        /// </summary>
+        private static string ObjectReferenceToValueString(SerializedProperty property)
+        {
+            if (property.objectReferenceValue == null)
+                return "null";
+
+            var assetPath = AssetDatabase.GetAssetPath(property.objectReferenceValue);
+            return string.IsNullOrEmpty(assetPath)
+                ? property.objectReferenceValue.GetInstanceID().ToString()
+                : assetPath;
         }
     }
 }
