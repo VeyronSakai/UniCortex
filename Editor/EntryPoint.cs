@@ -177,7 +177,7 @@ namespace UniCortex.Editor
             var screenshotHandler = new ScreenshotHandler(captureScreenshotUseCase);
 
 #if UNICORTEX_INPUT_SYSTEM
-            var inputSimOps = new InputSimulationOperationsAdapter();
+            var inputSimOps = new InputOperationsAdapter();
 #else
             var inputSimOps = new InputNotSupportedAdapter();
 #endif

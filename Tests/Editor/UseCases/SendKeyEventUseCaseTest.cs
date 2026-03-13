@@ -13,7 +13,7 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_CallsSendKeyEvent_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyInputSimulationOperations();
+            var ops = new SpyInputOperations();
             var useCase = new SendKeyEventUseCase(dispatcher, ops);
 
             useCase.ExecuteAsync(KeyName.Space, InputEventType.Press, CancellationToken.None).GetAwaiter().GetResult();

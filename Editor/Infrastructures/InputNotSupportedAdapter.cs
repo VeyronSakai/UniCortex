@@ -4,7 +4,7 @@ using UniCortex.Editor.Domains.Interfaces;
 namespace UniCortex.Editor.Infrastructures
 {
     // Fallback used when the Input System package (com.unity.inputsystem) is not installed.
-    internal sealed class InputNotSupportedAdapter : IInputSimulationOperations
+    internal sealed class InputNotSupportedAdapter : IInputOperations
     {
         public void SendKeyEvent(string key, string eventType)
         {

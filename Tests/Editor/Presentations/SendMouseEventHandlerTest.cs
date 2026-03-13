@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns200_WhenValid()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyInputSimulationOperations();
+            var ops = new SpyInputOperations();
             var useCase = new SendMouseEventUseCase(dispatcher, ops);
             var handler = new SendMouseEventHandler(useCase);
 
@@ -39,7 +39,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns200_WithDefaults()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyInputSimulationOperations();
+            var ops = new SpyInputOperations();
             var useCase = new SendMouseEventUseCase(dispatcher, ops);
             var handler = new SendMouseEventHandler(useCase);
 
@@ -60,7 +60,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns400_WhenBodyEmpty()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyInputSimulationOperations();
+            var ops = new SpyInputOperations();
             var useCase = new SendMouseEventUseCase(dispatcher, ops);
             var handler = new SendMouseEventHandler(useCase);
 

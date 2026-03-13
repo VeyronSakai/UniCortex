@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns200_WhenValid()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyInputSimulationOperations();
+            var ops = new SpyInputOperations();
             var useCase = new SendKeyEventUseCase(dispatcher, ops);
             var handler = new SendKeyEventHandler(useCase);
 
@@ -37,7 +37,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns200_WithDefaultEventType()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyInputSimulationOperations();
+            var ops = new SpyInputOperations();
             var useCase = new SendKeyEventUseCase(dispatcher, ops);
             var handler = new SendKeyEventHandler(useCase);
 
@@ -57,7 +57,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns400_WhenBodyEmpty()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyInputSimulationOperations();
+            var ops = new SpyInputOperations();
             var useCase = new SendKeyEventUseCase(dispatcher, ops);
             var handler = new SendKeyEventHandler(useCase);
 
@@ -75,7 +75,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns400_WhenKeyMissing()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyInputSimulationOperations();
+            var ops = new SpyInputOperations();
             var useCase = new SendKeyEventUseCase(dispatcher, ops);
             var handler = new SendKeyEventHandler(useCase);
 

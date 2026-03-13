@@ -7,10 +7,10 @@ namespace UniCortex.Editor.UseCases
     internal sealed class SendKeyEventUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IInputSimulationOperations _operations;
+        private readonly IInputOperations _operations;
 
         public SendKeyEventUseCase(IMainThreadDispatcher dispatcher,
-            IInputSimulationOperations operations)
+            IInputOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;

@@ -11,7 +11,7 @@ using MouseButtonConst = UniCortex.Editor.Domains.Models.MouseButton;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    internal sealed class InputSimulationOperationsAdapter : IInputSimulationOperations
+    internal sealed class InputOperationsAdapter : IInputOperations
     {
         public void SendKeyEvent(string key, string eventType)
         {

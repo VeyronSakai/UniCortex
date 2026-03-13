@@ -13,7 +13,7 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_CallsSendMouseEvent_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyInputSimulationOperations();
+            var ops = new SpyInputOperations();
             var useCase = new SendMouseEventUseCase(dispatcher, ops);
 
             useCase.ExecuteAsync(100f, 200f, MouseButton.Left, InputEventType.Press, CancellationToken.None).GetAwaiter().GetResult();

@@ -2,7 +2,7 @@ using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.Tests.TestDoubles
 {
-    internal sealed class SpyInputSimulationOperations : IInputSimulationOperations
+    internal sealed class SpyInputOperations : IInputOperations
     {
         public int SendKeyEventCallCount { get; private set; }
         public string LastKey { get; private set; }
