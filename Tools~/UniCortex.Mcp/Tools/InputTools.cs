@@ -21,6 +21,7 @@ public class InputTools(InputUseCase inputService)
     public async ValueTask<CallToolResult> SendKeyEventAsync(
         [Description(
             "Input System Key enum name. Available keys: " +
+            // Letters
             KeyName.A + ", " + KeyName.B + ", " + KeyName.C + ", " + KeyName.D + ", " +
             KeyName.E + ", " + KeyName.F + ", " + KeyName.G + ", " + KeyName.H + ", " +
             KeyName.I + ", " + KeyName.J + ", " + KeyName.K + ", " + KeyName.L + ", " +
@@ -28,15 +29,39 @@ public class InputTools(InputUseCase inputService)
             KeyName.Q + ", " + KeyName.R + ", " + KeyName.S + ", " + KeyName.T + ", " +
             KeyName.U + ", " + KeyName.V + ", " + KeyName.W + ", " + KeyName.X + ", " +
             KeyName.Y + ", " + KeyName.Z + ", " +
+            // Digits
             KeyName.Digit0 + "-" + KeyName.Digit9 + ", " +
+            // Function keys
             KeyName.F1 + "-" + KeyName.F12 + ", " +
-            KeyName.Space + ", " + KeyName.Return + ", " + KeyName.Escape + ", " +
-            KeyName.Tab + ", " + KeyName.Backspace + ", " + KeyName.Delete + ", " +
-            KeyName.LeftArrow + ", " + KeyName.RightArrow + ", " + KeyName.UpArrow + ", " + KeyName.DownArrow + ", " +
+            // Editing
+            KeyName.Space + ", " + KeyName.Enter + ", " + KeyName.Tab + ", " +
+            KeyName.Backspace + ", " + KeyName.Delete + ", " + KeyName.Insert + ", " +
+            KeyName.Escape + ", " + KeyName.ContextMenu + ", " +
+            // Navigation
+            KeyName.LeftArrow + ", " + KeyName.RightArrow + ", " +
+            KeyName.UpArrow + ", " + KeyName.DownArrow + ", " +
+            KeyName.PageUp + ", " + KeyName.PageDown + ", " +
+            KeyName.Home + ", " + KeyName.End + ", " +
+            // Modifiers
             KeyName.LeftShift + ", " + KeyName.RightShift + ", " +
             KeyName.LeftCtrl + ", " + KeyName.RightCtrl + ", " +
-            KeyName.LeftAlt + ", " + KeyName.RightAlt +
-            ". Any valid Input System Key enum name is also accepted.")]
+            KeyName.LeftAlt + ", " + KeyName.RightAlt + ", " +
+            KeyName.LeftMeta + ", " + KeyName.RightMeta + ", " +
+            // Punctuation and symbols
+            KeyName.Backquote + ", " + KeyName.Quote + ", " + KeyName.Semicolon + ", " +
+            KeyName.Comma + ", " + KeyName.Period + ", " + KeyName.Slash + ", " +
+            KeyName.Backslash + ", " + KeyName.LeftBracket + ", " + KeyName.RightBracket + ", " +
+            KeyName.Minus + ", " + KeyName.Equals + ", " +
+            // Lock and toggle keys
+            KeyName.CapsLock + ", " + KeyName.NumLock + ", " + KeyName.ScrollLock + ", " +
+            KeyName.PrintScreen + ", " + KeyName.Pause + ", " +
+            // Numpad
+            KeyName.Numpad0 + "-" + KeyName.Numpad9 + ", " +
+            KeyName.NumpadEnter + ", " + KeyName.NumpadDivide + ", " +
+            KeyName.NumpadMultiply + ", " + KeyName.NumpadPlus + ", " +
+            KeyName.NumpadMinus + ", " + KeyName.NumpadPeriod + ", " + KeyName.NumpadEquals + ", " +
+            // OEM and IME
+            KeyName.OEM1 + "-" + KeyName.OEM5 + ", " + KeyName.IMESelected)]
         string key,
         [Description($"Event type: \"{InputEventType.Press}\" (default) or \"{InputEventType.Release}\".")]
         string eventType = InputEventType.Press,

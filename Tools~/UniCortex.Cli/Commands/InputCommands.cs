@@ -8,7 +8,7 @@ namespace UniCortex.Cli.Commands;
 public class InputCommands(InputUseCase inputService)
 {
     /// <summary>Send a keyboard event via Input System in Play Mode. Requires com.unity.inputsystem.</summary>
-    /// <param name="key">Input System Key enum name. Available keys: A-Z, Digit0-Digit9, F1-F12, Space, Return, Escape, Tab, Backspace, Delete, LeftArrow, RightArrow, UpArrow, DownArrow, LeftShift, RightShift, LeftCtrl, RightCtrl, LeftAlt, RightAlt. Any valid Input System Key enum name is also accepted.</param>
+    /// <param name="key">Input System Key enum name. Available keys: A-Z, Digit0-Digit9, F1-F12, Space, Enter, Tab, Backspace, Delete, Insert, Escape, ContextMenu, LeftArrow, RightArrow, UpArrow, DownArrow, PageUp, PageDown, Home, End, LeftShift, RightShift, LeftCtrl, RightCtrl, LeftAlt, RightAlt, LeftMeta, RightMeta, Backquote, Quote, Semicolon, Comma, Period, Slash, Backslash, LeftBracket, RightBracket, Minus, Equals, CapsLock, NumLock, ScrollLock, PrintScreen, Pause, Numpad0-Numpad9, NumpadEnter, NumpadDivide, NumpadMultiply, NumpadPlus, NumpadMinus, NumpadPeriod, NumpadEquals, OEM1-OEM5, IMESelected.</param>
     /// <param name="eventType">Event type: "press" (default) or "release".</param>
     [Command("send-key")]
     public async Task SendKey(string key, string eventType = InputEventType.Press,
