@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
-                "{\"x\":100.0,\"y\":200.0,\"button\":\"left\",\"eventType\":\"press\"}");
+                $"{{\"x\":100.0,\"y\":200.0,\"button\":\"{MouseButton.Left}\",\"eventType\":\"{InputEventType.Press}\"}}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

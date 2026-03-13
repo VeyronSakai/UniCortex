@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputKey,
-                "{\"key\":\"Space\",\"eventType\":\"press\"}");
+                $"{{\"key\":\"{KeyName.Space}\",\"eventType\":\"{InputEventType.Press}\"}}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -45,7 +45,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputKey,
-                "{\"key\":\"A\"}");
+                $"{{\"key\":\"{KeyName.A}\"}}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -83,7 +83,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputKey,
-                "{\"eventType\":\"press\"}");
+                $"{{\"eventType\":\"{InputEventType.Press}\"}}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
