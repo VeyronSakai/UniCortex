@@ -34,7 +34,11 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var isRelease = string.Equals(eventType, InputEventType.Release, StringComparison.OrdinalIgnoreCase);
-            InputState.Change(keyboard[keyEnum], isRelease ? 0f : 1f);
+            using (StateEvent.From(keyboard, out var eventPtr))
+            {
+                keyboard[keyEnum].WriteValueIntoEvent(isRelease ? 0f : 1f, eventPtr);
+                InputSystem.QueueEvent(eventPtr);
+            }
         }
 
         public void SendMouseEvent(float x, float y, string button, string eventType)
@@ -51,22 +55,29 @@ namespace UniCortex.Editor.Infrastructures
                 throw new InvalidOperationException("No Mouse device is available.");
             }
 
-            // Always update position
-            InputState.Change(mouse.position, new Vector2(x, y));
-
             var isMove = string.Equals(eventType, InputEventType.Move, StringComparison.OrdinalIgnoreCase);
-            if (!isMove)
-            {
-                ButtonControl buttonControl;
-                if (string.Equals(button, MouseButtonConst.Right, StringComparison.OrdinalIgnoreCase))
-                    buttonControl = mouse.rightButton;
-                else if (string.Equals(button, MouseButtonConst.Middle, StringComparison.OrdinalIgnoreCase))
-                    buttonControl = mouse.middleButton;
-                else
-                    buttonControl = mouse.leftButton;
 
-                var isRelease = string.Equals(eventType, InputEventType.Release, StringComparison.OrdinalIgnoreCase);
-                InputState.Change(buttonControl, isRelease ? 0f : 1f);
+            using (StateEvent.From(mouse, out var eventPtr))
+            {
+                // Always update position
+                mouse.position.WriteValueIntoEvent(new Vector2(x, y), eventPtr);
+
+                if (!isMove)
+                {
+                    ButtonControl buttonControl;
+                    if (string.Equals(button, MouseButtonConst.Right, StringComparison.OrdinalIgnoreCase))
+                        buttonControl = mouse.rightButton;
+                    else if (string.Equals(button, MouseButtonConst.Middle, StringComparison.OrdinalIgnoreCase))
+                        buttonControl = mouse.middleButton;
+                    else
+                        buttonControl = mouse.leftButton;
+
+                    var isRelease =
+                        string.Equals(eventType, InputEventType.Release, StringComparison.OrdinalIgnoreCase);
+                    buttonControl.WriteValueIntoEvent(isRelease ? 0f : 1f, eventPtr);
+                }
+
+                InputSystem.QueueEvent(eventPtr);
             }
         }
     }

@@ -36,4 +36,58 @@ public class InputUseCaseTest
 
         Assert.That(ex!.Message, Does.Contain("Play Mode").Or.Contain("Input System"));
     }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendKeyEvent_InPlayMode_TriggersKeyboardInput()
+    {
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
+
+            await _fixture.InputUseCase.SendKeyEventAsync(KeyName.A, InputEventType.Press, CancellationToken.None);
+            await Task.Delay(500);
+            await _fixture.InputUseCase.SendKeyEventAsync(KeyName.A, InputEventType.Release, CancellationToken.None);
+            await Task.Delay(500);
+
+            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
+                cancellationToken: CancellationToken.None);
+
+            Assert.That(logs, Does.Contain("[InputSystemDebug] A key pressed"));
+            Assert.That(logs, Does.Contain("[InputSystemDebug] A key released"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_InPlayMode_TriggersMouseInput()
+    {
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
+
+            await _fixture.InputUseCase.SendMouseEventAsync(400f, 300f, MouseButton.Left, InputEventType.Press,
+                CancellationToken.None);
+            await Task.Delay(500);
+            await _fixture.InputUseCase.SendMouseEventAsync(400f, 300f, MouseButton.Left, InputEventType.Release,
+                CancellationToken.None);
+            await Task.Delay(500);
+
+            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
+                cancellationToken: CancellationToken.None);
+
+            Assert.That(logs, Does.Contain("[InputSystemDebug] Left mouse pressed"));
+            Assert.That(logs, Does.Contain("[InputSystemDebug] Left mouse released"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
 }
