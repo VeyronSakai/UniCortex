@@ -176,12 +176,12 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 |------|-------------|
 | `capture_screenshot` | Capture a screenshot of the Game View |
 
-### Input Simulation
+### Input
 
 | Tool | Description |
 |------|-------------|
-| `send_key_event` | Send a keyboard event via Input System (requires com.unity.inputsystem) |
-| `send_mouse_event` | Send a mouse event via Input System (requires com.unity.inputsystem) |
+| `send_key_event` | Send a keyboard event via Input System in Play Mode (requires com.unity.inputsystem) |
+| `send_mouse_event` | Send a mouse event via Input System in Play Mode (requires com.unity.inputsystem). Supports press, release, and move for drag simulation |
 
 ## Settings
 
