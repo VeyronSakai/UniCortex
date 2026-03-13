@@ -35,13 +35,20 @@ namespace UniCortex.Editor.Handlers.Input
 
             var request = JsonUtility.FromJson<SendMouseEventRequest>(body);
 
-            var eventType = string.IsNullOrEmpty(request.eventType) ? "mouseDown" : request.eventType;
+            var button = string.IsNullOrEmpty(request.button) ? MouseButton.Left : request.button;
+            var eventType = string.IsNullOrEmpty(request.eventType) ? InputEventType.Press : request.eventType;
 
             try
             {
-                await _useCase.ExecuteAsync(request.x, request.y, request.button, eventType, cancellationToken);
+                await _useCase.ExecuteAsync(request.x, request.y, button, eventType, cancellationToken);
             }
             catch (InvalidOperationException ex)
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+            catch (NotSupportedException ex)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);

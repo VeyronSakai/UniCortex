@@ -1,8 +1,8 @@
 using System.Threading;
-using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
+using UniCortex.Editor.Domains.Models;
 using NUnit.Framework;
 using UniCortex.Editor.Handlers.Input;
 
@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
-                "{\"x\":100.0,\"y\":200.0,\"button\":0,\"eventType\":\"mouseDown\"}");
+                "{\"x\":100.0,\"y\":200.0,\"button\":\"left\",\"eventType\":\"press\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -31,8 +31,8 @@ namespace UniCortex.Editor.Tests.Presentations
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(100f, ops.LastMouseX);
             Assert.AreEqual(200f, ops.LastMouseY);
-            Assert.AreEqual(0, ops.LastMouseButton);
-            Assert.AreEqual("mouseDown", ops.LastMouseEventType);
+            Assert.AreEqual(MouseButton.Left, ops.LastMouseButton);
+            Assert.AreEqual(InputEventType.Press, ops.LastMouseEventType);
         }
 
         [Test]
@@ -52,8 +52,8 @@ namespace UniCortex.Editor.Tests.Presentations
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual(0, ops.LastMouseButton);
-            Assert.AreEqual("mouseDown", ops.LastMouseEventType);
+            Assert.AreEqual(MouseButton.Left, ops.LastMouseButton);
+            Assert.AreEqual(InputEventType.Press, ops.LastMouseEventType);
         }
 
         [Test]

@@ -23,14 +23,14 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputKey,
-                "{\"keyName\":\"space\",\"eventType\":\"keyDown\"}");
+                "{\"key\":\"Space\",\"eventType\":\"press\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
-            Assert.AreEqual("space", ops.LastKeyName);
-            Assert.AreEqual("keyDown", ops.LastKeyEventType);
+            Assert.AreEqual(KeyName.Space, ops.LastKey);
+            Assert.AreEqual(InputEventType.Press, ops.LastKeyEventType);
         }
 
         [Test]
@@ -45,12 +45,12 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputKey,
-                "{\"keyName\":\"space\"}");
+                "{\"key\":\"A\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual("keyDown", ops.LastKeyEventType);
+            Assert.AreEqual(InputEventType.Press, ops.LastKeyEventType);
         }
 
         [Test]
@@ -72,7 +72,7 @@ namespace UniCortex.Editor.Tests.Presentations
         }
 
         [Test]
-        public void Handle_Returns400_WhenKeyNameMissing()
+        public void Handle_Returns400_WhenKeyMissing()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputSimulationOperations();
@@ -83,12 +83,12 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputKey,
-                "{\"eventType\":\"keyDown\"}");
+                "{\"eventType\":\"press\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
-            StringAssert.Contains("keyName is required", context.ResponseBody);
+            StringAssert.Contains("key is required", context.ResponseBody);
         }
     }
 }

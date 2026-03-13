@@ -9,16 +9,18 @@ namespace UniCortex.Editor.UseCases
         private readonly IMainThreadDispatcher _dispatcher;
         private readonly IInputSimulationOperations _operations;
 
-        public SendKeyEventUseCase(IMainThreadDispatcher dispatcher, IInputSimulationOperations operations)
+        public SendKeyEventUseCase(IMainThreadDispatcher dispatcher,
+            IInputSimulationOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;
         }
 
-        public async Task ExecuteAsync(string keyName, string eventType, CancellationToken cancellationToken = default)
+        public async Task ExecuteAsync(string key, string eventType,
+            CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.SendKeyEvent(keyName, eventType), cancellationToken);
+                () => _operations.SendKeyEvent(key, eventType), cancellationToken);
         }
     }
 }

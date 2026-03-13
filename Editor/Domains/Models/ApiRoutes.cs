@@ -32,7 +32,5 @@ namespace UniCortex.Editor.Domains.Models
         public const string ScreenshotCapture = "/screenshot/capture";
         public const string InputKey = "/input/key";
         public const string InputMouse = "/input/mouse";
-        public const string InputSystemKey = "/input/system/key";
-        public const string InputSystemMouse = "/input/system/mouse";
     }
 }

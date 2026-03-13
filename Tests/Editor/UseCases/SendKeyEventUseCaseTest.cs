@@ -1,5 +1,6 @@
 using System.Threading;
 using UniCortex.Editor.Tests.TestDoubles;
+using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
 using NUnit.Framework;
 
@@ -15,11 +16,11 @@ namespace UniCortex.Editor.Tests.UseCases
             var ops = new SpyInputSimulationOperations();
             var useCase = new SendKeyEventUseCase(dispatcher, ops);
 
-            useCase.ExecuteAsync("space", "keyDown", CancellationToken.None).GetAwaiter().GetResult();
+            useCase.ExecuteAsync(KeyName.Space, InputEventType.Press, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, ops.SendKeyEventCallCount);
-            Assert.AreEqual("space", ops.LastKeyName);
-            Assert.AreEqual("keyDown", ops.LastKeyEventType);
+            Assert.AreEqual(KeyName.Space, ops.LastKey);
+            Assert.AreEqual(InputEventType.Press, ops.LastKeyEventType);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
     }

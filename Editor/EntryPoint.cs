@@ -176,29 +176,17 @@ namespace UniCortex.Editor
             var captureScreenshotUseCase = new CaptureScreenshotUseCase(s_dispatcher, screenshotOps);
             var screenshotHandler = new ScreenshotHandler(captureScreenshotUseCase);
 
+#if UNICORTEX_INPUT_SYSTEM
             var inputSimOps = new InputSimulationOperationsAdapter();
+#else
+            var inputSimOps = new InputNotSupportedAdapter();
+#endif
 
             var sendKeyEventUseCase = new SendKeyEventUseCase(s_dispatcher, inputSimOps);
             var sendKeyEventHandler = new SendKeyEventHandler(sendKeyEventUseCase);
 
             var sendMouseEventUseCase = new SendMouseEventUseCase(s_dispatcher, inputSimOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
-
-#if UNICORTEX_INPUT_SYSTEM
-            var inputSystemSimOps = new InputSystemSimulationOperationsAdapter();
-#else
-            var inputSystemSimOps = new InputSystemNotSupportedAdapter();
-#endif
-
-            var sendInputSystemKeyEventUseCase =
-                new SendInputSystemKeyEventUseCase(s_dispatcher, inputSystemSimOps);
-            var sendInputSystemKeyEventHandler =
-                new SendInputSystemKeyEventHandler(sendInputSystemKeyEventUseCase);
-
-            var sendInputSystemMouseEventUseCase =
-                new SendInputSystemMouseEventUseCase(s_dispatcher, inputSystemSimOps);
-            var sendInputSystemMouseEventHandler =
-                new SendInputSystemMouseEventHandler(sendInputSystemMouseEventUseCase);
 
             pingHandler.Register(router);
             playHandler.Register(router);
@@ -230,8 +218,6 @@ namespace UniCortex.Editor
             screenshotHandler.Register(router);
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
-            sendInputSystemKeyEventHandler.Register(router);
-            sendInputSystemMouseEventHandler.Register(router);
         }
 
         private static int FindFreePort()

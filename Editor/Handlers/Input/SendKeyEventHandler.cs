@@ -28,27 +28,33 @@ namespace UniCortex.Editor.Handlers.Input
 
             if (string.IsNullOrEmpty(body))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("keyName is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("key is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             var request = JsonUtility.FromJson<SendKeyEventRequest>(body);
 
-            if (string.IsNullOrEmpty(request.keyName))
+            if (string.IsNullOrEmpty(request.key))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("keyName is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("key is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
-            var eventType = string.IsNullOrEmpty(request.eventType) ? "keyDown" : request.eventType;
+            var eventType = string.IsNullOrEmpty(request.eventType) ? InputEventType.Press : request.eventType;
 
             try
             {
-                await _useCase.ExecuteAsync(request.keyName, eventType, cancellationToken);
+                await _useCase.ExecuteAsync(request.key, eventType, cancellationToken);
             }
             catch (InvalidOperationException ex)
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+            catch (NotSupportedException ex)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
