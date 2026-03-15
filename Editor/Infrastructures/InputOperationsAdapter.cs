@@ -12,6 +12,13 @@ using MouseButtonConst = UniCortex.Editor.Domains.Models.MouseButton;
 
 namespace UniCortex.Editor.Infrastructures
 {
+    internal enum InputAction
+    {
+        Press,
+        Release,
+        Move,
+    }
+
     internal sealed class InputOperationsAdapter : IInputOperations
     {
         // Track queued key/button state ourselves instead of calling InputSystem.Update()
@@ -90,41 +97,40 @@ namespace UniCortex.Editor.Infrastructures
                     $"Invalid key name: {key}. Use Input System Key enum names (e.g. Space, A, LeftArrow, Return).");
             }
 
-            var isRelease = string.Equals(eventType, InputEventType.Release, StringComparison.OrdinalIgnoreCase);
             var keyControl = keyboard[keyEnum];
+            var action = ParseButtonAction(eventType);
+            var targetValue = action == InputAction.Press ? 1f : 0f;
 
             // Use self-tracked state instead of keyControl.isPressed because
             // isPressed only reflects the last processed state, not queued events.
             // Without tracking, consecutive press events within the same update
             // would skip the reset and fail to trigger wasPressedThisFrame.
             var alreadyPressed = s_pressedKeys.Contains(keyEnum);
-            if (isRelease && !alreadyPressed)
+
+            if (action == InputAction.Press && alreadyPressed
+                || action == InputAction.Release && !alreadyPressed)
             {
                 using (StateEvent.From(keyboard, out var resetPtr))
                 {
-                    keyControl.WriteValueIntoEvent(1f, resetPtr);
-                    InputSystem.QueueEvent(resetPtr);
-                }
-            }
-            else if (!isRelease && alreadyPressed)
-            {
-                using (StateEvent.From(keyboard, out var resetPtr))
-                {
-                    keyControl.WriteValueIntoEvent(0f, resetPtr);
+                    keyControl.WriteValueIntoEvent(1f - targetValue, resetPtr);
                     InputSystem.QueueEvent(resetPtr);
                 }
             }
 
             using (StateEvent.From(keyboard, out var eventPtr))
             {
-                keyControl.WriteValueIntoEvent(isRelease ? 0f : 1f, eventPtr);
+                keyControl.WriteValueIntoEvent(targetValue, eventPtr);
                 InputSystem.QueueEvent(eventPtr);
             }
 
-            if (isRelease)
-                s_pressedKeys.Remove(keyEnum);
-            else
+            if (action == InputAction.Press)
+            {
                 s_pressedKeys.Add(keyEnum);
+            }
+            else
+            {
+                s_pressedKeys.Remove(keyEnum);
+            }
         }
 
         public void SendMouseEvent(float x, float y, string button, string eventType)
@@ -141,9 +147,8 @@ namespace UniCortex.Editor.Infrastructures
                 throw new InvalidOperationException("No Mouse device is available.");
             }
 
-            var isMove = string.Equals(eventType, InputEventType.Move, StringComparison.OrdinalIgnoreCase);
-
-            if (isMove)
+            var action = ParseMouseAction(eventType);
+            if (action == InputAction.Move)
             {
                 using (StateEvent.From(mouse, out var eventPtr))
                 {
@@ -155,14 +160,19 @@ namespace UniCortex.Editor.Infrastructures
             {
                 ButtonControl buttonControl;
                 if (string.Equals(button, MouseButtonConst.Right, StringComparison.OrdinalIgnoreCase))
+                {
                     buttonControl = mouse.rightButton;
+                }
                 else if (string.Equals(button, MouseButtonConst.Middle, StringComparison.OrdinalIgnoreCase))
+                {
                     buttonControl = mouse.middleButton;
+                }
                 else
+                {
                     buttonControl = mouse.leftButton;
+                }
 
-                var isRelease =
-                    string.Equals(eventType, InputEventType.Release, StringComparison.OrdinalIgnoreCase);
+                var targetValue = action == InputAction.Press ? 1f : 0f;
 
                 // Resolve the button name used as the tracking key.
                 var buttonName = button ?? MouseButtonConst.Left;
@@ -170,21 +180,13 @@ namespace UniCortex.Editor.Infrastructures
                 // Use self-tracked state instead of buttonControl.isPressed because
                 // isPressed only reflects the last processed state, not queued events.
                 var alreadyPressed = s_pressedMouseButtons.Contains(buttonName);
-                if (isRelease && !alreadyPressed)
+                if (action == InputAction.Press && alreadyPressed
+                    || action == InputAction.Release && !alreadyPressed)
                 {
                     using (StateEvent.From(mouse, out var resetPtr))
                     {
                         mouse.position.WriteValueIntoEvent(new Vector2(x, y), resetPtr);
-                        buttonControl.WriteValueIntoEvent(1f, resetPtr);
-                        InputSystem.QueueEvent(resetPtr);
-                    }
-                }
-                else if (!isRelease && alreadyPressed)
-                {
-                    using (StateEvent.From(mouse, out var resetPtr))
-                    {
-                        mouse.position.WriteValueIntoEvent(new Vector2(x, y), resetPtr);
-                        buttonControl.WriteValueIntoEvent(0f, resetPtr);
+                        buttonControl.WriteValueIntoEvent(1f - targetValue, resetPtr);
                         InputSystem.QueueEvent(resetPtr);
                     }
                 }
@@ -192,15 +194,33 @@ namespace UniCortex.Editor.Infrastructures
                 using (StateEvent.From(mouse, out var eventPtr))
                 {
                     mouse.position.WriteValueIntoEvent(new Vector2(x, y), eventPtr);
-                    buttonControl.WriteValueIntoEvent(isRelease ? 0f : 1f, eventPtr);
+                    buttonControl.WriteValueIntoEvent(targetValue, eventPtr);
                     InputSystem.QueueEvent(eventPtr);
                 }
 
-                if (isRelease)
-                    s_pressedMouseButtons.Remove(buttonName);
-                else
+                if (action == InputAction.Press)
+                {
                     s_pressedMouseButtons.Add(buttonName);
+                }
+                else
+                {
+                    s_pressedMouseButtons.Remove(buttonName);
+                }
             }
+        }
+
+        private static InputAction ParseButtonAction(string eventType)
+        {
+            return string.Equals(eventType, InputEventType.Release, StringComparison.OrdinalIgnoreCase)
+                ? InputAction.Release
+                : InputAction.Press;
+        }
+
+        private static InputAction ParseMouseAction(string eventType)
+        {
+            return string.Equals(eventType, InputEventType.Move, StringComparison.OrdinalIgnoreCase)
+                ? InputAction.Move
+                : ParseButtonAction(eventType);
         }
     }
 }
