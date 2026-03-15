@@ -94,7 +94,7 @@ namespace UniCortex.Editor.Infrastructures
             if (!Enum.TryParse<Key>(key, true, out var keyEnum) || keyEnum == Key.None)
             {
                 throw new ArgumentException(
-                    $"Invalid key name: {key}. Use Input System Key enum names (e.g. Space, A, LeftArrow, Return).");
+                    $"Invalid key name: {key}. Use Input System Key enum names (e.g. Space, A, LeftArrow, Enter).");
             }
 
             var keyControl = keyboard[keyEnum];

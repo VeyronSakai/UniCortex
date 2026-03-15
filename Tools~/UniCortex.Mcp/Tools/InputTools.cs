@@ -13,7 +13,7 @@ public class InputTools(InputUseCase inputService)
     [McpServerTool(Name = "send_key_event", ReadOnly = false),
      Description(
          "Send a keyboard event via Unity Input System (com.unity.inputsystem) in Play Mode. " +
-         "Uses InputState.Change() to simulate device-level input. " +
+         "Uses InputSystem.QueueEvent() to simulate device-level input. " +
          "Triggers Input System actions (InputAction, PlayerInput) and Keyboard.current key states. " +
          "Requires the Input System package to be installed. " +
          "Does NOT work with legacy UnityEngine.Input.GetKey()."),
@@ -81,7 +81,7 @@ public class InputTools(InputUseCase inputService)
     [McpServerTool(Name = "send_mouse_event", ReadOnly = false),
      Description(
          "Send a mouse event via Unity Input System (com.unity.inputsystem) in Play Mode. " +
-         "Uses InputState.Change() to simulate device-level input. " +
+         "Uses InputSystem.QueueEvent() to simulate device-level input. " +
          "Triggers Input System actions (InputAction, PlayerInput) and Mouse.current states. " +
          "Requires the Input System package to be installed. " +
          "Does NOT work with legacy UnityEngine.Input.GetMouseButton()."),
