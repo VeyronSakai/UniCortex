@@ -1,5 +1,6 @@
 #if UNICORTEX_INPUT_SYSTEM
 using System;
+using System.Collections.Generic;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor;
@@ -13,6 +14,14 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class InputOperationsAdapter : IInputOperations
     {
+        // Track queued key/button state ourselves instead of calling InputSystem.Update()
+        // between events. Forcing InputSystem.Update() from an HTTP handler would process
+        // all pending events outside the normal player loop, causing input to be consumed
+        // at unpredictable times and potentially breaking frame-dependent logic such as
+        // wasPressedThisFrame / wasReleasedThisFrame in MonoBehaviour.Update().
+        private static readonly HashSet<Key> s_pressedKeys = new();
+        private static readonly HashSet<string> s_pressedMouseButtons = new(StringComparer.OrdinalIgnoreCase);
+
         static InputOperationsAdapter()
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
@@ -22,6 +31,8 @@ namespace UniCortex.Editor.Infrastructures
         {
             if (state == PlayModeStateChange.EnteredPlayMode)
             {
+                s_pressedKeys.Clear();
+                s_pressedMouseButtons.Clear();
                 ConfigureInputSettingsForSimulation();
             }
         }
@@ -82,13 +93,26 @@ namespace UniCortex.Editor.Infrastructures
             var isRelease = string.Equals(eventType, InputEventType.Release, StringComparison.OrdinalIgnoreCase);
             var keyControl = keyboard[keyEnum];
 
-            // Queue the opposite state first to guarantee a state transition.
-            // Without this, consecutive identical events (e.g. press → press) would not
-            // be recognized as a new press by Input System's wasPressedThisFrame.
-            using (StateEvent.From(keyboard, out var resetPtr))
+            // Use self-tracked state instead of keyControl.isPressed because
+            // isPressed only reflects the last processed state, not queued events.
+            // Without tracking, consecutive press events within the same update
+            // would skip the reset and fail to trigger wasPressedThisFrame.
+            var alreadyPressed = s_pressedKeys.Contains(keyEnum);
+            if (isRelease && !alreadyPressed)
             {
-                keyControl.WriteValueIntoEvent(isRelease ? 1f : 0f, resetPtr);
-                InputSystem.QueueEvent(resetPtr);
+                using (StateEvent.From(keyboard, out var resetPtr))
+                {
+                    keyControl.WriteValueIntoEvent(1f, resetPtr);
+                    InputSystem.QueueEvent(resetPtr);
+                }
+            }
+            else if (!isRelease && alreadyPressed)
+            {
+                using (StateEvent.From(keyboard, out var resetPtr))
+                {
+                    keyControl.WriteValueIntoEvent(0f, resetPtr);
+                    InputSystem.QueueEvent(resetPtr);
+                }
             }
 
             using (StateEvent.From(keyboard, out var eventPtr))
@@ -96,6 +120,11 @@ namespace UniCortex.Editor.Infrastructures
                 keyControl.WriteValueIntoEvent(isRelease ? 0f : 1f, eventPtr);
                 InputSystem.QueueEvent(eventPtr);
             }
+
+            if (isRelease)
+                s_pressedKeys.Remove(keyEnum);
+            else
+                s_pressedKeys.Add(keyEnum);
         }
 
         public void SendMouseEvent(float x, float y, string button, string eventType)
@@ -135,12 +164,29 @@ namespace UniCortex.Editor.Infrastructures
                 var isRelease =
                     string.Equals(eventType, InputEventType.Release, StringComparison.OrdinalIgnoreCase);
 
-                // Queue the opposite state first to guarantee a state transition.
-                using (StateEvent.From(mouse, out var resetPtr))
+                // Resolve the button name used as the tracking key.
+                var buttonName = button ?? MouseButtonConst.Left;
+
+                // Use self-tracked state instead of buttonControl.isPressed because
+                // isPressed only reflects the last processed state, not queued events.
+                var alreadyPressed = s_pressedMouseButtons.Contains(buttonName);
+                if (isRelease && !alreadyPressed)
                 {
-                    mouse.position.WriteValueIntoEvent(new Vector2(x, y), resetPtr);
-                    buttonControl.WriteValueIntoEvent(isRelease ? 1f : 0f, resetPtr);
-                    InputSystem.QueueEvent(resetPtr);
+                    using (StateEvent.From(mouse, out var resetPtr))
+                    {
+                        mouse.position.WriteValueIntoEvent(new Vector2(x, y), resetPtr);
+                        buttonControl.WriteValueIntoEvent(1f, resetPtr);
+                        InputSystem.QueueEvent(resetPtr);
+                    }
+                }
+                else if (!isRelease && alreadyPressed)
+                {
+                    using (StateEvent.From(mouse, out var resetPtr))
+                    {
+                        mouse.position.WriteValueIntoEvent(new Vector2(x, y), resetPtr);
+                        buttonControl.WriteValueIntoEvent(0f, resetPtr);
+                        InputSystem.QueueEvent(resetPtr);
+                    }
                 }
 
                 using (StateEvent.From(mouse, out var eventPtr))
@@ -149,6 +195,11 @@ namespace UniCortex.Editor.Infrastructures
                     buttonControl.WriteValueIntoEvent(isRelease ? 0f : 1f, eventPtr);
                     InputSystem.QueueEvent(eventPtr);
                 }
+
+                if (isRelease)
+                    s_pressedMouseButtons.Remove(buttonName);
+                else
+                    s_pressedMouseButtons.Add(buttonName);
             }
         }
     }
