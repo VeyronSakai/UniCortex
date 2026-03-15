@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<AssetUseCase>();
         services.AddTransient<MenuItemUseCase>();
         services.AddTransient<ScreenshotUseCase>();
+        services.AddTransient<InputUseCase>();
 
         return services;
     }

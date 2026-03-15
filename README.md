@@ -96,6 +96,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `asset refresh` | Refresh Asset Database |
 | `menu execute` | Execute menu items |
 | `screenshot capture` | Capture Game View screenshot |
+| `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
 
 ## Available MCP Tools
 
@@ -174,6 +175,13 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | Tool | Description |
 |------|-------------|
 | `capture_screenshot` | Capture a screenshot of the Game View |
+
+### Input
+
+| Tool | Description |
+|------|-------------|
+| `send_key_event` | Send a keyboard event via Input System in Play Mode (requires com.unity.inputsystem) |
+| `send_mouse_event` | Send a mouse event via Input System in Play Mode (requires com.unity.inputsystem). Supports press, release, and move for drag simulation |
 
 ## Settings
 

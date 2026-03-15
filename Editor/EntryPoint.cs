@@ -7,6 +7,7 @@ using UniCortex.Editor.Handlers.Prefab;
 using UniCortex.Editor.Handlers.Scene;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Handlers.MenuItem;
+using UniCortex.Editor.Handlers.Input;
 using UniCortex.Editor.Handlers.Screenshot;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
@@ -175,6 +176,18 @@ namespace UniCortex.Editor
             var captureScreenshotUseCase = new CaptureScreenshotUseCase(s_dispatcher, screenshotOps);
             var screenshotHandler = new ScreenshotHandler(captureScreenshotUseCase);
 
+#if UNICORTEX_INPUT_SYSTEM
+            var inputSimOps = new InputOperationsAdapter();
+#else
+            var inputSimOps = new InputNotSupportedAdapter();
+#endif
+
+            var sendKeyEventUseCase = new SendKeyEventUseCase(s_dispatcher, inputSimOps);
+            var sendKeyEventHandler = new SendKeyEventHandler(sendKeyEventUseCase);
+
+            var sendMouseEventUseCase = new SendMouseEventUseCase(s_dispatcher, inputSimOps);
+            var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -203,6 +216,8 @@ namespace UniCortex.Editor
             assetRefreshHandler.Register(router);
             executeMenuItemHandler.Register(router);
             screenshotHandler.Register(router);
+            sendKeyEventHandler.Register(router);
+            sendMouseEventHandler.Register(router);
         }
 
         private static int FindFreePort()

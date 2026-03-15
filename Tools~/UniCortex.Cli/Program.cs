@@ -24,5 +24,6 @@ app.Add<ConsoleCommands>("console");
 app.Add<AssetCommands>("asset");
 app.Add<MenuItemCommands>("menu");
 app.Add<ScreenshotCommands>("screenshot");
+app.Add<InputCommands>("input");
 
 app.Run(args);

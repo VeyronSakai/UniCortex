@@ -20,6 +20,7 @@ public sealed class UnityEditorFixture
     public AssetUseCase AssetUseCase { get; }
     public MenuItemUseCase MenuItemUseCase { get; }
     public ScreenshotUseCase ScreenshotUseCase { get; }
+    public InputUseCase InputUseCase { get; }
     public string BaseUrl { get; }
 
     private UnityEditorFixture(ServiceProvider provider, string baseUrl)
@@ -34,6 +35,7 @@ public sealed class UnityEditorFixture
         AssetUseCase = provider.GetRequiredService<AssetUseCase>();
         MenuItemUseCase = provider.GetRequiredService<MenuItemUseCase>();
         ScreenshotUseCase = provider.GetRequiredService<ScreenshotUseCase>();
+        InputUseCase = provider.GetRequiredService<InputUseCase>();
         BaseUrl = baseUrl;
     }
 
