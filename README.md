@@ -185,13 +185,17 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 
 ## Architecture
 
-```
-AI Agent ←(MCP/stdio)→ MCP Server (.NET 10) ←(HTTP)→ Unity Editor HTTP Server
-Terminal ←(CLI)→ CLI Tool (.NET 10) ←(HTTP)→ Unity Editor HTTP Server
+```mermaid
+graph LR
+    Agent["AI Agent"]
+    MCP["UniCortex.Mcp<br/>.NET 10"]
+    CLI["UniCortex.Cli<br/>.NET 10"]
+    Unity["Unity Editor<br/>HTTP Server"]
 
-UniCortex.Core (shared library)
-  ├── UniCortex.Mcp (MCP server)
-  └── UniCortex.Cli (CLI tool)
+    Agent -- "MCP / stdio" --> MCP
+    Agent -- "CLI" --> CLI
+    MCP -- "HTTP" --> Unity
+    CLI -- "HTTP" --> Unity
 ```
 
 - **Unity Editor side**: C# `HttpListener` HTTP server embedded in the Editor
