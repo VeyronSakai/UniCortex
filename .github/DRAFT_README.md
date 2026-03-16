@@ -86,7 +86,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 
 | Command | Description |
 |---------|-------------|
-| `editor ping\|play\|stop\|undo\|redo\|reload-domain` | Editor control |
+| `editor ping\|play\|stop\|status\|pause\|unpause\|step\|undo\|redo\|reload-domain` | Editor control |
 | `scene create\|open\|save\|hierarchy` | Scene operations |
 | `gameobject find\|create\|delete\|modify` | GameObject operations |
 | `component add\|remove\|properties\|set-property` | Component operations |
@@ -107,6 +107,10 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `ping_editor` | Check connectivity with the Unity Editor |
 | `enter_play_mode` | Start Play Mode |
 | `exit_play_mode` | Stop Play Mode |
+| `get_editor_status` | Get the current state of the Unity Editor (play mode, paused) |
+| `pause_editor` | Pause the Unity Editor. Use with `step_editor` for frame-by-frame control |
+| `unpause_editor` | Unpause the Unity Editor |
+| `step_editor` | Advance the Unity Editor by one frame while paused |
 | `reload_domain` | Request script recompilation (domain reload) |
 | `undo` | Undo the last operation |
 | `redo` | Redo an undone operation |
