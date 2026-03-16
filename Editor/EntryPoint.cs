@@ -23,7 +23,6 @@ namespace UniCortex.Editor
     {
         private static MainThreadDispatcher s_dispatcher;
         private static HttpListenerServer s_server;
-        private static EditorStateCache s_stateCache;
 
         static EntryPoint()
         {
@@ -41,40 +40,9 @@ namespace UniCortex.Editor
             s_dispatcher = new MainThreadDispatcher();
             EditorApplication.update += s_dispatcher.OnUpdate;
 
-            s_stateCache = new EditorStateCache();
-            s_stateCache.UpdatePlayModeState(EditorApplication.isPlaying);
-            s_stateCache.UpdatePauseState(EditorApplication.isPaused);
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-            EditorApplication.pauseStateChanged += OnPauseStateChanged;
-            EditorApplication.update += ProcessPauseRequests;
-
             ReregisterTestCallbacksIfNeeded();
 
             StartServer();
-        }
-
-        private static void OnPlayModeStateChanged(PlayModeStateChange change)
-        {
-            s_stateCache.UpdatePlayModeState(EditorApplication.isPlaying);
-            s_stateCache.UpdatePauseState(EditorApplication.isPaused);
-        }
-
-        private static void OnPauseStateChanged(PauseState state)
-        {
-            s_stateCache.UpdatePauseState(state == PauseState.Paused);
-        }
-
-        private static void ProcessPauseRequests()
-        {
-            if (s_stateCache.ConsumePauseRequest())
-            {
-                EditorApplication.isPaused = true;
-            }
-
-            if (s_stateCache.ConsumeUnpauseRequest())
-            {
-                EditorApplication.isPaused = false;
-            }
         }
 
         private static void StartServer()
@@ -121,13 +89,13 @@ namespace UniCortex.Editor
             var requestDomainReloadUseCase = new RequestDomainReloadUseCase(s_dispatcher, compilationPipeline);
             var requestDomainReloadHandler = new DomainReloadHandler(requestDomainReloadUseCase);
 
-            var getEditorStatusUseCase = new GetEditorStatusUseCase(s_stateCache);
+            var getEditorStatusUseCase = new GetEditorStatusUseCase(s_dispatcher, editorApplication);
             var editorStatusHandler = new EditorStatusHandler(getEditorStatusUseCase);
 
-            var pauseUseCase = new PauseUseCase(s_stateCache);
+            var pauseUseCase = new PauseUseCase(s_dispatcher, editorApplication);
             var pauseHandler = new PauseHandler(pauseUseCase);
 
-            var unpauseUseCase = new UnpauseUseCase(s_stateCache);
+            var unpauseUseCase = new UnpauseUseCase(s_dispatcher, editorApplication);
             var unpauseHandler = new UnpauseHandler(unpauseUseCase);
 
             var undoAdapter = new UndoAdapter();
@@ -300,14 +268,6 @@ namespace UniCortex.Editor
             {
                 EditorApplication.update -= s_dispatcher.OnUpdate;
                 s_dispatcher = null;
-            }
-
-            if (s_stateCache != null)
-            {
-                EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-                EditorApplication.pauseStateChanged -= OnPauseStateChanged;
-                EditorApplication.update -= ProcessPauseRequests;
-                s_stateCache = null;
             }
         }
     }

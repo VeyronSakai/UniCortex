@@ -1,21 +1,23 @@
-using UniCortex.Editor.Infrastructures;
+using System.Threading;
+using System.Threading.Tasks;
+using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.UseCases
 {
-    // Requests unpause via EditorStateCache. The actual EditorApplication.isPaused = false
-    // is applied on the main thread by EntryPoint's update callback.
     internal sealed class UnpauseUseCase
     {
-        private readonly EditorStateCache _stateCache;
+        private readonly IMainThreadDispatcher _dispatcher;
+        private readonly IEditorApplication _editorApplication;
 
-        public UnpauseUseCase(EditorStateCache stateCache)
+        public UnpauseUseCase(IMainThreadDispatcher dispatcher, IEditorApplication editorApplication)
         {
-            _stateCache = stateCache;
+            _dispatcher = dispatcher;
+            _editorApplication = editorApplication;
         }
 
-        public void Execute()
+        public async Task ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            _stateCache.RequestUnpause();
+            await _dispatcher.RunOnMainThreadAsync(() => _editorApplication.IsPaused = false, cancellationToken);
         }
     }
 }

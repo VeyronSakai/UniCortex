@@ -21,11 +21,11 @@ namespace UniCortex.Editor.Handlers.Editor
             router.Register(HttpMethodType.Get, ApiRoutes.Status, HandleGetStatusAsync);
         }
 
-        private Task HandleGetStatusAsync(IRequestContext context, CancellationToken cancellationToken)
+        private async Task HandleGetStatusAsync(IRequestContext context, CancellationToken cancellationToken)
         {
-            var result = _useCase.Execute();
+            var result = await _useCase.ExecuteAsync(cancellationToken);
             var json = JsonUtility.ToJson(result);
-            return context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

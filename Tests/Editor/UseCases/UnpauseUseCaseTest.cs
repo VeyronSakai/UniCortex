@@ -1,4 +1,5 @@
-using UniCortex.Editor.Infrastructures;
+using System.Threading;
+using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using NUnit.Framework;
 
@@ -8,27 +9,16 @@ namespace UniCortex.Editor.Tests.UseCases
     internal sealed class UnpauseUseCaseTest
     {
         [Test]
-        public void Execute_SetsUnpauseRequested()
+        public void ExecuteAsync_SetsIsPausedToFalse()
         {
-            var cache = new EditorStateCache();
-            cache.UpdatePauseState(true);
-            var useCase = new UnpauseUseCase(cache);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var editorApplication = new SpyEditorApplication { IsPaused = true };
+            var useCase = new UnpauseUseCase(dispatcher, editorApplication);
 
-            useCase.Execute();
+            useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.IsTrue(cache.UnpauseRequested);
-        }
-
-        [Test]
-        public void ConsumeUnpauseRequest_ReturnsTrueAndClears_AfterExecute()
-        {
-            var cache = new EditorStateCache();
-            var useCase = new UnpauseUseCase(cache);
-
-            useCase.Execute();
-
-            Assert.IsTrue(cache.ConsumeUnpauseRequest());
-            Assert.IsFalse(cache.ConsumeUnpauseRequest());
+            Assert.IsFalse(editorApplication.IsPaused);
+            Assert.AreEqual(1, dispatcher.CallCount);
         }
     }
 }

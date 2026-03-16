@@ -14,9 +14,9 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void HandleUnpause_Returns200WithSuccess()
         {
-            var cache = new EditorStateCache();
-            cache.UpdatePauseState(true);
-            var useCase = new UnpauseUseCase(cache);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var editorApp = new SpyEditorApplication { IsPaused = true };
+            var useCase = new UnpauseUseCase(dispatcher, editorApp);
             var handler = new UnpauseHandler(useCase);
 
             var router = new RequestRouter();
@@ -28,7 +28,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
-            Assert.IsTrue(cache.UnpauseRequested);
+            Assert.IsFalse(editorApp.IsPaused);
         }
     }
 }

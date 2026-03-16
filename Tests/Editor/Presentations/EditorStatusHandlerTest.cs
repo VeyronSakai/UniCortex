@@ -14,10 +14,9 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void HandleGetStatus_Returns200WithPlayingAndPaused()
         {
-            var cache = new EditorStateCache();
-            cache.UpdatePlayModeState(true);
-            cache.UpdatePauseState(true);
-            var useCase = new GetEditorStatusUseCase(cache);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var editorApp = new SpyEditorApplication { IsPlaying = true, IsPaused = true };
+            var useCase = new GetEditorStatusUseCase(dispatcher, editorApp);
             var handler = new EditorStatusHandler(useCase);
 
             var router = new RequestRouter();
@@ -34,8 +33,9 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void HandleGetStatus_WhenNotPlaying_Returns200WithFalse()
         {
-            var cache = new EditorStateCache();
-            var useCase = new GetEditorStatusUseCase(cache);
+            var dispatcher = new FakeMainThreadDispatcher();
+            var editorApp = new SpyEditorApplication();
+            var useCase = new GetEditorStatusUseCase(dispatcher, editorApp);
             var handler = new EditorStatusHandler(useCase);
 
             var router = new RequestRouter();
