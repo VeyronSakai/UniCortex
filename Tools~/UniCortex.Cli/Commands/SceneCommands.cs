@@ -6,6 +6,7 @@ namespace UniCortex.Cli.Commands;
 public class SceneCommands(SceneUseCase sceneService)
 {
     /// <summary>Create a new empty scene and save it at the specified asset path.</summary>
+    /// <param name="scenePath">Asset path to save the scene (e.g. "Assets/Scenes/NewScene.unity").</param>
     [Command("create")]
     public async Task Create(string scenePath, CancellationToken cancellationToken)
     {
@@ -14,6 +15,7 @@ public class SceneCommands(SceneUseCase sceneService)
     }
 
     /// <summary>Open a scene in the Unity Editor by its asset path.</summary>
+    /// <param name="scenePath">Asset path of the scene to open (e.g. "Assets/Scenes/Main.unity").</param>
     [Command("open")]
     public async Task Open(string scenePath, CancellationToken cancellationToken)
     {
