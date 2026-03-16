@@ -190,7 +190,6 @@ graph LR
     Agent["AI Agent"]
     MCP["UniCortex.Mcp<br/>.NET 10"]
     CLI["UniCortex.Cli<br/>.NET 10"]
-    Core["UniCortex.Core<br/>(shared library)"]
     Unity["Unity Editor<br/>HTTP Server"]
 
     Agent -- "MCP / stdio" --> MCP
