@@ -6,6 +6,11 @@ namespace UniCortex.Cli.Commands;
 public class ConsoleCommands(ConsoleUseCase consoleService)
 {
     /// <summary>Get console log entries from the Unity Editor.</summary>
+    /// <param name="count">Number of log entries to retrieve.</param>
+    /// <param name="stackTrace">Include stack traces in the output.</param>
+    /// <param name="log">Include log-level entries.</param>
+    /// <param name="warning">Include warning-level entries.</param>
+    /// <param name="error">Include error-level entries.</param>
     [Command("logs")]
     public async Task Logs(int? count = null, bool? stackTrace = null, bool? log = null,
         bool? warning = null, bool? error = null, CancellationToken cancellationToken = default)

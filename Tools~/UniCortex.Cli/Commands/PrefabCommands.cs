@@ -6,6 +6,8 @@ namespace UniCortex.Cli.Commands;
 public class PrefabCommands(PrefabUseCase prefabService)
 {
     /// <summary>Create a Prefab asset from a GameObject in the scene.</summary>
+    /// <param name="instanceId">Instance ID of the source GameObject.</param>
+    /// <param name="assetPath">Asset path to save the Prefab (e.g. "Assets/Prefabs/MyCube.prefab").</param>
     [Command("create")]
     public async Task Create(int instanceId, string assetPath,
         CancellationToken cancellationToken = default)
@@ -15,6 +17,7 @@ public class PrefabCommands(PrefabUseCase prefabService)
     }
 
     /// <summary>Instantiate a Prefab into the current scene.</summary>
+    /// <param name="assetPath">Asset path of the Prefab to instantiate (e.g. "Assets/Prefabs/MyCube.prefab").</param>
     [Command("instantiate")]
     public async Task Instantiate(string assetPath, CancellationToken cancellationToken = default)
     {
