@@ -151,8 +151,6 @@ Play モードを停止する。`EditorApplication.isPlaying = false`
 #### POST `/editor/step`
 一時停止中に 1 フレーム進める。`EditorApplication.Step()`。フレーム単位でゲームを制御するために使用する。
 
-典型的なワークフロー: `POST /editor/pause` → `GET /screenshot/capture` → `POST /input/key` → `POST /editor/step` → 繰り返し
-
 レスポンス: `{"success": true}`
 
 #### POST `/editor/domain-reload`

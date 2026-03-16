@@ -103,7 +103,7 @@ public class EditorTools(EditorUseCase editorService)
 
     [McpServerTool(Name = "step_editor", ReadOnly = false),
      Description(
-         "Advance the Unity Editor by one frame while paused. Use with pause_editor for frame-by-frame control of Play Mode. Typical workflow: pause_editor -> capture_screenshot -> send_key_event/send_mouse_event -> step_editor -> repeat."),
+         "Advance the Unity Editor by one frame while paused. Use with pause_editor for frame-by-frame control of Play Mode."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> StepEditorAsync(CancellationToken cancellationToken)
     {
