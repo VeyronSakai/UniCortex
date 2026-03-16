@@ -8,6 +8,13 @@ namespace UniCortex.Editor.Handlers.Tests
 {
     internal sealed class TestResultHandler
     {
+        private readonly IMainThreadDispatcher _dispatcher;
+
+        public TestResultHandler(IMainThreadDispatcher dispatcher)
+        {
+            _dispatcher = dispatcher;
+        }
+
         public void Register(IRequestRouter router)
         {
             router.Register(HttpMethodType.Get, ApiRoutes.TestsResult, HandleGetResultAsync);
@@ -15,7 +22,8 @@ namespace UniCortex.Editor.Handlers.Tests
 
         private async Task HandleGetResultAsync(IRequestContext context, CancellationToken cancellationToken)
         {
-            var json = TestResultStore.GetResult();
+            var json = await _dispatcher.RunOnMainThreadAsync(
+                () => TestResultStore.GetResult(), cancellationToken);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }

@@ -90,7 +90,7 @@ namespace UniCortex.Editor
 
             RegisterHandlers(router);
 
-            s_server = new HttpListenerServer(router, port, s_stateCache);
+            s_server = new HttpListenerServer(router, port);
             try
             {
                 s_server.Start();
@@ -141,7 +141,7 @@ namespace UniCortex.Editor
             var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher);
             var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, s_dispatcher, editorApplication);
             var runTestsHandler = new RunTestsHandler(runTestsUseCase);
-            var testResultHandler = new TestResultHandler();
+            var testResultHandler = new TestResultHandler(s_dispatcher);
 
             var consoleLogCollector = new ConsoleLogCollector();
 
