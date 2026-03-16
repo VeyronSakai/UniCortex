@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
@@ -48,7 +49,7 @@ namespace UniCortex.Editor.Handlers.Scene
                 var json = JsonUtility.ToJson(new OpenSceneResponse(true));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }
-            catch (Exception ex)
+            catch (PlayModeException ex)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
