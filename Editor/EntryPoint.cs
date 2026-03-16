@@ -21,6 +21,8 @@ namespace UniCortex.Editor
     [InitializeOnLoad]
     internal static class EntryPoint
     {
+        private const string PortKey = "UniCortex.Port";
+
         private static MainThreadDispatcher s_dispatcher;
         private static HttpListenerServer s_server;
 
@@ -47,11 +49,11 @@ namespace UniCortex.Editor
 
         private static void StartServer()
         {
-            var port = SessionState.GetInt("UniCortex.Port", 0);
+            var port = SessionState.GetInt(PortKey, 0);
             if (port == 0)
             {
                 port = FindFreePort();
-                SessionState.SetInt("UniCortex.Port", port);
+                SessionState.SetInt(PortKey, port);
             }
 
             var router = new RequestRouter();
