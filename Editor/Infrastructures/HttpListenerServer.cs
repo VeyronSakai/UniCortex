@@ -143,6 +143,9 @@ namespace UniCortex.Editor.Infrastructures
             return false;
         }
 
+        // Runs on a thread-pool thread via Task.Run. Must NOT call any Unity API
+        // (JsonUtility, Debug.Log, SessionState, etc.) — they require the main thread.
+        // JSON is constructed manually for this reason.
         private async Task HandleDirectAsync(HttpListenerContext httpContext)
         {
             try
