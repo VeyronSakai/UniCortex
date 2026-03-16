@@ -143,9 +143,10 @@ namespace UniCortex.Editor.Infrastructures
             return false;
         }
 
-        // Runs on a thread-pool thread via Task.Run. Must NOT call any Unity API
-        // (JsonUtility, Debug.Log, SessionState, etc.) — they require the main thread.
-        // JSON is constructed manually for this reason.
+        // Runs on a thread-pool thread via Task.Run so it responds even during
+        // Play Mode + Pause (when UnitySynchronizationContext is not pumped).
+        // Avoids MainThreadDispatcher and main-thread-only APIs (SessionState, etc.)
+        // but JsonUtility is thread-safe and used here for consistency.
         private async Task HandleDirectAsync(HttpListenerContext httpContext)
         {
             try
@@ -154,17 +155,18 @@ namespace UniCortex.Editor.Infrastructures
 
                 if (path == "/editor/status" && _stateCache != null)
                 {
+                    var response = new Domains.Models.EditorStatusResponse(
+                        _stateCache.IsPlaying, _stateCache.IsPaused);
                     await WriteDirectResponse(httpContext, 200,
-                        "{\"isPlaying\":" + (_stateCache.IsPlaying ? "true" : "false") +
-                        ",\"isPaused\":" + (_stateCache.IsPaused ? "true" : "false") + "}")
-                        .ConfigureAwait(false);
+                        JsonUtility.ToJson(response)).ConfigureAwait(false);
                     return;
                 }
 
                 if (path == "/editor/unpause" && _stateCache != null)
                 {
                     _stateCache.RequestUnpause();
-                    await WriteDirectResponse(httpContext, 200, "{\"success\":true}")
+                    await WriteDirectResponse(httpContext, 200,
+                        JsonUtility.ToJson(new Domains.Models.UnpauseResponse(true)))
                         .ConfigureAwait(false);
                     return;
                 }
@@ -172,7 +174,8 @@ namespace UniCortex.Editor.Infrastructures
                 if (path == "/editor/pause" && _stateCache != null)
                 {
                     _stateCache.RequestPause();
-                    await WriteDirectResponse(httpContext, 200, "{\"success\":true}")
+                    await WriteDirectResponse(httpContext, 200,
+                        JsonUtility.ToJson(new Domains.Models.PauseResponse(true)))
                         .ConfigureAwait(false);
                     return;
                 }
