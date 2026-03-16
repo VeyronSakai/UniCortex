@@ -188,14 +188,13 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 ```mermaid
 graph LR
     Agent["AI Agent"]
-    Terminal["Terminal"]
     MCP["UniCortex.Mcp<br/>.NET 10"]
     CLI["UniCortex.Cli<br/>.NET 10"]
     Core["UniCortex.Core<br/>(shared library)"]
     Unity["Unity Editor<br/>HTTP Server"]
 
     Agent -- "MCP / stdio" --> MCP
-    Terminal -- "CLI" --> CLI
+    Agent -- "CLI" --> CLI
     MCP --> Core
     CLI --> Core
     Core -- "HTTP" --> Unity
