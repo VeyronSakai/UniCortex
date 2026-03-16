@@ -195,9 +195,8 @@ graph LR
 
     Agent -- "MCP / stdio" --> MCP
     Agent -- "CLI" --> CLI
-    MCP --> Core
-    CLI --> Core
-    Core -- "HTTP" --> Unity
+    MCP -- "HTTP" --> Unity
+    CLI -- "HTTP" --> Unity
 ```
 
 - **Unity Editor side**: C# `HttpListener` HTTP server embedded in the Editor
