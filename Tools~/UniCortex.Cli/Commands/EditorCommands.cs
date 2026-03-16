@@ -37,11 +37,27 @@ public class EditorCommands(EditorUseCase editorService)
         Console.WriteLine(message);
     }
 
+    /// <summary>Pause the Unity Editor. Use with step for frame-by-frame control.</summary>
+    [Command("pause")]
+    public async Task Pause(CancellationToken cancellationToken)
+    {
+        var message = await editorService.PauseAsync(cancellationToken);
+        Console.WriteLine(message);
+    }
+
     /// <summary>Unpause the Unity Editor. Works even when the editor is paused.</summary>
     [Command("unpause")]
     public async Task Unpause(CancellationToken cancellationToken)
     {
         var message = await editorService.UnpauseAsync(cancellationToken);
+        Console.WriteLine(message);
+    }
+
+    /// <summary>Advance the Unity Editor by one frame while paused.</summary>
+    [Command("step")]
+    public async Task Step(CancellationToken cancellationToken)
+    {
+        var message = await editorService.StepAsync(cancellationToken);
         Console.WriteLine(message);
     }
 

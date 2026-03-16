@@ -8,6 +8,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string Status = "/editor/status";
         public const string Pause = "/editor/pause";
         public const string Unpause = "/editor/unpause";
+        public const string Step = "/editor/step";
         public const string DomainReload = "/editor/domain-reload";
         public const string Undo = "/editor/undo";
         public const string Redo = "/editor/redo";

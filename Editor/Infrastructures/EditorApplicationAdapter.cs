@@ -16,5 +16,10 @@ namespace UniCortex.Editor.Infrastructures
             get => EditorApplication.isPaused;
             set => EditorApplication.isPaused = value;
         }
+
+        public void Step()
+        {
+            EditorApplication.Step();
+        }
     }
 }

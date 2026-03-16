@@ -71,6 +71,21 @@ public class EditorTools(EditorUseCase editorService)
         }
     }
 
+    [McpServerTool(Name = "pause_editor", ReadOnly = false),
+     Description("Pause the Unity Editor. Use with step_editor for frame-by-frame control."), UsedImplicitly]
+    public async ValueTask<CallToolResult> PauseEditorAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var message = await editorService.PauseAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
     [McpServerTool(Name = "unpause_editor", ReadOnly = false),
      Description("Unpause the Unity Editor. Works even when the editor is paused."), UsedImplicitly]
     public async ValueTask<CallToolResult> UnpauseEditorAsync(CancellationToken cancellationToken)
@@ -78,6 +93,23 @@ public class EditorTools(EditorUseCase editorService)
         try
         {
             var message = await editorService.UnpauseAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
+    [McpServerTool(Name = "step_editor", ReadOnly = false),
+     Description(
+         "Advance the Unity Editor by one frame while paused. Use with pause_editor for frame-by-frame control of Play Mode. Typical workflow: pause_editor -> capture_screenshot -> send_key_event/send_mouse_event -> step_editor -> repeat."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> StepEditorAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var message = await editorService.StepAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
