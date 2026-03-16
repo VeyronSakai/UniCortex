@@ -98,7 +98,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string LeftBracket = "LeftBracket";
         public const string RightBracket = "RightBracket";
         public const string Minus = "Minus";
-        public const string Equals = "Equals";
+        public new const string Equals = "Equals";
 
         // Lock and toggle keys
         public const string CapsLock = "CapsLock";
