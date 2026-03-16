@@ -183,17 +183,6 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `send_key_event` | Send a keyboard event via Input System in Play Mode (requires com.unity.inputsystem) |
 | `send_mouse_event` | Send a mouse event via Input System in Play Mode (requires com.unity.inputsystem). Supports press, release, and move for drag simulation |
 
-## Settings
-
-Configurable from **Project Settings > UniCortex**.
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| AutoStart | true | Start automatically on Editor launch |
-| Current Port | — | Read-only. The port assigned at startup (random, persisted across domain reloads) |
-
-The HTTP server is assigned a random free port on each Editor launch. The port is written to `Library/UniCortex/config.json` and read automatically by the MCP server.
-
 ## Architecture
 
 ```
