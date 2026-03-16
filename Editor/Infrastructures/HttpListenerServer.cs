@@ -95,7 +95,7 @@ namespace UniCortex.Editor.Infrastructures
                 try
                 {
                     var httpContext = await _listener.GetContextAsync();
-                    _ = HandleContextAsync(httpContext, token);
+                    await HandleContextAsync(httpContext, token);
                 }
                 catch (ObjectDisposedException)
                 {
