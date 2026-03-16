@@ -67,6 +67,14 @@ public class EditorUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
+    public async ValueTask Step_ReturnsSuccess()
+    {
+        var message = await _fixture.EditorUseCase.StepAsync(CancellationToken.None);
+
+        Assert.That(message, Does.Contain("successfully"));
+    }
+
+    [Test, CancelAfter(120_000)]
     public async ValueTask Unpause_ReturnsSuccess()
     {
         var message = await _fixture.EditorUseCase.UnpauseAsync(CancellationToken.None);
@@ -74,6 +82,7 @@ public class EditorUseCaseTest
         Assert.That(message, Does.Contain("successfully"));
     }
 
+    // TOOD: 実装を修正する
     [Test, CancelAfter(60_000)]
     public async ValueTask GetEditorStatus_ReturnsPaused_DuringPlayModeAndPause(CancellationToken cancellationToken)
     {

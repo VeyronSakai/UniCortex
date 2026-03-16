@@ -100,6 +100,9 @@ namespace UniCortex.Editor
             var unpauseUseCase = new UnpauseUseCase(s_dispatcher, editorApplication);
             var unpauseHandler = new UnpauseHandler(unpauseUseCase);
 
+            var stepUseCase = new StepUseCase(s_dispatcher, editorApplication);
+            var stepHandler = new StepHandler(stepUseCase);
+
             var undoAdapter = new UndoAdapter();
 
             var undoUseCase = new UndoUseCase(s_dispatcher, undoAdapter);
@@ -203,6 +206,7 @@ namespace UniCortex.Editor
             editorStatusHandler.Register(router);
             pauseHandler.Register(router);
             unpauseHandler.Register(router);
+            stepHandler.Register(router);
             undoHandler.Register(router);
             redoHandler.Register(router);
             runTestsHandler.Register(router);

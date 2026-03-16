@@ -103,6 +103,15 @@ public class EditorUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrl
         return "Editor unpaused successfully.";
     }
 
+    public async ValueTask<string> StepAsync(CancellationToken cancellationToken)
+    {
+        var baseUrl = urlProvider.GetUrl();
+
+        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Step}", null, cancellationToken);
+        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        return "Editor stepped one frame successfully.";
+    }
+
     public async ValueTask<string> UndoAsync(CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
