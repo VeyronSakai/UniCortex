@@ -7,24 +7,24 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Editor
 {
-    internal sealed class EditorStatusHandler
+    internal sealed class UnpauseHandler
     {
-        private readonly GetEditorStatusUseCase _useCase;
+        private readonly UnpauseUseCase _useCase;
 
-        public EditorStatusHandler(GetEditorStatusUseCase useCase)
+        public UnpauseHandler(UnpauseUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Get, ApiRoutes.Status, HandleGetStatusAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.Unpause, HandleUnpauseAsync);
         }
 
-        private Task HandleGetStatusAsync(IRequestContext context, CancellationToken cancellationToken)
+        private Task HandleUnpauseAsync(IRequestContext context, CancellationToken cancellationToken)
         {
-            var result = _useCase.Execute();
-            var json = JsonUtility.ToJson(result);
+            _useCase.Execute();
+            var json = JsonUtility.ToJson(new UnpauseResponse(true));
             return context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }

@@ -29,6 +29,22 @@ public class EditorCommands(EditorUseCase editorService)
         Console.WriteLine(message);
     }
 
+    /// <summary>Get the current state of the Unity Editor (play mode, paused). Works even when the editor is paused.</summary>
+    [Command("status")]
+    public async Task Status(CancellationToken cancellationToken)
+    {
+        var message = await editorService.GetEditorStatusAsync(cancellationToken);
+        Console.WriteLine(message);
+    }
+
+    /// <summary>Unpause the Unity Editor. Works even when the editor is paused.</summary>
+    [Command("unpause")]
+    public async Task Unpause(CancellationToken cancellationToken)
+    {
+        var message = await editorService.UnpauseAsync(cancellationToken);
+        Console.WriteLine(message);
+    }
+
     /// <summary>Perform Undo in the Unity Editor.</summary>
     [Command("undo")]
     public async Task Undo(CancellationToken cancellationToken)

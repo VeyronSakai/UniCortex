@@ -23,6 +23,7 @@ namespace UniCortex.Editor
     {
         private static MainThreadDispatcher s_dispatcher;
         private static HttpListenerServer s_server;
+        private static EditorStateCache s_stateCache;
 
         static EntryPoint()
         {
@@ -40,9 +41,40 @@ namespace UniCortex.Editor
             s_dispatcher = new MainThreadDispatcher();
             EditorApplication.update += s_dispatcher.OnUpdate;
 
+            s_stateCache = new EditorStateCache();
+            s_stateCache.UpdatePlayModeState(EditorApplication.isPlaying);
+            s_stateCache.UpdatePauseState(EditorApplication.isPaused);
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            EditorApplication.pauseStateChanged += OnPauseStateChanged;
+            EditorApplication.update += ProcessPauseRequests;
+
             ReregisterTestCallbacksIfNeeded();
 
             StartServer();
+        }
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange change)
+        {
+            s_stateCache.UpdatePlayModeState(EditorApplication.isPlaying);
+            s_stateCache.UpdatePauseState(EditorApplication.isPaused);
+        }
+
+        private static void OnPauseStateChanged(PauseState state)
+        {
+            s_stateCache.UpdatePauseState(state == PauseState.Paused);
+        }
+
+        private static void ProcessPauseRequests()
+        {
+            if (s_stateCache.ConsumePauseRequest())
+            {
+                EditorApplication.isPaused = true;
+            }
+
+            if (s_stateCache.ConsumeUnpauseRequest())
+            {
+                EditorApplication.isPaused = false;
+            }
         }
 
         private static void StartServer()
@@ -58,7 +90,7 @@ namespace UniCortex.Editor
 
             RegisterHandlers(router);
 
-            s_server = new HttpListenerServer(router, port);
+            s_server = new HttpListenerServer(router, port, s_stateCache);
             try
             {
                 s_server.Start();
@@ -89,8 +121,14 @@ namespace UniCortex.Editor
             var requestDomainReloadUseCase = new RequestDomainReloadUseCase(s_dispatcher, compilationPipeline);
             var requestDomainReloadHandler = new DomainReloadHandler(requestDomainReloadUseCase);
 
-            var getEditorStatusUseCase = new GetEditorStatusUseCase(s_dispatcher, editorApplication);
+            var getEditorStatusUseCase = new GetEditorStatusUseCase(s_stateCache);
             var editorStatusHandler = new EditorStatusHandler(getEditorStatusUseCase);
+
+            var pauseUseCase = new PauseUseCase(s_stateCache);
+            var pauseHandler = new PauseHandler(pauseUseCase);
+
+            var unpauseUseCase = new UnpauseUseCase(s_stateCache);
+            var unpauseHandler = new UnpauseHandler(unpauseUseCase);
 
             var undoAdapter = new UndoAdapter();
 
@@ -113,10 +151,10 @@ namespace UniCortex.Editor
             var clearConsoleLogsUseCase = new ClearConsoleLogsUseCase(s_dispatcher, consoleLogCollector);
             var consoleClearHandler = new ConsoleClearHandler(clearConsoleLogsUseCase);
 
-            var createSceneUseCase = new CreateSceneUseCase(s_dispatcher, sceneManagerAdapter);
+            var createSceneUseCase = new CreateSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
             var createSceneHandler = new CreateSceneHandler(createSceneUseCase);
 
-            var openSceneUseCase = new OpenSceneUseCase(s_dispatcher, sceneManagerAdapter);
+            var openSceneUseCase = new OpenSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
             var openSceneHandler = new OpenSceneHandler(openSceneUseCase);
 
             var saveSceneUseCase = new SaveSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
@@ -193,6 +231,8 @@ namespace UniCortex.Editor
             stopHandler.Register(router);
             requestDomainReloadHandler.Register(router);
             editorStatusHandler.Register(router);
+            pauseHandler.Register(router);
+            unpauseHandler.Register(router);
             undoHandler.Register(router);
             redoHandler.Register(router);
             runTestsHandler.Register(router);
@@ -260,6 +300,14 @@ namespace UniCortex.Editor
             {
                 EditorApplication.update -= s_dispatcher.OnUpdate;
                 s_dispatcher = null;
+            }
+
+            if (s_stateCache != null)
+            {
+                EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+                EditorApplication.pauseStateChanged -= OnPauseStateChanged;
+                EditorApplication.update -= ProcessPauseRequests;
+                s_stateCache = null;
             }
         }
     }

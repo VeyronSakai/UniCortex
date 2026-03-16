@@ -1,5 +1,4 @@
-using System.Threading;
-using UniCortex.Editor.Tests.TestDoubles;
+using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.UseCases;
 using NUnit.Framework;
 
@@ -9,31 +8,42 @@ namespace UniCortex.Editor.Tests.UseCases
     internal sealed class GetEditorStatusUseCaseTest
     {
         [Test]
-        public void ExecuteAsync_WhenPlayingAndPaused_ReturnsCorrectStatus()
+        public void Execute_WhenPlayingAndPaused_ReturnsCorrectStatus()
         {
-            var dispatcher = new FakeMainThreadDispatcher();
-            var editorApplication = new SpyEditorApplication { IsPlaying = true, IsPaused = true };
-            var useCase = new GetEditorStatusUseCase(dispatcher, editorApplication);
+            var cache = new EditorStateCache();
+            cache.UpdatePlayModeState(true);
+            cache.UpdatePauseState(true);
+            var useCase = new GetEditorStatusUseCase(cache);
 
-            var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+            var result = useCase.Execute();
 
             Assert.IsTrue(result.isPlaying);
             Assert.IsTrue(result.isPaused);
-            Assert.AreEqual(1, dispatcher.CallCount);
         }
 
         [Test]
-        public void ExecuteAsync_WhenNotPlayingAndNotPaused_ReturnsCorrectStatus()
+        public void Execute_WhenNotPlayingAndNotPaused_ReturnsCorrectStatus()
         {
-            var dispatcher = new FakeMainThreadDispatcher();
-            var editorApplication = new SpyEditorApplication();
-            var useCase = new GetEditorStatusUseCase(dispatcher, editorApplication);
+            var cache = new EditorStateCache();
+            var useCase = new GetEditorStatusUseCase(cache);
 
-            var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+            var result = useCase.Execute();
 
             Assert.IsFalse(result.isPlaying);
             Assert.IsFalse(result.isPaused);
-            Assert.AreEqual(1, dispatcher.CallCount);
+        }
+
+        [Test]
+        public void Execute_WhenPlayingAndNotPaused_ReturnsCorrectStatus()
+        {
+            var cache = new EditorStateCache();
+            cache.UpdatePlayModeState(true);
+            var useCase = new GetEditorStatusUseCase(cache);
+
+            var result = useCase.Execute();
+
+            Assert.IsTrue(result.isPlaying);
+            Assert.IsFalse(result.isPaused);
         }
     }
 }

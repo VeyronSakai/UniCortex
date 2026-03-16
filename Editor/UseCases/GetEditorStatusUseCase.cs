@@ -1,26 +1,22 @@
-using System.Threading;
-using System.Threading.Tasks;
-using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
+using UniCortex.Editor.Infrastructures;
 
 namespace UniCortex.Editor.UseCases
 {
+    // Reads from EditorStateCache (updated by main-thread callbacks) so it
+    // responds immediately even when the editor is paused.
     internal sealed class GetEditorStatusUseCase
     {
-        private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IEditorApplication _editorApplication;
+        private readonly EditorStateCache _stateCache;
 
-        public GetEditorStatusUseCase(IMainThreadDispatcher dispatcher, IEditorApplication editorApplication)
+        public GetEditorStatusUseCase(EditorStateCache stateCache)
         {
-            _dispatcher = dispatcher;
-            _editorApplication = editorApplication;
+            _stateCache = stateCache;
         }
 
-        public async Task<EditorStatusResponse> ExecuteAsync(CancellationToken cancellationToken)
+        public EditorStatusResponse Execute()
         {
-            var (isPlaying, isPaused) = await _dispatcher.RunOnMainThreadAsync(
-                () => (_editorApplication.IsPlaying, _editorApplication.IsPaused), cancellationToken);
-            return new EditorStatusResponse(isPlaying, isPaused);
+            return new EditorStatusResponse(_stateCache.IsPlaying, _stateCache.IsPaused);
         }
     }
 }
