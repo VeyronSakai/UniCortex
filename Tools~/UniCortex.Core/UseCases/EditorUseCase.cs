@@ -62,6 +62,47 @@ public class EditorUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrl
         return "Play mode stopped successfully.";
     }
 
+    public async ValueTask<string> GetEditorStatusAsync(CancellationToken cancellationToken)
+    {
+        var baseUrl = urlProvider.GetUrl();
+
+        using var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}", cancellationToken);
+        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        var state = JsonSerializer.Deserialize<EditorStatusResponse>(json, s_jsonOptions)!;
+
+        if (state.isPlaying && state.isPaused)
+        {
+            return "Editor is in play mode and paused.";
+        }
+
+        if (state.isPlaying)
+        {
+            return "Editor is in play mode.";
+        }
+
+        return "Editor is in edit mode.";
+    }
+
+    public async ValueTask<string> PauseAsync(CancellationToken cancellationToken)
+    {
+        var baseUrl = urlProvider.GetUrl();
+
+        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Pause}", null, cancellationToken);
+        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        return "Editor paused successfully.";
+    }
+
+    public async ValueTask<string> UnpauseAsync(CancellationToken cancellationToken)
+    {
+        var baseUrl = urlProvider.GetUrl();
+
+        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Unpause}", null, cancellationToken);
+        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        return "Editor unpaused successfully.";
+    }
+
     public async ValueTask<string> UndoAsync(CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();

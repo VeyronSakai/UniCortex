@@ -16,7 +16,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            var useCase = new CreateSceneUseCase(dispatcher, sceneManager);
+            var editorApp = new SpyEditorApplication();
+            var useCase = new CreateSceneUseCase(dispatcher, sceneManager, editorApp);
             var handler = new CreateSceneHandler(useCase);
 
             var router = new RequestRouter();
@@ -36,7 +37,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            var useCase = new CreateSceneUseCase(dispatcher, sceneManager);
+            var editorApp = new SpyEditorApplication();
+            var useCase = new CreateSceneUseCase(dispatcher, sceneManager, editorApp);
             var handler = new CreateSceneHandler(useCase);
 
             var router = new RequestRouter();
@@ -55,7 +57,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            var useCase = new CreateSceneUseCase(dispatcher, sceneManager);
+            var editorApp = new SpyEditorApplication();
+            var useCase = new CreateSceneUseCase(dispatcher, sceneManager, editorApp);
             var handler = new CreateSceneHandler(useCase);
 
             var router = new RequestRouter();
@@ -74,7 +77,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager { CreateSceneResult = false };
-            var useCase = new CreateSceneUseCase(dispatcher, sceneManager);
+            var editorApp = new SpyEditorApplication();
+            var useCase = new CreateSceneUseCase(dispatcher, sceneManager, editorApp);
             var handler = new CreateSceneHandler(useCase);
 
             var router = new RequestRouter();
@@ -87,6 +91,28 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.InternalServerError, context.ResponseStatusCode);
             StringAssert.Contains("Failed to create scene", context.ResponseBody);
+        }
+
+        [Test]
+        public void HandleCreateScene_Returns400_WhenInPlayMode()
+        {
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager();
+            var editorApp = new SpyEditorApplication { IsPlaying = true };
+            var useCase = new CreateSceneUseCase(dispatcher, sceneManager, editorApp);
+            var handler = new CreateSceneHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.SceneCreate,
+                "{\"scenePath\":\"Assets/Scenes/New.unity\"}");
+
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            StringAssert.Contains("Cannot create scene during play mode", context.ResponseBody);
+            Assert.AreEqual(0, sceneManager.CreateSceneCallCount);
         }
     }
 }

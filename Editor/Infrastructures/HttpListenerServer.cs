@@ -56,7 +56,13 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             _cts = new CancellationTokenSource();
-            _ = ListenLoopAsync(_cts.Token);
+            // Start on a thread-pool thread so that async continuations never post
+            // back to UnitySynchronizationContext, which stops being pumped during
+            // Play Mode + Pause. All handlers that need Unity main-thread APIs
+            // dispatch via MainThreadDispatcher.
+            Task.Run(() => ListenLoopAsync(_cts.Token)).ContinueWith(
+                t => Debug.LogError($"[UniCortex] Listen loop failed: {t.Exception}"),
+                TaskContinuationOptions.OnlyOnFaulted);
 
             Debug.Log($"[UniCortex] Server started on http://localhost:{_port}/");
         }

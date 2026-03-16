@@ -16,7 +16,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            var useCase = new OpenSceneUseCase(dispatcher, sceneManager);
+            var editorApp = new SpyEditorApplication();
+            var useCase = new OpenSceneUseCase(dispatcher, sceneManager, editorApp);
             var handler = new OpenSceneHandler(useCase);
 
             var router = new RequestRouter();
@@ -36,7 +37,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            var useCase = new OpenSceneUseCase(dispatcher, sceneManager);
+            var editorApp = new SpyEditorApplication();
+            var useCase = new OpenSceneUseCase(dispatcher, sceneManager, editorApp);
             var handler = new OpenSceneHandler(useCase);
 
             var router = new RequestRouter();
@@ -55,7 +57,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            var useCase = new OpenSceneUseCase(dispatcher, sceneManager);
+            var editorApp = new SpyEditorApplication();
+            var useCase = new OpenSceneUseCase(dispatcher, sceneManager, editorApp);
             var handler = new OpenSceneHandler(useCase);
 
             var router = new RequestRouter();
@@ -67,6 +70,27 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("scenePath is required", context.ResponseBody);
+        }
+
+        [Test]
+        public void HandleOpenScene_Returns400_WhenInPlayMode()
+        {
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager();
+            var editorApp = new SpyEditorApplication { IsPlaying = true };
+            var useCase = new OpenSceneUseCase(dispatcher, sceneManager, editorApp);
+            var handler = new OpenSceneHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.SceneOpen, "{\"scenePath\":\"Assets/Scenes/Main.unity\"}");
+
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            StringAssert.Contains("Cannot open scene during play mode", context.ResponseBody);
+            Assert.AreEqual(0, sceneManager.OpenSceneCallCount);
         }
     }
 }

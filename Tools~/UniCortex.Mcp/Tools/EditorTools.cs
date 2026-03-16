@@ -54,6 +54,38 @@ public class EditorTools(EditorUseCase editorService)
         }
     }
 
+    [McpServerTool(Name = "get_editor_status", ReadOnly = true),
+     Description(
+         "Get the current state of the Unity Editor (play mode, paused). Works even when the editor is paused."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> GetEditorStatusAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var message = await editorService.GetEditorStatusAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
+    [McpServerTool(Name = "unpause_editor", ReadOnly = false),
+     Description("Unpause the Unity Editor. Works even when the editor is paused."), UsedImplicitly]
+    public async ValueTask<CallToolResult> UnpauseEditorAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var message = await editorService.UnpauseAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
     [McpServerTool(Name = "undo", ReadOnly = false), Description("Perform Undo in the Unity Editor."), UsedImplicitly]
     public async ValueTask<CallToolResult> UndoAsync(CancellationToken cancellationToken)
     {

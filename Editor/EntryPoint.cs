@@ -92,6 +92,12 @@ namespace UniCortex.Editor
             var getEditorStatusUseCase = new GetEditorStatusUseCase(s_dispatcher, editorApplication);
             var editorStatusHandler = new EditorStatusHandler(getEditorStatusUseCase);
 
+            var pauseUseCase = new PauseUseCase(s_dispatcher, editorApplication);
+            var pauseHandler = new PauseHandler(pauseUseCase);
+
+            var unpauseUseCase = new UnpauseUseCase(s_dispatcher, editorApplication);
+            var unpauseHandler = new UnpauseHandler(unpauseUseCase);
+
             var undoAdapter = new UndoAdapter();
 
             var undoUseCase = new UndoUseCase(s_dispatcher, undoAdapter);
@@ -103,7 +109,7 @@ namespace UniCortex.Editor
             var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher);
             var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, s_dispatcher, editorApplication);
             var runTestsHandler = new RunTestsHandler(runTestsUseCase);
-            var testResultHandler = new TestResultHandler();
+            var testResultHandler = new TestResultHandler(s_dispatcher);
 
             var consoleLogCollector = new ConsoleLogCollector();
 
@@ -113,10 +119,10 @@ namespace UniCortex.Editor
             var clearConsoleLogsUseCase = new ClearConsoleLogsUseCase(s_dispatcher, consoleLogCollector);
             var consoleClearHandler = new ConsoleClearHandler(clearConsoleLogsUseCase);
 
-            var createSceneUseCase = new CreateSceneUseCase(s_dispatcher, sceneManagerAdapter);
+            var createSceneUseCase = new CreateSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
             var createSceneHandler = new CreateSceneHandler(createSceneUseCase);
 
-            var openSceneUseCase = new OpenSceneUseCase(s_dispatcher, sceneManagerAdapter);
+            var openSceneUseCase = new OpenSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
             var openSceneHandler = new OpenSceneHandler(openSceneUseCase);
 
             var saveSceneUseCase = new SaveSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
@@ -193,6 +199,8 @@ namespace UniCortex.Editor
             stopHandler.Register(router);
             requestDomainReloadHandler.Register(router);
             editorStatusHandler.Register(router);
+            pauseHandler.Register(router);
+            unpauseHandler.Register(router);
             undoHandler.Register(router);
             redoHandler.Register(router);
             runTestsHandler.Register(router);

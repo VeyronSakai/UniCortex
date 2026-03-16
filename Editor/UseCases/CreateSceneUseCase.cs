@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.UseCases
@@ -8,17 +9,27 @@ namespace UniCortex.Editor.UseCases
     {
         private readonly IMainThreadDispatcher _dispatcher;
         private readonly IEditorSceneManager _sceneManager;
+        private readonly IEditorApplication _editorApplication;
 
-        public CreateSceneUseCase(IMainThreadDispatcher dispatcher, IEditorSceneManager sceneManager)
+        public CreateSceneUseCase(IMainThreadDispatcher dispatcher, IEditorSceneManager sceneManager,
+            IEditorApplication editorApplication)
         {
             _dispatcher = dispatcher;
             _sceneManager = sceneManager;
+            _editorApplication = editorApplication;
         }
 
         public async Task<bool> ExecuteAsync(string scenePath, CancellationToken cancellationToken = default)
         {
-            return await _dispatcher.RunOnMainThreadAsync(() => _sceneManager.CreateScene(scenePath),
-                cancellationToken);
+            return await _dispatcher.RunOnMainThreadAsync(() =>
+            {
+                if (_editorApplication.IsPlaying)
+                {
+                    throw new PlayModeException("Cannot create scene during play mode.");
+                }
+
+                return _sceneManager.CreateScene(scenePath);
+            }, cancellationToken);
         }
     }
 }
