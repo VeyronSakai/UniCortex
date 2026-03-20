@@ -4,12 +4,12 @@ using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.UseCases
 {
-    internal sealed class SetTimelineBindingUseCase
+    internal sealed class BindTimelineTrackUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
         private readonly ITimelineOperations _operations;
 
-        public SetTimelineBindingUseCase(IMainThreadDispatcher dispatcher, ITimelineOperations operations)
+        public BindTimelineTrackUseCase(IMainThreadDispatcher dispatcher, ITimelineOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;
@@ -19,7 +19,7 @@ namespace UniCortex.Editor.UseCases
             CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.SetBinding(instanceId, trackIndex, targetInstanceId), cancellationToken);
+                () => _operations.BindTrack(instanceId, trackIndex, targetInstanceId), cancellationToken);
         }
     }
 }

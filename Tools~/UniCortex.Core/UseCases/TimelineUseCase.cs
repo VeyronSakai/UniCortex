@@ -56,18 +56,18 @@ public class TimelineUseCase(IHttpClientFactory httpClientFactory, IUnityServerU
         return $"Track removed at index {trackIndex}";
     }
 
-    public async ValueTask<string> SetBindingAsync(int instanceId, int trackIndex, int targetInstanceId,
+    public async ValueTask<string> BindTrackAsync(int instanceId, int trackIndex, int targetInstanceId,
         CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
         await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
 
-        var request = new SetTimelineBindingRequest
+        var request = new BindTimelineTrackRequest
             { instanceId = instanceId, trackIndex = trackIndex, targetInstanceId = targetInstanceId };
         var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
         var content = new StringContent(body, Encoding.UTF8, "application/json");
         using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelineSetBinding}", content, cancellationToken);
+            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelineBindTrack}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return $"Binding set: track {trackIndex} -> instanceId {targetInstanceId}";
     }

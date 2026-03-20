@@ -57,7 +57,7 @@ namespace UniCortex.Editor.Infrastructures
             EditorUtility.SetDirty(timelineAsset);
         }
 
-        public void SetBinding(int instanceId, int trackIndex, int targetInstanceId)
+        public void BindTrack(int instanceId, int trackIndex, int targetInstanceId)
         {
             var director = GetPlayableDirector(instanceId);
             var timelineAsset = director.playableAsset as TimelineAsset;

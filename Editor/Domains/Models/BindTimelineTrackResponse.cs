@@ -3,11 +3,11 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class SetTimelineBindingResponse
+    public class BindTimelineTrackResponse
     {
         public bool success;
 
-        public SetTimelineBindingResponse(bool success)
+        public BindTimelineTrackResponse(bool success)
         {
             this.success = success;
         }

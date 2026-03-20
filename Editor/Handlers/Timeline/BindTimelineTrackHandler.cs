@@ -8,18 +8,18 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Timeline
 {
-    internal sealed class SetTimelineBindingHandler
+    internal sealed class BindTimelineTrackHandler
     {
-        private readonly SetTimelineBindingUseCase _useCase;
+        private readonly BindTimelineTrackUseCase _useCase;
 
-        public SetTimelineBindingHandler(SetTimelineBindingUseCase useCase)
+        public BindTimelineTrackHandler(BindTimelineTrackUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.TimelineSetBinding, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.TimelineBindTrack, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -33,7 +33,7 @@ namespace UniCortex.Editor.Handlers.Timeline
                 return;
             }
 
-            var request = JsonUtility.FromJson<SetTimelineBindingRequest>(body);
+            var request = JsonUtility.FromJson<BindTimelineTrackRequest>(body);
 
             if (request.instanceId == 0)
             {
@@ -66,14 +66,8 @@ namespace UniCortex.Editor.Handlers.Timeline
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
-            catch (NotSupportedException ex)
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-                return;
-            }
 
-            var json = JsonUtility.ToJson(new SetTimelineBindingResponse(true));
+            var json = JsonUtility.ToJson(new BindTimelineTrackResponse(true));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }

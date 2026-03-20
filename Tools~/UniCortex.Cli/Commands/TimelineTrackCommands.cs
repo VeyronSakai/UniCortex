@@ -38,7 +38,7 @@ public class TimelineTrackCommands(TimelineUseCase timelineService)
     public async Task Bind(int instanceId, int trackIndex, int targetInstanceId,
         CancellationToken cancellationToken = default)
     {
-        var message = await timelineService.SetBindingAsync(instanceId, trackIndex, targetInstanceId,
+        var message = await timelineService.BindTrackAsync(instanceId, trackIndex, targetInstanceId,
             cancellationToken);
         Console.WriteLine(message);
     }

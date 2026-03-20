@@ -17,10 +17,10 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int LastRemoveTrackInstanceId { get; private set; }
         public int LastRemoveTrackIndex { get; private set; }
 
-        public int SetBindingCallCount { get; private set; }
-        public int LastSetBindingInstanceId { get; private set; }
-        public int LastSetBindingTrackIndex { get; private set; }
-        public int LastSetBindingTargetInstanceId { get; private set; }
+        public int BindTrackCallCount { get; private set; }
+        public int LastBindTrackInstanceId { get; private set; }
+        public int LastBindTrackTrackIndex { get; private set; }
+        public int LastBindTrackTargetInstanceId { get; private set; }
 
         public int AddClipCallCount { get; private set; }
         public int LastAddClipInstanceId { get; private set; }
@@ -56,12 +56,12 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastRemoveTrackIndex = trackIndex;
         }
 
-        public void SetBinding(int instanceId, int trackIndex, int targetInstanceId)
+        public void BindTrack(int instanceId, int trackIndex, int targetInstanceId)
         {
-            SetBindingCallCount++;
-            LastSetBindingInstanceId = instanceId;
-            LastSetBindingTrackIndex = trackIndex;
-            LastSetBindingTargetInstanceId = targetInstanceId;
+            BindTrackCallCount++;
+            LastBindTrackInstanceId = instanceId;
+            LastBindTrackTrackIndex = trackIndex;
+            LastBindTrackTargetInstanceId = targetInstanceId;
         }
 
         public void AddClip(int instanceId, int trackIndex, double start, double duration, string clipName)

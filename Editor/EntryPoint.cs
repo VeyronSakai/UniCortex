@@ -211,8 +211,8 @@ namespace UniCortex.Editor
             var removeTimelineTrackUseCase = new RemoveTimelineTrackUseCase(s_dispatcher, timelineOps);
             var removeTimelineTrackHandler = new RemoveTimelineTrackHandler(removeTimelineTrackUseCase);
 
-            var setTimelineBindingUseCase = new SetTimelineBindingUseCase(s_dispatcher, timelineOps);
-            var setTimelineBindingHandler = new SetTimelineBindingHandler(setTimelineBindingUseCase);
+            var bindTimelineTrackUseCase = new BindTimelineTrackUseCase(s_dispatcher, timelineOps);
+            var bindTimelineTrackHandler = new BindTimelineTrackHandler(bindTimelineTrackUseCase);
 
             var addTimelineClipUseCase = new AddTimelineClipUseCase(s_dispatcher, timelineOps);
             var addTimelineClipHandler = new AddTimelineClipHandler(addTimelineClipUseCase);
@@ -256,7 +256,7 @@ namespace UniCortex.Editor
             createTimelineHandler.Register(router);
             addTimelineTrackHandler.Register(router);
             removeTimelineTrackHandler.Register(router);
-            setTimelineBindingHandler.Register(router);
+            bindTimelineTrackHandler.Register(router);
             addTimelineClipHandler.Register(router);
             removeTimelineClipHandler.Register(router);
         }

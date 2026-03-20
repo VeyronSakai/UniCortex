@@ -90,7 +90,7 @@ public class TimelineTools(TimelineUseCase timelineService)
          "Set the binding of a Timeline track on a PlayableDirector. Undo supported. " +
          "Requires the Timeline package (com.unity.timeline) to be installed."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> SetTimelineBindingAsync(
+    public async ValueTask<CallToolResult> BindTimelineTrackAsync(
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
         int instanceId,
         [Description("The index of the track to bind (0-based).")]
@@ -101,7 +101,7 @@ public class TimelineTools(TimelineUseCase timelineService)
     {
         try
         {
-            var message = await timelineService.SetBindingAsync(instanceId, trackIndex, targetInstanceId,
+            var message = await timelineService.BindTrackAsync(instanceId, trackIndex, targetInstanceId,
                 cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }

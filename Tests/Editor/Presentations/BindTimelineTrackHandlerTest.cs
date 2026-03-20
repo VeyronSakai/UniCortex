@@ -9,28 +9,28 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class SetTimelineBindingHandlerTest
+    internal sealed class BindTimelineTrackHandlerTest
     {
         [Test]
         public void Handle_Returns200_WhenValid()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyTimelineOperations();
-            var useCase = new SetTimelineBindingUseCase(dispatcher, ops);
-            var handler = new SetTimelineBindingHandler(useCase);
+            var useCase = new BindTimelineTrackUseCase(dispatcher, ops);
+            var handler = new BindTimelineTrackHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineSetBinding,
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineBindTrack,
                 "{\"instanceId\":12345,\"trackIndex\":1,\"targetInstanceId\":67890}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
-            Assert.AreEqual(1, ops.LastSetBindingTrackIndex);
-            Assert.AreEqual(67890, ops.LastSetBindingTargetInstanceId);
+            Assert.AreEqual(1, ops.LastBindTrackTrackIndex);
+            Assert.AreEqual(67890, ops.LastBindTrackTargetInstanceId);
         }
 
         [Test]
@@ -38,13 +38,13 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyTimelineOperations();
-            var useCase = new SetTimelineBindingUseCase(dispatcher, ops);
-            var handler = new SetTimelineBindingHandler(useCase);
+            var useCase = new BindTimelineTrackUseCase(dispatcher, ops);
+            var handler = new BindTimelineTrackHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineSetBinding, "");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineBindTrack, "");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -56,13 +56,13 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyTimelineOperations();
-            var useCase = new SetTimelineBindingUseCase(dispatcher, ops);
-            var handler = new SetTimelineBindingHandler(useCase);
+            var useCase = new BindTimelineTrackUseCase(dispatcher, ops);
+            var handler = new BindTimelineTrackHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineSetBinding,
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineBindTrack,
                 "{\"instanceId\":12345,\"trackIndex\":1}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
