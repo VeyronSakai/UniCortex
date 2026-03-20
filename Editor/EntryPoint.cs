@@ -9,6 +9,7 @@ using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Handlers.MenuItem;
 using UniCortex.Editor.Handlers.Input;
 using UniCortex.Editor.Handlers.Screenshot;
+using UniCortex.Editor.Handlers.Timeline;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
 using UniCortex.Editor.UseCases;
@@ -199,6 +200,26 @@ namespace UniCortex.Editor
             var sendMouseEventUseCase = new SendMouseEventUseCase(s_dispatcher, inputSimOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
 
+            var timelineOps = new TimelineOperationsAdapter();
+
+            var createTimelineUseCase = new CreateTimelineUseCase(s_dispatcher, timelineOps);
+            var createTimelineHandler = new CreateTimelineHandler(createTimelineUseCase);
+
+            var addTimelineTrackUseCase = new AddTimelineTrackUseCase(s_dispatcher, timelineOps);
+            var addTimelineTrackHandler = new AddTimelineTrackHandler(addTimelineTrackUseCase);
+
+            var removeTimelineTrackUseCase = new RemoveTimelineTrackUseCase(s_dispatcher, timelineOps);
+            var removeTimelineTrackHandler = new RemoveTimelineTrackHandler(removeTimelineTrackUseCase);
+
+            var bindTimelineTrackUseCase = new BindTimelineTrackUseCase(s_dispatcher, timelineOps);
+            var bindTimelineTrackHandler = new BindTimelineTrackHandler(bindTimelineTrackUseCase);
+
+            var addTimelineClipUseCase = new AddTimelineClipUseCase(s_dispatcher, timelineOps);
+            var addTimelineClipHandler = new AddTimelineClipHandler(addTimelineClipUseCase);
+
+            var removeTimelineClipUseCase = new RemoveTimelineClipUseCase(s_dispatcher, timelineOps);
+            var removeTimelineClipHandler = new RemoveTimelineClipHandler(removeTimelineClipUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -232,6 +253,12 @@ namespace UniCortex.Editor
             screenshotHandler.Register(router);
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
+            createTimelineHandler.Register(router);
+            addTimelineTrackHandler.Register(router);
+            removeTimelineTrackHandler.Register(router);
+            bindTimelineTrackHandler.Register(router);
+            addTimelineClipHandler.Register(router);
+            removeTimelineClipHandler.Register(router);
         }
 
         private static int FindFreePort()
