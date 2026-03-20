@@ -35,5 +35,13 @@ namespace UniCortex.Editor.Domains.Models
         public const string ScreenshotCapture = "/screenshot/capture";
         public const string InputKey = "/input/key";
         public const string InputMouse = "/input/mouse";
+        public const string TimelineInfo = "/timeline/info";
+        public const string TimelineSetTime = "/timeline/set-time";
+        public const string TimelinePlay = "/timeline/play";
+        public const string TimelinePause = "/timeline/pause";
+        public const string TimelineStop = "/timeline/stop";
+        public const string TimelineAddTrack = "/timeline/add-track";
+        public const string TimelineRemoveTrack = "/timeline/remove-track";
+        public const string TimelineSetBinding = "/timeline/set-binding";
     }
 }

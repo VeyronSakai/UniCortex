@@ -9,6 +9,7 @@ using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Handlers.MenuItem;
 using UniCortex.Editor.Handlers.Input;
 using UniCortex.Editor.Handlers.Screenshot;
+using UniCortex.Editor.Handlers.Timeline;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
 using UniCortex.Editor.UseCases;
@@ -199,6 +200,36 @@ namespace UniCortex.Editor
             var sendMouseEventUseCase = new SendMouseEventUseCase(s_dispatcher, inputSimOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
 
+#if UNICORTEX_TIMELINE
+            var timelineOps = new TimelineOperationsAdapter();
+#else
+            var timelineOps = new TimelineNotSupportedAdapter();
+#endif
+
+            var getTimelineInfoUseCase = new GetTimelineInfoUseCase(s_dispatcher, timelineOps);
+            var getTimelineInfoHandler = new GetTimelineInfoHandler(getTimelineInfoUseCase);
+
+            var setTimelineTimeUseCase = new SetTimelineTimeUseCase(s_dispatcher, timelineOps);
+            var setTimelineTimeHandler = new SetTimelineTimeHandler(setTimelineTimeUseCase);
+
+            var playTimelineUseCase = new PlayTimelineUseCase(s_dispatcher, timelineOps);
+            var playTimelineHandler = new PlayTimelineHandler(playTimelineUseCase);
+
+            var pauseTimelineUseCase = new PauseTimelineUseCase(s_dispatcher, timelineOps);
+            var pauseTimelineHandler = new PauseTimelineHandler(pauseTimelineUseCase);
+
+            var stopTimelineUseCase = new StopTimelineUseCase(s_dispatcher, timelineOps);
+            var stopTimelineHandler = new StopTimelineHandler(stopTimelineUseCase);
+
+            var addTimelineTrackUseCase = new AddTimelineTrackUseCase(s_dispatcher, timelineOps);
+            var addTimelineTrackHandler = new AddTimelineTrackHandler(addTimelineTrackUseCase);
+
+            var removeTimelineTrackUseCase = new RemoveTimelineTrackUseCase(s_dispatcher, timelineOps);
+            var removeTimelineTrackHandler = new RemoveTimelineTrackHandler(removeTimelineTrackUseCase);
+
+            var setTimelineBindingUseCase = new SetTimelineBindingUseCase(s_dispatcher, timelineOps);
+            var setTimelineBindingHandler = new SetTimelineBindingHandler(setTimelineBindingUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -232,6 +263,14 @@ namespace UniCortex.Editor
             screenshotHandler.Register(router);
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
+            getTimelineInfoHandler.Register(router);
+            setTimelineTimeHandler.Register(router);
+            playTimelineHandler.Register(router);
+            pauseTimelineHandler.Register(router);
+            stopTimelineHandler.Register(router);
+            addTimelineTrackHandler.Register(router);
+            removeTimelineTrackHandler.Register(router);
+            setTimelineBindingHandler.Register(router);
         }
 
         private static int FindFreePort()
