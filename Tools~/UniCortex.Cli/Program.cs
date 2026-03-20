@@ -27,7 +27,6 @@ app.Add<ScreenshotCommands>("screenshot");
 app.Add<InputCommands>("input");
 app.Add<TimelineCommands>("timeline");
 app.Add<TimelineTrackCommands>("timeline track");
-app.Add<TimelineBindingCommands>("timeline binding");
 app.Add<TimelineClipCommands>("timeline clip");
 
 app.Run(args);
