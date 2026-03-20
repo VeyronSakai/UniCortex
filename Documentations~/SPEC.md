@@ -32,8 +32,7 @@ UniCortex/
 │   │   └── Models/              ← DTO・ルート定数（Core と共有）
 │   ├── Handlers/                ← HTTP リクエストハンドラー
 │   ├── Infrastructures/         ← HttpListener, MainThreadDispatcher 等
-│   ├── UseCases/                ← ビジネスロジック
-│   └── Settings/                ← Project Settings UI, config.json 操作
+│   └── UseCases/                ← ビジネスロジック
 ├── Tools~/
 │   ├── UniCortex.sln            ← ソリューションファイル
 │   ├── UniCortex.Core/          ← 共有ライブラリ（ユースケース層 + HTTP インフラ）
@@ -86,8 +85,6 @@ UniCortex/
 | 項目 | デフォルト | 説明 |
 |------|----------|------|
 | AutoStart | true | 自動開始 |
-
-Project Settings UI（`Project/UniCortex`）から変更可能。現在のポート番号は同画面に読み取り専用で表示。
 
 ### メインスレッドディスパッチ
 
@@ -820,7 +817,7 @@ UseCase クラスを新規作成・変更する際は、必ず対応する単体
 ## 使用例
 
 ```bash
-# ポート番号は Project Settings > UniCortex または Library/UniCortex/config.json で確認
+# ポート番号は Library/UniCortex/config.json で確認
 # config.json から server_url を取得する例:
 URL=$(grep -o '"server_url":"[^"]*"' Library/UniCortex/config.json | cut -d'"' -f4)
 
