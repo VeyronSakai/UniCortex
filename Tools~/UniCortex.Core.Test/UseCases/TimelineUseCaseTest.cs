@@ -61,97 +61,91 @@ public class TimelineUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask Create_CreatesTimelineAsset()
+    public async ValueTask Create_CreatesTimelineAsset(CancellationToken cancellationToken)
     {
-        var ct = CancellationToken.None;
-
-        var json = await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, ct);
+        var json = await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, cancellationToken);
 
         Assert.That(json, Does.Contain(TimelineAssetPath));
         Assert.That(json, Does.Contain("true"));
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask AddTrack_AddsTrackToTimeline()
+    public async ValueTask AddTrack_AddsTrackToTimeline(CancellationToken cancellationToken)
     {
-        var ct = CancellationToken.None;
-        var goId = await CreateTimelineSetupAsync(ct);
+        var goId = await CreateTimelineSetupAsync(cancellationToken);
 
         try
         {
             var message = await _fixture.TimelineUseCase.AddTrackAsync(
-                goId, "UnityEngine.Timeline.ActivationTrack", "TestTrack", ct);
+                goId, "UnityEngine.Timeline.ActivationTrack", "TestTrack", cancellationToken);
 
             Assert.That(message, Does.Contain("Track added"));
         }
         finally
         {
-            await _fixture.GameObjectUseCase.DeleteAsync(goId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(goId, cancellationToken);
         }
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask RemoveTrack_RemovesTrackFromTimeline()
+    public async ValueTask RemoveTrack_RemovesTrackFromTimeline(CancellationToken cancellationToken)
     {
-        var ct = CancellationToken.None;
-        var goId = await CreateTimelineSetupAsync(ct);
+        var goId = await CreateTimelineSetupAsync(cancellationToken);
 
         try
         {
             await _fixture.TimelineUseCase.AddTrackAsync(
-                goId, "UnityEngine.Timeline.ActivationTrack", "TrackToRemove", ct);
+                goId, "UnityEngine.Timeline.ActivationTrack", "TrackToRemove", cancellationToken);
 
-            var message = await _fixture.TimelineUseCase.RemoveTrackAsync(goId, 0, ct);
+            var message = await _fixture.TimelineUseCase.RemoveTrackAsync(goId, 0, cancellationToken);
 
             Assert.That(message, Does.Contain("Track removed"));
         }
         finally
         {
-            await _fixture.GameObjectUseCase.DeleteAsync(goId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(goId, cancellationToken);
         }
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask AddClip_AddsClipToTrack()
+    public async ValueTask AddClip_AddsClipToTrack(CancellationToken cancellationToken)
     {
-        var ct = CancellationToken.None;
-        var goId = await CreateTimelineSetupAsync(ct);
+        var goId = await CreateTimelineSetupAsync(cancellationToken);
 
         try
         {
             await _fixture.TimelineUseCase.AddTrackAsync(
-                goId, "UnityEngine.Timeline.ActivationTrack", "ClipTestTrack", ct);
+                goId, "UnityEngine.Timeline.ActivationTrack", "ClipTestTrack", cancellationToken);
 
-            var message = await _fixture.TimelineUseCase.AddClipAsync(goId, 0, 1.0, 3.0, "TestClip", ct);
+            var message = await _fixture.TimelineUseCase.AddClipAsync(goId, 0, 1.0, 3.0, "TestClip",
+                cancellationToken);
 
             Assert.That(message, Does.Contain("Clip added"));
         }
         finally
         {
-            await _fixture.GameObjectUseCase.DeleteAsync(goId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(goId, cancellationToken);
         }
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask RemoveClip_RemovesClipFromTrack()
+    public async ValueTask RemoveClip_RemovesClipFromTrack(CancellationToken cancellationToken)
     {
-        var ct = CancellationToken.None;
-        var goId = await CreateTimelineSetupAsync(ct);
+        var goId = await CreateTimelineSetupAsync(cancellationToken);
 
         try
         {
             await _fixture.TimelineUseCase.AddTrackAsync(
-                goId, "UnityEngine.Timeline.ActivationTrack", "ClipRemoveTrack", ct);
-            await _fixture.TimelineUseCase.AddClipAsync(goId, 0, 0, 5.0, "ClipToRemove", ct);
+                goId, "UnityEngine.Timeline.ActivationTrack", "ClipRemoveTrack", cancellationToken);
+            await _fixture.TimelineUseCase.AddClipAsync(goId, 0, 0, 5.0, "ClipToRemove", cancellationToken);
 
-            var message = await _fixture.TimelineUseCase.RemoveClipAsync(goId, 0, 0, ct);
+            var message = await _fixture.TimelineUseCase.RemoveClipAsync(goId, 0, 0, cancellationToken);
 
             Assert.That(message, Does.Contain("Clip removed"));
         }
         finally
         {
-            await _fixture.GameObjectUseCase.DeleteAsync(goId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(goId, cancellationToken);
         }
     }
-
 }
