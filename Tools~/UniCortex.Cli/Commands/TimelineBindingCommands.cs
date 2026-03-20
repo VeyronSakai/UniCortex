@@ -10,8 +10,8 @@ public class TimelineBindingCommands(TimelineUseCase timelineService)
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
     /// <param name="trackIndex">The index of the track to bind (0-based).</param>
     /// <param name="targetInstanceId">The instanceId of the target object to bind to the track.</param>
-    [Command("set")]
-    public async Task Set(int instanceId, int trackIndex, int targetInstanceId,
+    [Command("bind")]
+    public async Task Bind(int instanceId, int trackIndex, int targetInstanceId,
         CancellationToken cancellationToken = default)
     {
         var message = await timelineService.SetBindingAsync(instanceId, trackIndex, targetInstanceId,

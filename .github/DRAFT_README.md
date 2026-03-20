@@ -99,7 +99,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
 | `timeline create` | Create a TimelineAsset |
 | `timeline track add\|remove` | Timeline track operations |
-| `timeline binding set` | Timeline binding operations |
+| `timeline binding bind` | Timeline binding operations |
 | `timeline clip add\|remove` | Timeline clip operations |
 
 ## Available MCP Tools
