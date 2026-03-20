@@ -40,24 +40,22 @@ public class TimelineUseCaseTest
     /// Creates a TimelineAsset, a GameObject with a PlayableDirector, and assigns the asset.
     /// Returns the GameObject's instanceId.
     /// </summary>
-    private async ValueTask<int> CreateTimelineSetupAsync()
+    private async ValueTask<int> CreateTimelineSetupAsync(CancellationToken cancellationToken)
     {
-        var ct = CancellationToken.None;
-
         // Create the .playable asset
-        await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, ct);
+        await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, cancellationToken);
 
         // Create a GameObject
-        var goJson = await _fixture.GameObjectUseCase.CreateAsync("TimelineTestObj", ct);
+        var goJson = await _fixture.GameObjectUseCase.CreateAsync("TimelineTestObj", cancellationToken);
         var goResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(goJson, s_jsonOptions)!;
 
         // Add PlayableDirector component
         await _fixture.ComponentUseCase.AddAsync(goResponse.instanceId,
-            "UnityEngine.Playables.PlayableDirector", ct);
+            "UnityEngine.Playables.PlayableDirector", cancellationToken);
 
         // Assign the TimelineAsset to PlayableDirector via set_component_property
         await _fixture.ComponentUseCase.SetPropertyAsync(goResponse.instanceId,
-            "UnityEngine.Playables.PlayableDirector", "m_PlayableAsset", TimelineAssetPath, ct);
+            "UnityEngine.Playables.PlayableDirector", "m_PlayableAsset", TimelineAssetPath, cancellationToken);
 
         return goResponse.instanceId;
     }
@@ -77,7 +75,7 @@ public class TimelineUseCaseTest
     public async ValueTask AddTrack_AddsTrackToTimeline()
     {
         var ct = CancellationToken.None;
-        var goId = await CreateTimelineSetupAsync();
+        var goId = await CreateTimelineSetupAsync(ct);
 
         try
         {
@@ -96,7 +94,7 @@ public class TimelineUseCaseTest
     public async ValueTask RemoveTrack_RemovesTrackFromTimeline()
     {
         var ct = CancellationToken.None;
-        var goId = await CreateTimelineSetupAsync();
+        var goId = await CreateTimelineSetupAsync(ct);
 
         try
         {
@@ -117,7 +115,7 @@ public class TimelineUseCaseTest
     public async ValueTask AddClip_AddsClipToTrack()
     {
         var ct = CancellationToken.None;
-        var goId = await CreateTimelineSetupAsync();
+        var goId = await CreateTimelineSetupAsync(ct);
 
         try
         {
@@ -138,7 +136,7 @@ public class TimelineUseCaseTest
     public async ValueTask RemoveClip_RemovesClipFromTrack()
     {
         var ct = CancellationToken.None;
-        var goId = await CreateTimelineSetupAsync();
+        var goId = await CreateTimelineSetupAsync(ct);
 
         try
         {
