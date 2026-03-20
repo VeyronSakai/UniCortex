@@ -60,18 +60,6 @@ namespace UniCortex.Editor.Handlers.Timeline
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
-            catch (ArgumentException ex)
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-                return;
-            }
-            catch (NotSupportedException ex)
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-                return;
-            }
 
             var json = JsonUtility.ToJson(new AddTimelineTrackResponse(true));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);

@@ -28,7 +28,7 @@ namespace UniCortex.Editor.Handlers.Timeline
 
             if (string.IsNullOrEmpty(body))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId, trackIndex, and targetInstanceId are required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
@@ -38,6 +38,13 @@ namespace UniCortex.Editor.Handlers.Timeline
             if (request.instanceId == 0)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId is required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
+            if (!body.Contains("\"trackIndex\""))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("trackIndex is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
@@ -55,12 +62,6 @@ namespace UniCortex.Editor.Handlers.Timeline
                     cancellationToken);
             }
             catch (InvalidOperationException ex)
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-                return;
-            }
-            catch (ArgumentException ex)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);

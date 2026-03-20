@@ -42,24 +42,19 @@ namespace UniCortex.Editor.Handlers.Timeline
                 return;
             }
 
+            if (!body.Contains("\"trackIndex\""))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("trackIndex is required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
             try
             {
                 await _useCase.ExecuteAsync(request.instanceId, request.trackIndex, request.start,
                     request.duration, request.clipName, cancellationToken);
             }
             catch (InvalidOperationException ex)
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-                return;
-            }
-            catch (ArgumentException ex)
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-                return;
-            }
-            catch (NotSupportedException ex)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
