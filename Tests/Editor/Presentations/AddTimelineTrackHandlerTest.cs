@@ -23,13 +23,13 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineAddTrack,
-                $"{{\"instanceId\":12345,\"trackType\":\"{TimelineTrackType.AnimationTrack}\",\"trackName\":\"MyTrack\"}}");
+                $"{{\"instanceId\":12345,\"trackType\":\"{"AnimationTrack"}\",\"trackName\":\"MyTrack\"}}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
-            Assert.AreEqual(TimelineTrackType.AnimationTrack, ops.LastAddTrackType);
+            Assert.AreEqual("AnimationTrack", ops.LastAddTrackType);
             Assert.AreEqual("MyTrack", ops.LastAddTrackName);
         }
 

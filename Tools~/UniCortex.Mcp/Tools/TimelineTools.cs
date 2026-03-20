@@ -40,10 +40,9 @@ public class TimelineTools(TimelineUseCase timelineService)
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
         int instanceId,
         [Description(
-            "Track type to add: " +
-            TimelineTrackType.AnimationTrack + ", " + TimelineTrackType.AudioTrack + ", " +
-            TimelineTrackType.ActivationTrack + ", " + TimelineTrackType.ControlTrack + ", " +
-            TimelineTrackType.SignalTrack + ", " + TimelineTrackType.GroupTrack + ".")]
+            "Fully qualified or simple type name of the track to add. " +
+            "Built-in types: AnimationTrack, AudioTrack, ActivationTrack, ControlTrack, SignalTrack, GroupTrack. " +
+            "Custom tracks can be specified by their full type name (e.g. MyNamespace.MyCustomTrack).")]
         string trackType,
         [Description("Optional name for the new track.")]
         string trackName = "",

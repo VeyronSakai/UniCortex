@@ -181,27 +181,18 @@ namespace UniCortex.Editor.Infrastructures
 
         private static Type ResolveTrackType(string trackType)
         {
-            switch (trackType)
+            var type = TypeCache.GetTypesDerivedFrom<TrackAsset>()
+                .FirstOrDefault(t => t.FullName == trackType || t.Name == trackType);
+
+            if (type == null)
             {
-                case TimelineTrackType.AnimationTrack:
-                    return typeof(AnimationTrack);
-                case TimelineTrackType.AudioTrack:
-                    return typeof(AudioTrack);
-                case TimelineTrackType.ActivationTrack:
-                    return typeof(ActivationTrack);
-                case TimelineTrackType.ControlTrack:
-                    return typeof(ControlTrack);
-                case TimelineTrackType.SignalTrack:
-                    return typeof(SignalTrack);
-                case TimelineTrackType.GroupTrack:
-                    return typeof(GroupTrack);
-                default:
-                    throw new ArgumentException(
-                        $"Unknown track type: '{trackType}'. Supported types: " +
-                        $"{TimelineTrackType.AnimationTrack}, {TimelineTrackType.AudioTrack}, " +
-                        $"{TimelineTrackType.ActivationTrack}, {TimelineTrackType.ControlTrack}, " +
-                        $"{TimelineTrackType.SignalTrack}, {TimelineTrackType.GroupTrack}.");
+                throw new ArgumentException(
+                    $"Track type not found: '{trackType}'. " +
+                    "Specify a fully qualified type name (e.g. UnityEngine.Timeline.AnimationTrack) " +
+                    "or a simple name (e.g. AnimationTrack).");
             }
+
+            return type;
         }
     }
 }

@@ -557,7 +557,7 @@ TimelineAsset にトラックを追加する。`Undo` 対応。
 {"instanceId": 12345, "trackType": "AnimationTrack", "trackName": "My Track"}
 ```
 
-- `trackType`: 必須。`AnimationTrack`, `AudioTrack`, `ActivationTrack`, `ControlTrack`, `SignalTrack`, `GroupTrack`
+- `trackType`: 必須。完全修飾型名または単純型名（例: `AnimationTrack`, `UnityEngine.Timeline.AudioTrack`, `MyNamespace.MyCustomTrack`）
 - `trackName`: 任意。トラック名
 
 レスポンス: `{"success": true}`

@@ -1,6 +1,5 @@
 using ConsoleAppFramework;
 using UniCortex.Core.UseCases;
-using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Cli.Commands;
 
@@ -9,7 +8,7 @@ public class TimelineTrackCommands(TimelineUseCase timelineService)
 {
     /// <summary>Add a track to a TimelineAsset. Undo supported. Requires com.unity.timeline.</summary>
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
-    /// <param name="trackType">Track type: AnimationTrack, AudioTrack, ActivationTrack, ControlTrack, SignalTrack, GroupTrack.</param>
+    /// <param name="trackType">Fully qualified or simple type name of the track (e.g. AnimationTrack, MyNamespace.MyCustomTrack).</param>
     /// <param name="trackName">Optional name for the new track.</param>
     [Command("add")]
     public async Task Add(int instanceId, string trackType, string trackName = "",
