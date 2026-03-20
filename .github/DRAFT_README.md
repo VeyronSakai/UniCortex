@@ -97,7 +97,10 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `menu execute` | Execute menu items |
 | `screenshot capture` | Capture Game View screenshot |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
-| `timeline create\|add-track\|remove-track\|set-binding\|add-clip\|remove-clip` | Timeline operations |
+| `timeline create` | Create a TimelineAsset |
+| `timeline track add\|remove` | Timeline track operations |
+| `timeline binding set` | Timeline binding operations |
+| `timeline clip add\|remove` | Timeline clip operations |
 
 ## Available MCP Tools
 

@@ -1,0 +1,32 @@
+using ConsoleAppFramework;
+using UniCortex.Core.UseCases;
+using UniCortex.Editor.Domains.Models;
+
+namespace UniCortex.Cli.Commands;
+
+#pragma warning disable CS1573 // Parameter has no matching param tag
+public class TimelineTrackCommands(TimelineUseCase timelineService)
+{
+    /// <summary>Add a track to a TimelineAsset. Undo supported. Requires com.unity.timeline.</summary>
+    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
+    /// <param name="trackType">Track type: AnimationTrack, AudioTrack, ActivationTrack, ControlTrack, SignalTrack, GroupTrack.</param>
+    /// <param name="trackName">Optional name for the new track.</param>
+    [Command("add")]
+    public async Task Add(int instanceId, string trackType, string trackName = "",
+        CancellationToken cancellationToken = default)
+    {
+        var message = await timelineService.AddTrackAsync(instanceId, trackType, trackName, cancellationToken);
+        Console.WriteLine(message);
+    }
+
+    /// <summary>Remove a track from a TimelineAsset by index. Undo supported. Requires com.unity.timeline.</summary>
+    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
+    /// <param name="trackIndex">The index of the track to remove (0-based).</param>
+    [Command("remove")]
+    public async Task Remove(int instanceId, int trackIndex,
+        CancellationToken cancellationToken = default)
+    {
+        var message = await timelineService.RemoveTrackAsync(instanceId, trackIndex, cancellationToken);
+        Console.WriteLine(message);
+    }
+}

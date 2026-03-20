@@ -841,7 +841,10 @@ asset refresh
 menu execute
 screenshot capture
 input send-key|send-mouse
-timeline create|add-track|remove-track|set-binding|add-clip|remove-clip
+timeline create
+timeline track add|remove
+timeline binding set
+timeline clip add|remove
 ```
 
 ### エントリポイント（Program.cs）
