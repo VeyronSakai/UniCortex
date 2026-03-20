@@ -21,11 +21,6 @@
             "name": "com.unity.inputsystem",
             "expression": "1.0.0",
             "define": "UNICORTEX_INPUT_SYSTEM"
-        },
-        {
-            "name": "com.unity.timeline",
-            "expression": "1.0.0",
-            "define": "UNICORTEX_TIMELINE"
         }
     ],
     "noEngineReferences": false

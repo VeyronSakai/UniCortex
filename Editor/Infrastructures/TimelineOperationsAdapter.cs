@@ -1,4 +1,3 @@
-#if UNICORTEX_TIMELINE
 using System;
 using System.Linq;
 using UniCortex.Editor.Domains.Interfaces;
@@ -206,4 +205,3 @@ namespace UniCortex.Editor.Infrastructures
         }
     }
 }
-#endif

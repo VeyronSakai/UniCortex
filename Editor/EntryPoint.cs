@@ -200,11 +200,7 @@ namespace UniCortex.Editor
             var sendMouseEventUseCase = new SendMouseEventUseCase(s_dispatcher, inputSimOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
 
-#if UNICORTEX_TIMELINE
             var timelineOps = new TimelineOperationsAdapter();
-#else
-            var timelineOps = new TimelineNotSupportedAdapter();
-#endif
 
             var createTimelineUseCase = new CreateTimelineUseCase(s_dispatcher, timelineOps);
             var createTimelineHandler = new CreateTimelineHandler(createTimelineUseCase);
