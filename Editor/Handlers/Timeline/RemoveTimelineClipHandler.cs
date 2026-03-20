@@ -42,20 +42,6 @@ namespace UniCortex.Editor.Handlers.Timeline
                 return;
             }
 
-            if (!body.Contains("\"trackIndex\""))
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("trackIndex is required."));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-                return;
-            }
-
-            if (!body.Contains("\"clipIndex\""))
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("clipIndex is required."));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-                return;
-            }
-
             try
             {
                 await _useCase.ExecuteAsync(request.instanceId, request.trackIndex, request.clipIndex,

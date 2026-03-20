@@ -42,13 +42,6 @@ namespace UniCortex.Editor.Handlers.Timeline
                 return;
             }
 
-            if (!body.Contains("\"trackIndex\""))
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("trackIndex is required."));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-                return;
-            }
-
             if (request.targetInstanceId == 0)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("targetInstanceId is required."));
