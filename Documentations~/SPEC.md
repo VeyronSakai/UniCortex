@@ -554,10 +554,10 @@ TimelineAsset にトラックを追加する。`Undo` 対応。
 
 リクエストボディ:
 ```json
-{"instanceId": 12345, "trackType": "AnimationTrack", "trackName": "My Track"}
+{"instanceId": 12345, "trackType": "UnityEngine.Timeline.AnimationTrack", "trackName": "My Track"}
 ```
 
-- `trackType`: 必須。完全修飾型名または単純型名（例: `AnimationTrack`, `UnityEngine.Timeline.AudioTrack`, `MyNamespace.MyCustomTrack`）
+- `trackType`: 必須。完全修飾型名（例: `UnityEngine.Timeline.AnimationTrack`, `UnityEngine.Timeline.AudioTrack`）
 - `trackName`: 任意。トラック名
 
 レスポンス: `{"success": true}`

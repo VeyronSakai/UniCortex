@@ -182,14 +182,13 @@ namespace UniCortex.Editor.Infrastructures
         private static Type ResolveTrackType(string trackType)
         {
             var type = TypeCache.GetTypesDerivedFrom<TrackAsset>()
-                .FirstOrDefault(t => t.FullName == trackType || t.Name == trackType);
+                .FirstOrDefault(t => t.FullName == trackType);
 
             if (type == null)
             {
                 throw new ArgumentException(
                     $"Track type not found: '{trackType}'. " +
-                    "Specify a fully qualified type name (e.g. UnityEngine.Timeline.AnimationTrack) " +
-                    "or a simple name (e.g. AnimationTrack).");
+                    "Specify a fully qualified type name (e.g. UnityEngine.Timeline.AnimationTrack).");
             }
 
             return type;

@@ -15,12 +15,12 @@ namespace UniCortex.Editor.Tests.UseCases
             var ops = new SpyTimelineOperations();
             var useCase = new AddTimelineTrackUseCase(dispatcher, ops);
 
-            useCase.ExecuteAsync(12345, "AnimationTrack", "MyTrack", CancellationToken.None)
+            useCase.ExecuteAsync(12345, "UnityEngine.Timeline.AnimationTrack", "MyTrack", CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(1, ops.AddTrackCallCount);
             Assert.AreEqual(12345, ops.LastAddTrackInstanceId);
-            Assert.AreEqual("AnimationTrack", ops.LastAddTrackType);
+            Assert.AreEqual("UnityEngine.Timeline.AnimationTrack", ops.LastAddTrackType);
             Assert.AreEqual("MyTrack", ops.LastAddTrackName);
             Assert.AreEqual(1, dispatcher.CallCount);
         }

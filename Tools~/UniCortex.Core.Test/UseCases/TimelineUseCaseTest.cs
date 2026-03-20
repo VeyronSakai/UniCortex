@@ -82,7 +82,7 @@ public class TimelineUseCaseTest
         try
         {
             var message = await _fixture.TimelineUseCase.AddTrackAsync(
-                goId, "ActivationTrack", "TestTrack", ct);
+                goId, "UnityEngine.Timeline.ActivationTrack", "TestTrack", ct);
 
             Assert.That(message, Does.Contain("Track added"));
         }
@@ -101,7 +101,7 @@ public class TimelineUseCaseTest
         try
         {
             await _fixture.TimelineUseCase.AddTrackAsync(
-                goId, "ActivationTrack", "TrackToRemove", ct);
+                goId, "UnityEngine.Timeline.ActivationTrack", "TrackToRemove", ct);
 
             var message = await _fixture.TimelineUseCase.RemoveTrackAsync(goId, 0, ct);
 
@@ -122,7 +122,7 @@ public class TimelineUseCaseTest
         try
         {
             await _fixture.TimelineUseCase.AddTrackAsync(
-                goId, "ActivationTrack", "ClipTestTrack", ct);
+                goId, "UnityEngine.Timeline.ActivationTrack", "ClipTestTrack", ct);
 
             var message = await _fixture.TimelineUseCase.AddClipAsync(goId, 0, 1.0, 3.0, "TestClip", ct);
 
@@ -143,7 +143,7 @@ public class TimelineUseCaseTest
         try
         {
             await _fixture.TimelineUseCase.AddTrackAsync(
-                goId, "ActivationTrack", "ClipRemoveTrack", ct);
+                goId, "UnityEngine.Timeline.ActivationTrack", "ClipRemoveTrack", ct);
             await _fixture.TimelineUseCase.AddClipAsync(goId, 0, 0, 5.0, "ClipToRemove", ct);
 
             var message = await _fixture.TimelineUseCase.RemoveClipAsync(goId, 0, 0, ct);
