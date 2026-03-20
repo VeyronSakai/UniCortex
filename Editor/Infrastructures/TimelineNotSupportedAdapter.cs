@@ -7,6 +7,13 @@ namespace UniCortex.Editor.Infrastructures
     // Fallback used when the Timeline package (com.unity.timeline) is not installed.
     internal sealed class TimelineNotSupportedAdapter : ITimelineOperations
     {
+        public CreateTimelineResponse CreateTimeline(int instanceId, string assetPath)
+        {
+            throw new NotSupportedException(
+                "Timeline package (com.unity.timeline) is not installed. " +
+                "Install it via Unity Package Manager to use this feature.");
+        }
+
         public TimelineInfoResponse GetTimelineInfo(int instanceId)
         {
             throw new NotSupportedException(

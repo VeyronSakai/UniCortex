@@ -206,6 +206,9 @@ namespace UniCortex.Editor
             var timelineOps = new TimelineNotSupportedAdapter();
 #endif
 
+            var createTimelineUseCase = new CreateTimelineUseCase(s_dispatcher, timelineOps);
+            var createTimelineHandler = new CreateTimelineHandler(createTimelineUseCase);
+
             var getTimelineInfoUseCase = new GetTimelineInfoUseCase(s_dispatcher, timelineOps);
             var getTimelineInfoHandler = new GetTimelineInfoHandler(getTimelineInfoUseCase);
 
@@ -257,6 +260,7 @@ namespace UniCortex.Editor
             screenshotHandler.Register(router);
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
+            createTimelineHandler.Register(router);
             getTimelineInfoHandler.Register(router);
             addTimelineTrackHandler.Register(router);
             removeTimelineTrackHandler.Register(router);

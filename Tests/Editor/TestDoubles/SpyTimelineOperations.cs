@@ -5,6 +5,10 @@ namespace UniCortex.Editor.Tests.TestDoubles
 {
     internal sealed class SpyTimelineOperations : ITimelineOperations
     {
+        public int CreateTimelineCallCount { get; private set; }
+        public int LastCreateInstanceId { get; private set; }
+        public string LastCreateAssetPath { get; private set; }
+
         public int GetTimelineInfoCallCount { get; private set; }
         public int LastGetInfoInstanceId { get; private set; }
         public TimelineInfoResponse GetTimelineInfoResult { get; set; }
@@ -34,6 +38,14 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int LastRemoveClipInstanceId { get; private set; }
         public int LastRemoveClipTrackIndex { get; private set; }
         public int LastRemoveClipIndex { get; private set; }
+
+        public CreateTimelineResponse CreateTimeline(int instanceId, string assetPath)
+        {
+            CreateTimelineCallCount++;
+            LastCreateInstanceId = instanceId;
+            LastCreateAssetPath = assetPath;
+            return new CreateTimelineResponse(assetPath, instanceId);
+        }
 
         public TimelineInfoResponse GetTimelineInfo(int instanceId)
         {

@@ -7,6 +7,16 @@ namespace UniCortex.Cli.Commands;
 #pragma warning disable CS1573 // Parameter has no matching param tag
 public class TimelineCommands(TimelineUseCase timelineService)
 {
+    /// <summary>Create a TimelineAsset and assign it to a PlayableDirector on a GameObject. Requires com.unity.timeline.</summary>
+    /// <param name="instanceId">The instanceId of the GameObject to attach the Timeline to.</param>
+    /// <param name="assetPath">Asset path where the TimelineAsset will be saved (e.g. "Assets/Timelines/MyTimeline.playable").</param>
+    [Command("create")]
+    public async Task Create(int instanceId, string assetPath, CancellationToken cancellationToken = default)
+    {
+        var json = await timelineService.CreateAsync(instanceId, assetPath, cancellationToken);
+        Console.WriteLine(json);
+    }
+
     /// <summary>Get Timeline information from a PlayableDirector. Requires com.unity.timeline.</summary>
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
     [Command("get-info")]

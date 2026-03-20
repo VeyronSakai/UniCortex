@@ -11,6 +11,21 @@ public class TimelineUseCase(IHttpClientFactory httpClientFactory, IUnityServerU
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
 
+    public async ValueTask<string> CreateAsync(int instanceId, string assetPath,
+        CancellationToken cancellationToken)
+    {
+        var baseUrl = urlProvider.GetUrl();
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+
+        var request = new CreateTimelineRequest { instanceId = instanceId, assetPath = assetPath };
+        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
+        var content = new StringContent(body, Encoding.UTF8, "application/json");
+        using var response =
+            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelineCreate}", content, cancellationToken);
+        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        return await response.Content.ReadAsStringAsync(cancellationToken);
+    }
+
     public async ValueTask<string> GetInfoAsync(int instanceId, CancellationToken cancellationToken)
     {
         var baseUrl = urlProvider.GetUrl();
