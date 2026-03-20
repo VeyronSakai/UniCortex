@@ -5,6 +5,7 @@ using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using UniCortex.Editor.Handlers.Timeline;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace UniCortex.Editor.Tests.Presentations
 {
@@ -22,8 +23,10 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
+            var request = new AddTimelineClipRequest
+                { instanceId = 12345, trackIndex = 0, start = 1.0, duration = 3.0, clipName = "MyClip" };
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineAddClip,
-                "{\"instanceId\":12345,\"trackIndex\":0,\"start\":1.0,\"duration\":3.0,\"clipName\":\"MyClip\"}");
+                JsonUtility.ToJson(request));
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

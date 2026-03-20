@@ -5,6 +5,7 @@ using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using UniCortex.Editor.Handlers.Timeline;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace UniCortex.Editor.Tests.Presentations
 {
@@ -22,8 +23,10 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
+            var request = new AddTimelineTrackRequest
+                { instanceId = 12345, trackType = "UnityEngine.Timeline.AnimationTrack", trackName = "MyTrack" };
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineAddTrack,
-                $"{{\"instanceId\":12345,\"trackType\":\"{"UnityEngine.Timeline.AnimationTrack"}\",\"trackName\":\"MyTrack\"}}");
+                JsonUtility.ToJson(request));
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -62,8 +65,9 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
+            var request = new AddTimelineTrackRequest { instanceId = 12345 };
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineAddTrack,
-                "{\"instanceId\":12345}");
+                JsonUtility.ToJson(request));
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

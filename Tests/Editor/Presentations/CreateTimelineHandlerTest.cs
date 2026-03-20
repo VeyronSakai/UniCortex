@@ -5,6 +5,7 @@ using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using UniCortex.Editor.Handlers.Timeline;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace UniCortex.Editor.Tests.Presentations
 {
@@ -22,8 +23,9 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
+            var request = new CreateTimelineRequest { assetPath = "Assets/Test.playable" };
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineCreate,
-                "{\"assetPath\":\"Assets/Test.playable\"}");
+                JsonUtility.ToJson(request));
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -60,7 +62,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineCreate, "{}");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineCreate,
+                JsonUtility.ToJson(new CreateTimelineRequest()));
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

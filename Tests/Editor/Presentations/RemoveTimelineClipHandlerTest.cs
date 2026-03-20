@@ -5,6 +5,7 @@ using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using UniCortex.Editor.Handlers.Timeline;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace UniCortex.Editor.Tests.Presentations
 {
@@ -22,8 +23,9 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
+            var request = new RemoveTimelineClipRequest { instanceId = 12345, trackIndex = 1, clipIndex = 2 };
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineRemoveClip,
-                "{\"instanceId\":12345,\"trackIndex\":1,\"clipIndex\":2}");
+                JsonUtility.ToJson(request));
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
