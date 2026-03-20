@@ -69,7 +69,7 @@ public class TimelineUseCase(IHttpClientFactory httpClientFactory, IUnityServerU
         using var response =
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelineBindTrack}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return $"Binding set: track {trackIndex} -> instanceId {targetInstanceId}";
+        return $"Bind: track {trackIndex} -> instanceId {targetInstanceId}";
     }
 
     public async ValueTask<string> AddClipAsync(int instanceId, int trackIndex, double start, double duration,
