@@ -25,19 +25,30 @@ public class TimelineUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask Play_ReturnsError_WhenInvalidInstanceId()
+    public async ValueTask AddTrack_ReturnsError_WhenInvalidInstanceId()
     {
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.TimelineUseCase.PlayAsync(-1, CancellationToken.None));
+            await _fixture.TimelineUseCase.AddTrackAsync(-1, TimelineTrackType.AnimationTrack, "Test",
+                CancellationToken.None));
 
         Assert.That(ex!.Message, Does.Contain("instanceId").Or.Contain("Timeline"));
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask AddTrack_ReturnsError_WhenInvalidInstanceId()
+    public async ValueTask AddClip_ReturnsError_WhenInvalidInstanceId()
     {
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.TimelineUseCase.AddTrackAsync(-1, TimelineTrackType.AnimationTrack, "Test",
+            await _fixture.TimelineUseCase.AddClipAsync(-1, 0, 0, 5, "Test",
+                CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("instanceId").Or.Contain("Timeline"));
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask RemoveClip_ReturnsError_WhenInvalidInstanceId()
+    {
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.TimelineUseCase.RemoveClipAsync(-1, 0, 0,
                 CancellationToken.None));
 
         Assert.That(ex!.Message, Does.Contain("instanceId").Or.Contain("Timeline"));

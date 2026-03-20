@@ -16,43 +16,6 @@ public class TimelineCommands(TimelineUseCase timelineService)
         Console.WriteLine(json);
     }
 
-    /// <summary>Set the current playback time of a Timeline. Requires com.unity.timeline.</summary>
-    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
-    /// <param name="time">The time in seconds to set the playback position to.</param>
-    [Command("set-time")]
-    public async Task SetTime(int instanceId, double time, CancellationToken cancellationToken = default)
-    {
-        var message = await timelineService.SetTimeAsync(instanceId, time, cancellationToken);
-        Console.WriteLine(message);
-    }
-
-    /// <summary>Play a Timeline. Requires com.unity.timeline.</summary>
-    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
-    [Command("play")]
-    public async Task Play(int instanceId, CancellationToken cancellationToken = default)
-    {
-        var message = await timelineService.PlayAsync(instanceId, cancellationToken);
-        Console.WriteLine(message);
-    }
-
-    /// <summary>Pause a playing Timeline. Requires com.unity.timeline.</summary>
-    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
-    [Command("pause")]
-    public async Task Pause(int instanceId, CancellationToken cancellationToken = default)
-    {
-        var message = await timelineService.PauseAsync(instanceId, cancellationToken);
-        Console.WriteLine(message);
-    }
-
-    /// <summary>Stop a playing Timeline. Requires com.unity.timeline.</summary>
-    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
-    [Command("stop")]
-    public async Task Stop(int instanceId, CancellationToken cancellationToken = default)
-    {
-        var message = await timelineService.StopAsync(instanceId, cancellationToken);
-        Console.WriteLine(message);
-    }
-
     /// <summary>Add a track to a TimelineAsset. Undo supported. Requires com.unity.timeline.</summary>
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
     /// <param name="trackType">Track type: AnimationTrack, AudioTrack, ActivationTrack, ControlTrack, SignalTrack, GroupTrack.</param>
@@ -86,6 +49,33 @@ public class TimelineCommands(TimelineUseCase timelineService)
     {
         var message = await timelineService.SetBindingAsync(instanceId, trackIndex, targetInstanceId,
             cancellationToken);
+        Console.WriteLine(message);
+    }
+
+    /// <summary>Add a default clip to a Timeline track. Undo supported. Requires com.unity.timeline.</summary>
+    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
+    /// <param name="trackIndex">The index of the track to add the clip to (0-based).</param>
+    /// <param name="start">Start time of the clip in seconds.</param>
+    /// <param name="duration">Duration of the clip in seconds. 0 uses the track's default duration.</param>
+    /// <param name="clipName">Optional display name for the clip.</param>
+    [Command("add-clip")]
+    public async Task AddClip(int instanceId, int trackIndex, double start = 0, double duration = 0,
+        string clipName = "", CancellationToken cancellationToken = default)
+    {
+        var message = await timelineService.AddClipAsync(instanceId, trackIndex, start, duration, clipName,
+            cancellationToken);
+        Console.WriteLine(message);
+    }
+
+    /// <summary>Remove a clip from a Timeline track by index. Undo supported. Requires com.unity.timeline.</summary>
+    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
+    /// <param name="trackIndex">The index of the track containing the clip (0-based).</param>
+    /// <param name="clipIndex">The index of the clip to remove within the track (0-based).</param>
+    [Command("remove-clip")]
+    public async Task RemoveClip(int instanceId, int trackIndex, int clipIndex,
+        CancellationToken cancellationToken = default)
+    {
+        var message = await timelineService.RemoveClipAsync(instanceId, trackIndex, clipIndex, cancellationToken);
         Console.WriteLine(message);
     }
 }

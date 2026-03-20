@@ -22,63 +22,6 @@ public class TimelineUseCase(IHttpClientFactory httpClientFactory, IUnityServerU
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
-    public async ValueTask<string> SetTimeAsync(int instanceId, double time,
-        CancellationToken cancellationToken)
-    {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
-        var request = new SetTimelineTimeRequest { instanceId = instanceId, time = time };
-        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelineSetTime}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return $"Timeline time set to {time}";
-    }
-
-    public async ValueTask<string> PlayAsync(int instanceId, CancellationToken cancellationToken)
-    {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
-        var request = new PlayTimelineRequest { instanceId = instanceId };
-        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelinePlay}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return "Timeline playing";
-    }
-
-    public async ValueTask<string> PauseAsync(int instanceId, CancellationToken cancellationToken)
-    {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
-        var request = new PauseTimelineRequest { instanceId = instanceId };
-        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelinePause}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return "Timeline paused";
-    }
-
-    public async ValueTask<string> StopAsync(int instanceId, CancellationToken cancellationToken)
-    {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
-        var request = new StopTimelineRequest { instanceId = instanceId };
-        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelineStop}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return "Timeline stopped";
-    }
-
     public async ValueTask<string> AddTrackAsync(int instanceId, string trackType, string trackName,
         CancellationToken cancellationToken)
     {
@@ -124,5 +67,37 @@ public class TimelineUseCase(IHttpClientFactory httpClientFactory, IUnityServerU
             await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelineSetBinding}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return $"Binding set: track {trackIndex} -> instanceId {targetInstanceId}";
+    }
+
+    public async ValueTask<string> AddClipAsync(int instanceId, int trackIndex, double start, double duration,
+        string clipName, CancellationToken cancellationToken)
+    {
+        var baseUrl = urlProvider.GetUrl();
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+
+        var request = new AddTimelineClipRequest
+            { instanceId = instanceId, trackIndex = trackIndex, start = start, duration = duration, clipName = clipName };
+        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
+        var content = new StringContent(body, Encoding.UTF8, "application/json");
+        using var response =
+            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelineAddClip}", content, cancellationToken);
+        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        return $"Clip added to track {trackIndex} at {start}s";
+    }
+
+    public async ValueTask<string> RemoveClipAsync(int instanceId, int trackIndex, int clipIndex,
+        CancellationToken cancellationToken)
+    {
+        var baseUrl = urlProvider.GetUrl();
+        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+
+        var request = new RemoveTimelineClipRequest
+            { instanceId = instanceId, trackIndex = trackIndex, clipIndex = clipIndex };
+        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
+        var content = new StringContent(body, Encoding.UTF8, "application/json");
+        using var response =
+            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TimelineRemoveClip}", content, cancellationToken);
+        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        return $"Clip removed: track {trackIndex}, clip {clipIndex}";
     }
 }

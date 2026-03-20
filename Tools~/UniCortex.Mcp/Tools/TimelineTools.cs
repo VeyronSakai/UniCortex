@@ -31,92 +31,6 @@ public class TimelineTools(TimelineUseCase timelineService)
         }
     }
 
-    [McpServerTool(Name = "set_timeline_time", ReadOnly = false),
-     Description(
-         "Set the current playback time of a PlayableDirector's Timeline. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
-     UsedImplicitly]
-    public async ValueTask<CallToolResult> SetTimelineTimeAsync(
-        [Description("The instanceId of a GameObject with a PlayableDirector component.")]
-        int instanceId,
-        [Description("The time in seconds to set the playback position to.")]
-        double time,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var message = await timelineService.SetTimeAsync(instanceId, time, cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
-
-    [McpServerTool(Name = "play_timeline", ReadOnly = false),
-     Description(
-         "Play a Timeline on a PlayableDirector. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
-     UsedImplicitly]
-    public async ValueTask<CallToolResult> PlayTimelineAsync(
-        [Description("The instanceId of a GameObject with a PlayableDirector component.")]
-        int instanceId,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var message = await timelineService.PlayAsync(instanceId, cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
-
-    [McpServerTool(Name = "pause_timeline", ReadOnly = false),
-     Description(
-         "Pause a playing Timeline on a PlayableDirector. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
-     UsedImplicitly]
-    public async ValueTask<CallToolResult> PauseTimelineAsync(
-        [Description("The instanceId of a GameObject with a PlayableDirector component.")]
-        int instanceId,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var message = await timelineService.PauseAsync(instanceId, cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
-
-    [McpServerTool(Name = "stop_timeline", ReadOnly = false),
-     Description(
-         "Stop a playing Timeline on a PlayableDirector. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
-     UsedImplicitly]
-    public async ValueTask<CallToolResult> StopTimelineAsync(
-        [Description("The instanceId of a GameObject with a PlayableDirector component.")]
-        int instanceId,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var message = await timelineService.StopAsync(instanceId, cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
-
     [McpServerTool(Name = "add_timeline_track", ReadOnly = false),
      Description(
          "Add a track to a TimelineAsset on a PlayableDirector. Undo supported. " +
@@ -188,6 +102,62 @@ public class TimelineTools(TimelineUseCase timelineService)
         try
         {
             var message = await timelineService.SetBindingAsync(instanceId, trackIndex, targetInstanceId,
+                cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
+    [McpServerTool(Name = "add_timeline_clip", ReadOnly = false),
+     Description(
+         "Add a default clip to a Timeline track. The clip type is determined by the track type. Undo supported. " +
+         "Requires the Timeline package (com.unity.timeline) to be installed."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> AddTimelineClipAsync(
+        [Description("The instanceId of a GameObject with a PlayableDirector component.")]
+        int instanceId,
+        [Description("The index of the track to add the clip to (0-based, from get_timeline_info output).")]
+        int trackIndex,
+        [Description("Start time of the clip in seconds.")]
+        double start = 0,
+        [Description("Duration of the clip in seconds. 0 uses the track's default duration.")]
+        double duration = 0,
+        [Description("Optional display name for the clip.")]
+        string clipName = "",
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var message = await timelineService.AddClipAsync(instanceId, trackIndex, start, duration, clipName,
+                cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
+    [McpServerTool(Name = "remove_timeline_clip", ReadOnly = false),
+     Description(
+         "Remove a clip from a Timeline track by index. Undo supported. " +
+         "Requires the Timeline package (com.unity.timeline) to be installed."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> RemoveTimelineClipAsync(
+        [Description("The instanceId of a GameObject with a PlayableDirector component.")]
+        int instanceId,
+        [Description("The index of the track containing the clip (0-based, from get_timeline_info output).")]
+        int trackIndex,
+        [Description("The index of the clip to remove within the track (0-based, from get_timeline_info output).")]
+        int clipIndex,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var message = await timelineService.RemoveClipAsync(instanceId, trackIndex, clipIndex,
                 cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }

@@ -75,31 +75,6 @@ namespace UniCortex.Editor.Infrastructures
             };
         }
 
-        public void SetTimelineTime(int instanceId, double time)
-        {
-            var director = GetPlayableDirector(instanceId);
-            Undo.RecordObject(director, "Set Timeline Time");
-            director.time = time;
-        }
-
-        public void PlayTimeline(int instanceId)
-        {
-            var director = GetPlayableDirector(instanceId);
-            director.Play();
-        }
-
-        public void PauseTimeline(int instanceId)
-        {
-            var director = GetPlayableDirector(instanceId);
-            director.Pause();
-        }
-
-        public void StopTimeline(int instanceId)
-        {
-            var director = GetPlayableDirector(instanceId);
-            director.Stop();
-        }
-
         public void AddTrack(int instanceId, string trackType, string trackName)
         {
             var director = GetPlayableDirector(instanceId);
@@ -164,6 +139,70 @@ namespace UniCortex.Editor.Infrastructures
 
             Undo.RecordObject(director, "Set Timeline Binding");
             director.SetGenericBinding(outputTracks[trackIndex], targetObject);
+        }
+
+        public void AddClip(int instanceId, int trackIndex, double start, double duration, string clipName)
+        {
+            var director = GetPlayableDirector(instanceId);
+            var timelineAsset = director.playableAsset as TimelineAsset;
+            if (timelineAsset == null)
+            {
+                throw new InvalidOperationException(
+                    $"PlayableDirector (instanceId={instanceId}) has no TimelineAsset assigned.");
+            }
+
+            var outputTracks = timelineAsset.GetOutputTracks().ToArray();
+            if (trackIndex < 0 || trackIndex >= outputTracks.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(trackIndex),
+                    $"Track index {trackIndex} is out of range. The timeline has {outputTracks.Length} tracks.");
+            }
+
+            var track = outputTracks[trackIndex];
+            Undo.RegisterCompleteObjectUndo(timelineAsset, "Add Timeline Clip");
+            var clip = track.CreateDefaultClip();
+            clip.start = start;
+            if (duration > 0)
+            {
+                clip.duration = duration;
+            }
+
+            if (!string.IsNullOrEmpty(clipName))
+            {
+                clip.displayName = clipName;
+            }
+
+            EditorUtility.SetDirty(timelineAsset);
+        }
+
+        public void RemoveClip(int instanceId, int trackIndex, int clipIndex)
+        {
+            var director = GetPlayableDirector(instanceId);
+            var timelineAsset = director.playableAsset as TimelineAsset;
+            if (timelineAsset == null)
+            {
+                throw new InvalidOperationException(
+                    $"PlayableDirector (instanceId={instanceId}) has no TimelineAsset assigned.");
+            }
+
+            var outputTracks = timelineAsset.GetOutputTracks().ToArray();
+            if (trackIndex < 0 || trackIndex >= outputTracks.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(trackIndex),
+                    $"Track index {trackIndex} is out of range. The timeline has {outputTracks.Length} tracks.");
+            }
+
+            var track = outputTracks[trackIndex];
+            var clips = track.GetClips().ToArray();
+            if (clipIndex < 0 || clipIndex >= clips.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(clipIndex),
+                    $"Clip index {clipIndex} is out of range. The track has {clips.Length} clips.");
+            }
+
+            Undo.RegisterCompleteObjectUndo(timelineAsset, "Remove Timeline Clip");
+            timelineAsset.DeleteClip(clips[clipIndex]);
+            EditorUtility.SetDirty(timelineAsset);
         }
 
         private static PlayableDirector GetPlayableDirector(int instanceId)

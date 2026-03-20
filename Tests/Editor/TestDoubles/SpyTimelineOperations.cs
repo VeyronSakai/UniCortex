@@ -9,19 +9,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int LastGetInfoInstanceId { get; private set; }
         public TimelineInfoResponse GetTimelineInfoResult { get; set; }
 
-        public int SetTimelineTimeCallCount { get; private set; }
-        public int LastSetTimeInstanceId { get; private set; }
-        public double LastSetTimeValue { get; private set; }
-
-        public int PlayTimelineCallCount { get; private set; }
-        public int LastPlayInstanceId { get; private set; }
-
-        public int PauseTimelineCallCount { get; private set; }
-        public int LastPauseInstanceId { get; private set; }
-
-        public int StopTimelineCallCount { get; private set; }
-        public int LastStopInstanceId { get; private set; }
-
         public int AddTrackCallCount { get; private set; }
         public int LastAddTrackInstanceId { get; private set; }
         public string LastAddTrackType { get; private set; }
@@ -36,6 +23,18 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int LastSetBindingTrackIndex { get; private set; }
         public int LastSetBindingTargetInstanceId { get; private set; }
 
+        public int AddClipCallCount { get; private set; }
+        public int LastAddClipInstanceId { get; private set; }
+        public int LastAddClipTrackIndex { get; private set; }
+        public double LastAddClipStart { get; private set; }
+        public double LastAddClipDuration { get; private set; }
+        public string LastAddClipName { get; private set; }
+
+        public int RemoveClipCallCount { get; private set; }
+        public int LastRemoveClipInstanceId { get; private set; }
+        public int LastRemoveClipTrackIndex { get; private set; }
+        public int LastRemoveClipIndex { get; private set; }
+
         public TimelineInfoResponse GetTimelineInfo(int instanceId)
         {
             GetTimelineInfoCallCount++;
@@ -49,31 +48,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
                 tracks = new TimelineTrackInfo[0],
                 bindings = new TimelineBindingInfo[0]
             };
-        }
-
-        public void SetTimelineTime(int instanceId, double time)
-        {
-            SetTimelineTimeCallCount++;
-            LastSetTimeInstanceId = instanceId;
-            LastSetTimeValue = time;
-        }
-
-        public void PlayTimeline(int instanceId)
-        {
-            PlayTimelineCallCount++;
-            LastPlayInstanceId = instanceId;
-        }
-
-        public void PauseTimeline(int instanceId)
-        {
-            PauseTimelineCallCount++;
-            LastPauseInstanceId = instanceId;
-        }
-
-        public void StopTimeline(int instanceId)
-        {
-            StopTimelineCallCount++;
-            LastStopInstanceId = instanceId;
         }
 
         public void AddTrack(int instanceId, string trackType, string trackName)
@@ -97,6 +71,24 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastSetBindingInstanceId = instanceId;
             LastSetBindingTrackIndex = trackIndex;
             LastSetBindingTargetInstanceId = targetInstanceId;
+        }
+
+        public void AddClip(int instanceId, int trackIndex, double start, double duration, string clipName)
+        {
+            AddClipCallCount++;
+            LastAddClipInstanceId = instanceId;
+            LastAddClipTrackIndex = trackIndex;
+            LastAddClipStart = start;
+            LastAddClipDuration = duration;
+            LastAddClipName = clipName;
+        }
+
+        public void RemoveClip(int instanceId, int trackIndex, int clipIndex)
+        {
+            RemoveClipCallCount++;
+            LastRemoveClipInstanceId = instanceId;
+            LastRemoveClipTrackIndex = trackIndex;
+            LastRemoveClipIndex = clipIndex;
         }
     }
 }

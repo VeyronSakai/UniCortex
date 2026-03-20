@@ -14,34 +14,6 @@ namespace UniCortex.Editor.Infrastructures
                 "Install it via Unity Package Manager to use this feature.");
         }
 
-        public void SetTimelineTime(int instanceId, double time)
-        {
-            throw new NotSupportedException(
-                "Timeline package (com.unity.timeline) is not installed. " +
-                "Install it via Unity Package Manager to use this feature.");
-        }
-
-        public void PlayTimeline(int instanceId)
-        {
-            throw new NotSupportedException(
-                "Timeline package (com.unity.timeline) is not installed. " +
-                "Install it via Unity Package Manager to use this feature.");
-        }
-
-        public void PauseTimeline(int instanceId)
-        {
-            throw new NotSupportedException(
-                "Timeline package (com.unity.timeline) is not installed. " +
-                "Install it via Unity Package Manager to use this feature.");
-        }
-
-        public void StopTimeline(int instanceId)
-        {
-            throw new NotSupportedException(
-                "Timeline package (com.unity.timeline) is not installed. " +
-                "Install it via Unity Package Manager to use this feature.");
-        }
-
         public void AddTrack(int instanceId, string trackType, string trackName)
         {
             throw new NotSupportedException(
@@ -57,6 +29,20 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         public void SetBinding(int instanceId, int trackIndex, int targetInstanceId)
+        {
+            throw new NotSupportedException(
+                "Timeline package (com.unity.timeline) is not installed. " +
+                "Install it via Unity Package Manager to use this feature.");
+        }
+
+        public void AddClip(int instanceId, int trackIndex, double start, double duration, string clipName)
+        {
+            throw new NotSupportedException(
+                "Timeline package (com.unity.timeline) is not installed. " +
+                "Install it via Unity Package Manager to use this feature.");
+        }
+
+        public void RemoveClip(int instanceId, int trackIndex, int clipIndex)
         {
             throw new NotSupportedException(
                 "Timeline package (com.unity.timeline) is not installed. " +

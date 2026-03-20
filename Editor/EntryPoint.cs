@@ -209,18 +209,6 @@ namespace UniCortex.Editor
             var getTimelineInfoUseCase = new GetTimelineInfoUseCase(s_dispatcher, timelineOps);
             var getTimelineInfoHandler = new GetTimelineInfoHandler(getTimelineInfoUseCase);
 
-            var setTimelineTimeUseCase = new SetTimelineTimeUseCase(s_dispatcher, timelineOps);
-            var setTimelineTimeHandler = new SetTimelineTimeHandler(setTimelineTimeUseCase);
-
-            var playTimelineUseCase = new PlayTimelineUseCase(s_dispatcher, timelineOps);
-            var playTimelineHandler = new PlayTimelineHandler(playTimelineUseCase);
-
-            var pauseTimelineUseCase = new PauseTimelineUseCase(s_dispatcher, timelineOps);
-            var pauseTimelineHandler = new PauseTimelineHandler(pauseTimelineUseCase);
-
-            var stopTimelineUseCase = new StopTimelineUseCase(s_dispatcher, timelineOps);
-            var stopTimelineHandler = new StopTimelineHandler(stopTimelineUseCase);
-
             var addTimelineTrackUseCase = new AddTimelineTrackUseCase(s_dispatcher, timelineOps);
             var addTimelineTrackHandler = new AddTimelineTrackHandler(addTimelineTrackUseCase);
 
@@ -229,6 +217,12 @@ namespace UniCortex.Editor
 
             var setTimelineBindingUseCase = new SetTimelineBindingUseCase(s_dispatcher, timelineOps);
             var setTimelineBindingHandler = new SetTimelineBindingHandler(setTimelineBindingUseCase);
+
+            var addTimelineClipUseCase = new AddTimelineClipUseCase(s_dispatcher, timelineOps);
+            var addTimelineClipHandler = new AddTimelineClipHandler(addTimelineClipUseCase);
+
+            var removeTimelineClipUseCase = new RemoveTimelineClipUseCase(s_dispatcher, timelineOps);
+            var removeTimelineClipHandler = new RemoveTimelineClipHandler(removeTimelineClipUseCase);
 
             pingHandler.Register(router);
             playHandler.Register(router);
@@ -264,13 +258,11 @@ namespace UniCortex.Editor
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
             getTimelineInfoHandler.Register(router);
-            setTimelineTimeHandler.Register(router);
-            playTimelineHandler.Register(router);
-            pauseTimelineHandler.Register(router);
-            stopTimelineHandler.Register(router);
             addTimelineTrackHandler.Register(router);
             removeTimelineTrackHandler.Register(router);
             setTimelineBindingHandler.Register(router);
+            addTimelineClipHandler.Register(router);
+            removeTimelineClipHandler.Register(router);
         }
 
         private static int FindFreePort()
