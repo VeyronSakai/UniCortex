@@ -1,4 +1,5 @@
 using System.Text.Json;
+using UniCortex.Core.Infrastructures;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.Extensions;
@@ -18,12 +19,11 @@ public static class HttpResponseMessageExtensions
             return;
         }
 
-        var jsonOptions = new JsonSerializerOptions { IncludeFields = true };
         string? errorMessage = null;
         try
         {
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
-            var error = JsonSerializer.Deserialize<ErrorResponse>(body, jsonOptions);
+            var error = JsonSerializer.Deserialize<ErrorResponse>(body, UnityEditorClient.JsonOptions);
             errorMessage = error?.error;
         }
         catch

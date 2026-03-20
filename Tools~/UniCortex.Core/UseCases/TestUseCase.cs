@@ -1,22 +1,19 @@
 using System.Text;
 using System.Text.Json;
-using UniCortex.Core.Domains;
-using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Extensions;
+using UniCortex.Core.Infrastructures;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class TestUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class TestUseCase(UnityEditorClient client)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     public async ValueTask<string> RunAsync(string? testMode = null, string[]? testNames = null,
         string[]? groupNames = null, string[]? categoryNames = null, string[]? assemblyNames = null,
         CancellationToken cancellationToken = default)
     {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        var baseUrl = client.BaseUrl;
+        await client.WaitForServerAsync(cancellationToken);
 
         var request = new RunTestsRequest(
             testMode ?? TestModes.EditMode,
@@ -24,13 +21,13 @@ public class TestUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
             groupNames != null ? new List<string>(groupNames) : null,
             categoryNames != null ? new List<string>(categoryNames) : null,
             assemblyNames != null ? new List<string>(assemblyNames) : null);
-        var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
+        var json = JsonSerializer.Serialize(request, UnityEditorClient.JsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         string responseJson;
         try
         {
-            using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.TestsRun}", content,
+            using var response = await client.HttpClient.PostAsync($"{baseUrl}{ApiRoutes.TestsRun}", content,
                 cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
             responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -47,9 +44,9 @@ public class TestUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlPr
         // automatically polls until results are stored in SessionState.
         if (string.IsNullOrEmpty(responseJson))
         {
-            await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+            await client.WaitForServerAsync(cancellationToken);
             using var resultResponse =
-                await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.TestsResult}", cancellationToken);
+                await client.HttpClient.GetAsync($"{baseUrl}{ApiRoutes.TestsResult}", cancellationToken);
             await resultResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
             responseJson = await resultResponse.Content.ReadAsStringAsync(cancellationToken);
         }

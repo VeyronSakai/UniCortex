@@ -1,68 +1,40 @@
-using System.Text;
-using System.Text.Json;
-using UniCortex.Core.Domains;
-using UniCortex.Core.Domains.Interfaces;
-using UniCortex.Core.Extensions;
+using UniCortex.Core.Infrastructures;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class ComponentUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class ComponentUseCase(UnityEditorClient client)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
-    public async ValueTask<string> AddAsync(int instanceId, string componentType,
+    public ValueTask<string> AddAsync(int instanceId, string componentType,
         CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
         var request = new AddComponentRequest { instanceId = instanceId, componentType = componentType };
-        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentAdd}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return $"Component '{componentType}' added successfully.";
+        return client.PostAsync(ApiRoutes.ComponentAdd, request,
+            $"Component '{componentType}' added successfully.", cancellationToken);
     }
 
-    public async ValueTask<string> RemoveAsync(int instanceId, string componentType,
+    public ValueTask<string> RemoveAsync(int instanceId, string componentType,
         int componentIndex = 0, CancellationToken cancellationToken = default)
     {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
         var request = new RemoveComponentRequest
         {
             instanceId = instanceId, componentType = componentType, componentIndex = componentIndex
         };
-        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentRemove}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return $"Component '{componentType}' removed successfully.";
+        return client.PostAsync(ApiRoutes.ComponentRemove, request,
+            $"Component '{componentType}' removed successfully.", cancellationToken);
     }
 
-    public async ValueTask<string> GetPropertiesAsync(int instanceId, string componentType,
+    public ValueTask<string> GetPropertiesAsync(int instanceId, string componentType,
         int componentIndex = 0, CancellationToken cancellationToken = default)
     {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
-        var url =
-            $"{baseUrl}{ApiRoutes.ComponentProperties}?instanceId={instanceId}&componentType={Uri.EscapeDataString(componentType)}&componentIndex={componentIndex}";
-        using var response = await _httpClient.GetAsync(url, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return await response.Content.ReadAsStringAsync(cancellationToken);
+        var route =
+            $"{ApiRoutes.ComponentProperties}?instanceId={instanceId}&componentType={Uri.EscapeDataString(componentType)}&componentIndex={componentIndex}";
+        return client.GetStringAsync(route, cancellationToken);
     }
 
-    public async ValueTask<string> SetPropertyAsync(int instanceId, string componentType,
+    public ValueTask<string> SetPropertyAsync(int instanceId, string componentType,
         string propertyPath, string value, CancellationToken cancellationToken = default)
     {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
         var request = new SetComponentPropertyRequest
         {
             instanceId = instanceId,
@@ -70,11 +42,7 @@ public class ComponentUseCase(IHttpClientFactory httpClientFactory, IUnityServer
             propertyPath = propertyPath,
             value = value
         };
-        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.ComponentSetProperty}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return $"Property '{propertyPath}' set to '{value}' successfully.";
+        return client.PostAsync(ApiRoutes.ComponentSetProperty, request,
+            $"Property '{propertyPath}' set to '{value}' successfully.", cancellationToken);
     }
 }

@@ -20,6 +20,8 @@ public static class ServiceCollectionExtensions
             })
             .AddHttpMessageHandler<HttpRequestHandler>();
 
+        services.AddTransient<UnityEditorClient>();
+
         services.AddTransient<EditorUseCase>();
         services.AddTransient<GameObjectUseCase>();
         services.AddTransient<ComponentUseCase>();
