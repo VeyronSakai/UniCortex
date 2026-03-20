@@ -12,8 +12,7 @@ public class TimelineTools(TimelineUseCase timelineService)
 {
     [McpServerTool(Name = "create_timeline", ReadOnly = false),
      Description(
-         "Create a new TimelineAsset (.playable file) at the specified asset path. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
+         "Create a new TimelineAsset (.playable file) at the specified asset path."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> CreateTimelineAsync(
         [Description("Asset path where the TimelineAsset will be saved (e.g. \"Assets/Timelines/MyTimeline.playable\").")]
@@ -33,8 +32,7 @@ public class TimelineTools(TimelineUseCase timelineService)
 
     [McpServerTool(Name = "add_timeline_track", ReadOnly = false),
      Description(
-         "Add a track to a TimelineAsset on a PlayableDirector. Undo supported. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
+         "Add a track to a TimelineAsset on a PlayableDirector. Undo supported."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> AddTimelineTrackAsync(
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
@@ -63,8 +61,7 @@ public class TimelineTools(TimelineUseCase timelineService)
 
     [McpServerTool(Name = "remove_timeline_track", ReadOnly = false),
      Description(
-         "Remove a track from a TimelineAsset on a PlayableDirector by index. Undo supported. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
+         "Remove a track from a TimelineAsset on a PlayableDirector by index. Undo supported."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> RemoveTimelineTrackAsync(
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
@@ -87,8 +84,7 @@ public class TimelineTools(TimelineUseCase timelineService)
 
     [McpServerTool(Name = "bind_timeline_track", ReadOnly = false),
      Description(
-         "Set the binding of a Timeline track on a PlayableDirector. Undo supported. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
+         "Set the binding of a Timeline track on a PlayableDirector. Undo supported."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> BindTimelineTrackAsync(
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
@@ -113,8 +109,7 @@ public class TimelineTools(TimelineUseCase timelineService)
 
     [McpServerTool(Name = "add_timeline_clip", ReadOnly = false),
      Description(
-         "Add a default clip to a Timeline track. The clip type is determined by the track type. Undo supported. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
+         "Add a default clip to a Timeline track. The clip type is determined by the track type. Undo supported."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> AddTimelineClipAsync(
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
@@ -143,8 +138,7 @@ public class TimelineTools(TimelineUseCase timelineService)
 
     [McpServerTool(Name = "remove_timeline_clip", ReadOnly = false),
      Description(
-         "Remove a clip from a Timeline track by index. Undo supported. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
+         "Remove a clip from a Timeline track by index. Undo supported."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> RemoveTimelineClipAsync(
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
