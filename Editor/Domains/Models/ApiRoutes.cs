@@ -36,10 +36,10 @@ namespace UniCortex.Editor.Domains.Models
         public const string InputKey = "/input/key";
         public const string InputMouse = "/input/mouse";
         public const string TimelineCreate = "/timeline/create";
-        public const string TimelineAddTrack = "/timeline/add-track";
-        public const string TimelineRemoveTrack = "/timeline/remove-track";
-        public const string TimelineSetBinding = "/timeline/set-binding";
-        public const string TimelineAddClip = "/timeline/add-clip";
-        public const string TimelineRemoveClip = "/timeline/remove-clip";
+        public const string TimelineAddTrack = "/timeline/track/add";
+        public const string TimelineRemoveTrack = "/timeline/track/remove";
+        public const string TimelineSetBinding = "/timeline/binding/set";
+        public const string TimelineAddClip = "/timeline/clip/add";
+        public const string TimelineRemoveClip = "/timeline/clip/remove";
     }
 }
