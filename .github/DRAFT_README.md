@@ -197,7 +197,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `create_timeline` | Create a new TimelineAsset (.playable file) at the specified asset path (requires com.unity.timeline) |
 | `add_timeline_track` | Add a track to a TimelineAsset (requires com.unity.timeline) |
 | `remove_timeline_track` | Remove a track from a TimelineAsset by index (requires com.unity.timeline) |
-| `set_timeline_binding` | Set the binding of a Timeline track on a PlayableDirector (requires com.unity.timeline) |
+| `bind_timeline_track` | Set the binding of a Timeline track on a PlayableDirector (requires com.unity.timeline) |
 | `add_timeline_clip` | Add a default clip to a Timeline track (requires com.unity.timeline) |
 | `remove_timeline_clip` | Remove a clip from a Timeline track by index (requires com.unity.timeline) |
 

@@ -85,7 +85,7 @@ public class TimelineTools(TimelineUseCase timelineService)
         }
     }
 
-    [McpServerTool(Name = "set_timeline_binding", ReadOnly = false),
+    [McpServerTool(Name = "bind_timeline_track", ReadOnly = false),
      Description(
          "Set the binding of a Timeline track on a PlayableDirector. Undo supported. " +
          "Requires the Timeline package (com.unity.timeline) to be installed."),
