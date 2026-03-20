@@ -16,15 +16,6 @@ public class TimelineCommands(TimelineUseCase timelineService)
         Console.WriteLine(json);
     }
 
-    /// <summary>Get Timeline information from a PlayableDirector. Requires com.unity.timeline.</summary>
-    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
-    [Command("get-info")]
-    public async Task GetInfo(int instanceId, CancellationToken cancellationToken = default)
-    {
-        var json = await timelineService.GetInfoAsync(instanceId, cancellationToken);
-        Console.WriteLine(json);
-    }
-
     /// <summary>Add a track to a TimelineAsset. Undo supported. Requires com.unity.timeline.</summary>
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
     /// <param name="trackType">Track type: AnimationTrack, AudioTrack, ActivationTrack, ControlTrack, SignalTrack, GroupTrack.</param>

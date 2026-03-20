@@ -14,13 +14,6 @@ namespace UniCortex.Editor.Infrastructures
                 "Install it via Unity Package Manager to use this feature.");
         }
 
-        public TimelineInfoResponse GetTimelineInfo(int instanceId)
-        {
-            throw new NotSupportedException(
-                "Timeline package (com.unity.timeline) is not installed. " +
-                "Install it via Unity Package Manager to use this feature.");
-        }
-
         public void AddTrack(int instanceId, string trackType, string trackName)
         {
             throw new NotSupportedException(

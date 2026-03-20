@@ -209,9 +209,6 @@ namespace UniCortex.Editor
             var createTimelineUseCase = new CreateTimelineUseCase(s_dispatcher, timelineOps);
             var createTimelineHandler = new CreateTimelineHandler(createTimelineUseCase);
 
-            var getTimelineInfoUseCase = new GetTimelineInfoUseCase(s_dispatcher, timelineOps);
-            var getTimelineInfoHandler = new GetTimelineInfoHandler(getTimelineInfoUseCase);
-
             var addTimelineTrackUseCase = new AddTimelineTrackUseCase(s_dispatcher, timelineOps);
             var addTimelineTrackHandler = new AddTimelineTrackHandler(addTimelineTrackUseCase);
 
@@ -261,7 +258,6 @@ namespace UniCortex.Editor
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
             createTimelineHandler.Register(router);
-            getTimelineInfoHandler.Register(router);
             addTimelineTrackHandler.Register(router);
             removeTimelineTrackHandler.Register(router);
             setTimelineBindingHandler.Register(router);

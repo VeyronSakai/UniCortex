@@ -31,27 +31,6 @@ public class TimelineTools(TimelineUseCase timelineService)
         }
     }
 
-    [McpServerTool(Name = "get_timeline_info", ReadOnly = true),
-     Description(
-         "Get Timeline information from a PlayableDirector including tracks, clips, bindings, and playback state. " +
-         "Requires the Timeline package (com.unity.timeline) to be installed."),
-     UsedImplicitly]
-    public async ValueTask<CallToolResult> GetTimelineInfoAsync(
-        [Description("The instanceId of a GameObject with a PlayableDirector component, or the PlayableDirector component itself.")]
-        int instanceId,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var json = await timelineService.GetInfoAsync(instanceId, cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
-
     [McpServerTool(Name = "add_timeline_track", ReadOnly = false),
      Description(
          "Add a track to a TimelineAsset on a PlayableDirector. Undo supported. " +
@@ -90,7 +69,7 @@ public class TimelineTools(TimelineUseCase timelineService)
     public async ValueTask<CallToolResult> RemoveTimelineTrackAsync(
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
         int instanceId,
-        [Description("The index of the track to remove (0-based, from get_timeline_info output).")]
+        [Description("The index of the track to remove (0-based).")]
         int trackIndex,
         CancellationToken cancellationToken = default)
     {
@@ -114,7 +93,7 @@ public class TimelineTools(TimelineUseCase timelineService)
     public async ValueTask<CallToolResult> SetTimelineBindingAsync(
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
         int instanceId,
-        [Description("The index of the track to bind (0-based, from get_timeline_info output).")]
+        [Description("The index of the track to bind (0-based).")]
         int trackIndex,
         [Description("The instanceId of the target object to bind to the track.")]
         int targetInstanceId,
@@ -140,7 +119,7 @@ public class TimelineTools(TimelineUseCase timelineService)
     public async ValueTask<CallToolResult> AddTimelineClipAsync(
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
         int instanceId,
-        [Description("The index of the track to add the clip to (0-based, from get_timeline_info output).")]
+        [Description("The index of the track to add the clip to (0-based).")]
         int trackIndex,
         [Description("Start time of the clip in seconds.")]
         double start = 0,
@@ -170,9 +149,9 @@ public class TimelineTools(TimelineUseCase timelineService)
     public async ValueTask<CallToolResult> RemoveTimelineClipAsync(
         [Description("The instanceId of a GameObject with a PlayableDirector component.")]
         int instanceId,
-        [Description("The index of the track containing the clip (0-based, from get_timeline_info output).")]
+        [Description("The index of the track containing the clip (0-based).")]
         int trackIndex,
-        [Description("The index of the clip to remove within the track (0-based, from get_timeline_info output).")]
+        [Description("The index of the clip to remove within the track (0-based).")]
         int clipIndex,
         CancellationToken cancellationToken = default)
     {

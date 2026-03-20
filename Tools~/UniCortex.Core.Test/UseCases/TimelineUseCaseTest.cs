@@ -74,26 +74,6 @@ public class TimelineUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask GetInfo_ReturnsTimelineInfo_WhenTimelineExists()
-    {
-        var ct = CancellationToken.None;
-        var goId = await CreateTimelineSetupAsync();
-
-        try
-        {
-            var json = await _fixture.TimelineUseCase.GetInfoAsync(goId, ct);
-
-            Assert.That(json, Does.Contain("timelineAssetName"));
-            Assert.That(json, Does.Contain("tracks"));
-            Assert.That(json, Does.Contain("bindings"));
-        }
-        finally
-        {
-            await _fixture.GameObjectUseCase.DeleteAsync(goId, ct);
-        }
-    }
-
-    [Test, CancelAfter(120_000)]
     public async ValueTask AddTrack_AddsTrackToTimeline()
     {
         var ct = CancellationToken.None;
@@ -105,10 +85,6 @@ public class TimelineUseCaseTest
                 goId, TimelineTrackType.ActivationTrack, "TestTrack", ct);
 
             Assert.That(message, Does.Contain("Track added"));
-
-            var infoJson = await _fixture.TimelineUseCase.GetInfoAsync(goId, ct);
-            Assert.That(infoJson, Does.Contain("TestTrack"));
-            Assert.That(infoJson, Does.Contain("ActivationTrack"));
         }
         finally
         {
@@ -130,9 +106,6 @@ public class TimelineUseCaseTest
             var message = await _fixture.TimelineUseCase.RemoveTrackAsync(goId, 0, ct);
 
             Assert.That(message, Does.Contain("Track removed"));
-
-            var infoJson = await _fixture.TimelineUseCase.GetInfoAsync(goId, ct);
-            Assert.That(infoJson, Does.Not.Contain("TrackToRemove"));
         }
         finally
         {
@@ -154,9 +127,6 @@ public class TimelineUseCaseTest
             var message = await _fixture.TimelineUseCase.AddClipAsync(goId, 0, 1.0, 3.0, "TestClip", ct);
 
             Assert.That(message, Does.Contain("Clip added"));
-
-            var infoJson = await _fixture.TimelineUseCase.GetInfoAsync(goId, ct);
-            Assert.That(infoJson, Does.Contain("TestClip"));
         }
         finally
         {
@@ -179,9 +149,6 @@ public class TimelineUseCaseTest
             var message = await _fixture.TimelineUseCase.RemoveClipAsync(goId, 0, 0, ct);
 
             Assert.That(message, Does.Contain("Clip removed"));
-
-            var infoJson = await _fixture.TimelineUseCase.GetInfoAsync(goId, ct);
-            Assert.That(infoJson, Does.Not.Contain("ClipToRemove"));
         }
         finally
         {
@@ -189,12 +156,4 @@ public class TimelineUseCaseTest
         }
     }
 
-    [Test, CancelAfter(120_000)]
-    public async ValueTask GetInfo_ReturnsError_WhenInvalidInstanceId()
-    {
-        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.TimelineUseCase.GetInfoAsync(-1, CancellationToken.None));
-
-        Assert.That(ex!.Message, Does.Contain("instanceId").Or.Contain("Timeline"));
-    }
 }

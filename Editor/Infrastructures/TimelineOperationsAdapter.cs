@@ -1,6 +1,5 @@
 #if UNICORTEX_TIMELINE
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
@@ -19,68 +18,6 @@ namespace UniCortex.Editor.Infrastructures
             AssetDatabase.CreateAsset(timelineAsset, assetPath);
 
             return new CreateTimelineResponse(true, assetPath);
-        }
-
-        public TimelineInfoResponse GetTimelineInfo(int instanceId)
-        {
-            var director = GetPlayableDirector(instanceId);
-            var timelineAsset = director.playableAsset as TimelineAsset;
-            if (timelineAsset == null)
-            {
-                throw new InvalidOperationException(
-                    $"PlayableDirector (instanceId={instanceId}) has no TimelineAsset assigned.");
-            }
-
-            var outputTracks = timelineAsset.GetOutputTracks().ToArray();
-
-            var tracks = new List<TimelineTrackInfo>();
-            var bindings = new List<TimelineBindingInfo>();
-
-            for (var i = 0; i < outputTracks.Length; i++)
-            {
-                var track = outputTracks[i];
-
-                var clips = new List<TimelineClipInfo>();
-                foreach (var clip in track.GetClips())
-                {
-                    clips.Add(new TimelineClipInfo
-                    {
-                        name = clip.displayName,
-                        start = clip.start,
-                        duration = clip.duration,
-                        end = clip.end
-                    });
-                }
-
-                tracks.Add(new TimelineTrackInfo
-                {
-                    name = track.name,
-                    type = track.GetType().Name,
-                    muted = track.muted,
-                    locked = track.locked,
-                    clips = clips.ToArray()
-                });
-
-                var binding = director.GetGenericBinding(track);
-                bindings.Add(new TimelineBindingInfo
-                {
-                    trackIndex = i,
-                    trackName = track.name,
-                    sourceType = track.GetType().Name,
-                    boundObjectName = binding != null ? binding.name : "",
-                    boundObjectInstanceId = binding != null ? binding.GetInstanceID() : 0
-                });
-            }
-
-            return new TimelineInfoResponse
-            {
-                timelineAssetName = timelineAsset.name,
-                duration = timelineAsset.duration,
-                currentTime = director.time,
-                isPlaying = director.state == PlayState.Playing,
-                tracks = tracks.ToArray(),
-                bindings = bindings.ToArray()
-            };
         }
 
         public void AddTrack(int instanceId, string trackType, string trackName)

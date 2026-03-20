@@ -8,10 +8,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int CreateTimelineCallCount { get; private set; }
         public string LastCreateAssetPath { get; private set; }
 
-        public int GetTimelineInfoCallCount { get; private set; }
-        public int LastGetInfoInstanceId { get; private set; }
-        public TimelineInfoResponse GetTimelineInfoResult { get; set; }
-
         public int AddTrackCallCount { get; private set; }
         public int LastAddTrackInstanceId { get; private set; }
         public string LastAddTrackType { get; private set; }
@@ -43,21 +39,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
             CreateTimelineCallCount++;
             LastCreateAssetPath = assetPath;
             return new CreateTimelineResponse(true, assetPath);
-        }
-
-        public TimelineInfoResponse GetTimelineInfo(int instanceId)
-        {
-            GetTimelineInfoCallCount++;
-            LastGetInfoInstanceId = instanceId;
-            return GetTimelineInfoResult ?? new TimelineInfoResponse
-            {
-                timelineAssetName = "TestTimeline",
-                duration = 10.0,
-                currentTime = 0.0,
-                isPlaying = false,
-                tracks = new TimelineTrackInfo[0],
-                bindings = new TimelineBindingInfo[0]
-            };
         }
 
         public void AddTrack(int instanceId, string trackType, string trackName)

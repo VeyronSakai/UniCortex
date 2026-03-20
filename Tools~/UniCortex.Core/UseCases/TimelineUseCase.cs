@@ -25,17 +25,6 @@ public class TimelineUseCase(IHttpClientFactory httpClientFactory, IUnityServerU
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
-    public async ValueTask<string> GetInfoAsync(int instanceId, CancellationToken cancellationToken)
-    {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
-        using var response = await _httpClient.GetAsync(
-            $"{baseUrl}{ApiRoutes.TimelineInfo}?instanceId={instanceId}", cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return await response.Content.ReadAsStringAsync(cancellationToken);
-    }
-
     public async ValueTask<string> AddTrackAsync(int instanceId, string trackType, string trackName,
         CancellationToken cancellationToken)
     {
