@@ -13,37 +13,12 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class TimelineOperationsAdapter : ITimelineOperations
     {
-        public CreateTimelineResponse CreateTimeline(int instanceId, string assetPath)
+        public CreateTimelineResponse CreateTimeline(string assetPath)
         {
-            var obj = EditorUtility.InstanceIDToObject(instanceId);
-            if (obj == null)
-            {
-                throw new ArgumentException($"No object found with instanceId={instanceId}.");
-            }
-
-            var go = obj as GameObject;
-            if (go == null)
-            {
-                throw new InvalidOperationException(
-                    $"Object with instanceId={instanceId} is not a GameObject.");
-            }
-
             var timelineAsset = ScriptableObject.CreateInstance<TimelineAsset>();
             AssetDatabase.CreateAsset(timelineAsset, assetPath);
 
-            var director = go.GetComponent<PlayableDirector>();
-            if (director == null)
-            {
-                director = Undo.AddComponent<PlayableDirector>(go);
-            }
-            else
-            {
-                Undo.RecordObject(director, "Assign Timeline Asset");
-            }
-
-            director.playableAsset = timelineAsset;
-
-            return new CreateTimelineResponse(assetPath, go.GetInstanceID());
+            return new CreateTimelineResponse(true, assetPath);
         }
 
         public TimelineInfoResponse GetTimelineInfo(int instanceId)

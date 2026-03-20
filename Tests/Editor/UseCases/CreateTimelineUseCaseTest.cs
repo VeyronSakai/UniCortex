@@ -15,14 +15,14 @@ namespace UniCortex.Editor.Tests.UseCases
             var ops = new SpyTimelineOperations();
             var useCase = new CreateTimelineUseCase(dispatcher, ops);
 
-            var result = useCase.ExecuteAsync(12345, "Assets/Test.playable", CancellationToken.None)
+            var result = useCase.ExecuteAsync("Assets/Test.playable", CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(1, ops.CreateTimelineCallCount);
-            Assert.AreEqual(12345, ops.LastCreateInstanceId);
             Assert.AreEqual("Assets/Test.playable", ops.LastCreateAssetPath);
             Assert.AreEqual(1, dispatcher.CallCount);
             Assert.IsNotNull(result);
+            Assert.IsTrue(result.success);
             Assert.AreEqual("Assets/Test.playable", result.assetPath);
         }
     }

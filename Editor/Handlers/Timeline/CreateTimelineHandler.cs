@@ -28,19 +28,12 @@ namespace UniCortex.Editor.Handlers.Timeline
 
             if (string.IsNullOrEmpty(body))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId and assetPath are required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("assetPath is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             var request = JsonUtility.FromJson<CreateTimelineRequest>(body);
-
-            if (request.instanceId == 0)
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId is required."));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-                return;
-            }
 
             if (string.IsNullOrEmpty(request.assetPath))
             {
@@ -51,19 +44,9 @@ namespace UniCortex.Editor.Handlers.Timeline
 
             try
             {
-                var result = await _useCase.ExecuteAsync(request.instanceId, request.assetPath, cancellationToken);
+                var result = await _useCase.ExecuteAsync(request.assetPath, cancellationToken);
                 var json = JsonUtility.ToJson(result);
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
-            }
-            catch (InvalidOperationException ex)
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
-            }
-            catch (ArgumentException ex)
-            {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
-                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
             }
             catch (NotSupportedException ex)
             {

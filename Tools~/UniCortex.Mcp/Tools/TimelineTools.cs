@@ -12,20 +12,17 @@ public class TimelineTools(TimelineUseCase timelineService)
 {
     [McpServerTool(Name = "create_timeline", ReadOnly = false),
      Description(
-         "Create a new TimelineAsset and assign it to a PlayableDirector on a GameObject. " +
-         "If the GameObject does not have a PlayableDirector, one will be added. " +
+         "Create a new TimelineAsset (.playable file) at the specified asset path. " +
          "Requires the Timeline package (com.unity.timeline) to be installed."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> CreateTimelineAsync(
-        [Description("The instanceId of the GameObject to attach the Timeline to.")]
-        int instanceId,
         [Description("Asset path where the TimelineAsset will be saved (e.g. \"Assets/Timelines/MyTimeline.playable\").")]
         string assetPath,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var json = await timelineService.CreateAsync(instanceId, assetPath, cancellationToken);
+            var json = await timelineService.CreateAsync(assetPath, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)

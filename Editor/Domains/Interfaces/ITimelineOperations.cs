@@ -4,7 +4,7 @@ namespace UniCortex.Editor.Domains.Interfaces
 {
     internal interface ITimelineOperations
     {
-        CreateTimelineResponse CreateTimeline(int instanceId, string assetPath);
+        CreateTimelineResponse CreateTimeline(string assetPath);
         TimelineInfoResponse GetTimelineInfo(int instanceId);
         void AddTrack(int instanceId, string trackType, string trackName);
         void RemoveTrack(int instanceId, int trackIndex);

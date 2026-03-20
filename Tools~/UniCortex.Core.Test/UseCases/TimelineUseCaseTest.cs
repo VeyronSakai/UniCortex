@@ -36,44 +36,48 @@ public class TimelineUseCaseTest
         UnityEditorFixture.DeleteAssetFile(TimelineAssetPath);
     }
 
-    private async ValueTask<(int goInstanceId, int directorInstanceId)> CreateTimelineSetupAsync()
+    /// <summary>
+    /// Creates a TimelineAsset, a GameObject with a PlayableDirector, and assigns the asset.
+    /// Returns the GameObject's instanceId.
+    /// </summary>
+    private async ValueTask<int> CreateTimelineSetupAsync()
     {
         var ct = CancellationToken.None;
+
+        // Create the .playable asset
+        await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, ct);
+
+        // Create a GameObject
         var goJson = await _fixture.GameObjectUseCase.CreateAsync("TimelineTestObj", ct);
         var goResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(goJson, s_jsonOptions)!;
 
-        var createJson = await _fixture.TimelineUseCase.CreateAsync(goResponse.instanceId, TimelineAssetPath, ct);
-        var createResponse = JsonSerializer.Deserialize<CreateTimelineResponse>(createJson, s_jsonOptions)!;
+        // Add PlayableDirector component
+        await _fixture.ComponentUseCase.AddAsync(goResponse.instanceId,
+            "UnityEngine.Playables.PlayableDirector", ct);
 
-        return (goResponse.instanceId, createResponse.instanceId);
+        // Assign the TimelineAsset to PlayableDirector via set_component_property
+        await _fixture.ComponentUseCase.SetPropertyAsync(goResponse.instanceId,
+            "UnityEngine.Playables.PlayableDirector", "m_PlayableAsset", TimelineAssetPath, ct);
+
+        return goResponse.instanceId;
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask Create_CreatesTimelineAssetAndAssignsToDirector()
+    public async ValueTask Create_CreatesTimelineAsset()
     {
         var ct = CancellationToken.None;
-        var goJson = await _fixture.GameObjectUseCase.CreateAsync("CreateTimelineTestObj", ct);
-        var goResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(goJson, s_jsonOptions)!;
 
-        try
-        {
-            var json = await _fixture.TimelineUseCase.CreateAsync(goResponse.instanceId, TimelineAssetPath, ct);
-            var response = JsonSerializer.Deserialize<CreateTimelineResponse>(json, s_jsonOptions)!;
+        var json = await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, ct);
 
-            Assert.That(response.assetPath, Is.EqualTo(TimelineAssetPath));
-            Assert.That(response.instanceId, Is.Not.EqualTo(0));
-        }
-        finally
-        {
-            await _fixture.GameObjectUseCase.DeleteAsync(goResponse.instanceId, ct);
-        }
+        Assert.That(json, Does.Contain(TimelineAssetPath));
+        Assert.That(json, Does.Contain("true"));
     }
 
     [Test, CancelAfter(120_000)]
     public async ValueTask GetInfo_ReturnsTimelineInfo_WhenTimelineExists()
     {
         var ct = CancellationToken.None;
-        var (goId, _) = await CreateTimelineSetupAsync();
+        var goId = await CreateTimelineSetupAsync();
 
         try
         {
@@ -93,7 +97,7 @@ public class TimelineUseCaseTest
     public async ValueTask AddTrack_AddsTrackToTimeline()
     {
         var ct = CancellationToken.None;
-        var (goId, _) = await CreateTimelineSetupAsync();
+        var goId = await CreateTimelineSetupAsync();
 
         try
         {
@@ -116,7 +120,7 @@ public class TimelineUseCaseTest
     public async ValueTask RemoveTrack_RemovesTrackFromTimeline()
     {
         var ct = CancellationToken.None;
-        var (goId, _) = await CreateTimelineSetupAsync();
+        var goId = await CreateTimelineSetupAsync();
 
         try
         {
@@ -140,7 +144,7 @@ public class TimelineUseCaseTest
     public async ValueTask AddClip_AddsClipToTrack()
     {
         var ct = CancellationToken.None;
-        var (goId, _) = await CreateTimelineSetupAsync();
+        var goId = await CreateTimelineSetupAsync();
 
         try
         {
@@ -164,7 +168,7 @@ public class TimelineUseCaseTest
     public async ValueTask RemoveClip_RemovesClipFromTrack()
     {
         var ct = CancellationToken.None;
-        var (goId, _) = await CreateTimelineSetupAsync();
+        var goId = await CreateTimelineSetupAsync();
 
         try
         {

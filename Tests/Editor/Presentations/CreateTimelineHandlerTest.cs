@@ -23,13 +23,12 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineCreate,
-                "{\"instanceId\":12345,\"assetPath\":\"Assets/Test.playable\"}");
+                "{\"assetPath\":\"Assets/Test.playable\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("Assets/Test.playable", context.ResponseBody);
-            Assert.AreEqual(12345, ops.LastCreateInstanceId);
         }
 
         [Test]
@@ -61,8 +60,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineCreate,
-                "{\"instanceId\":12345}");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TimelineCreate, "{}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

@@ -16,11 +16,11 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<CreateTimelineResponse> ExecuteAsync(int instanceId, string assetPath,
+        public async Task<CreateTimelineResponse> ExecuteAsync(string assetPath,
             CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.CreateTimeline(instanceId, assetPath), cancellationToken);
+                () => _operations.CreateTimeline(assetPath), cancellationToken);
         }
     }
 }

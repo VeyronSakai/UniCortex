@@ -5,13 +5,13 @@ namespace UniCortex.Editor.Domains.Models
     [Serializable]
     public class CreateTimelineResponse
     {
+        public bool success;
         public string assetPath;
-        public int instanceId;
 
-        public CreateTimelineResponse(string assetPath, int instanceId)
+        public CreateTimelineResponse(bool success, string assetPath)
         {
+            this.success = success;
             this.assetPath = assetPath;
-            this.instanceId = instanceId;
         }
     }
 }
