@@ -97,6 +97,9 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `menu execute` | Execute menu items |
 | `screenshot capture` | Capture Game View screenshot |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
+| `timeline create` | Create a TimelineAsset |
+| `timeline track add\|remove\|bind` | Timeline track operations |
+| `timeline clip add\|remove` | Timeline clip operations |
 
 ## Available MCP Tools
 
@@ -186,6 +189,17 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 |------|-------------|
 | `send_key_event` | Send a keyboard event via Input System in Play Mode (requires com.unity.inputsystem) |
 | `send_mouse_event` | Send a mouse event via Input System in Play Mode (requires com.unity.inputsystem). Supports press, release, and move for drag simulation |
+
+### Timeline
+
+| Tool | Description |
+|------|-------------|
+| `create_timeline` | Create a new TimelineAsset (.playable file) at the specified asset path (requires com.unity.timeline) |
+| `add_timeline_track` | Add a track to a TimelineAsset (requires com.unity.timeline) |
+| `remove_timeline_track` | Remove a track from a TimelineAsset by index (requires com.unity.timeline) |
+| `bind_timeline_track` | Set the binding of a Timeline track on a PlayableDirector (requires com.unity.timeline) |
+| `add_timeline_clip` | Add a default clip to a Timeline track (requires com.unity.timeline) |
+| `remove_timeline_clip` | Remove a clip from a Timeline track by index (requires com.unity.timeline) |
 
 ## Architecture
 
