@@ -14,25 +14,9 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
     private string BaseUrl => urlProvider.GetUrl();
 
     /// <summary>
-    /// POST with JSON body, return a fixed success message.
-    /// </summary>
-    public async ValueTask<string> PostAsync<T>(string route, T request, string successMessage,
-        CancellationToken cancellationToken)
-    {
-        var baseUrl = BaseUrl;
-        await WaitForServerAsync(cancellationToken);
-
-        var body = JsonSerializer.Serialize(request, JsonOptions.Default);
-        var content = new StringContent(body, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
-        using var response = await _httpClient.PostAsync($"{baseUrl}{route}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return successMessage;
-    }
-
-    /// <summary>
     /// POST with JSON body, return the response body as string.
     /// </summary>
-    public async ValueTask<string> PostAndReadAsync<T>(string route, T request,
+    public async ValueTask<string> PostAsync<T>(string route, T request,
         CancellationToken cancellationToken)
     {
         var baseUrl = BaseUrl;
@@ -46,17 +30,15 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
     }
 
     /// <summary>
-    /// POST with null body, return a fixed success message.
+    /// POST with null body.
     /// </summary>
-    public async ValueTask<string> PostEmptyAsync(string route, string successMessage,
-        CancellationToken cancellationToken)
+    public async ValueTask PostAsync(string route, CancellationToken cancellationToken)
     {
         var baseUrl = BaseUrl;
         await WaitForServerAsync(cancellationToken);
 
         using var response = await _httpClient.PostAsync($"{baseUrl}{route}", null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return successMessage;
     }
 
     /// <summary>

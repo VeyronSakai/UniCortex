@@ -25,9 +25,9 @@ public class ConsoleUseCase(IUnityEditorClient client)
         return await client.GetStringAsync(route, cancellationToken);
     }
 
-    public ValueTask<string> ClearAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> ClearAsync(CancellationToken cancellationToken)
     {
-        return client.PostEmptyAsync(ApiRoutes.ConsoleClear, "Console logs cleared successfully.",
-            cancellationToken);
+        await client.PostAsync(ApiRoutes.ConsoleClear, cancellationToken);
+        return "Console logs cleared successfully.";
     }
 }

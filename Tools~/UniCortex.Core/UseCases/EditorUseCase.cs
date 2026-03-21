@@ -75,29 +75,34 @@ public class EditorUseCase(IUnityEditorClient client)
         return "Editor is in edit mode.";
     }
 
-    public ValueTask<string> PauseAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> PauseAsync(CancellationToken cancellationToken)
     {
-        return client.PostEmptyAsync(ApiRoutes.Pause, "Editor paused successfully.", cancellationToken);
+        await client.PostAsync(ApiRoutes.Pause, cancellationToken);
+        return "Editor paused successfully.";
     }
 
-    public ValueTask<string> UnpauseAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> UnpauseAsync(CancellationToken cancellationToken)
     {
-        return client.PostEmptyAsync(ApiRoutes.Unpause, "Editor unpaused successfully.", cancellationToken);
+        await client.PostAsync(ApiRoutes.Unpause, cancellationToken);
+        return "Editor unpaused successfully.";
     }
 
-    public ValueTask<string> StepAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> StepAsync(CancellationToken cancellationToken)
     {
-        return client.PostEmptyAsync(ApiRoutes.Step, "Editor stepped one frame successfully.", cancellationToken);
+        await client.PostAsync(ApiRoutes.Step, cancellationToken);
+        return "Editor stepped one frame successfully.";
     }
 
-    public ValueTask<string> UndoAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> UndoAsync(CancellationToken cancellationToken)
     {
-        return client.PostEmptyAsync(ApiRoutes.Undo, "Undo performed successfully.", cancellationToken);
+        await client.PostAsync(ApiRoutes.Undo, cancellationToken);
+        return "Undo performed successfully.";
     }
 
-    public ValueTask<string> RedoAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> RedoAsync(CancellationToken cancellationToken)
     {
-        return client.PostEmptyAsync(ApiRoutes.Redo, "Redo performed successfully.", cancellationToken);
+        await client.PostAsync(ApiRoutes.Redo, cancellationToken);
+        return "Redo performed successfully.";
     }
 
     public async ValueTask<string> ReloadDomainAsync(CancellationToken cancellationToken)

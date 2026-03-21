@@ -5,10 +5,10 @@ namespace UniCortex.Core.UseCases;
 
 public class MenuItemUseCase(IUnityEditorClient client)
 {
-    public ValueTask<string> ExecuteAsync(string menuPath, CancellationToken cancellationToken)
+    public async ValueTask<string> ExecuteAsync(string menuPath, CancellationToken cancellationToken)
     {
         var request = new ExecuteMenuItemRequest { menuPath = menuPath };
-        return client.PostAsync(ApiRoutes.MenuItemExecute, request, $"Menu item executed: {menuPath}",
-            cancellationToken);
+        await client.PostAsync(ApiRoutes.MenuItemExecute, request, cancellationToken);
+        return $"Menu item executed: {menuPath}";
     }
 }

@@ -5,23 +5,24 @@ namespace UniCortex.Core.UseCases;
 
 public class SceneUseCase(IUnityEditorClient client)
 {
-    public ValueTask<string> CreateAsync(string scenePath, CancellationToken cancellationToken)
+    public async ValueTask<string> CreateAsync(string scenePath, CancellationToken cancellationToken)
     {
         var request = new CreateSceneRequest { scenePath = scenePath };
-        return client.PostAsync(ApiRoutes.SceneCreate, request, $"Scene created: {scenePath}",
-            cancellationToken);
+        await client.PostAsync(ApiRoutes.SceneCreate, request, cancellationToken);
+        return $"Scene created: {scenePath}";
     }
 
-    public ValueTask<string> OpenAsync(string scenePath, CancellationToken cancellationToken)
+    public async ValueTask<string> OpenAsync(string scenePath, CancellationToken cancellationToken)
     {
         var request = new OpenSceneRequest { scenePath = scenePath };
-        return client.PostAsync(ApiRoutes.SceneOpen, request, $"Scene opened: {scenePath}",
-            cancellationToken);
+        await client.PostAsync(ApiRoutes.SceneOpen, request, cancellationToken);
+        return $"Scene opened: {scenePath}";
     }
 
-    public ValueTask<string> SaveAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> SaveAsync(CancellationToken cancellationToken)
     {
-        return client.PostEmptyAsync(ApiRoutes.SceneSave, "Scene saved successfully.", cancellationToken);
+        await client.PostAsync(ApiRoutes.SceneSave, cancellationToken);
+        return "Scene saved successfully.";
     }
 
     public ValueTask<string> GetHierarchyAsync(CancellationToken cancellationToken)

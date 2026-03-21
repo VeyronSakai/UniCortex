@@ -19,14 +19,14 @@ public class GameObjectUseCase(IUnityEditorClient client)
     public ValueTask<string> CreateAsync(string name, CancellationToken cancellationToken)
     {
         var request = new CreateGameObjectRequest { name = name };
-        return client.PostAndReadAsync(ApiRoutes.GameObjectCreate, request, cancellationToken);
+        return client.PostAsync(ApiRoutes.GameObjectCreate, request, cancellationToken);
     }
 
-    public ValueTask<string> DeleteAsync(int instanceId, CancellationToken cancellationToken)
+    public async ValueTask<string> DeleteAsync(int instanceId, CancellationToken cancellationToken)
     {
         var request = new DeleteGameObjectRequest { instanceId = instanceId };
-        return client.PostAsync(ApiRoutes.GameObjectDelete, request, $"GameObject {instanceId} deleted.",
-            cancellationToken);
+        await client.PostAsync(ApiRoutes.GameObjectDelete, request, cancellationToken);
+        return $"GameObject {instanceId} deleted.";
     }
 
     public async ValueTask<string> ModifyAsync(int instanceId, string? name = null, bool? activeSelf = null,
@@ -46,7 +46,7 @@ public class GameObjectUseCase(IUnityEditorClient client)
         if (layer.HasValue) fields["layer"] = layer.Value;
         if (parentInstanceId.HasValue) fields["parentInstanceId"] = parentInstanceId.Value;
 
-        return await client.PostAsync(ApiRoutes.GameObjectModify, fields, "GameObject modified successfully.",
-            cancellationToken);
+        await client.PostAsync(ApiRoutes.GameObjectModify, fields, cancellationToken);
+        return "GameObject modified successfully.";
     }
 }

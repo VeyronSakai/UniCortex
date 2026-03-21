@@ -5,8 +5,9 @@ namespace UniCortex.Core.UseCases;
 
 public class AssetUseCase(IUnityEditorClient client)
 {
-    public ValueTask<string> RefreshAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> RefreshAsync(CancellationToken cancellationToken)
     {
-        return client.PostEmptyAsync(ApiRoutes.AssetDatabaseRefresh, "Asset database refreshed.", cancellationToken);
+        await client.PostAsync(ApiRoutes.AssetDatabaseRefresh, cancellationToken);
+        return "Asset database refreshed.";
     }
 }
