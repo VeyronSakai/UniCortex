@@ -1,42 +1,26 @@
-using System.Text;
 using System.Text.Json;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
-using UniCortex.Core.Extensions;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class PrefabUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class PrefabUseCase(IUnityEditorClient client)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     public async ValueTask<string> CreateAsync(int instanceId, string assetPath,
         CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
         var request = new CreatePrefabRequest { instanceId = instanceId, assetPath = assetPath };
-        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.PrefabCreate}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<CreatePrefabRequest, CreatePrefabResponse>(ApiRoutes.PrefabCreate, request,
+            cancellationToken);
         return $"Prefab created at: {assetPath}";
     }
 
     public async ValueTask<string> InstantiateAsync(string assetPath, CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
         var request = new InstantiatePrefabRequest { assetPath = assetPath };
-        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.PrefabInstantiate}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        return await response.Content.ReadAsStringAsync(cancellationToken);
+        var response = await client.PostAsync<InstantiatePrefabRequest, InstantiatePrefabResponse>(
+            ApiRoutes.PrefabInstantiate, request, cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 }

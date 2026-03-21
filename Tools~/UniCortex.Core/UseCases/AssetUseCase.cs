@@ -1,22 +1,14 @@
-using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
-using UniCortex.Core.Extensions;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class AssetUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class AssetUseCase(IUnityEditorClient client)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     public async ValueTask<string> RefreshAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.AssetDatabaseRefresh}", null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<RefreshAssetDatabaseRequest, RefreshAssetDatabaseResponse>(ApiRoutes.AssetDatabaseRefresh,
+            cancellationToken: cancellationToken);
         return "Asset database refreshed.";
     }
 }

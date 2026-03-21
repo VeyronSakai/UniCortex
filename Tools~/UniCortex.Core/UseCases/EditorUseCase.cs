@@ -1,76 +1,52 @@
-using System.Text.Json;
-using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
-using UniCortex.Core.Extensions;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class EditorUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class EditorUseCase(IUnityEditorClient client)
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private static readonly TimeSpan s_pollInterval = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan s_pollTimeout = TimeSpan.FromSeconds(30);
 
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     public async ValueTask<string> PingAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-
-        await WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
-        using var response = await _httpClient.GetAsync(
-            $"{baseUrl}{ApiRoutes.Ping}?{QueryParameterNames.Verbose}=true", cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        var ping = JsonSerializer.Deserialize<PingResponse>(json, s_jsonOptions)!;
+        var ping = await client.GetAsync<PingRequest, PingResponse>(
+            ApiRoutes.Ping, new PingRequest { verbose = true }, cancellationToken);
         return ping.message;
     }
 
     public async ValueTask<string> EnterPlayModeAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-        await WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await client.WaitForServerAsync(cancellationToken);
 
-        if (await GetIsPlayingAsync(baseUrl, cancellationToken))
+        if (await GetIsPlayingAsync(cancellationToken))
         {
             return "Editor is already in play mode.";
         }
 
-        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Play}", null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<PlayRequest, PlayResponse>(ApiRoutes.Play, cancellationToken: cancellationToken);
 
-        await WaitForPlayModeStateAsync(baseUrl, expectedPlaying: true, cancellationToken);
+        await WaitForPlayModeStateAsync(expectedPlaying: true, cancellationToken);
         return "Play mode started successfully.";
     }
 
     public async ValueTask<string> ExitPlayModeAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-
-        if (!await GetIsPlayingAsync(baseUrl, cancellationToken))
+        if (!await GetIsPlayingAsync(cancellationToken))
         {
             return "Editor is not in play mode.";
         }
 
-        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Stop}", null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<StopRequest, StopResponse>(ApiRoutes.Stop, cancellationToken: cancellationToken);
 
-        await WaitForPlayModeStateAsync(baseUrl, expectedPlaying: false, cancellationToken);
+        await WaitForPlayModeStateAsync(expectedPlaying: false, cancellationToken);
         return "Play mode stopped successfully.";
     }
 
     public async ValueTask<string> GetEditorStatusAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-
-        using var response = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}", cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        var state = JsonSerializer.Deserialize<EditorStatusResponse>(json, s_jsonOptions)!;
+        var state = await client.GetAsync<GetEditorStatusRequest, GetEditorStatusResponse>(ApiRoutes.Status,
+            cancellationToken: cancellationToken);
 
         if (state.isPlaying && state.isPaused)
         {
@@ -87,98 +63,70 @@ public class EditorUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrl
 
     public async ValueTask<string> PauseAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-
-        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Pause}", null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<PauseRequest, PauseResponse>(ApiRoutes.Pause, cancellationToken: cancellationToken);
         return "Editor paused successfully.";
     }
 
     public async ValueTask<string> UnpauseAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-
-        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Unpause}", null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<UnpauseRequest, UnpauseResponse>(ApiRoutes.Unpause, cancellationToken: cancellationToken);
         return "Editor unpaused successfully.";
     }
 
     public async ValueTask<string> StepAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-
-        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Step}", null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<StepRequest, StepResponse>(ApiRoutes.Step, cancellationToken: cancellationToken);
         return "Editor stepped one frame successfully.";
     }
 
     public async ValueTask<string> UndoAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Undo}", null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<UndoRequest, UndoResponse>(ApiRoutes.Undo, cancellationToken: cancellationToken);
         return "Undo performed successfully.";
     }
 
     public async ValueTask<string> RedoAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.Redo}", null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<RedoRequest, RedoResponse>(ApiRoutes.Redo, cancellationToken: cancellationToken);
         return "Redo performed successfully.";
     }
 
     public async ValueTask<string> ReloadDomainAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-
         // Wait for the server to become available before triggering domain reload.
         // If Unity is already auto-recompiling (e.g. after a .cs file change),
         // the server will be unavailable; this prevents a double RequestScriptCompilation() call
         // that can freeze Unity.
-        await WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await client.WaitForServerAsync(cancellationToken);
 
-        using var response = await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.DomainReload}", null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<DomainReloadRequest, DomainReloadResponse>(ApiRoutes.DomainReload,
+            cancellationToken: cancellationToken);
 
         // RequestScriptCompilation() is dispatched asynchronously on the Unity main thread.
         // Wait briefly so that compilation starts and the server becomes unavailable
         // before we begin polling /ping.
         await Task.Delay(100, cancellationToken);
 
-        await WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
+        await client.WaitForServerAsync(cancellationToken);
 
         return "Domain reload completed successfully.";
     }
 
-    /// <summary>
-    /// Poll GET /ping until the server responds with a non-empty body.
-    /// HttpRequestHandler handles retries for GET requests during domain reload.
-    /// </summary>
-    public static async ValueTask WaitForServerAsync(HttpClient httpClient, string baseUrl,
-        CancellationToken cancellationToken)
+    private async ValueTask<bool> GetIsPlayingAsync(CancellationToken cancellationToken)
     {
-        using var pingResponse = await httpClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}", cancellationToken);
-        await pingResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-    }
-
-    private async ValueTask<bool> GetIsPlayingAsync(string baseUrl, CancellationToken cancellationToken)
-    {
-        using var statusResponse = await _httpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}", cancellationToken);
-        await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-        var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, s_jsonOptions)!;
+        var status = await client.GetAsync<GetEditorStatusRequest, GetEditorStatusResponse>(ApiRoutes.Status,
+            cancellationToken: cancellationToken);
         return status.isPlaying;
     }
 
-    private async ValueTask WaitForPlayModeStateAsync(string baseUrl, bool expectedPlaying,
+    private async ValueTask WaitForPlayModeStateAsync(bool expectedPlaying,
         CancellationToken cancellationToken)
     {
         var deadline = DateTime.UtcNow + s_pollTimeout;
         while (DateTime.UtcNow < deadline)
         {
             await Task.Delay(s_pollInterval, cancellationToken);
-            if (await GetIsPlayingAsync(baseUrl, cancellationToken) == expectedPlaying)
+            if (await GetIsPlayingAsync(cancellationToken) == expectedPlaying)
             {
                 return;
             }

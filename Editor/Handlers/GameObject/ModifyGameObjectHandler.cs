@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -21,6 +22,19 @@ namespace UniCortex.Editor.Handlers.GameObject
             router.Register(HttpMethodType.Post, ApiRoutes.GameObjectModify, HandleAsync);
         }
 
+        // JsonUtility does not support Nullable<T>, so use a non-nullable helper for deserialization.
+        // Field presence is detected via string matching; this class is only used for value extraction.
+        [Serializable]
+        private class RawModifyRequest
+        {
+            public int instanceId;
+            public string name;
+            public bool activeSelf;
+            public string tag;
+            public int layer;
+            public int parentInstanceId;
+        }
+
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var body = await context.ReadBodyAsync();
@@ -32,9 +46,9 @@ namespace UniCortex.Editor.Handlers.GameObject
                 return;
             }
 
-            var request = JsonUtility.FromJson<ModifyGameObjectRequest>(body);
+            var raw = JsonUtility.FromJson<RawModifyRequest>(body);
 
-            if (request.instanceId == 0)
+            if (raw.instanceId == 0)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("instanceId is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
@@ -42,13 +56,13 @@ namespace UniCortex.Editor.Handlers.GameObject
             }
 
             // Determine which fields were provided in the JSON body
-            var modifyName = body.Contains("\"name\"") ? request.name : null;
-            var modifyActiveSelf = body.Contains("\"activeSelf\"") ? (bool?)request.activeSelf : null;
-            var modifyTag = body.Contains("\"tag\"") ? request.tag : null;
-            var modifyLayer = body.Contains("\"layer\"") ? (int?)request.layer : null;
-            var modifyParent = body.Contains("\"parentInstanceId\"") ? (int?)request.parentInstanceId : null;
+            var modifyName = body.Contains("\"name\"") ? raw.name : null;
+            var modifyActiveSelf = body.Contains("\"activeSelf\"") ? (bool?)raw.activeSelf : null;
+            var modifyTag = body.Contains("\"tag\"") ? raw.tag : null;
+            var modifyLayer = body.Contains("\"layer\"") ? (int?)raw.layer : null;
+            var modifyParent = body.Contains("\"parentInstanceId\"") ? (int?)raw.parentInstanceId : null;
 
-            await _useCase.ExecuteAsync(request.instanceId, modifyName, modifyActiveSelf, modifyTag, modifyLayer,
+            await _useCase.ExecuteAsync(raw.instanceId, modifyName, modifyActiveSelf, modifyTag, modifyLayer,
                 modifyParent, cancellationToken);
             var json = JsonUtility.ToJson(new ModifyGameObjectResponse(true));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);

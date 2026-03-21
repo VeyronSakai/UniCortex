@@ -17,7 +17,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            sceneManager.HierarchyResult = new SceneHierarchyResponse("SampleScene", "Assets/Scenes/SampleScene.unity",
+            sceneManager.HierarchyResult = new GetSceneHierarchyResponse("SampleScene", "Assets/Scenes/SampleScene.unity",
                 new List<GameObjectNode>
                 {
                     new GameObjectNode("Main Camera", 100, true, "Untagged", 0, false, false,

@@ -4,11 +4,11 @@ using System.Collections.Generic;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class GetGameObjectsResponse
+    public class FindGameObjectsResponse
     {
         public List<GameObjectSearchResult> gameObjects;
 
-        public GetGameObjectsResponse(List<GameObjectSearchResult> gameObjects)
+        public FindGameObjectsResponse(List<GameObjectSearchResult> gameObjects)
         {
             this.gameObjects = gameObjects;
         }

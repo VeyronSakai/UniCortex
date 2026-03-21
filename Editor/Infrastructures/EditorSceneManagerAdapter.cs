@@ -47,7 +47,7 @@ namespace UniCortex.Editor.Infrastructures
             return UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
         }
 
-        public SceneHierarchyResponse GetHierarchy()
+        public GetSceneHierarchyResponse GetHierarchy()
         {
             var scene = SceneManager.GetActiveScene();
             var rootObjects = scene.GetRootGameObjects();
@@ -58,7 +58,7 @@ namespace UniCortex.Editor.Infrastructures
                 nodes.Add(GameObjectNodeBuilder.BuildNode(go.transform));
             }
 
-            return new SceneHierarchyResponse(scene.name, scene.path, nodes);
+            return new GetSceneHierarchyResponse(scene.name, scene.path, nodes);
         }
     }
 }

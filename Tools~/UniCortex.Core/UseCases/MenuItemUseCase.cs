@@ -1,27 +1,15 @@
-using System.Text;
-using System.Text.Json;
-using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
-using UniCortex.Core.Extensions;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class MenuItemUseCase(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+public class MenuItemUseCase(IUnityEditorClient client)
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-
     public async ValueTask<string> ExecuteAsync(string menuPath, CancellationToken cancellationToken)
     {
-        var baseUrl = urlProvider.GetUrl();
-        await EditorUseCase.WaitForServerAsync(_httpClient, baseUrl, cancellationToken);
-
         var request = new ExecuteMenuItemRequest { menuPath = menuPath };
-        var body = JsonSerializer.Serialize(request, new JsonSerializerOptions { IncludeFields = true });
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response =
-            await _httpClient.PostAsync($"{baseUrl}{ApiRoutes.MenuItemExecute}", content, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<ExecuteMenuItemRequest, ExecuteMenuItemResponse>(ApiRoutes.MenuItemExecute, request,
+            cancellationToken);
         return $"Menu item executed: {menuPath}";
     }
 }

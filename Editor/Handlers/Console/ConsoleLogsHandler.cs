@@ -37,7 +37,7 @@ namespace UniCortex.Editor.Handlers.Console
 
             var logs = await _useCase.ExecuteAsync(count, includeStackTrace, showLog, showWarning, showError,
                 cancellationToken);
-            var json = JsonUtility.ToJson(new ConsoleLogsResponse(logs));
+            var json = JsonUtility.ToJson(new GetConsoleLogsResponse(logs));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
 

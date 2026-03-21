@@ -19,7 +19,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int LastGetPropertiesInstanceId { get; private set; }
         public string LastGetPropertiesComponentType { get; private set; }
         public int LastGetPropertiesComponentIndex { get; private set; }
-        public ComponentPropertiesResponse GetPropertiesResult { get; set; }
+        public GetComponentPropertiesResponse GetPropertiesResult { get; set; }
 
         public int SetPropertyCallCount { get; private set; }
         public int LastSetPropertyInstanceId { get; private set; }
@@ -42,7 +42,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastRemoveComponentIndex = componentIndex;
         }
 
-        public ComponentPropertiesResponse GetProperties(int instanceId, string componentType, int componentIndex)
+        public GetComponentPropertiesResponse GetProperties(int instanceId, string componentType, int componentIndex)
         {
             GetPropertiesCallCount++;
             LastGetPropertiesInstanceId = instanceId;
