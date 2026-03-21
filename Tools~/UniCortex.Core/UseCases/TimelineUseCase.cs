@@ -1,9 +1,9 @@
-using UniCortex.Core.Infrastructures;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class TimelineUseCase(UnityEditorClient client)
+public class TimelineUseCase(IUnityEditorClient client)
 {
     public ValueTask<string> CreateAsync(string assetPath, CancellationToken cancellationToken)
     {

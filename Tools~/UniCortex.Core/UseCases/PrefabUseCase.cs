@@ -1,9 +1,9 @@
-using UniCortex.Core.Infrastructures;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class PrefabUseCase(UnityEditorClient client)
+public class PrefabUseCase(IUnityEditorClient client)
 {
     public ValueTask<string> CreateAsync(int instanceId, string assetPath,
         CancellationToken cancellationToken)

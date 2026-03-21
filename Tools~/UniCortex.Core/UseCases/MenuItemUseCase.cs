@@ -1,9 +1,9 @@
-using UniCortex.Core.Infrastructures;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class MenuItemUseCase(UnityEditorClient client)
+public class MenuItemUseCase(IUnityEditorClient client)
 {
     public ValueTask<string> ExecuteAsync(string menuPath, CancellationToken cancellationToken)
     {

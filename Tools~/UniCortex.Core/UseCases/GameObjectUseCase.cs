@@ -1,9 +1,9 @@
-using UniCortex.Core.Infrastructures;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class GameObjectUseCase(UnityEditorClient client)
+public class GameObjectUseCase(IUnityEditorClient client)
 {
     public ValueTask<string> FindAsync(string? query, CancellationToken cancellationToken)
     {

@@ -1,11 +1,12 @@
 using System.Text.Json;
+using UniCortex.Core.Domains;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Extensions;
-using UniCortex.Core.Infrastructures;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class EditorUseCase(UnityEditorClient client)
+public class EditorUseCase(IUnityEditorClient client)
 {
     private static readonly TimeSpan s_pollInterval = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan s_pollTimeout = TimeSpan.FromSeconds(30);
@@ -20,7 +21,7 @@ public class EditorUseCase(UnityEditorClient client)
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        var ping = JsonSerializer.Deserialize<PingResponse>(json, UnityEditorClient.JsonOptions)!;
+        var ping = JsonSerializer.Deserialize<PingResponse>(json, JsonOptions.Default)!;
         return ping.message;
     }
 
@@ -65,7 +66,7 @@ public class EditorUseCase(UnityEditorClient client)
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        var state = JsonSerializer.Deserialize<EditorStatusResponse>(json, UnityEditorClient.JsonOptions)!;
+        var state = JsonSerializer.Deserialize<EditorStatusResponse>(json, JsonOptions.Default)!;
 
         if (state.isPlaying && state.isPaused)
         {
@@ -133,7 +134,7 @@ public class EditorUseCase(UnityEditorClient client)
         using var statusResponse = await client.HttpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}", cancellationToken);
         await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-        var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, UnityEditorClient.JsonOptions)!;
+        var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, JsonOptions.Default)!;
         return status.isPlaying;
     }
 

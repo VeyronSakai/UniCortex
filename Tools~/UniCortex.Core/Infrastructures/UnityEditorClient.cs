@@ -8,11 +8,10 @@ using UniCortex.Editor.Domains.Models;
 namespace UniCortex.Core.Infrastructures;
 
 public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
+    : IUnityEditorClient
 {
-    internal static readonly JsonSerializerOptions JsonOptions = new() { IncludeFields = true };
-
-    internal HttpClient HttpClient { get; } = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-    internal string BaseUrl => urlProvider.GetUrl();
+    public HttpClient HttpClient { get; } = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
+    public string BaseUrl => urlProvider.GetUrl();
 
     /// <summary>
     /// POST with JSON body, return a fixed success message.
@@ -23,7 +22,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
         var baseUrl = BaseUrl;
         await WaitForServerAsync(cancellationToken);
 
-        var body = JsonSerializer.Serialize(request, JsonOptions);
+        var body = JsonSerializer.Serialize(request, JsonOptions.Default);
         var content = new StringContent(body, Encoding.UTF8, "application/json");
         using var response = await HttpClient.PostAsync($"{baseUrl}{route}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
@@ -39,7 +38,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
         var baseUrl = BaseUrl;
         await WaitForServerAsync(cancellationToken);
 
-        var body = JsonSerializer.Serialize(request, JsonOptions);
+        var body = JsonSerializer.Serialize(request, JsonOptions.Default);
         var content = new StringContent(body, Encoding.UTF8, "application/json");
         using var response = await HttpClient.PostAsync($"{baseUrl}{route}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
@@ -90,7 +89,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
     /// Poll GET /ping until the server responds with a non-empty body.
     /// HttpRequestHandler handles retries for GET requests during domain reload.
     /// </summary>
-    internal async ValueTask WaitForServerAsync(CancellationToken cancellationToken)
+    public async ValueTask WaitForServerAsync(CancellationToken cancellationToken)
     {
         using var pingResponse = await HttpClient.GetAsync($"{BaseUrl}{ApiRoutes.Ping}", cancellationToken);
         await pingResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);

@@ -1,12 +1,13 @@
 using System.Text;
 using System.Text.Json;
+using UniCortex.Core.Domains;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Extensions;
-using UniCortex.Core.Infrastructures;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
 
-public class TestUseCase(UnityEditorClient client)
+public class TestUseCase(IUnityEditorClient client)
 {
     public async ValueTask<string> RunAsync(string? testMode = null, string[]? testNames = null,
         string[]? groupNames = null, string[]? categoryNames = null, string[]? assemblyNames = null,
@@ -21,7 +22,7 @@ public class TestUseCase(UnityEditorClient client)
             groupNames != null ? new List<string>(groupNames) : null,
             categoryNames != null ? new List<string>(categoryNames) : null,
             assemblyNames != null ? new List<string>(assemblyNames) : null);
-        var json = JsonSerializer.Serialize(request, UnityEditorClient.JsonOptions);
+        var json = JsonSerializer.Serialize(request, JsonOptions.Default);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         string responseJson;
