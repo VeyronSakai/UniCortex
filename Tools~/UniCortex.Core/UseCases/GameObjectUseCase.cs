@@ -35,20 +35,16 @@ public class GameObjectUseCase(IUnityEditorClient client)
         string? tag = null, int? layer = null, int? parentInstanceId = null,
         CancellationToken cancellationToken = default)
     {
-        // Use Dictionary instead of the shared ModifyGameObjectRequest DTO because
-        // Unity's JsonUtility does not support Nullable<T>. The shared DTO uses
-        // non-nullable value types (bool, int), so serializing it would always
-        // include default values (false, 0) for unset fields. The Unity-side handler
-        // detects field presence via string matching, which would misinterpret these
-        // defaults as intentionally provided values.
-        var fields = new Dictionary<string, object> { ["instanceId"] = instanceId };
-        if (name != null) fields["name"] = name;
-        if (activeSelf.HasValue) fields["activeSelf"] = activeSelf.Value;
-        if (tag != null) fields["tag"] = tag;
-        if (layer.HasValue) fields["layer"] = layer.Value;
-        if (parentInstanceId.HasValue) fields["parentInstanceId"] = parentInstanceId.Value;
-
-        await client.PostAsync<Dictionary<string, object>, ModifyGameObjectResponse>(ApiRoutes.GameObjectModify, fields,
+        var request = new ModifyGameObjectRequest
+        {
+            instanceId = instanceId,
+            name = name,
+            activeSelf = activeSelf,
+            tag = tag,
+            layer = layer,
+            parentInstanceId = parentInstanceId
+        };
+        await client.PostAsync<ModifyGameObjectRequest, ModifyGameObjectResponse>(ApiRoutes.GameObjectModify, request,
             cancellationToken);
         return "GameObject modified successfully.";
     }
