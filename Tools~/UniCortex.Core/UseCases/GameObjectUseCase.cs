@@ -1,3 +1,5 @@
+using System.Text.Json;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -5,27 +7,27 @@ namespace UniCortex.Core.UseCases;
 
 public class GameObjectUseCase(IUnityEditorClient client)
 {
-    public ValueTask<string> FindAsync(string? query, CancellationToken cancellationToken)
+    public async ValueTask<string> FindAsync(string? query, CancellationToken cancellationToken)
     {
-        var route = ApiRoutes.GameObjects;
-        if (!string.IsNullOrEmpty(query))
-        {
-            route += $"?query={Uri.EscapeDataString(query)}";
-        }
-
-        return client.GetStringAsync(route, cancellationToken);
+        var request = !string.IsNullOrEmpty(query) ? new FindGameObjectsRequest { query = query } : null;
+        var response = await client.GetAsync<FindGameObjectsRequest, FindGameObjectsResponse>(
+            ApiRoutes.GameObjects, request, cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 
-    public ValueTask<string> CreateAsync(string name, CancellationToken cancellationToken)
+    public async ValueTask<string> CreateAsync(string name, CancellationToken cancellationToken)
     {
         var request = new CreateGameObjectRequest { name = name };
-        return client.PostAsync(ApiRoutes.GameObjectCreate, request, cancellationToken);
+        var response = await client.PostAsync<CreateGameObjectRequest, CreateGameObjectResponse>(
+            ApiRoutes.GameObjectCreate, request, cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 
     public async ValueTask<string> DeleteAsync(int instanceId, CancellationToken cancellationToken)
     {
         var request = new DeleteGameObjectRequest { instanceId = instanceId };
-        await client.PostAsync(ApiRoutes.GameObjectDelete, request, cancellationToken);
+        await client.PostAsync<DeleteGameObjectRequest, DeleteGameObjectResponse>(ApiRoutes.GameObjectDelete, request,
+            cancellationToken);
         return $"GameObject {instanceId} deleted.";
     }
 
@@ -46,7 +48,8 @@ public class GameObjectUseCase(IUnityEditorClient client)
         if (layer.HasValue) fields["layer"] = layer.Value;
         if (parentInstanceId.HasValue) fields["parentInstanceId"] = parentInstanceId.Value;
 
-        await client.PostAsync(ApiRoutes.GameObjectModify, fields, cancellationToken);
+        await client.PostAsync<Dictionary<string, object>, ModifyGameObjectResponse>(ApiRoutes.GameObjectModify, fields,
+            cancellationToken);
         return "GameObject modified successfully.";
     }
 }

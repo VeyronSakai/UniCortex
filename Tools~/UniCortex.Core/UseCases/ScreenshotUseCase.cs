@@ -5,8 +5,10 @@ namespace UniCortex.Core.UseCases;
 
 public class ScreenshotUseCase(IUnityEditorClient client)
 {
-    public ValueTask<byte[]> CaptureAsync(CancellationToken cancellationToken)
+    public async ValueTask<byte[]> CaptureAsync(CancellationToken cancellationToken)
     {
-        return client.GetBytesAsync(ApiRoutes.ScreenshotCapture, cancellationToken);
+        var response = await client.GetAsync<CaptureScreenshotRequest, CaptureScreenshotResponse>(
+            ApiRoutes.ScreenshotCapture, cancellationToken: cancellationToken);
+        return Convert.FromBase64String(response.pngDataBase64);
     }
 }

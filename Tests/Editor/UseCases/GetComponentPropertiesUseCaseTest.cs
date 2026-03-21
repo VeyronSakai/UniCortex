@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyComponentOperations();
-            ops.GetPropertiesResult = new ComponentPropertiesResponse("UnityEngine.Transform",
+            ops.GetPropertiesResult = new GetComponentPropertiesResponse("UnityEngine.Transform",
                 new List<SerializedPropertyEntry>
                 {
                     new SerializedPropertyEntry("m_LocalPosition", "Vector3", "(0, 0, 0)")

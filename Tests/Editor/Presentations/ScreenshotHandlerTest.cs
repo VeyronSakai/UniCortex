@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Handlers.Screenshot;
@@ -5,6 +6,7 @@ using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace UniCortex.Editor.Tests.Presentations
 {
@@ -36,9 +38,10 @@ namespace UniCortex.Editor.Tests.Presentations
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual("image/png", context.ResponseContentType);
-            Assert.AreEqual(4, context.ResponseBinaryData.Length);
-            Assert.AreEqual(0x89, context.ResponseBinaryData[0]);
+            var response = JsonUtility.FromJson<CaptureScreenshotResponse>(context.ResponseBody);
+            var pngData = Convert.FromBase64String(response.pngDataBase64);
+            Assert.AreEqual(4, pngData.Length);
+            Assert.AreEqual(0x89, pngData[0]);
         }
     }
 }

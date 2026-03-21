@@ -1,8 +1,6 @@
-using System.Text;
 using System.Text.Json;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
-using UniCortex.Core.Extensions;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
@@ -21,34 +19,29 @@ public class TestUseCase(IUnityEditorClient client)
             groupNames != null ? new List<string>(groupNames) : null,
             categoryNames != null ? new List<string>(categoryNames) : null,
             assemblyNames != null ? new List<string>(assemblyNames) : null);
-        var json = JsonSerializer.Serialize(request, JsonOptions.Default);
-        var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
 
-        string responseJson;
+        RunTestsResponse? response = null;
         try
         {
-            using var response = await client.SendPostAsync(ApiRoutes.TestsRun, content, cancellationToken);
-            await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+            response = await client.PostAsync<RunTestsRequest, RunTestsResponse>(ApiRoutes.TestsRun, request,
+                cancellationToken);
         }
         catch (HttpRequestException)
         {
             // Server disrupted (e.g., domain reload during PlayMode entry)
-            responseJson = "";
+        }
+        catch (JsonException)
+        {
+            // Empty response body (e.g., PlayMode test triggers domain reload before response is sent)
         }
 
         // PlayMode tests trigger a domain reload when entering play mode,
         // which disrupts the HTTP server. Poll GET /tests/result for results.
         // The HttpRequestHandler retries GET on Content-Length: 0, so this
         // automatically polls until results are stored in SessionState.
-        if (string.IsNullOrEmpty(responseJson))
-        {
-            await client.WaitForServerAsync(cancellationToken);
-            using var resultResponse = await client.SendGetAsync(ApiRoutes.TestsResult, cancellationToken);
-            await resultResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-            responseJson = await resultResponse.Content.ReadAsStringAsync(cancellationToken);
-        }
+        response ??= await client.GetAsync<GetTestResultRequest, RunTestsResponse>(ApiRoutes.TestsResult,
+            cancellationToken: cancellationToken);
 
-        return responseJson;
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 }

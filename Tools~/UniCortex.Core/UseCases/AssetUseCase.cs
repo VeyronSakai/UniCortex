@@ -7,7 +7,8 @@ public class AssetUseCase(IUnityEditorClient client)
 {
     public async ValueTask<string> RefreshAsync(CancellationToken cancellationToken)
     {
-        await client.PostAsync(ApiRoutes.AssetDatabaseRefresh, cancellationToken);
+        await client.PostAsync<RefreshAssetDatabaseRequest, RefreshAssetDatabaseResponse>(ApiRoutes.AssetDatabaseRefresh,
+            cancellationToken: cancellationToken);
         return "Asset database refreshed.";
     }
 }

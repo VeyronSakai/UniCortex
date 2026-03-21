@@ -54,7 +54,7 @@ namespace UniCortex.Editor.Infrastructures
             Undo.DestroyObjectImmediate(components[componentIndex]);
         }
 
-        public ComponentPropertiesResponse GetProperties(int instanceId, string componentType, int componentIndex)
+        public GetComponentPropertiesResponse GetProperties(int instanceId, string componentType, int componentIndex)
         {
             var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
             if (go == null)
@@ -96,7 +96,7 @@ namespace UniCortex.Editor.Infrastructures
                     SerializedPropertyValueConverter.ToValueString(iterator)));
             }
 
-            return new ComponentPropertiesResponse(componentType, properties);
+            return new GetComponentPropertiesResponse(componentType, properties);
         }
 
         public void SetProperty(int instanceId, string componentType, string propertyPath, string value)

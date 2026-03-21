@@ -16,11 +16,11 @@ namespace UniCortex.Editor.UseCases
             _editorApplication = editorApplication;
         }
 
-        public async Task<EditorStatusResponse> ExecuteAsync(CancellationToken cancellationToken)
+        public async Task<GetEditorStatusResponse> ExecuteAsync(CancellationToken cancellationToken)
         {
             var (isPlaying, isPaused) = await _dispatcher.RunOnMainThreadAsync(
                 () => (_editorApplication.IsPlaying, _editorApplication.IsPaused), cancellationToken);
-            return new EditorStatusResponse(isPlaying, isPaused);
+            return new GetEditorStatusResponse(isPlaying, isPaused);
         }
     }
 }

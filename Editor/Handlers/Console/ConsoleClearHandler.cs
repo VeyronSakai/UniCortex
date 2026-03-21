@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Handlers.Console
         private async Task HandleConsoleClearAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             await _useCase.ExecuteAsync(cancellationToken);
-            var json = JsonUtility.ToJson(new ConsoleClearResponse(success: true));
+            var json = JsonUtility.ToJson(new ClearConsoleResponse(success: true));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }

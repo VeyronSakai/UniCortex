@@ -2,18 +2,11 @@ namespace UniCortex.Core.Domains.Interfaces;
 
 public interface IUnityEditorClient
 {
-    ValueTask WaitForServerAsync(CancellationToken cancellationToken);
+    ValueTask WaitForServerAsync(CancellationToken cancellationToken = default);
 
-    ValueTask<string> PostAsync<T>(string route, T request, CancellationToken cancellationToken);
+    ValueTask<TRes> PostAsync<TReq, TRes>(string route, TReq? request = null,
+        CancellationToken cancellationToken = default) where TReq : class;
 
-    ValueTask PostAsync(string route, CancellationToken cancellationToken);
-
-    ValueTask<string> GetStringAsync(string route, CancellationToken cancellationToken);
-
-    ValueTask<byte[]> GetBytesAsync(string route, CancellationToken cancellationToken);
-
-    ValueTask<HttpResponseMessage> SendGetAsync(string route, CancellationToken cancellationToken);
-
-    ValueTask<HttpResponseMessage> SendPostAsync(string route, HttpContent? content,
-        CancellationToken cancellationToken);
+    ValueTask<TRes> GetAsync<TReq, TRes>(string route, TReq? request = null,
+        CancellationToken cancellationToken = default) where TReq : class;
 }

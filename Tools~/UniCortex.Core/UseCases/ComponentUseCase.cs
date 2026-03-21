@@ -1,3 +1,5 @@
+using System.Text.Json;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -9,7 +11,8 @@ public class ComponentUseCase(IUnityEditorClient client)
         CancellationToken cancellationToken)
     {
         var request = new AddComponentRequest { instanceId = instanceId, componentType = componentType };
-        await client.PostAsync(ApiRoutes.ComponentAdd, request, cancellationToken);
+        await client.PostAsync<AddComponentRequest, AddComponentResponse>(ApiRoutes.ComponentAdd, request,
+            cancellationToken);
         return $"Component '{componentType}' added successfully.";
     }
 
@@ -20,16 +23,21 @@ public class ComponentUseCase(IUnityEditorClient client)
         {
             instanceId = instanceId, componentType = componentType, componentIndex = componentIndex
         };
-        await client.PostAsync(ApiRoutes.ComponentRemove, request, cancellationToken);
+        await client.PostAsync<RemoveComponentRequest, RemoveComponentResponse>(ApiRoutes.ComponentRemove, request,
+            cancellationToken);
         return $"Component '{componentType}' removed successfully.";
     }
 
-    public ValueTask<string> GetPropertiesAsync(int instanceId, string componentType,
+    public async ValueTask<string> GetPropertiesAsync(int instanceId, string componentType,
         int componentIndex = 0, CancellationToken cancellationToken = default)
     {
-        var route =
-            $"{ApiRoutes.ComponentProperties}?instanceId={instanceId}&componentType={Uri.EscapeDataString(componentType)}&componentIndex={componentIndex}";
-        return client.GetStringAsync(route, cancellationToken);
+        var request = new GetComponentPropertiesRequest
+        {
+            instanceId = instanceId, componentType = componentType, componentIndex = componentIndex
+        };
+        var response = await client.GetAsync<GetComponentPropertiesRequest, GetComponentPropertiesResponse>(
+            ApiRoutes.ComponentProperties, request, cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 
     public async ValueTask<string> SetPropertyAsync(int instanceId, string componentType,
@@ -42,7 +50,8 @@ public class ComponentUseCase(IUnityEditorClient client)
             propertyPath = propertyPath,
             value = value
         };
-        await client.PostAsync(ApiRoutes.ComponentSetProperty, request, cancellationToken);
+        await client.PostAsync<SetComponentPropertyRequest, SetComponentPropertyResponse>(ApiRoutes.ComponentSetProperty, request,
+            cancellationToken);
         return $"Property '{propertyPath}' set to '{value}' successfully.";
     }
 }

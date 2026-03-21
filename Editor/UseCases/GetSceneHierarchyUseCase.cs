@@ -16,7 +16,7 @@ namespace UniCortex.Editor.UseCases
             _sceneManager = sceneManager;
         }
 
-        public async Task<SceneHierarchyResponse> ExecuteAsync(CancellationToken cancellationToken = default)
+        public async Task<GetSceneHierarchyResponse> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(() => _sceneManager.GetHierarchy(), cancellationToken);
         }

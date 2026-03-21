@@ -1,3 +1,5 @@
+using System.Text.Json;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -8,25 +10,28 @@ public class SceneUseCase(IUnityEditorClient client)
     public async ValueTask<string> CreateAsync(string scenePath, CancellationToken cancellationToken)
     {
         var request = new CreateSceneRequest { scenePath = scenePath };
-        await client.PostAsync(ApiRoutes.SceneCreate, request, cancellationToken);
+        await client.PostAsync<CreateSceneRequest, CreateSceneResponse>(ApiRoutes.SceneCreate, request, cancellationToken);
         return $"Scene created: {scenePath}";
     }
 
     public async ValueTask<string> OpenAsync(string scenePath, CancellationToken cancellationToken)
     {
         var request = new OpenSceneRequest { scenePath = scenePath };
-        await client.PostAsync(ApiRoutes.SceneOpen, request, cancellationToken);
+        await client.PostAsync<OpenSceneRequest, OpenSceneResponse>(ApiRoutes.SceneOpen, request, cancellationToken);
         return $"Scene opened: {scenePath}";
     }
 
     public async ValueTask<string> SaveAsync(CancellationToken cancellationToken)
     {
-        await client.PostAsync(ApiRoutes.SceneSave, cancellationToken);
+        await client.PostAsync<SaveSceneRequest, SaveSceneResponse>(ApiRoutes.SceneSave,
+            cancellationToken: cancellationToken);
         return "Scene saved successfully.";
     }
 
-    public ValueTask<string> GetHierarchyAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> GetHierarchyAsync(CancellationToken cancellationToken)
     {
-        return client.GetStringAsync(ApiRoutes.SceneHierarchy, cancellationToken);
+        var response = await client.GetAsync<GetSceneHierarchyRequest, GetSceneHierarchyResponse>(
+            ApiRoutes.SceneHierarchy, cancellationToken: cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 }

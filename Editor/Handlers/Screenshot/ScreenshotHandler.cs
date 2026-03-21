@@ -1,8 +1,10 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
+using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Screenshot
 {
@@ -23,7 +25,8 @@ namespace UniCortex.Editor.Handlers.Screenshot
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var pngData = await _useCase.ExecuteAsync(cancellationToken);
-            await context.WriteBinaryResponseAsync(HttpStatusCodes.Ok, "image/png", pngData);
+            var json = JsonUtility.ToJson(new CaptureScreenshotResponse(Convert.ToBase64String(pngData)));
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
 }

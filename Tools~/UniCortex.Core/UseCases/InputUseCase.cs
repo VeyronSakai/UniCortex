@@ -9,7 +9,7 @@ public class InputUseCase(IUnityEditorClient client)
         CancellationToken cancellationToken)
     {
         var request = new SendKeyEventRequest { key = key, eventType = eventType };
-        await client.PostAsync(ApiRoutes.InputKey, request, cancellationToken);
+        await client.PostAsync<SendKeyEventRequest, SendKeyEventResponse>(ApiRoutes.InputKey, request, cancellationToken);
         return $"Key event sent: {key} ({eventType})";
     }
 
@@ -17,7 +17,8 @@ public class InputUseCase(IUnityEditorClient client)
         CancellationToken cancellationToken)
     {
         var request = new SendMouseEventRequest { x = x, y = y, button = button, eventType = eventType };
-        await client.PostAsync(ApiRoutes.InputMouse, request, cancellationToken);
+        await client.PostAsync<SendMouseEventRequest, SendMouseEventResponse>(ApiRoutes.InputMouse, request,
+            cancellationToken);
         return $"Mouse event sent: ({x}, {y}) button={button} ({eventType})";
     }
 }

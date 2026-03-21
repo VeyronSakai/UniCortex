@@ -3,11 +3,11 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class ConsoleClearResponse
+    public class ClearConsoleResponse
     {
         public bool success;
 
-        public ConsoleClearResponse(bool success)
+        public ClearConsoleResponse(bool success)
         {
             this.success = success;
         }

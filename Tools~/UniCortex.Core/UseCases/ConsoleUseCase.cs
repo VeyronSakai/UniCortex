@@ -1,3 +1,5 @@
+using System.Text.Json;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -9,25 +11,23 @@ public class ConsoleUseCase(IUnityEditorClient client)
         bool? log = null, bool? warning = null, bool? error = null,
         CancellationToken cancellationToken = default)
     {
-        var queryParams = new List<string>();
-        if (count.HasValue) queryParams.Add($"count={count.Value}");
-        if (stackTrace.HasValue) queryParams.Add($"stackTrace={stackTrace.Value.ToString().ToLowerInvariant()}");
-        if (log.HasValue) queryParams.Add($"log={log.Value.ToString().ToLowerInvariant()}");
-        if (warning.HasValue) queryParams.Add($"warning={warning.Value.ToString().ToLowerInvariant()}");
-        if (error.HasValue) queryParams.Add($"error={error.Value.ToString().ToLowerInvariant()}");
-
-        var route = ApiRoutes.ConsoleLogs;
-        if (queryParams.Count > 0)
+        var request = new GetConsoleLogsRequest
         {
-            route = $"{route}?{string.Join("&", queryParams)}";
-        }
-
-        return await client.GetStringAsync(route, cancellationToken);
+            count = count,
+            stackTrace = stackTrace,
+            log = log,
+            warning = warning,
+            error = error
+        };
+        var response = await client.GetAsync<GetConsoleLogsRequest, GetConsoleLogsResponse>(
+            ApiRoutes.ConsoleLogs, request, cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 
     public async ValueTask<string> ClearAsync(CancellationToken cancellationToken)
     {
-        await client.PostAsync(ApiRoutes.ConsoleClear, cancellationToken);
+        await client.PostAsync<ClearConsoleRequest, ClearConsoleResponse>(ApiRoutes.ConsoleClear,
+            cancellationToken: cancellationToken);
         return "Console logs cleared successfully.";
     }
 }

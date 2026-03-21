@@ -7,6 +7,6 @@ namespace UniCortex.Editor.Domains.Interfaces
         bool CreateScene(string scenePath);
         void OpenScene(string scenePath);
         bool SaveOpenScenes();
-        SceneHierarchyResponse GetHierarchy();
+        GetSceneHierarchyResponse GetHierarchy();
     }
 }

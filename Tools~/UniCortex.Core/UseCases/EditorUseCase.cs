@@ -1,7 +1,4 @@
-using System.Text.Json;
-using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
-using UniCortex.Core.Extensions;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
@@ -13,14 +10,8 @@ public class EditorUseCase(IUnityEditorClient client)
 
     public async ValueTask<string> PingAsync(CancellationToken cancellationToken)
     {
-        await client.WaitForServerAsync(cancellationToken);
-
-        using var response = await client.SendGetAsync(
-            $"{ApiRoutes.Ping}?{QueryParameterNames.Verbose}=true", cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        var ping = JsonSerializer.Deserialize<PingResponse>(json, JsonOptions.Default)!;
+        var ping = await client.GetAsync<PingRequest, PingResponse>(
+            ApiRoutes.Ping, new PingRequest { verbose = true }, cancellationToken);
         return ping.message;
     }
 
@@ -33,8 +24,7 @@ public class EditorUseCase(IUnityEditorClient client)
             return "Editor is already in play mode.";
         }
 
-        using var response = await client.SendPostAsync(ApiRoutes.Play, null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<PlayRequest, PlayResponse>(ApiRoutes.Play, cancellationToken: cancellationToken);
 
         await WaitForPlayModeStateAsync(expectedPlaying: true, cancellationToken);
         return "Play mode started successfully.";
@@ -47,8 +37,7 @@ public class EditorUseCase(IUnityEditorClient client)
             return "Editor is not in play mode.";
         }
 
-        using var response = await client.SendPostAsync(ApiRoutes.Stop, null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<StopRequest, StopResponse>(ApiRoutes.Stop, cancellationToken: cancellationToken);
 
         await WaitForPlayModeStateAsync(expectedPlaying: false, cancellationToken);
         return "Play mode stopped successfully.";
@@ -56,11 +45,8 @@ public class EditorUseCase(IUnityEditorClient client)
 
     public async ValueTask<string> GetEditorStatusAsync(CancellationToken cancellationToken)
     {
-        using var response = await client.SendGetAsync(ApiRoutes.Status, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        var state = JsonSerializer.Deserialize<EditorStatusResponse>(json, JsonOptions.Default)!;
+        var state = await client.GetAsync<GetEditorStatusRequest, GetEditorStatusResponse>(ApiRoutes.Status,
+            cancellationToken: cancellationToken);
 
         if (state.isPlaying && state.isPaused)
         {
@@ -77,31 +63,31 @@ public class EditorUseCase(IUnityEditorClient client)
 
     public async ValueTask<string> PauseAsync(CancellationToken cancellationToken)
     {
-        await client.PostAsync(ApiRoutes.Pause, cancellationToken);
+        await client.PostAsync<PauseRequest, PauseResponse>(ApiRoutes.Pause, cancellationToken: cancellationToken);
         return "Editor paused successfully.";
     }
 
     public async ValueTask<string> UnpauseAsync(CancellationToken cancellationToken)
     {
-        await client.PostAsync(ApiRoutes.Unpause, cancellationToken);
+        await client.PostAsync<UnpauseRequest, UnpauseResponse>(ApiRoutes.Unpause, cancellationToken: cancellationToken);
         return "Editor unpaused successfully.";
     }
 
     public async ValueTask<string> StepAsync(CancellationToken cancellationToken)
     {
-        await client.PostAsync(ApiRoutes.Step, cancellationToken);
+        await client.PostAsync<StepRequest, StepResponse>(ApiRoutes.Step, cancellationToken: cancellationToken);
         return "Editor stepped one frame successfully.";
     }
 
     public async ValueTask<string> UndoAsync(CancellationToken cancellationToken)
     {
-        await client.PostAsync(ApiRoutes.Undo, cancellationToken);
+        await client.PostAsync<UndoRequest, UndoResponse>(ApiRoutes.Undo, cancellationToken: cancellationToken);
         return "Undo performed successfully.";
     }
 
     public async ValueTask<string> RedoAsync(CancellationToken cancellationToken)
     {
-        await client.PostAsync(ApiRoutes.Redo, cancellationToken);
+        await client.PostAsync<RedoRequest, RedoResponse>(ApiRoutes.Redo, cancellationToken: cancellationToken);
         return "Redo performed successfully.";
     }
 
@@ -113,8 +99,8 @@ public class EditorUseCase(IUnityEditorClient client)
         // that can freeze Unity.
         await client.WaitForServerAsync(cancellationToken);
 
-        using var response = await client.SendPostAsync(ApiRoutes.DomainReload, null, cancellationToken);
-        await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+        await client.PostAsync<DomainReloadRequest, DomainReloadResponse>(ApiRoutes.DomainReload,
+            cancellationToken: cancellationToken);
 
         // RequestScriptCompilation() is dispatched asynchronously on the Unity main thread.
         // Wait briefly so that compilation starts and the server becomes unavailable
@@ -128,10 +114,8 @@ public class EditorUseCase(IUnityEditorClient client)
 
     private async ValueTask<bool> GetIsPlayingAsync(CancellationToken cancellationToken)
     {
-        using var statusResponse = await client.SendGetAsync(ApiRoutes.Status, cancellationToken);
-        await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-        var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-        var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, JsonOptions.Default)!;
+        var status = await client.GetAsync<GetEditorStatusRequest, GetEditorStatusResponse>(ApiRoutes.Status,
+            cancellationToken: cancellationToken);
         return status.isPlaying;
     }
 
