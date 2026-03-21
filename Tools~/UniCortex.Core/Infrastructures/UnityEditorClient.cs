@@ -10,8 +10,8 @@ namespace UniCortex.Core.Infrastructures;
 public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServerUrlProvider urlProvider)
     : IUnityEditorClient
 {
-    public HttpClient HttpClient { get; } = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-    public string BaseUrl => urlProvider.GetUrl();
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
+    private string BaseUrl => urlProvider.GetUrl();
 
     /// <summary>
     /// POST with JSON body, return a fixed success message.
@@ -23,8 +23,8 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
         await WaitForServerAsync(cancellationToken);
 
         var body = JsonSerializer.Serialize(request, JsonOptions.Default);
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response = await HttpClient.PostAsync($"{baseUrl}{route}", content, cancellationToken);
+        var content = new StringContent(body, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
+        using var response = await _httpClient.PostAsync($"{baseUrl}{route}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return successMessage;
     }
@@ -39,8 +39,8 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
         await WaitForServerAsync(cancellationToken);
 
         var body = JsonSerializer.Serialize(request, JsonOptions.Default);
-        var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response = await HttpClient.PostAsync($"{baseUrl}{route}", content, cancellationToken);
+        var content = new StringContent(body, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
+        using var response = await _httpClient.PostAsync($"{baseUrl}{route}", content, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
@@ -54,7 +54,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
         var baseUrl = BaseUrl;
         await WaitForServerAsync(cancellationToken);
 
-        using var response = await HttpClient.PostAsync($"{baseUrl}{route}", null, cancellationToken);
+        using var response = await _httpClient.PostAsync($"{baseUrl}{route}", null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return successMessage;
     }
@@ -67,7 +67,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
         var baseUrl = BaseUrl;
         await WaitForServerAsync(cancellationToken);
 
-        using var response = await HttpClient.GetAsync($"{baseUrl}{route}", cancellationToken);
+        using var response = await _httpClient.GetAsync($"{baseUrl}{route}", cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
@@ -80,7 +80,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
         var baseUrl = BaseUrl;
         await WaitForServerAsync(cancellationToken);
 
-        using var response = await HttpClient.GetAsync($"{baseUrl}{route}", cancellationToken);
+        using var response = await _httpClient.GetAsync($"{baseUrl}{route}", cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         return await response.Content.ReadAsByteArrayAsync(cancellationToken);
     }
@@ -91,7 +91,24 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
     /// </summary>
     public async ValueTask WaitForServerAsync(CancellationToken cancellationToken)
     {
-        using var pingResponse = await HttpClient.GetAsync($"{BaseUrl}{ApiRoutes.Ping}", cancellationToken);
+        using var pingResponse = await _httpClient.GetAsync($"{BaseUrl}{ApiRoutes.Ping}", cancellationToken);
         await pingResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Low-level GET without WaitForServer or EnsureSuccess. Caller owns the response.
+    /// </summary>
+    public async ValueTask<HttpResponseMessage> SendGetAsync(string route, CancellationToken cancellationToken)
+    {
+        return await _httpClient.GetAsync($"{BaseUrl}{route}", cancellationToken);
+    }
+
+    /// <summary>
+    /// Low-level POST without WaitForServer or EnsureSuccess. Caller owns the response.
+    /// </summary>
+    public async ValueTask<HttpResponseMessage> SendPostAsync(string route, HttpContent? content,
+        CancellationToken cancellationToken)
+    {
+        return await _httpClient.PostAsync($"{BaseUrl}{route}", content, cancellationToken);
     }
 }

@@ -13,7 +13,6 @@ public class TestUseCase(IUnityEditorClient client)
         string[]? groupNames = null, string[]? categoryNames = null, string[]? assemblyNames = null,
         CancellationToken cancellationToken = default)
     {
-        var baseUrl = client.BaseUrl;
         await client.WaitForServerAsync(cancellationToken);
 
         var request = new RunTestsRequest(
@@ -23,13 +22,12 @@ public class TestUseCase(IUnityEditorClient client)
             categoryNames != null ? new List<string>(categoryNames) : null,
             assemblyNames != null ? new List<string>(assemblyNames) : null);
         var json = JsonSerializer.Serialize(request, JsonOptions.Default);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
 
         string responseJson;
         try
         {
-            using var response = await client.HttpClient.PostAsync($"{baseUrl}{ApiRoutes.TestsRun}", content,
-                cancellationToken);
+            using var response = await client.SendPostAsync(ApiRoutes.TestsRun, content, cancellationToken);
             await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
             responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
         }
@@ -46,8 +44,7 @@ public class TestUseCase(IUnityEditorClient client)
         if (string.IsNullOrEmpty(responseJson))
         {
             await client.WaitForServerAsync(cancellationToken);
-            using var resultResponse =
-                await client.HttpClient.GetAsync($"{baseUrl}{ApiRoutes.TestsResult}", cancellationToken);
+            using var resultResponse = await client.SendGetAsync(ApiRoutes.TestsResult, cancellationToken);
             await resultResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
             responseJson = await resultResponse.Content.ReadAsStringAsync(cancellationToken);
         }

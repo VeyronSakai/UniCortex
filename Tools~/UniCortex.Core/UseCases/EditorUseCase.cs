@@ -13,11 +13,10 @@ public class EditorUseCase(IUnityEditorClient client)
 
     public async ValueTask<string> PingAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = client.BaseUrl;
         await client.WaitForServerAsync(cancellationToken);
 
-        using var response = await client.HttpClient.GetAsync(
-            $"{baseUrl}{ApiRoutes.Ping}?{QueryParameterNames.Verbose}=true", cancellationToken);
+        using var response = await client.SendGetAsync(
+            $"{ApiRoutes.Ping}?{QueryParameterNames.Verbose}=true", cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -27,42 +26,37 @@ public class EditorUseCase(IUnityEditorClient client)
 
     public async ValueTask<string> EnterPlayModeAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = client.BaseUrl;
         await client.WaitForServerAsync(cancellationToken);
 
-        if (await GetIsPlayingAsync(baseUrl, cancellationToken))
+        if (await GetIsPlayingAsync(cancellationToken))
         {
             return "Editor is already in play mode.";
         }
 
-        using var response = await client.HttpClient.PostAsync($"{baseUrl}{ApiRoutes.Play}", null, cancellationToken);
+        using var response = await client.SendPostAsync(ApiRoutes.Play, null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
-        await WaitForPlayModeStateAsync(baseUrl, expectedPlaying: true, cancellationToken);
+        await WaitForPlayModeStateAsync(expectedPlaying: true, cancellationToken);
         return "Play mode started successfully.";
     }
 
     public async ValueTask<string> ExitPlayModeAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = client.BaseUrl;
-
-        if (!await GetIsPlayingAsync(baseUrl, cancellationToken))
+        if (!await GetIsPlayingAsync(cancellationToken))
         {
             return "Editor is not in play mode.";
         }
 
-        using var response = await client.HttpClient.PostAsync($"{baseUrl}{ApiRoutes.Stop}", null, cancellationToken);
+        using var response = await client.SendPostAsync(ApiRoutes.Stop, null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
-        await WaitForPlayModeStateAsync(baseUrl, expectedPlaying: false, cancellationToken);
+        await WaitForPlayModeStateAsync(expectedPlaying: false, cancellationToken);
         return "Play mode stopped successfully.";
     }
 
     public async ValueTask<string> GetEditorStatusAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = client.BaseUrl;
-
-        using var response = await client.HttpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}", cancellationToken);
+        using var response = await client.SendGetAsync(ApiRoutes.Status, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -108,15 +102,13 @@ public class EditorUseCase(IUnityEditorClient client)
 
     public async ValueTask<string> ReloadDomainAsync(CancellationToken cancellationToken)
     {
-        var baseUrl = client.BaseUrl;
-
         // Wait for the server to become available before triggering domain reload.
         // If Unity is already auto-recompiling (e.g. after a .cs file change),
         // the server will be unavailable; this prevents a double RequestScriptCompilation() call
         // that can freeze Unity.
         await client.WaitForServerAsync(cancellationToken);
 
-        using var response = await client.HttpClient.PostAsync($"{baseUrl}{ApiRoutes.DomainReload}", null, cancellationToken);
+        using var response = await client.SendPostAsync(ApiRoutes.DomainReload, null, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         // RequestScriptCompilation() is dispatched asynchronously on the Unity main thread.
@@ -129,23 +121,23 @@ public class EditorUseCase(IUnityEditorClient client)
         return "Domain reload completed successfully.";
     }
 
-    private async ValueTask<bool> GetIsPlayingAsync(string baseUrl, CancellationToken cancellationToken)
+    private async ValueTask<bool> GetIsPlayingAsync(CancellationToken cancellationToken)
     {
-        using var statusResponse = await client.HttpClient.GetAsync($"{baseUrl}{ApiRoutes.Status}", cancellationToken);
+        using var statusResponse = await client.SendGetAsync(ApiRoutes.Status, cancellationToken);
         await statusResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
         var statusJson = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
         var status = JsonSerializer.Deserialize<EditorStatusResponse>(statusJson, JsonOptions.Default)!;
         return status.isPlaying;
     }
 
-    private async ValueTask WaitForPlayModeStateAsync(string baseUrl, bool expectedPlaying,
+    private async ValueTask WaitForPlayModeStateAsync(bool expectedPlaying,
         CancellationToken cancellationToken)
     {
         var deadline = DateTime.UtcNow + s_pollTimeout;
         while (DateTime.UtcNow < deadline)
         {
             await Task.Delay(s_pollInterval, cancellationToken);
-            if (await GetIsPlayingAsync(baseUrl, cancellationToken) == expectedPlaying)
+            if (await GetIsPlayingAsync(cancellationToken) == expectedPlaying)
             {
                 return;
             }
