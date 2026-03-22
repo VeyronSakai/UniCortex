@@ -11,7 +11,7 @@ public class InputCommands(InputUseCase inputService)
     /// <param name="key">Input System Key enum name. Available keys: A-Z, Digit0-Digit9, F1-F12, Space, Enter, Tab, Backspace, Delete, Insert, Escape, ContextMenu, LeftArrow, RightArrow, UpArrow, DownArrow, PageUp, PageDown, Home, End, LeftShift, RightShift, LeftCtrl, RightCtrl, LeftAlt, RightAlt, LeftMeta, RightMeta, Backquote, Quote, Semicolon, Comma, Period, Slash, Backslash, LeftBracket, RightBracket, Minus, Equals, CapsLock, NumLock, ScrollLock, PrintScreen, Pause, Numpad0-Numpad9, NumpadEnter, NumpadDivide, NumpadMultiply, NumpadPlus, NumpadMinus, NumpadPeriod, NumpadEquals, OEM1-OEM5, IMESelected.</param>
     /// <param name="eventType">Event type: "press" (default) or "release".</param>
     [Command("send-key")]
-    public async Task SendKey(string key, string eventType = InputEventType.Press,
+    public async Task SendKey([Argument] string key, string eventType = InputEventType.Press,
         CancellationToken cancellationToken = default)
     {
         var message = await inputService.SendKeyEventAsync(key, eventType, cancellationToken);
@@ -24,7 +24,7 @@ public class InputCommands(InputUseCase inputService)
     /// <param name="button">Mouse button: "left" (default), "right", or "middle".</param>
     /// <param name="eventType">Event type: "press" (default), "release", or "move" (position only, no button).</param>
     [Command("send-mouse")]
-    public async Task SendMouse(float x, float y, string button = MouseButton.Left,
+    public async Task SendMouse([Argument] float x, [Argument] float y, string button = MouseButton.Left,
         string eventType = InputEventType.Press,
         CancellationToken cancellationToken = default)
     {

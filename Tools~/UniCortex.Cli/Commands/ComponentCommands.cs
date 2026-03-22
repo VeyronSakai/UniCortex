@@ -9,7 +9,7 @@ public class ComponentCommands(ComponentUseCase componentService)
     /// <param name="instanceId">Instance ID of the target GameObject.</param>
     /// <param name="componentType">Fully qualified component type name (e.g. "UnityEngine.Rigidbody").</param>
     [Command("add")]
-    public async Task Add(int instanceId, string componentType,
+    public async Task Add([Argument] int instanceId, [Argument] string componentType,
         CancellationToken cancellationToken = default)
     {
         var message = await componentService.AddAsync(instanceId, componentType, cancellationToken);
@@ -21,7 +21,7 @@ public class ComponentCommands(ComponentUseCase componentService)
     /// <param name="componentType">Fully qualified component type name (e.g. "UnityEngine.Rigidbody").</param>
     /// <param name="componentIndex">Index when multiple components of the same type exist.</param>
     [Command("remove")]
-    public async Task Remove(int instanceId, string componentType, int componentIndex = 0,
+    public async Task Remove([Argument] int instanceId, [Argument] string componentType, int componentIndex = 0,
         CancellationToken cancellationToken = default)
     {
         var message = await componentService.RemoveAsync(instanceId, componentType, componentIndex,
@@ -34,7 +34,7 @@ public class ComponentCommands(ComponentUseCase componentService)
     /// <param name="componentType">Fully qualified component type name (e.g. "UnityEngine.Transform").</param>
     /// <param name="componentIndex">Index when multiple components of the same type exist.</param>
     [Command("properties")]
-    public async Task Properties(int instanceId, string componentType, int componentIndex = 0,
+    public async Task Properties([Argument] int instanceId, [Argument] string componentType, int componentIndex = 0,
         CancellationToken cancellationToken = default)
     {
         var json = await componentService.GetPropertiesAsync(instanceId, componentType, componentIndex,
@@ -48,8 +48,9 @@ public class ComponentCommands(ComponentUseCase componentService)
     /// <param name="propertyPath">Serialized property path (e.g. "m_LocalPosition.x").</param>
     /// <param name="value">Value to set as a string. Type is auto-detected from the property.</param>
     [Command("set-property")]
-    public async Task SetProperty(int instanceId, string componentType, string propertyPath,
-        string value, CancellationToken cancellationToken = default)
+    public async Task SetProperty([Argument] int instanceId, [Argument] string componentType,
+        [Argument] string propertyPath, [Argument] string value,
+        CancellationToken cancellationToken = default)
     {
         var message = await componentService.SetPropertyAsync(instanceId, componentType, propertyPath,
             value, cancellationToken);

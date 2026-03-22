@@ -851,6 +851,11 @@ timeline track add|remove|bind
 timeline clip add|remove
 ```
 
+### パラメータ規約
+
+- デフォルト値を持たない必須パラメータには `[Argument]` 属性を付与し、位置引数として扱う
+- デフォルト値を持つオプショナルパラメータには `[Argument]` を付与しない（`--option-name` 形式の名前付きオプションとなる）
+
 ### エントリポイント（Program.cs）
 
 - `ConsoleApp.Create()` で CLI アプリを構築
@@ -865,8 +870,8 @@ export UNICORTEX_PROJECT_PATH=/path/to/your/unity/project
 
 dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- editor ping
 dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- scene hierarchy
-dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- gameobject find "t:Camera"
-dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- game-view capture --output-path ./screenshot.png
+dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- gameobject find --query "t:Camera"
+dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- game-view capture ./screenshot.png
 ```
 
 ---
