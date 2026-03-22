@@ -181,15 +181,15 @@ namespace UniCortex.Editor
 
 
             var menuItemOps = new MenuItemOperationsAdapter();
-            var screenshotOps = new ScreenshotOperationsAdapter();
+            var captureOps = new CaptureOperationsAdapter();
 
             var executeMenuItemUseCase = new ExecuteMenuItemUseCase(s_dispatcher, menuItemOps);
             var executeMenuItemHandler = new ExecuteMenuItemHandler(executeMenuItemUseCase);
 
-            var captureGameViewUseCase = new CaptureGameViewUseCase(s_dispatcher, screenshotOps);
+            var captureGameViewUseCase = new CaptureGameViewUseCase(s_dispatcher, captureOps);
             var captureGameViewHandler = new CaptureGameViewHandler(captureGameViewUseCase);
 
-            var captureSceneViewUseCase = new CaptureSceneViewUseCase(s_dispatcher, screenshotOps);
+            var captureSceneViewUseCase = new CaptureSceneViewUseCase(s_dispatcher, captureOps);
             var captureSceneViewHandler = new CaptureSceneViewHandler(captureSceneViewUseCase);
 
 #if UNICORTEX_INPUT_SYSTEM

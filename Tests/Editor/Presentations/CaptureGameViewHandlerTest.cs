@@ -13,14 +13,14 @@ namespace UniCortex.Editor.Tests.Presentations
     [TestFixture]
     internal sealed class CaptureGameViewHandlerTest
     {
-        private SpyScreenshotOperations _operations;
+        private SpyCaptureOperations _operations;
         private RequestRouter _router;
 
         [SetUp]
         public void SetUp()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            _operations = new SpyScreenshotOperations
+            _operations = new SpyCaptureOperations
             {
                 ScreenshotResult = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
             };

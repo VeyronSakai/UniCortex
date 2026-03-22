@@ -7,9 +7,9 @@ namespace UniCortex.Editor.UseCases
     internal sealed class CaptureGameViewUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IScreenshotOperations _operations;
+        private readonly ICaptureOperations _operations;
 
-        public CaptureGameViewUseCase(IMainThreadDispatcher dispatcher, IScreenshotOperations operations)
+        public CaptureGameViewUseCase(IMainThreadDispatcher dispatcher, ICaptureOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;

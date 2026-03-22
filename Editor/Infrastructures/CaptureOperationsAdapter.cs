@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    internal sealed class ScreenshotOperationsAdapter : IScreenshotOperations
+    internal sealed class CaptureOperationsAdapter : ICaptureOperations
     {
         public byte[] CaptureGameView()
         {
