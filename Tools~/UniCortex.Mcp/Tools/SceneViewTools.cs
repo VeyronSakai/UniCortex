@@ -10,7 +10,7 @@ namespace UniCortex.Mcp.Tools;
 public class SceneViewTools(SceneViewUseCase sceneViewService)
 {
     [McpServerTool(Name = "capture_scene_view", ReadOnly = true),
-     Description("Capture a screenshot of the Scene View as a PNG image."),
+     Description("Capture a screenshot of the Scene View as a PNG image. Also works in Prefab Mode."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> CaptureSceneViewAsync(
         CancellationToken cancellationToken = default)
