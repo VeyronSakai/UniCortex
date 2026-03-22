@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class ComponentTools(ComponentUseCase componentService)
+public class ComponentTools(ComponentUseCase componentUseCase)
 {
     [McpServerTool(Name = "add_component", ReadOnly = false),
      Description("Add a component to a GameObject. Supports Undo."), UsedImplicitly]
@@ -19,7 +19,7 @@ public class ComponentTools(ComponentUseCase componentService)
     {
         try
         {
-            var message = await componentService.AddAsync(instanceId, componentType, cancellationToken);
+            var message = await componentUseCase.AddAsync(instanceId, componentType, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -40,7 +40,7 @@ public class ComponentTools(ComponentUseCase componentService)
     {
         try
         {
-            var message = await componentService.RemoveAsync(instanceId, componentType, componentIndex,
+            var message = await componentUseCase.RemoveAsync(instanceId, componentType, componentIndex,
                 cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
@@ -62,7 +62,7 @@ public class ComponentTools(ComponentUseCase componentService)
     {
         try
         {
-            var json = await componentService.GetPropertiesAsync(instanceId, componentType, componentIndex,
+            var json = await componentUseCase.GetPropertiesAsync(instanceId, componentType, componentIndex,
                 cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
@@ -86,7 +86,7 @@ public class ComponentTools(ComponentUseCase componentService)
     {
         try
         {
-            var message = await componentService.SetPropertyAsync(instanceId, componentType, propertyPath,
+            var message = await componentUseCase.SetPropertyAsync(instanceId, componentType, propertyPath,
                 value, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }

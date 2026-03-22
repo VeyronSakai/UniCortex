@@ -3,14 +3,14 @@ using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class GameObjectCommands(GameObjectUseCase gameObjectService)
+public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
 {
     /// <summary>Find GameObjects in the current scene.</summary>
     /// <param name="query">Search query string using Unity Search syntax (e.g. "t:Camera", "tag:Player"). Returns all GameObjects if omitted.</param>
     [Command("find")]
     public async Task Find(string? query = null, CancellationToken cancellationToken = default)
     {
-        var json = await gameObjectService.FindAsync(query, cancellationToken);
+        var json = await gameObjectUseCase.FindAsync(query, cancellationToken);
         Console.WriteLine(json);
     }
 
@@ -19,7 +19,7 @@ public class GameObjectCommands(GameObjectUseCase gameObjectService)
     [Command("create")]
     public async Task Create([Argument] string name, CancellationToken cancellationToken = default)
     {
-        var json = await gameObjectService.CreateAsync(name, cancellationToken);
+        var json = await gameObjectUseCase.CreateAsync(name, cancellationToken);
         Console.WriteLine(json);
     }
 
@@ -28,7 +28,7 @@ public class GameObjectCommands(GameObjectUseCase gameObjectService)
     [Command("delete")]
     public async Task Delete([Argument] int instanceId, CancellationToken cancellationToken = default)
     {
-        var message = await gameObjectService.DeleteAsync(instanceId, cancellationToken);
+        var message = await gameObjectUseCase.DeleteAsync(instanceId, cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -44,7 +44,7 @@ public class GameObjectCommands(GameObjectUseCase gameObjectService)
         string? tag = null, int? layer = null, int? parentInstanceId = null,
         CancellationToken cancellationToken = default)
     {
-        var message = await gameObjectService.ModifyAsync(instanceId, name, activeSelf, tag, layer,
+        var message = await gameObjectUseCase.ModifyAsync(instanceId, name, activeSelf, tag, layer,
             parentInstanceId, cancellationToken);
         Console.WriteLine(message);
     }

@@ -8,7 +8,7 @@ using UniCortex.Editor.Domains.Models;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class TestTools(TestUseCase testService)
+public class TestTools(TestUseCase testUseCase)
 {
     [McpServerTool(Name = "run_tests", ReadOnly = true),
      Description("Run Unity Test Runner tests and wait for completion."), UsedImplicitly]
@@ -27,7 +27,7 @@ public class TestTools(TestUseCase testService)
     {
         try
         {
-            var json = await testService.RunAsync(testMode, testNames, groupNames, categoryNames,
+            var json = await testUseCase.RunAsync(testMode, testNames, groupNames, categoryNames,
                 assemblyNames, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }

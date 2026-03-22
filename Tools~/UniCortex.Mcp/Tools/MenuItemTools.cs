@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class MenuItemTools(MenuItemUseCase menuItemService)
+public class MenuItemTools(MenuItemUseCase menuItemUseCase)
 {
     [McpServerTool(Name = "execute_menu_item", ReadOnly = false),
      Description("Execute a Unity Editor menu item by its path (e.g. \"GameObject/3D Object/Cube\")."),
@@ -19,7 +19,7 @@ public class MenuItemTools(MenuItemUseCase menuItemService)
     {
         try
         {
-            var message = await menuItemService.ExecuteAsync(menuPath, cancellationToken);
+            var message = await menuItemUseCase.ExecuteAsync(menuPath, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)

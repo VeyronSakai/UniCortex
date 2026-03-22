@@ -3,13 +3,13 @@ using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class EditorCommands(EditorUseCase editorService)
+public class EditorCommands(EditorUseCase editorUseCase)
 {
     /// <summary>Check connectivity with the Unity Editor.</summary>
     [Command("ping")]
     public async Task Ping(CancellationToken cancellationToken)
     {
-        var message = await editorService.PingAsync(cancellationToken);
+        var message = await editorUseCase.PingAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -17,7 +17,7 @@ public class EditorCommands(EditorUseCase editorService)
     [Command("play")]
     public async Task Play(CancellationToken cancellationToken)
     {
-        var message = await editorService.EnterPlayModeAsync(cancellationToken);
+        var message = await editorUseCase.EnterPlayModeAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -25,7 +25,7 @@ public class EditorCommands(EditorUseCase editorService)
     [Command("stop")]
     public async Task Stop(CancellationToken cancellationToken)
     {
-        var message = await editorService.ExitPlayModeAsync(cancellationToken);
+        var message = await editorUseCase.ExitPlayModeAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -33,7 +33,7 @@ public class EditorCommands(EditorUseCase editorService)
     [Command("status")]
     public async Task Status(CancellationToken cancellationToken)
     {
-        var message = await editorService.GetEditorStatusAsync(cancellationToken);
+        var message = await editorUseCase.GetEditorStatusAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -41,7 +41,7 @@ public class EditorCommands(EditorUseCase editorService)
     [Command("pause")]
     public async Task Pause(CancellationToken cancellationToken)
     {
-        var message = await editorService.PauseAsync(cancellationToken);
+        var message = await editorUseCase.PauseAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -49,7 +49,7 @@ public class EditorCommands(EditorUseCase editorService)
     [Command("unpause")]
     public async Task Unpause(CancellationToken cancellationToken)
     {
-        var message = await editorService.UnpauseAsync(cancellationToken);
+        var message = await editorUseCase.UnpauseAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -57,7 +57,7 @@ public class EditorCommands(EditorUseCase editorService)
     [Command("step")]
     public async Task Step(CancellationToken cancellationToken)
     {
-        var message = await editorService.StepAsync(cancellationToken);
+        var message = await editorUseCase.StepAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -65,7 +65,7 @@ public class EditorCommands(EditorUseCase editorService)
     [Command("undo")]
     public async Task Undo(CancellationToken cancellationToken)
     {
-        var message = await editorService.UndoAsync(cancellationToken);
+        var message = await editorUseCase.UndoAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -73,7 +73,7 @@ public class EditorCommands(EditorUseCase editorService)
     [Command("redo")]
     public async Task Redo(CancellationToken cancellationToken)
     {
-        var message = await editorService.RedoAsync(cancellationToken);
+        var message = await editorUseCase.RedoAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -81,7 +81,7 @@ public class EditorCommands(EditorUseCase editorService)
     [Command("reload-domain")]
     public async Task ReloadDomain(CancellationToken cancellationToken)
     {
-        var message = await editorService.ReloadDomainAsync(cancellationToken);
+        var message = await editorUseCase.ReloadDomainAsync(cancellationToken);
         Console.WriteLine(message);
     }
 }

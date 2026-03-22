@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class ConsoleTools(ConsoleUseCase consoleService)
+public class ConsoleTools(ConsoleUseCase consoleUseCase)
 {
     [McpServerTool(Name = "get_console_logs", ReadOnly = true),
      Description("Get console log entries from the Unity Editor."), UsedImplicitly]
@@ -26,7 +26,7 @@ public class ConsoleTools(ConsoleUseCase consoleService)
     {
         try
         {
-            var json = await consoleService.GetLogsAsync(count, stackTrace, log, warning, error,
+            var json = await consoleUseCase.GetLogsAsync(count, stackTrace, log, warning, error,
                 cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
@@ -42,7 +42,7 @@ public class ConsoleTools(ConsoleUseCase consoleService)
     {
         try
         {
-            var message = await consoleService.ClearAsync(cancellationToken);
+            var message = await consoleUseCase.ClearAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)

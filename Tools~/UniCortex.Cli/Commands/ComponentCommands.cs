@@ -3,7 +3,7 @@ using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class ComponentCommands(ComponentUseCase componentService)
+public class ComponentCommands(ComponentUseCase componentUseCase)
 {
     /// <summary>Add a component to a GameObject.</summary>
     /// <param name="instanceId">Instance ID of the target GameObject.</param>
@@ -12,7 +12,7 @@ public class ComponentCommands(ComponentUseCase componentService)
     public async Task Add([Argument] int instanceId, [Argument] string componentType,
         CancellationToken cancellationToken = default)
     {
-        var message = await componentService.AddAsync(instanceId, componentType, cancellationToken);
+        var message = await componentUseCase.AddAsync(instanceId, componentType, cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -24,7 +24,7 @@ public class ComponentCommands(ComponentUseCase componentService)
     public async Task Remove([Argument] int instanceId, [Argument] string componentType, int componentIndex = 0,
         CancellationToken cancellationToken = default)
     {
-        var message = await componentService.RemoveAsync(instanceId, componentType, componentIndex,
+        var message = await componentUseCase.RemoveAsync(instanceId, componentType, componentIndex,
             cancellationToken);
         Console.WriteLine(message);
     }
@@ -37,7 +37,7 @@ public class ComponentCommands(ComponentUseCase componentService)
     public async Task Properties([Argument] int instanceId, [Argument] string componentType, int componentIndex = 0,
         CancellationToken cancellationToken = default)
     {
-        var json = await componentService.GetPropertiesAsync(instanceId, componentType, componentIndex,
+        var json = await componentUseCase.GetPropertiesAsync(instanceId, componentType, componentIndex,
             cancellationToken);
         Console.WriteLine(json);
     }
@@ -52,7 +52,7 @@ public class ComponentCommands(ComponentUseCase componentService)
         [Argument] string propertyPath, [Argument] string value,
         CancellationToken cancellationToken = default)
     {
-        var message = await componentService.SetPropertyAsync(instanceId, componentType, propertyPath,
+        var message = await componentUseCase.SetPropertyAsync(instanceId, componentType, propertyPath,
             value, cancellationToken);
         Console.WriteLine(message);
     }

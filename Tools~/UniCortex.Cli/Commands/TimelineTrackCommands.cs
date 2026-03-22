@@ -4,7 +4,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Cli.Commands;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag
-public class TimelineTrackCommands(TimelineUseCase timelineService)
+public class TimelineTrackCommands(TimelineUseCase timelineUseCase)
 {
     /// <summary>Add a track to a TimelineAsset. Undo supported. Requires com.unity.timeline.</summary>
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
@@ -14,7 +14,7 @@ public class TimelineTrackCommands(TimelineUseCase timelineService)
     public async Task Add([Argument] int instanceId, [Argument] string trackType, string trackName = "",
         CancellationToken cancellationToken = default)
     {
-        var message = await timelineService.AddTrackAsync(instanceId, trackType, trackName, cancellationToken);
+        var message = await timelineUseCase.AddTrackAsync(instanceId, trackType, trackName, cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -25,7 +25,7 @@ public class TimelineTrackCommands(TimelineUseCase timelineService)
     public async Task Remove([Argument] int instanceId, [Argument] int trackIndex,
         CancellationToken cancellationToken = default)
     {
-        var message = await timelineService.RemoveTrackAsync(instanceId, trackIndex, cancellationToken);
+        var message = await timelineUseCase.RemoveTrackAsync(instanceId, trackIndex, cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -37,7 +37,7 @@ public class TimelineTrackCommands(TimelineUseCase timelineService)
     public async Task Bind([Argument] int instanceId, [Argument] int trackIndex, [Argument] int targetInstanceId,
         CancellationToken cancellationToken = default)
     {
-        var message = await timelineService.BindTrackAsync(instanceId, trackIndex, targetInstanceId,
+        var message = await timelineUseCase.BindTrackAsync(instanceId, trackIndex, targetInstanceId,
             cancellationToken);
         Console.WriteLine(message);
     }

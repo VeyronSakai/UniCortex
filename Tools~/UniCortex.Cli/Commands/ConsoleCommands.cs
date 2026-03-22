@@ -3,7 +3,7 @@ using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class ConsoleCommands(ConsoleUseCase consoleService)
+public class ConsoleCommands(ConsoleUseCase consoleUseCase)
 {
     /// <summary>Get console log entries from the Unity Editor.</summary>
     /// <param name="count">Number of log entries to retrieve.</param>
@@ -15,7 +15,7 @@ public class ConsoleCommands(ConsoleUseCase consoleService)
     public async Task Logs(int? count = null, bool? stackTrace = null, bool? log = null,
         bool? warning = null, bool? error = null, CancellationToken cancellationToken = default)
     {
-        var json = await consoleService.GetLogsAsync(count, stackTrace, log, warning, error,
+        var json = await consoleUseCase.GetLogsAsync(count, stackTrace, log, warning, error,
             cancellationToken);
         Console.WriteLine(json);
     }
@@ -24,7 +24,7 @@ public class ConsoleCommands(ConsoleUseCase consoleService)
     [Command("clear")]
     public async Task Clear(CancellationToken cancellationToken = default)
     {
-        var message = await consoleService.ClearAsync(cancellationToken);
+        var message = await consoleUseCase.ClearAsync(cancellationToken);
         Console.WriteLine(message);
     }
 }

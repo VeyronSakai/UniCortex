@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class EditorTools(EditorUseCase editorService)
+public class EditorTools(EditorUseCase editorUseCase)
 {
     [McpServerTool(Name = "ping_editor", ReadOnly = true), Description("Check connectivity with the Unity Editor."),
      UsedImplicitly]
@@ -15,7 +15,7 @@ public class EditorTools(EditorUseCase editorService)
     {
         try
         {
-            var message = await editorService.PingAsync(cancellationToken);
+            var message = await editorUseCase.PingAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -30,7 +30,7 @@ public class EditorTools(EditorUseCase editorService)
     {
         try
         {
-            var message = await editorService.EnterPlayModeAsync(cancellationToken);
+            var message = await editorUseCase.EnterPlayModeAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -45,7 +45,7 @@ public class EditorTools(EditorUseCase editorService)
     {
         try
         {
-            var message = await editorService.ExitPlayModeAsync(cancellationToken);
+            var message = await editorUseCase.ExitPlayModeAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -62,7 +62,7 @@ public class EditorTools(EditorUseCase editorService)
     {
         try
         {
-            var message = await editorService.GetEditorStatusAsync(cancellationToken);
+            var message = await editorUseCase.GetEditorStatusAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -77,7 +77,7 @@ public class EditorTools(EditorUseCase editorService)
     {
         try
         {
-            var message = await editorService.PauseAsync(cancellationToken);
+            var message = await editorUseCase.PauseAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -92,7 +92,7 @@ public class EditorTools(EditorUseCase editorService)
     {
         try
         {
-            var message = await editorService.UnpauseAsync(cancellationToken);
+            var message = await editorUseCase.UnpauseAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -109,7 +109,7 @@ public class EditorTools(EditorUseCase editorService)
     {
         try
         {
-            var message = await editorService.StepAsync(cancellationToken);
+            var message = await editorUseCase.StepAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -123,7 +123,7 @@ public class EditorTools(EditorUseCase editorService)
     {
         try
         {
-            var message = await editorService.UndoAsync(cancellationToken);
+            var message = await editorUseCase.UndoAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -137,7 +137,7 @@ public class EditorTools(EditorUseCase editorService)
     {
         try
         {
-            var message = await editorService.RedoAsync(cancellationToken);
+            var message = await editorUseCase.RedoAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -152,7 +152,7 @@ public class EditorTools(EditorUseCase editorService)
     {
         try
         {
-            var message = await editorService.ReloadDomainAsync(cancellationToken);
+            var message = await editorUseCase.ReloadDomainAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)

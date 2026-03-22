@@ -8,7 +8,7 @@ using UniCortex.Editor.Domains.Models;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class TimelineTools(TimelineUseCase timelineService)
+public class TimelineTools(TimelineUseCase timelineUseCase)
 {
     [McpServerTool(Name = "create_timeline", ReadOnly = false),
      Description(
@@ -21,7 +21,7 @@ public class TimelineTools(TimelineUseCase timelineService)
     {
         try
         {
-            var json = await timelineService.CreateAsync(assetPath, cancellationToken);
+            var json = await timelineUseCase.CreateAsync(assetPath, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)
@@ -50,7 +50,7 @@ public class TimelineTools(TimelineUseCase timelineService)
         try
         {
             var message =
-                await timelineService.AddTrackAsync(instanceId, trackType, trackName, cancellationToken);
+                await timelineUseCase.AddTrackAsync(instanceId, trackType, trackName, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -73,7 +73,7 @@ public class TimelineTools(TimelineUseCase timelineService)
         try
         {
             var message =
-                await timelineService.RemoveTrackAsync(instanceId, trackIndex, cancellationToken);
+                await timelineUseCase.RemoveTrackAsync(instanceId, trackIndex, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -97,7 +97,7 @@ public class TimelineTools(TimelineUseCase timelineService)
     {
         try
         {
-            var message = await timelineService.BindTrackAsync(instanceId, trackIndex, targetInstanceId,
+            var message = await timelineUseCase.BindTrackAsync(instanceId, trackIndex, targetInstanceId,
                 cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
@@ -126,7 +126,7 @@ public class TimelineTools(TimelineUseCase timelineService)
     {
         try
         {
-            var message = await timelineService.AddClipAsync(instanceId, trackIndex, start, duration, clipName,
+            var message = await timelineUseCase.AddClipAsync(instanceId, trackIndex, start, duration, clipName,
                 cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
@@ -151,7 +151,7 @@ public class TimelineTools(TimelineUseCase timelineService)
     {
         try
         {
-            var message = await timelineService.RemoveClipAsync(instanceId, trackIndex, clipIndex,
+            var message = await timelineUseCase.RemoveClipAsync(instanceId, trackIndex, clipIndex,
                 cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }

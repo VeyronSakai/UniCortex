@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class SceneTools(SceneUseCase sceneService)
+public class SceneTools(SceneUseCase sceneUseCase)
 {
     [McpServerTool(Name = "create_scene", ReadOnly = false),
      Description("Create a new empty scene and save it at the specified asset path."), UsedImplicitly]
@@ -18,7 +18,7 @@ public class SceneTools(SceneUseCase sceneService)
     {
         try
         {
-            var message = await sceneService.CreateAsync(scenePath, cancellationToken);
+            var message = await sceneUseCase.CreateAsync(scenePath, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -36,7 +36,7 @@ public class SceneTools(SceneUseCase sceneService)
     {
         try
         {
-            var message = await sceneService.OpenAsync(scenePath, cancellationToken);
+            var message = await sceneUseCase.OpenAsync(scenePath, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -51,7 +51,7 @@ public class SceneTools(SceneUseCase sceneService)
     {
         try
         {
-            var message = await sceneService.SaveAsync(cancellationToken);
+            var message = await sceneUseCase.SaveAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -66,7 +66,7 @@ public class SceneTools(SceneUseCase sceneService)
     {
         try
         {
-            var json = await sceneService.GetHierarchyAsync(cancellationToken);
+            var json = await sceneUseCase.GetHierarchyAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)

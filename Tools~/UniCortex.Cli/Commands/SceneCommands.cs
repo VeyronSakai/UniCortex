@@ -3,14 +3,14 @@ using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class SceneCommands(SceneUseCase sceneService)
+public class SceneCommands(SceneUseCase sceneUseCase)
 {
     /// <summary>Create a new empty scene and save it at the specified asset path.</summary>
     /// <param name="scenePath">Asset path to save the scene (e.g. "Assets/Scenes/NewScene.unity").</param>
     [Command("create")]
     public async Task Create([Argument] string scenePath, CancellationToken cancellationToken)
     {
-        var message = await sceneService.CreateAsync(scenePath, cancellationToken);
+        var message = await sceneUseCase.CreateAsync(scenePath, cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -19,7 +19,7 @@ public class SceneCommands(SceneUseCase sceneService)
     [Command("open")]
     public async Task Open([Argument] string scenePath, CancellationToken cancellationToken)
     {
-        var message = await sceneService.OpenAsync(scenePath, cancellationToken);
+        var message = await sceneUseCase.OpenAsync(scenePath, cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -27,7 +27,7 @@ public class SceneCommands(SceneUseCase sceneService)
     [Command("save")]
     public async Task Save(CancellationToken cancellationToken)
     {
-        var message = await sceneService.SaveAsync(cancellationToken);
+        var message = await sceneUseCase.SaveAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -35,7 +35,7 @@ public class SceneCommands(SceneUseCase sceneService)
     [Command("hierarchy")]
     public async Task Hierarchy(CancellationToken cancellationToken)
     {
-        var json = await sceneService.GetHierarchyAsync(cancellationToken);
+        var json = await sceneUseCase.GetHierarchyAsync(cancellationToken);
         Console.WriteLine(json);
     }
 }

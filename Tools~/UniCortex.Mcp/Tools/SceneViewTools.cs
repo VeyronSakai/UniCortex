@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class SceneViewTools(SceneViewUseCase sceneViewService)
+public class SceneViewTools(SceneViewUseCase sceneViewUseCase)
 {
     [McpServerTool(Name = "capture_scene_view", ReadOnly = true),
      Description("Capture a screenshot of the Scene View as a PNG image. Also works in Prefab Mode."),
@@ -17,7 +17,7 @@ public class SceneViewTools(SceneViewUseCase sceneViewService)
     {
         try
         {
-            var pngData = await sceneViewService.CaptureAsync(cancellationToken);
+            var pngData = await sceneViewUseCase.CaptureAsync(cancellationToken);
             return new CallToolResult
             {
                 Content = [ImageContentBlock.FromBytes(pngData, "image/png")]
