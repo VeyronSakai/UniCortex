@@ -11,7 +11,7 @@ public class TimelineTrackCommands(TimelineUseCase timelineService)
     /// <param name="trackType">Fully qualified type name of the track (e.g. UnityEngine.Timeline.AnimationTrack).</param>
     /// <param name="trackName">Optional name for the new track.</param>
     [Command("add")]
-    public async Task Add(int instanceId, string trackType, string trackName = "",
+    public async Task Add([Argument] int instanceId, [Argument] string trackType, string trackName = "",
         CancellationToken cancellationToken = default)
     {
         var message = await timelineService.AddTrackAsync(instanceId, trackType, trackName, cancellationToken);
@@ -22,7 +22,7 @@ public class TimelineTrackCommands(TimelineUseCase timelineService)
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
     /// <param name="trackIndex">The index of the track to remove (0-based).</param>
     [Command("remove")]
-    public async Task Remove(int instanceId, int trackIndex,
+    public async Task Remove([Argument] int instanceId, [Argument] int trackIndex,
         CancellationToken cancellationToken = default)
     {
         var message = await timelineService.RemoveTrackAsync(instanceId, trackIndex, cancellationToken);
@@ -34,7 +34,7 @@ public class TimelineTrackCommands(TimelineUseCase timelineService)
     /// <param name="trackIndex">The index of the track to bind (0-based).</param>
     /// <param name="targetInstanceId">The instanceId of the target object to bind to the track.</param>
     [Command("bind")]
-    public async Task Bind(int instanceId, int trackIndex, int targetInstanceId,
+    public async Task Bind([Argument] int instanceId, [Argument] int trackIndex, [Argument] int targetInstanceId,
         CancellationToken cancellationToken = default)
     {
         var message = await timelineService.BindTrackAsync(instanceId, trackIndex, targetInstanceId,

@@ -17,7 +17,7 @@ public class GameObjectCommands(GameObjectUseCase gameObjectService)
     /// <summary>Create a new empty GameObject in the current scene.</summary>
     /// <param name="name">Name of the GameObject to create.</param>
     [Command("create")]
-    public async Task Create(string name, CancellationToken cancellationToken = default)
+    public async Task Create([Argument] string name, CancellationToken cancellationToken = default)
     {
         var json = await gameObjectService.CreateAsync(name, cancellationToken);
         Console.WriteLine(json);
@@ -26,7 +26,7 @@ public class GameObjectCommands(GameObjectUseCase gameObjectService)
     /// <summary>Delete a GameObject from the current scene by its instance ID.</summary>
     /// <param name="instanceId">Instance ID of the GameObject to delete.</param>
     [Command("delete")]
-    public async Task Delete(int instanceId, CancellationToken cancellationToken = default)
+    public async Task Delete([Argument] int instanceId, CancellationToken cancellationToken = default)
     {
         var message = await gameObjectService.DeleteAsync(instanceId, cancellationToken);
         Console.WriteLine(message);
@@ -40,7 +40,7 @@ public class GameObjectCommands(GameObjectUseCase gameObjectService)
     /// <param name="layer">Layer number to assign to the GameObject.</param>
     /// <param name="parentInstanceId">Instance ID of the new parent GameObject. Use 0 to move to root.</param>
     [Command("modify")]
-    public async Task Modify(int instanceId, string? name = null, bool? activeSelf = null,
+    public async Task Modify([Argument] int instanceId, string? name = null, bool? activeSelf = null,
         string? tag = null, int? layer = null, int? parentInstanceId = null,
         CancellationToken cancellationToken = default)
     {
