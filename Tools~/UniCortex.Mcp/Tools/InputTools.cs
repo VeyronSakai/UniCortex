@@ -87,9 +87,9 @@ public class InputTools(InputUseCase inputUseCase)
          "Does NOT work with legacy UnityEngine.Input.GetMouseButton()."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> SendMouseEventAsync(
-        [Description("X coordinate in screen space.")]
+        [Description("X coordinate in screen pixels. Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Range depends on Game View resolution (e.g. 0-800 for 800px width).")]
         float x,
-        [Description("Y coordinate in screen space.")]
+        [Description("Y coordinate in screen pixels. Origin (0,0) is at the bottom-left of the Game View. Increases upward. Range depends on Game View resolution (e.g. 0-600 for 600px height).")]
         float y,
         [Description($"Mouse button: \"{MouseButton.Left}\" (default), \"{MouseButton.Right}\", or \"{MouseButton.Middle}\".")]
         string button = MouseButton.Left,
