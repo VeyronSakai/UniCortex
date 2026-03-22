@@ -19,8 +19,8 @@ public class InputCommands(InputUseCase inputUseCase)
     }
 
     /// <summary>Send a mouse event via Input System in Play Mode. Requires com.unity.inputsystem.</summary>
-    /// <param name="x">X coordinate in screen space.</param>
-    /// <param name="y">Y coordinate in screen space.</param>
+    /// <param name="x">X coordinate in screen pixels. Origin (0,0) is at the bottom-left of the Game View. Increases to the right.</param>
+    /// <param name="y">Y coordinate in screen pixels. Origin (0,0) is at the bottom-left of the Game View. Increases upward.</param>
     /// <param name="button">Mouse button: "left" (default), "right", or "middle".</param>
     /// <param name="eventType">Event type: "press" (default), "release", or "move" (position only, no button).</param>
     [Command("send-mouse")]
