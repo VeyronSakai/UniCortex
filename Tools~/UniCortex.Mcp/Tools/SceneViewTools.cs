@@ -7,17 +7,17 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class ScreenshotTools(ScreenshotUseCase screenshotService)
+public class SceneViewTools(SceneViewUseCase sceneViewService)
 {
-    [McpServerTool(Name = "capture_screenshot", ReadOnly = true),
-     Description("Capture a screenshot of the Game View as a PNG image. Only available in Play Mode."),
+    [McpServerTool(Name = "capture_scene_view", ReadOnly = true),
+     Description("Capture a screenshot of the Scene View as a PNG image. Also works in Prefab Mode."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> CaptureScreenshotAsync(
+    public async ValueTask<CallToolResult> CaptureSceneViewAsync(
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var pngData = await screenshotService.CaptureAsync(cancellationToken);
+            var pngData = await sceneViewService.CaptureAsync(cancellationToken);
             return new CallToolResult
             {
                 Content = [ImageContentBlock.FromBytes(pngData, "image/png")]

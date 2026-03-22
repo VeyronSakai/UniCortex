@@ -31,7 +31,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ConsoleUseCase>();
         services.AddTransient<AssetUseCase>();
         services.AddTransient<MenuItemUseCase>();
-        services.AddTransient<ScreenshotUseCase>();
+        services.AddTransient<GameViewUseCase>();
+        services.AddTransient<SceneViewUseCase>();
         services.AddTransient<InputUseCase>();
         services.AddTransient<TimelineUseCase>();
 

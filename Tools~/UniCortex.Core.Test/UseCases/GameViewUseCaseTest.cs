@@ -4,7 +4,7 @@ using UniCortex.Core.Test.Fixtures;
 namespace UniCortex.Core.Test.UseCases;
 
 [TestFixture]
-public class ScreenshotUseCaseTest
+public class GameViewUseCaseTest
 {
     private UnityEditorFixture _fixture = null!;
 
@@ -17,12 +17,11 @@ public class ScreenshotUseCaseTest
     [Test]
     public async ValueTask Capture_InPlayMode_ReturnsPngData()
     {
-        // Ensure a scene with a Camera is active before entering play mode
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var pngData = await _fixture.ScreenshotUseCase.CaptureAsync(CancellationToken.None);
+            var pngData = await _fixture.GameViewUseCase.CaptureAsync(CancellationToken.None);
 
             Assert.That(pngData.Length, Is.GreaterThan(0));
         }
