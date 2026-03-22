@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class AssetTools(AssetUseCase assetService)
+public class AssetTools(AssetUseCase assetUseCase)
 {
     [McpServerTool(Name = "refresh_asset_database", ReadOnly = false),
      Description("Refresh the Unity Asset Database."), UsedImplicitly]
@@ -15,7 +15,7 @@ public class AssetTools(AssetUseCase assetService)
     {
         try
         {
-            var message = await assetService.RefreshAsync(cancellationToken);
+            var message = await assetUseCase.RefreshAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)

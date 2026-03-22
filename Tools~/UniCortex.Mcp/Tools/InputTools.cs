@@ -8,7 +8,7 @@ using UniCortex.Editor.Domains.Models;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class InputTools(InputUseCase inputService)
+public class InputTools(InputUseCase inputUseCase)
 {
     [McpServerTool(Name = "send_key_event", ReadOnly = false),
      Description(
@@ -69,7 +69,7 @@ public class InputTools(InputUseCase inputService)
     {
         try
         {
-            var message = await inputService.SendKeyEventAsync(key, eventType, cancellationToken);
+            var message = await inputUseCase.SendKeyEventAsync(key, eventType, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -100,7 +100,7 @@ public class InputTools(InputUseCase inputService)
         try
         {
             var message =
-                await inputService.SendMouseEventAsync(x, y, button, eventType, cancellationToken);
+                await inputUseCase.SendMouseEventAsync(x, y, button, eventType, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)

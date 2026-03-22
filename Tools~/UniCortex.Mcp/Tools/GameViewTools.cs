@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class GameViewTools(GameViewUseCase gameViewService)
+public class GameViewTools(GameViewUseCase gameViewUseCase)
 {
     [McpServerTool(Name = "capture_game_view", ReadOnly = true),
      Description("Capture a screenshot of the Game View as a PNG image. Only available in Play Mode."),
@@ -17,7 +17,7 @@ public class GameViewTools(GameViewUseCase gameViewService)
     {
         try
         {
-            var pngData = await gameViewService.CaptureAsync(cancellationToken);
+            var pngData = await gameViewUseCase.CaptureAsync(cancellationToken);
             return new CallToolResult
             {
                 Content = [ImageContentBlock.FromBytes(pngData, "image/png")]

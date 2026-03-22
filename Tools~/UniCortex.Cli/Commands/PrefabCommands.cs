@@ -3,7 +3,7 @@ using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class PrefabCommands(PrefabUseCase prefabService)
+public class PrefabCommands(PrefabUseCase prefabUseCase)
 {
     /// <summary>Create a Prefab asset from a GameObject in the scene.</summary>
     /// <param name="instanceId">Instance ID of the source GameObject.</param>
@@ -12,7 +12,7 @@ public class PrefabCommands(PrefabUseCase prefabService)
     public async Task Create([Argument] int instanceId, [Argument] string assetPath,
         CancellationToken cancellationToken = default)
     {
-        var message = await prefabService.CreateAsync(instanceId, assetPath, cancellationToken);
+        var message = await prefabUseCase.CreateAsync(instanceId, assetPath, cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -21,7 +21,7 @@ public class PrefabCommands(PrefabUseCase prefabService)
     [Command("instantiate")]
     public async Task Instantiate([Argument] string assetPath, CancellationToken cancellationToken = default)
     {
-        var json = await prefabService.InstantiateAsync(assetPath, cancellationToken);
+        var json = await prefabUseCase.InstantiateAsync(assetPath, cancellationToken);
         Console.WriteLine(json);
     }
 }

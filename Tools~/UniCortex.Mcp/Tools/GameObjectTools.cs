@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class GameObjectTools(GameObjectUseCase gameObjectService)
+public class GameObjectTools(GameObjectUseCase gameObjectUseCase)
 {
     [McpServerTool(Name = "find_game_objects", ReadOnly = true),
      Description(
@@ -26,7 +26,7 @@ public class GameObjectTools(GameObjectUseCase gameObjectService)
     {
         try
         {
-            var json = await gameObjectService.FindAsync(query, cancellationToken);
+            var json = await gameObjectUseCase.FindAsync(query, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)
@@ -44,7 +44,7 @@ public class GameObjectTools(GameObjectUseCase gameObjectService)
     {
         try
         {
-            var json = await gameObjectService.CreateAsync(name, cancellationToken);
+            var json = await gameObjectUseCase.CreateAsync(name, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)
@@ -61,7 +61,7 @@ public class GameObjectTools(GameObjectUseCase gameObjectService)
     {
         try
         {
-            var message = await gameObjectService.DeleteAsync(instanceId, cancellationToken);
+            var message = await gameObjectUseCase.DeleteAsync(instanceId, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -87,7 +87,7 @@ public class GameObjectTools(GameObjectUseCase gameObjectService)
     {
         try
         {
-            var message = await gameObjectService.ModifyAsync(instanceId, name, activeSelf, tag, layer,
+            var message = await gameObjectUseCase.ModifyAsync(instanceId, name, activeSelf, tag, layer,
                 parentInstanceId, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }

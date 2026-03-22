@@ -4,7 +4,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Cli.Commands;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag
-public class TimelineClipCommands(TimelineUseCase timelineService)
+public class TimelineClipCommands(TimelineUseCase timelineUseCase)
 {
     /// <summary>Add a default clip to a Timeline track. Undo supported. Requires com.unity.timeline.</summary>
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
@@ -16,7 +16,7 @@ public class TimelineClipCommands(TimelineUseCase timelineService)
     public async Task Add([Argument] int instanceId, [Argument] int trackIndex, double start = 0, double duration = 0,
         string clipName = "", CancellationToken cancellationToken = default)
     {
-        var message = await timelineService.AddClipAsync(instanceId, trackIndex, start, duration, clipName,
+        var message = await timelineUseCase.AddClipAsync(instanceId, trackIndex, start, duration, clipName,
             cancellationToken);
         Console.WriteLine(message);
     }
@@ -29,7 +29,7 @@ public class TimelineClipCommands(TimelineUseCase timelineService)
     public async Task Remove([Argument] int instanceId, [Argument] int trackIndex, [Argument] int clipIndex,
         CancellationToken cancellationToken = default)
     {
-        var message = await timelineService.RemoveClipAsync(instanceId, trackIndex, clipIndex, cancellationToken);
+        var message = await timelineUseCase.RemoveClipAsync(instanceId, trackIndex, clipIndex, cancellationToken);
         Console.WriteLine(message);
     }
 }

@@ -3,7 +3,7 @@ using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class TestCommands(TestUseCase testService)
+public class TestCommands(TestUseCase testUseCase)
 {
     /// <summary>Run Unity Test Runner tests and wait for completion.</summary>
     /// <param name="testMode">Test mode: "EditMode" or "PlayMode".</param>
@@ -16,7 +16,7 @@ public class TestCommands(TestUseCase testService)
         string[]? groupNames = null, string[]? categoryNames = null,
         string[]? assemblyNames = null, CancellationToken cancellationToken = default)
     {
-        var json = await testService.RunAsync(testMode, testNames, groupNames, categoryNames,
+        var json = await testUseCase.RunAsync(testMode, testNames, groupNames, categoryNames,
             assemblyNames, cancellationToken);
         Console.WriteLine(json);
     }

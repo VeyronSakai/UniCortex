@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class PrefabTools(PrefabUseCase prefabService)
+public class PrefabTools(PrefabUseCase prefabUseCase)
 {
     [McpServerTool(Name = "create_prefab", ReadOnly = false),
      Description("Create a Prefab asset from a GameObject in the scene."), UsedImplicitly]
@@ -20,7 +20,7 @@ public class PrefabTools(PrefabUseCase prefabService)
     {
         try
         {
-            var message = await prefabService.CreateAsync(instanceId, assetPath, cancellationToken);
+            var message = await prefabUseCase.CreateAsync(instanceId, assetPath, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
@@ -39,7 +39,7 @@ public class PrefabTools(PrefabUseCase prefabService)
     {
         try
         {
-            var json = await prefabService.InstantiateAsync(assetPath, cancellationToken);
+            var json = await prefabUseCase.InstantiateAsync(assetPath, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }
         catch (Exception ex)
