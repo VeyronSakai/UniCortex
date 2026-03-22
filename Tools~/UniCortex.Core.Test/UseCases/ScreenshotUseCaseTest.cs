@@ -15,14 +15,13 @@ public class ScreenshotUseCaseTest
     }
 
     [Test]
-    public async ValueTask Capture_InPlayMode_ReturnsPngData()
+    public async ValueTask CaptureGameView_InPlayMode_ReturnsPngData()
     {
-        // Ensure a scene with a Camera is active before entering play mode
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var pngData = await _fixture.ScreenshotUseCase.CaptureAsync(CancellationToken.None);
+            var pngData = await _fixture.ScreenshotUseCase.CaptureGameViewAsync(CancellationToken.None);
 
             Assert.That(pngData.Length, Is.GreaterThan(0));
         }
@@ -31,4 +30,15 @@ public class ScreenshotUseCaseTest
             await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
         }
     }
+
+    [Test]
+    public async ValueTask CaptureSceneView_ReturnsPngData()
+    {
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+
+        var pngData = await _fixture.ScreenshotUseCase.CaptureSceneViewAsync(CancellationToken.None);
+
+        Assert.That(pngData.Length, Is.GreaterThan(0));
+    }
+
 }
