@@ -146,6 +146,41 @@ public class EditorTools(EditorUseCase editorUseCase)
         }
     }
 
+    [McpServerTool(Name = "set_time_scale", ReadOnly = false),
+     Description("Set the Time.timeScale value in Unity. Useful for slow motion (< 1), fast forward (> 1), or pausing time (0)."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> SetTimeScaleAsync(
+        [Description("The time scale value to set. 1 = normal speed, 0.5 = half speed, 2 = double speed, 0 = paused.")]
+        float timeScale,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var message = await editorUseCase.SetTimeScaleAsync(timeScale, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
+    [McpServerTool(Name = "get_time_scale", ReadOnly = true),
+     Description("Get the current Time.timeScale value in Unity."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> GetTimeScaleAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var message = await editorUseCase.GetTimeScaleAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
     [McpServerTool(Name = "reload_domain", ReadOnly = false),
      Description("Request a domain reload (script recompilation) in the Unity Editor."), UsedImplicitly]
     public async ValueTask<CallToolResult> ReloadDomainAsync(CancellationToken cancellationToken)

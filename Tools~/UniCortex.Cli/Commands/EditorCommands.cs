@@ -77,6 +77,22 @@ public class EditorCommands(EditorUseCase editorUseCase)
         Console.WriteLine(message);
     }
 
+    /// <summary>Set the Time.timeScale value in Unity.</summary>
+    [Command("set-time-scale")]
+    public async Task SetTimeScale([Argument] float timeScale, CancellationToken cancellationToken)
+    {
+        var message = await editorUseCase.SetTimeScaleAsync(timeScale, cancellationToken);
+        Console.WriteLine(message);
+    }
+
+    /// <summary>Get the current Time.timeScale value in Unity.</summary>
+    [Command("get-time-scale")]
+    public async Task GetTimeScale(CancellationToken cancellationToken)
+    {
+        var message = await editorUseCase.GetTimeScaleAsync(cancellationToken);
+        Console.WriteLine(message);
+    }
+
     /// <summary>Request a domain reload (script recompilation) in the Unity Editor.</summary>
     [Command("reload-domain")]
     public async Task ReloadDomain(CancellationToken cancellationToken)

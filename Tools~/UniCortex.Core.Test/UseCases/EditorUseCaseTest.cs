@@ -78,6 +78,24 @@ public class EditorUseCaseTest
         Assert.That(message, Does.Contain("successfully"));
     }
 
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SetTimeScale_ReturnsSuccess()
+    {
+        var message = await _fixture.EditorUseCase.SetTimeScaleAsync(0.5f, CancellationToken.None);
+
+        Assert.That(message, Does.Contain("successfully"));
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask GetTimeScale_ReturnsCurrentValue()
+    {
+        await _fixture.EditorUseCase.SetTimeScaleAsync(1f, CancellationToken.None);
+
+        var message = await _fixture.EditorUseCase.GetTimeScaleAsync(CancellationToken.None);
+
+        Assert.That(message, Does.Contain("1"));
+    }
+
     [Test, CancelAfter(60_000)]
     public async ValueTask GetEditorStatus_ReturnsPaused_DuringPlayModeAndPause(CancellationToken cancellationToken)
     {
