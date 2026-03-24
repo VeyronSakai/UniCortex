@@ -20,7 +20,7 @@ public sealed class UnityEditorFixture
     public AssetUseCase AssetUseCase { get; }
     public MenuItemUseCase MenuItemUseCase { get; }
     public GameViewUseCase GameViewUseCase { get; }
-    public SceneViewUseCase SceneViewUseCase { get; }
+
     public InputUseCase InputUseCase { get; }
     public TimelineUseCase TimelineUseCase { get; }
     public string BaseUrl { get; }
@@ -37,7 +37,7 @@ public sealed class UnityEditorFixture
         AssetUseCase = provider.GetRequiredService<AssetUseCase>();
         MenuItemUseCase = provider.GetRequiredService<MenuItemUseCase>();
         GameViewUseCase = provider.GetRequiredService<GameViewUseCase>();
-        SceneViewUseCase = provider.GetRequiredService<SceneViewUseCase>();
+
         InputUseCase = provider.GetRequiredService<InputUseCase>();
         TimelineUseCase = provider.GetRequiredService<TimelineUseCase>();
         BaseUrl = baseUrl;

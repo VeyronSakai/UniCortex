@@ -9,7 +9,7 @@ using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Handlers.MenuItem;
 using UniCortex.Editor.Handlers.Input;
 using UniCortex.Editor.Handlers.GameView;
-using UniCortex.Editor.Handlers.SceneView;
+
 using UniCortex.Editor.Handlers.Timeline;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
@@ -189,8 +189,6 @@ namespace UniCortex.Editor
             var captureGameViewUseCase = new CaptureGameViewUseCase(s_dispatcher, captureOps);
             var captureGameViewHandler = new CaptureGameViewHandler(captureGameViewUseCase);
 
-            var captureSceneViewUseCase = new CaptureSceneViewUseCase(s_dispatcher, captureOps);
-            var captureSceneViewHandler = new CaptureSceneViewHandler(captureSceneViewUseCase);
 
 #if UNICORTEX_INPUT_SYSTEM
             var inputSimOps = new InputOperationsAdapter();
@@ -263,7 +261,7 @@ namespace UniCortex.Editor
             assetRefreshHandler.Register(router);
             executeMenuItemHandler.Register(router);
             captureGameViewHandler.Register(router);
-            captureSceneViewHandler.Register(router);
+
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
             setTimeScaleHandler.Register(router);
