@@ -42,5 +42,6 @@ namespace UniCortex.Editor.Domains.Models
         public const string TimelineBindTrack = "/timeline/track/bind";
         public const string TimelineAddClip = "/timeline/clip/add";
         public const string TimelineRemoveClip = "/timeline/clip/remove";
+        public const string TimeScale = "/editor/time-scale";
     }
 }

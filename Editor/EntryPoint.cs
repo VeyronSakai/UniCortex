@@ -204,6 +204,14 @@ namespace UniCortex.Editor
             var sendMouseEventUseCase = new SendMouseEventUseCase(s_dispatcher, inputSimOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
 
+            var timeOps = new TimeOperationsAdapter();
+
+            var setTimeScaleUseCase = new SetTimeScaleUseCase(s_dispatcher, timeOps);
+            var setTimeScaleHandler = new SetTimeScaleHandler(setTimeScaleUseCase);
+
+            var getTimeScaleUseCase = new GetTimeScaleUseCase(s_dispatcher, timeOps);
+            var getTimeScaleHandler = new GetTimeScaleHandler(getTimeScaleUseCase);
+
             var timelineOps = new TimelineOperationsAdapter();
 
             var createTimelineUseCase = new CreateTimelineUseCase(s_dispatcher, timelineOps);
@@ -258,6 +266,8 @@ namespace UniCortex.Editor
             captureSceneViewHandler.Register(router);
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
+            setTimeScaleHandler.Register(router);
+            getTimeScaleHandler.Register(router);
             createTimelineHandler.Register(router);
             addTimelineTrackHandler.Register(router);
             removeTimelineTrackHandler.Register(router);
