@@ -67,7 +67,7 @@ jobs:
           updated_json=$(echo "${json_content}" | jq --arg version "${VERSION}" '.version = $version')
           echo "${updated_json}" | jq '.' > "${PACKAGE_JSON_PATH}"
       - name: Commit package.json
-        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9
+        uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
         id: commit-package-json
         with:
           author_name: ${{ env.GITHUB_BOT_NAME }}
@@ -79,7 +79,7 @@ jobs:
         run: |
           cp -f .github/DRAFT_README.md README.md
       - name: Commit README.md
-        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9
+        uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
         id: commit-readme
         with:
           author_name: ${{ env.GITHUB_BOT_NAME }}
