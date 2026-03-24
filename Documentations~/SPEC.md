@@ -165,6 +165,24 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
 
 レスポンス: `{"success": true}`
 
+#### GET `/editor/time-scale`
+現在の `Time.timeScale` 値を取得する。
+
+レスポンス:
+```json
+{"timeScale": 1.0}
+```
+
+#### POST `/editor/time-scale`
+`Time.timeScale` を設定する。スローモーション（< 1）、早送り（> 1）、時間停止（0）などに使用する。
+
+リクエストボディ:
+```json
+{"timeScale": 0.5}
+```
+
+レスポンス: `{"success": true}`
+
 ### シーン
 
 #### POST `/scene/create`
