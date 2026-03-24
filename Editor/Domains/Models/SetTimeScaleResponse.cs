@@ -8,12 +8,10 @@ namespace UniCortex.Editor.Domains.Models
     public class SetTimeScaleResponse
     {
         public bool success;
-        public float timeScale;
 
-        public SetTimeScaleResponse(bool success, float timeScale)
+        public SetTimeScaleResponse(bool success)
         {
             this.success = success;
-            this.timeScale = timeScale;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual(0.5f, timeOps.TimeScale);
-            StringAssert.Contains("0.5", context.ResponseBody);
+            StringAssert.Contains("true", context.ResponseBody);
         }
     }
 }

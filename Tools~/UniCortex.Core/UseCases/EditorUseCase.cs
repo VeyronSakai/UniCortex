@@ -114,9 +114,9 @@ public class EditorUseCase(IUnityEditorClient client)
 
     public async ValueTask<string> SetTimeScaleAsync(float timeScale, CancellationToken cancellationToken)
     {
-        var response = await client.PostAsync<SetTimeScaleRequest, SetTimeScaleResponse>(
+        await client.PostAsync<SetTimeScaleRequest, SetTimeScaleResponse>(
             ApiRoutes.TimeScale, new SetTimeScaleRequest { timeScale = timeScale }, cancellationToken);
-        return $"Time scale set to {response.timeScale} successfully.";
+        return $"Time scale set to {timeScale} successfully.";
     }
 
     public async ValueTask<string> GetTimeScaleAsync(CancellationToken cancellationToken)

@@ -18,12 +18,8 @@ namespace UniCortex.Editor.UseCases
 
         public async Task<SetTimeScaleResponse> ExecuteAsync(float timeScale, CancellationToken cancellationToken = default)
         {
-            var result = await _dispatcher.RunOnMainThreadAsync(() =>
-            {
-                _timeOperations.TimeScale = timeScale;
-                return _timeOperations.TimeScale;
-            }, cancellationToken);
-            return new SetTimeScaleResponse(true, result);
+            await _dispatcher.RunOnMainThreadAsync(() => _timeOperations.TimeScale = timeScale, cancellationToken);
+            return new SetTimeScaleResponse(true);
         }
     }
 }
