@@ -87,14 +87,14 @@ public class InputTools(InputUseCase inputUseCase)
          "Does NOT work with legacy UnityEngine.Input.GetMouseButton()."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> SendMouseEventAsync(
-        [Description("X coordinate in screen pixels. Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Range depends on Game View resolution (e.g. 0-800 for 800px width).")]
+        [Description("X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view screenshots use top-left origin and may include editor chrome, so coordinates from screenshots must be converted.")]
         float x,
-        [Description("Y coordinate in screen pixels. Origin (0,0) is at the bottom-left of the Game View. Increases upward. Range depends on Game View resolution (e.g. 0-600 for 600px height).")]
+        [Description("Y coordinate in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. This is the inverse of typical image coordinates where Y increases downward.")]
         float y,
         [Description($"Mouse button: \"{MouseButton.Left}\" (default), \"{MouseButton.Right}\", or \"{MouseButton.Middle}\".")]
         string button = MouseButton.Left,
-        [Description($"Event type: \"{InputEventType.Press}\" (default), \"{InputEventType.Release}\", or \"{InputEventType.Move}\" (position only, no button).")]
-        string eventType = InputEventType.Press,
+        [Description($"Event type: \"{InputEventType.Click}\" (default, press then release after one frame), \"{InputEventType.Press}\", \"{InputEventType.Release}\", or \"{InputEventType.Move}\" (position only, no button).")]
+        string eventType = InputEventType.Click,
         CancellationToken cancellationToken = default)
     {
         try

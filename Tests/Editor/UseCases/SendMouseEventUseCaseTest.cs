@@ -25,5 +25,28 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(InputEventType.Press, ops.LastMouseEventType);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
+
+        [Test]
+        public void ExecuteAsync_Click_DecomposesIntoPressAndRelease()
+        {
+            var dispatcher = new FakeMainThreadDispatcher();
+            var ops = new SpyInputOperations();
+            var useCase = new SendMouseEventUseCase(dispatcher, ops);
+
+            useCase.ExecuteAsync(150f, 250f, MouseButton.Left, InputEventType.Click, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(2, ops.SendMouseEventCallCount);
+            Assert.AreEqual(2, dispatcher.CallCount);
+
+            Assert.AreEqual(150f, ops.MouseEventHistory[0].X);
+            Assert.AreEqual(250f, ops.MouseEventHistory[0].Y);
+            Assert.AreEqual(MouseButton.Left, ops.MouseEventHistory[0].Button);
+            Assert.AreEqual(InputEventType.Press, ops.MouseEventHistory[0].EventType);
+
+            Assert.AreEqual(150f, ops.MouseEventHistory[1].X);
+            Assert.AreEqual(250f, ops.MouseEventHistory[1].Y);
+            Assert.AreEqual(MouseButton.Left, ops.MouseEventHistory[1].Button);
+            Assert.AreEqual(InputEventType.Release, ops.MouseEventHistory[1].EventType);
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.Tests.TestDoubles
@@ -14,6 +15,24 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string LastMouseButton { get; private set; }
         public string LastMouseEventType { get; private set; }
 
+        public readonly struct MouseEventRecord
+        {
+            public readonly float X;
+            public readonly float Y;
+            public readonly string Button;
+            public readonly string EventType;
+
+            public MouseEventRecord(float x, float y, string button, string eventType)
+            {
+                X = x;
+                Y = y;
+                Button = button;
+                EventType = eventType;
+            }
+        }
+
+        public List<MouseEventRecord> MouseEventHistory { get; } = new();
+
         public void SendKeyEvent(string key, string eventType)
         {
             SendKeyEventCallCount++;
@@ -28,6 +47,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastMouseY = y;
             LastMouseButton = button;
             LastMouseEventType = eventType;
+            MouseEventHistory.Add(new MouseEventRecord(x, y, button, eventType));
         }
     }
 }
