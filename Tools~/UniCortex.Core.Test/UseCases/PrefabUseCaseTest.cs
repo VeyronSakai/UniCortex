@@ -109,6 +109,12 @@ public class PrefabUseCaseTest
 
             Assert.That(message, Does.Contain("Prefab opened: Assets/OpenPrefabTest.prefab"));
 
+            // Create a child GameObject inside the prefab to make it dirty
+            var childJson = await _fixture.GameObjectUseCase.CreateAsync("DirtyChild", ct);
+            var childResponse =
+                JsonSerializer.Deserialize<CreateGameObjectResponse>(childJson, s_jsonOptions)!;
+            Assert.That(childResponse.instanceId, Is.Not.EqualTo(0));
+
             // Close prefab mode to return to the main stage
             await _fixture.PrefabUseCase.CloseAsync(ct);
         }
