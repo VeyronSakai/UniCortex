@@ -91,7 +91,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `scene create\|open\|save\|hierarchy` | Scene operations |
 | `gameobject find\|create\|delete\|modify` | GameObject operations |
 | `component add\|remove\|properties\|set-property` | Component operations |
-| `prefab create\|instantiate\|open\|close` | Prefab operations |
+| `prefab create\|instantiate\|open\|close\|save` | Prefab operations |
 | `test run` | Run Unity tests |
 | `console logs\|clear` | Console log management |
 | `asset refresh` | Refresh Asset Database |
@@ -157,6 +157,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `instantiate_prefab` | Instantiate a Prefab into the scene |
 | `open_prefab` | Open a Prefab asset in Prefab Mode for editing |
 | `close_prefab` | Close Prefab Mode and return to the main stage |
+| `save_prefab` | Save the Prefab currently open in Prefab Mode |
 
 ### Asset
 
