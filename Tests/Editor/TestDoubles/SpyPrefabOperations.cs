@@ -26,5 +26,21 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastInstantiateAssetPath = assetPath;
             return InstantiateResult;
         }
+
+        public int OpenPrefabCallCount { get; private set; }
+        public string LastOpenAssetPath { get; private set; }
+
+        public void OpenPrefab(string assetPath)
+        {
+            OpenPrefabCallCount++;
+            LastOpenAssetPath = assetPath;
+        }
+
+        public int ClosePrefabCallCount { get; private set; }
+
+        public void ClosePrefab()
+        {
+            ClosePrefabCallCount++;
+        }
     }
 }

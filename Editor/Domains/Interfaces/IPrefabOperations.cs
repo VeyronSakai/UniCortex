@@ -6,5 +6,7 @@ namespace UniCortex.Editor.Domains.Interfaces
     {
         void CreatePrefab(int instanceId, string assetPath);
         InstantiatePrefabResponse InstantiatePrefab(string assetPath);
+        void OpenPrefab(string assetPath);
+        void ClosePrefab();
     }
 }

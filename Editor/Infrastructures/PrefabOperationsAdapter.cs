@@ -2,6 +2,7 @@ using System;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
@@ -31,6 +32,22 @@ namespace UniCortex.Editor.Infrastructures
             Undo.RegisterCreatedObjectUndo(instance, "Instantiate Prefab");
 
             return new InstantiatePrefabResponse(instance.name, instance.GetInstanceID());
+        }
+
+        public void OpenPrefab(string assetPath)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+            if (prefab == null)
+            {
+                throw new ArgumentException($"Prefab not found at path: {assetPath}");
+            }
+
+            PrefabStageUtility.OpenPrefab(assetPath);
+        }
+
+        public void ClosePrefab()
+        {
+            StageUtility.GoToMainStage();
         }
     }
 }

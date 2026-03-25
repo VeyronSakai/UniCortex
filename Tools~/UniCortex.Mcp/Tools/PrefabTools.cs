@@ -47,4 +47,38 @@ public class PrefabTools(PrefabUseCase prefabUseCase)
             return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
+
+    [McpServerTool(Name = "open_prefab", ReadOnly = false),
+     Description("Open a Prefab asset in Prefab Mode for editing."), UsedImplicitly]
+    public async ValueTask<CallToolResult> OpenPrefabAsync(
+        [Description("The asset path of the Prefab to open (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
+        string assetPath,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var message = await prefabUseCase.OpenAsync(assetPath, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
+    [McpServerTool(Name = "close_prefab", ReadOnly = false),
+     Description("Close Prefab Mode and return to the main stage."), UsedImplicitly]
+    public async ValueTask<CallToolResult> ClosePrefabAsync(
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var message = await prefabUseCase.CloseAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
 }

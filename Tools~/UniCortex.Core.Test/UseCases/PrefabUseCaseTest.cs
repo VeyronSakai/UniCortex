@@ -91,4 +91,41 @@ public class PrefabUseCaseTest
             UnityEditorFixture.DeleteAssetFile("Assets/InstantiatePrefabTest.prefab");
         }
     }
+
+    [Test]
+    public async ValueTask Open_ReturnsSuccess_WhenPrefabExists()
+    {
+        var ct = CancellationToken.None;
+
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("OpenPrefabTestObj", ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+
+        try
+        {
+            await _fixture.PrefabUseCase.CreateAsync(
+                createResponse.instanceId, "Assets/OpenPrefabTest.prefab", ct);
+
+            var message = await _fixture.PrefabUseCase.OpenAsync("Assets/OpenPrefabTest.prefab", ct);
+
+            Assert.That(message, Does.Contain("Prefab opened: Assets/OpenPrefabTest.prefab"));
+
+            // Close prefab mode to return to the main stage
+            await _fixture.PrefabUseCase.CloseAsync(ct);
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
+            UnityEditorFixture.DeleteAssetFile("Assets/OpenPrefabTest.prefab");
+        }
+    }
+
+    [Test]
+    public async ValueTask Close_ReturnsSuccess()
+    {
+        var ct = CancellationToken.None;
+
+        var message = await _fixture.PrefabUseCase.CloseAsync(ct);
+
+        Assert.That(message, Does.Contain("Prefab mode closed."));
+    }
 }
