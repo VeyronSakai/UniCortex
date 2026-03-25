@@ -41,4 +41,12 @@ public class PrefabCommands(PrefabUseCase prefabUseCase)
         var message = await prefabUseCase.CloseAsync(cancellationToken);
         Console.WriteLine(message);
     }
+
+    /// <summary>Save the Prefab currently open in Prefab Mode.</summary>
+    [Command("save")]
+    public async Task Save(CancellationToken cancellationToken = default)
+    {
+        var message = await prefabUseCase.SaveAsync(cancellationToken);
+        Console.WriteLine(message);
+    }
 }

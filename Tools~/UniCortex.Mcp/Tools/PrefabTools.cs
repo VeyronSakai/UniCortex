@@ -81,4 +81,20 @@ public class PrefabTools(PrefabUseCase prefabUseCase)
             return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
+
+    [McpServerTool(Name = "save_prefab", ReadOnly = false),
+     Description("Save the Prefab currently open in Prefab Mode."), UsedImplicitly]
+    public async ValueTask<CallToolResult> SavePrefabAsync(
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var message = await prefabUseCase.SaveAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
 }

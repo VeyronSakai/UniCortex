@@ -180,6 +180,9 @@ namespace UniCortex.Editor
             var closePrefabUseCase = new ClosePrefabUseCase(s_dispatcher, prefabOps);
             var closePrefabHandler = new ClosePrefabHandler(closePrefabUseCase);
 
+            var savePrefabUseCase = new SavePrefabUseCase(s_dispatcher, prefabOps);
+            var savePrefabHandler = new SavePrefabHandler(savePrefabUseCase);
+
             var assetDbOps = new AssetDatabaseOperationsAdapter();
 
             var refreshAssetDatabaseUseCase = new RefreshAssetDatabaseUseCase(s_dispatcher, assetDbOps);
@@ -266,6 +269,7 @@ namespace UniCortex.Editor
             instantiatePrefabHandler.Register(router);
             openPrefabHandler.Register(router);
             closePrefabHandler.Register(router);
+            savePrefabHandler.Register(router);
             assetRefreshHandler.Register(router);
             executeMenuItemHandler.Register(router);
             captureGameViewHandler.Register(router);
