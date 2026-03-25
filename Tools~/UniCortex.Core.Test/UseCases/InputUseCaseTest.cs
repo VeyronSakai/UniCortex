@@ -122,6 +122,32 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_InPlayMode_ClicksUIButton_WithClickEventType()
+    {
+        // Same scenario as SendMouseEvent_InPlayMode_ClicksUIButton_WhenInsideButton,
+        // but using a single "click" eventType instead of separate press/release calls.
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
+
+            await _fixture.InputUseCase.SendMouseEventAsync(400f, 300f, MouseButton.Left, InputEventType.Click,
+                CancellationToken.None);
+            await Task.Delay(500);
+
+            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
+                cancellationToken: CancellationToken.None);
+
+            Assert.That(logs, Does.Contain("[ButtonClickDebug] Button clicked"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
     public async ValueTask SendMouseEvent_InPlayMode_DoesNotClickUIButton_WhenOutsideButton()
     {
         // Click at top-left corner (10, 10) which is far outside the centered 200x80 button.

@@ -36,7 +36,7 @@ namespace UniCortex.Editor.Handlers.Input
             var request = JsonUtility.FromJson<SendMouseEventRequest>(body);
 
             var button = string.IsNullOrEmpty(request.button) ? MouseButton.Left : request.button;
-            var eventType = string.IsNullOrEmpty(request.eventType) ? InputEventType.Press : request.eventType;
+            var eventType = string.IsNullOrEmpty(request.eventType) ? InputEventType.Click : request.eventType;
 
             try
             {

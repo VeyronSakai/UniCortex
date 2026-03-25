@@ -53,7 +53,10 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual(MouseButton.Left, ops.LastMouseButton);
-            Assert.AreEqual(InputEventType.Press, ops.LastMouseEventType);
+            // Default eventType is "click", which decomposes into press then release.
+            Assert.AreEqual(2, ops.SendMouseEventCallCount);
+            Assert.AreEqual(InputEventType.Press, ops.MouseEventHistory[0].EventType);
+            Assert.AreEqual(InputEventType.Release, ops.MouseEventHistory[1].EventType);
         }
 
         [Test]
