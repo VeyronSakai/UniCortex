@@ -30,6 +30,8 @@ namespace UniCortex.Editor.Domains.Models
         public const string ComponentSetProperty = "/component/set-property";
         public const string PrefabCreate = "/prefab/create";
         public const string PrefabInstantiate = "/prefab/instantiate";
+        public const string PrefabOpen = "/prefab/open";
+        public const string PrefabClose = "/prefab/close";
         public const string AssetDatabaseRefresh = "/asset-database/refresh";
         public const string MenuItemExecute = "/menu-item/execute";
         public const string GameViewCapture = "/game-view/capture";
