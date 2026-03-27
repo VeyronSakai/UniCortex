@@ -193,6 +193,34 @@ public class PrefabUseCaseTest
     }
 
     [Test]
+    public async ValueTask FindGameObjects_WithQuery_InPrefabMode_ReturnsPrefabGameObjects()
+    {
+        var ct = CancellationToken.None;
+
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("FindQueryPrefabTestObj", ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+
+        try
+        {
+            await _fixture.PrefabUseCase.CreateAsync(
+                createResponse.instanceId, "Assets/FindQueryPrefabTest.prefab", ct);
+
+            await _fixture.PrefabUseCase.OpenAsync("Assets/FindQueryPrefabTest.prefab", ct);
+
+            var findJson = await _fixture.GameObjectUseCase.FindAsync("t:Transform", ct);
+
+            Assert.That(findJson, Does.Contain("FindQueryPrefabTest"));
+
+            await _fixture.PrefabUseCase.CloseAsync(ct);
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
+            UnityEditorFixture.DeleteAssetFile("Assets/FindQueryPrefabTest.prefab");
+        }
+    }
+
+    [Test]
     public async ValueTask Save_ReturnsSuccess_WhenPrefabIsOpen()
     {
         var ct = CancellationToken.None;
