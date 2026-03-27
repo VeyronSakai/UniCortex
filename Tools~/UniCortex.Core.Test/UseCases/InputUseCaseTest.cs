@@ -95,18 +95,21 @@ public class InputUseCaseTest
     public async ValueTask SendMouseEvent_InPlayMode_ClicksUIButton_WhenInsideButton()
     {
         // TestButton is 200x80, anchored at center of screen.
-        // Game View is 800x600, so button occupies x:300-500, y:260-340 (screen coords).
-        // Click at screen center (400, 300) which is inside the button.
+        // Click at screen center which is inside the button regardless of Game View resolution.
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
+            var status = await _fixture.EditorUseCase.GetStatusAsync(CancellationToken.None);
+            var centerX = status.screenWidth / 2f;
+            var centerY = status.screenHeight / 2f;
+
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
-            await _fixture.InputUseCase.SendMouseEventAsync(400f, 300f, MouseButton.Left, InputEventType.Press,
+            await _fixture.InputUseCase.SendMouseEventAsync(centerX, centerY, MouseButton.Left, InputEventType.Press,
                 CancellationToken.None);
             await Task.Delay(100);
-            await _fixture.InputUseCase.SendMouseEventAsync(400f, 300f, MouseButton.Left, InputEventType.Release,
+            await _fixture.InputUseCase.SendMouseEventAsync(centerX, centerY, MouseButton.Left, InputEventType.Release,
                 CancellationToken.None);
             await Task.Delay(500);
 
@@ -130,9 +133,13 @@ public class InputUseCaseTest
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
+            var status = await _fixture.EditorUseCase.GetStatusAsync(CancellationToken.None);
+            var centerX = status.screenWidth / 2f;
+            var centerY = status.screenHeight / 2f;
+
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
-            await _fixture.InputUseCase.SendMouseEventAsync(400f, 300f, MouseButton.Left, InputEventType.Click,
+            await _fixture.InputUseCase.SendMouseEventAsync(centerX, centerY, MouseButton.Left, InputEventType.Click,
                 CancellationToken.None);
             await Task.Delay(500);
 

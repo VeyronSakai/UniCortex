@@ -1,5 +1,6 @@
 using UniCortex.Editor.Domains.Interfaces;
 using UnityEditor;
+using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
 {
@@ -16,6 +17,9 @@ namespace UniCortex.Editor.Infrastructures
             get => EditorApplication.isPaused;
             set => EditorApplication.isPaused = value;
         }
+
+        public int ScreenWidth => Screen.width;
+        public int ScreenHeight => Screen.height;
 
         public void Step()
         {
