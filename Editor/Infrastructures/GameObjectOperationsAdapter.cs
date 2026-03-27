@@ -4,6 +4,7 @@ using System.Linq;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -35,9 +36,17 @@ namespace UniCortex.Editor.Infrastructures
 
         private static List<GameObjectSearchResult> GetAllGameObjects()
         {
+            var results = new List<GameObjectSearchResult>();
+
+            var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (prefabStage != null)
+            {
+                CollectAll(prefabStage.prefabContentsRoot.transform, results);
+                return results;
+            }
+
             var scene = SceneManager.GetActiveScene();
             var rootObjects = scene.GetRootGameObjects();
-            var results = new List<GameObjectSearchResult>();
             foreach (var root in rootObjects)
             {
                 CollectAll(root.transform, results);
