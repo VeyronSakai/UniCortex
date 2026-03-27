@@ -152,7 +152,7 @@ public class PrefabUseCaseTest
 
             var hierarchyJson = await _fixture.SceneUseCase.GetHierarchyAsync(ct);
 
-            Assert.That(hierarchyJson, Does.Contain("HierarchyPrefabTestObj"));
+            Assert.That(hierarchyJson, Does.Contain("HierarchyPrefabTest"));
             Assert.That(hierarchyJson, Does.Contain("HierarchyPrefabTest.prefab"));
 
             await _fixture.PrefabUseCase.CloseAsync(ct);
@@ -181,7 +181,7 @@ public class PrefabUseCaseTest
 
             var findJson = await _fixture.GameObjectUseCase.FindAsync(null, ct);
 
-            Assert.That(findJson, Does.Contain("FindPrefabTestObj"));
+            Assert.That(findJson, Does.Contain("FindPrefabTest"));
 
             await _fixture.PrefabUseCase.CloseAsync(ct);
         }
