@@ -18,8 +18,8 @@ namespace UniCortex.Editor.Infrastructures
             set => EditorApplication.isPaused = value;
         }
 
-        public int ScreenWidth => Screen.width;
-        public int ScreenHeight => Screen.height;
+        public int ScreenWidth => (int)Handles.GetMainGameViewSize().x;
+        public int ScreenHeight => (int)Handles.GetMainGameViewSize().y;
 
         public void Step()
         {
