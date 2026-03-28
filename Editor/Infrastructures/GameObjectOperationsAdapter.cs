@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Infrastructures
             using var context = SearchService.CreateContext("scene", query);
             var items = SearchService.GetItems(context, SearchFlags.Synchronous);
 
-            var results = new List<GameObjectSearchResult>();
+            var results = new List<GameObjectSearchResult>(items.Count);
             foreach (var item in items)
             {
                 var go = item.ToObject<GameObject>();
