@@ -226,7 +226,7 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
       "tag": "MainCamera",
       "layer": 0,
       "isStatic": false,
-      "isLocked": false,
+      "hideFlags": 0,
       "components": ["UnityEngine.Transform", "UnityEngine.Camera", "UnityEngine.AudioListener"],
       "children": []
     },
@@ -237,7 +237,7 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
       "tag": "Untagged",
       "layer": 5,
       "isStatic": false,
-      "isLocked": false,
+      "hideFlags": 0,
       "components": ["UnityEngine.RectTransform", "UnityEngine.Canvas"],
       "children": [
         {
@@ -247,7 +247,7 @@ Undo した操作を Redo する。`Undo.PerformRedo()`
           "tag": "Untagged",
           "layer": 5,
           "isStatic": false,
-          "isLocked": false,
+          "hideFlags": 0,
           "components": ["UnityEngine.RectTransform", "UnityEngine.UI.Image", "UnityEngine.UI.Button"],
           "children": []
         }
@@ -293,7 +293,7 @@ Unity Search (`SearchService` API) の `scene` プロバイダに委譲。Unity 
       "tag": "Untagged",
       "layer": 0,
       "isStatic": false,
-      "isLocked": false,
+      "hideFlags": 0,
       "components": ["UnityEngine.Transform", "UnityEngine.CharacterController"]
     }
   ]

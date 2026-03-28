@@ -71,7 +71,6 @@ namespace UniCortex.Editor.Infrastructures
                 .Select(c => c.GetType().FullName)
                 .ToList();
 
-            var isLocked = (go.hideFlags & HideFlags.NotEditable) != 0;
             return new GameObjectSearchResult(
                 go.name,
                 go.GetInstanceID(),
@@ -79,7 +78,7 @@ namespace UniCortex.Editor.Infrastructures
                 go.tag,
                 go.layer,
                 go.isStatic,
-                isLocked,
+                (int)go.hideFlags,
                 components);
         }
 

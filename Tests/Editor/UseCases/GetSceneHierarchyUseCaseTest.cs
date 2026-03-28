@@ -18,7 +18,7 @@ namespace UniCortex.Editor.Tests.UseCases
             sceneManager.HierarchyResult = new GetSceneHierarchyResponse("TestScene", "Assets/Scenes/TestScene.unity",
                 new List<GameObjectNode>
                 {
-                    new GameObjectNode("Camera", 100, true, "Untagged", 0, false, false,
+                    new GameObjectNode("Camera", 100, true, "Untagged", 0, false, 0,
                         new List<string> { "Transform", "Camera" }, new List<GameObjectNode>())
                 });
             var useCase = new GetSceneHierarchyUseCase(dispatcher, sceneManager);
