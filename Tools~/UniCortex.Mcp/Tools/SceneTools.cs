@@ -60,9 +60,9 @@ public class SceneTools(SceneUseCase sceneUseCase)
         }
     }
 
-    [McpServerTool(Name = "get_scene_hierarchy", ReadOnly = true),
-     Description("Get the GameObject hierarchy of the current scene in the Unity Editor."), UsedImplicitly]
-    public async ValueTask<CallToolResult> GetSceneHierarchyAsync(CancellationToken cancellationToken = default)
+    [McpServerTool(Name = "get_hierarchy", ReadOnly = true),
+     Description("Get the GameObject hierarchy of the currently open scene or Prefab in the Unity Editor."), UsedImplicitly]
+    public async ValueTask<CallToolResult> GetHierarchyAsync(CancellationToken cancellationToken = default)
     {
         try
         {

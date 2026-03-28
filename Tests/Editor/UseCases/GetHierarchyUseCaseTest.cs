@@ -8,20 +8,20 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.UseCases
 {
     [TestFixture]
-    internal sealed class GetSceneHierarchyUseCaseTest
+    internal sealed class GetHierarchyUseCaseTest
     {
         [Test]
         public void ExecuteAsync_ReturnsHierarchy_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            sceneManager.HierarchyResult = new GetSceneHierarchyResponse("TestScene", "Assets/Scenes/TestScene.unity",
+            sceneManager.HierarchyResult = new GetHierarchyResponse("TestScene", "Assets/Scenes/TestScene.unity",
                 new List<GameObjectNode>
                 {
                     new GameObjectNode("Camera", 100, true, "Untagged", 0, false, 0,
                         new List<string> { "Transform", "Camera" }, new List<GameObjectNode>())
                 });
-            var useCase = new GetSceneHierarchyUseCase(dispatcher, sceneManager);
+            var useCase = new GetHierarchyUseCase(dispatcher, sceneManager);
 
             var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
 

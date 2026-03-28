@@ -253,6 +253,10 @@ dotnet run --project Tools~/UniCortex.Mcp/
 dotnet run --project Tools~/UniCortex.Cli/ -- editor ping
 ```
 
+## Note
+
+This README is auto-generated from [`.github/DRAFT_README.md`](.github/DRAFT_README.md) at release time. Edit the draft instead of this file directly.
+
 ## License
 
 MIT License - [LICENSE.txt](LICENSE.txt)

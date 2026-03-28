@@ -136,7 +136,7 @@ public class PrefabUseCaseTest
     }
 
     [Test]
-    public async ValueTask GetSceneHierarchy_InPrefabMode_ReturnsPrefabHierarchy()
+    public async ValueTask GetHierarchy_InPrefabMode_ReturnsPrefabHierarchy()
     {
         var ct = CancellationToken.None;
 

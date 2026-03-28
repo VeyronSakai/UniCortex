@@ -30,8 +30,8 @@ public class SceneUseCase(IUnityEditorClient client)
 
     public async ValueTask<string> GetHierarchyAsync(CancellationToken cancellationToken)
     {
-        var response = await client.GetAsync<GetSceneHierarchyRequest, GetSceneHierarchyResponse>(
-            ApiRoutes.SceneHierarchy, cancellationToken: cancellationToken);
+        var response = await client.GetAsync<GetHierarchyRequest, GetHierarchyResponse>(
+            ApiRoutes.Hierarchy, cancellationToken: cancellationToken);
         return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 }

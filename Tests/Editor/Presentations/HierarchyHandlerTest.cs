@@ -10,26 +10,26 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class SceneHierarchyHandlerTest
+    internal sealed class HierarchyHandlerTest
     {
         [Test]
-        public void HandleSceneHierarchy_Returns200WithHierarchy()
+        public void HandleHierarchy_Returns200WithHierarchy()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            sceneManager.HierarchyResult = new GetSceneHierarchyResponse("SampleScene", "Assets/Scenes/SampleScene.unity",
+            sceneManager.HierarchyResult = new GetHierarchyResponse("SampleScene", "Assets/Scenes/SampleScene.unity",
                 new List<GameObjectNode>
                 {
                     new GameObjectNode("Main Camera", 100, true, "Untagged", 0, false, 0,
                         new List<string> { "Transform", "Camera" }, new List<GameObjectNode>())
                 });
-            var useCase = new GetSceneHierarchyUseCase(dispatcher, sceneManager);
-            var handler = new SceneHierarchyHandler(useCase);
+            var useCase = new GetHierarchyUseCase(dispatcher, sceneManager);
+            var handler = new HierarchyHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
 
-            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.SceneHierarchy);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.Hierarchy);
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

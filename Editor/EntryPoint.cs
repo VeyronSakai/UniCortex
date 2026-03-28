@@ -135,8 +135,8 @@ namespace UniCortex.Editor
             var saveSceneUseCase = new SaveSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
             var saveSceneHandler = new SaveSceneHandler(saveSceneUseCase);
 
-            var getSceneHierarchyUseCase = new GetSceneHierarchyUseCase(s_dispatcher, sceneManagerAdapter);
-            var sceneHierarchyHandler = new SceneHierarchyHandler(getSceneHierarchyUseCase);
+            var getHierarchyUseCase = new GetHierarchyUseCase(s_dispatcher, sceneManagerAdapter);
+            var hierarchyHandler = new HierarchyHandler(getHierarchyUseCase);
 
             var gameObjectOps = new GameObjectOperationsAdapter();
 
@@ -256,7 +256,7 @@ namespace UniCortex.Editor
             createSceneHandler.Register(router);
             openSceneHandler.Register(router);
             saveSceneHandler.Register(router);
-            sceneHierarchyHandler.Register(router);
+            hierarchyHandler.Register(router);
             getGameObjectsHandler.Register(router);
             createGameObjectHandler.Register(router);
             deleteGameObjectHandler.Register(router);
