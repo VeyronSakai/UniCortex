@@ -36,11 +36,19 @@ namespace UniCortex.Editor.Infrastructures
 
         private static void OnPlayModeStateChanged(PlayModeStateChange state)
         {
-            if (state == PlayModeStateChange.EnteredPlayMode)
+            switch (state)
             {
-                s_pressedKeys.Clear();
-                s_pressedMouseButtons.Clear();
-                ConfigureInputSettingsForSimulation();
+                case PlayModeStateChange.ExitingPlayMode:
+                    // Unity resets device state on exit, so clear our tracking to match.
+                    s_pressedKeys.Clear();
+                    s_pressedMouseButtons.Clear();
+                    break;
+
+                case PlayModeStateChange.EnteredPlayMode:
+                    s_pressedKeys.Clear();
+                    s_pressedMouseButtons.Clear();
+                    ConfigureInputSettingsForSimulation();
+                    break;
             }
         }
 
@@ -53,28 +61,51 @@ namespace UniCortex.Editor.Infrastructures
         /// Game View is unfocused, making wasPressedThisFrame invisible to
         /// MonoBehaviour.Update().
         ///
-        /// Called once on EnteredPlayMode so that the settings are already active
-        /// before any input events are queued. Changing the settings and queuing
-        /// events in the same call is unreliable because InputSystem.settings.OnChange()
-        /// triggers ApplySettings() which may not fully propagate within the same
-        /// editor update tick.
-        ///
         /// Changes revert automatically when Play Mode ends because Unity restores
         /// the original InputSettings asset and runtime Application settings.
         /// </summary>
         private static void ConfigureInputSettingsForSimulation()
         {
+            if (!EditorApplication.isPlaying) return;
+
             var settings = InputSystem.settings;
 
-            // Route all device input to the game view regardless of focus.
-            settings.editorInputBehaviorInPlayMode =
-                InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+            // Only write when the value differs to avoid unnecessary OnChange()/ApplySettings() calls.
+            if (settings.editorInputBehaviorInPlayMode !=
+                InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView)
+            {
+                settings.editorInputBehaviorInPlayMode =
+                    InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+            }
 
-            // Prevent Input System from disabling devices when the application loses focus.
-            settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+            if (settings.backgroundBehavior != InputSettings.BackgroundBehavior.IgnoreFocus)
+            {
+                settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+            }
 
-            // Prevent the event buffer from being flushed when the game is unfocused.
-            Application.runInBackground = true;
+            if (!Application.runInBackground)
+            {
+                Application.runInBackground = true;
+            }
+
+        }
+
+        /// <summary>
+        /// Verifies that Input System settings are correctly configured for simulation.
+        /// If settings have drifted (e.g. Unity restored defaults after a Play Mode
+        /// transition), reapplies them. The check is lightweight (three property reads)
+        /// so it adds negligible overhead when settings are already correct.
+        /// </summary>
+        private static void EnsureInputSettingsConfigured()
+        {
+            var settings = InputSystem.settings;
+            if (settings.editorInputBehaviorInPlayMode !=
+                    InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView
+                || settings.backgroundBehavior != InputSettings.BackgroundBehavior.IgnoreFocus
+                || !Application.runInBackground)
+            {
+                ConfigureInputSettingsForSimulation();
+            }
         }
 
         public void SendKeyEvent(string key, string eventType)
@@ -84,6 +115,8 @@ namespace UniCortex.Editor.Infrastructures
                 throw new InvalidOperationException(
                     "Input simulation is only available in Play Mode. Enter Play Mode first.");
             }
+
+            EnsureInputSettingsConfigured();
 
             var keyboard = Keyboard.current;
             if (keyboard == null)
@@ -140,6 +173,8 @@ namespace UniCortex.Editor.Infrastructures
                 throw new InvalidOperationException(
                     "Input simulation is only available in Play Mode. Enter Play Mode first.");
             }
+
+            EnsureInputSettingsConfigured();
 
             var mouse = Mouse.current;
             if (mouse == null)
