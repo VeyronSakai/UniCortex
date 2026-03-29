@@ -35,7 +35,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string PrefabSave = "/prefab/save";
         public const string AssetDatabaseRefresh = "/asset-database/refresh";
         public const string MenuItemExecute = "/menu-item/execute";
-        public const string GameViewCapture = "/game-view/capture";
+        public const string ScreenshotCapture = "/screenshot/capture";
 
         public const string InputKey = "/input/key";
         public const string InputMouse = "/input/mouse";
@@ -45,6 +45,8 @@ namespace UniCortex.Editor.Domains.Models
         public const string TimelineBindTrack = "/timeline/track/bind";
         public const string TimelineAddClip = "/timeline/clip/add";
         public const string TimelineRemoveClip = "/timeline/clip/remove";
+        public const string FocusSceneView = "/view/focus-scene";
+        public const string FocusGameView = "/view/focus-game";
         public const string TimeScale = "/editor/time-scale";
     }
 }

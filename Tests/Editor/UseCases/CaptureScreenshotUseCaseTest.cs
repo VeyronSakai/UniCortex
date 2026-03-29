@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.UseCases
 {
     [TestFixture]
-    internal sealed class CaptureGameViewUseCaseTest
+    internal sealed class CaptureScreenshotUseCaseTest
     {
         [Test]
         public void ExecuteAsync_ReturnsData_And_DispatchesToMainThread()
@@ -16,11 +16,11 @@ namespace UniCortex.Editor.Tests.UseCases
             {
                 ScreenshotResult = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
             };
-            var useCase = new CaptureGameViewUseCase(dispatcher, operations);
+            var useCase = new CaptureScreenshotUseCase(dispatcher, operations);
 
             var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(1, operations.CaptureGameViewCallCount);
+            Assert.AreEqual(1, operations.CaptureScreenshotCallCount);
             Assert.AreEqual(4, result.Length);
             Assert.AreEqual(0x89, result[0]);
             Assert.AreEqual(1, dispatcher.CallCount);

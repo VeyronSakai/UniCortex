@@ -4,7 +4,7 @@ using UniCortex.Core.Test.Fixtures;
 namespace UniCortex.Core.Test.UseCases;
 
 [TestFixture]
-public class GameViewUseCaseTest
+public class ScreenshotUseCaseTest
 {
     private UnityEditorFixture _fixture = null!;
 
@@ -21,7 +21,7 @@ public class GameViewUseCaseTest
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var pngData = await _fixture.GameViewUseCase.CaptureAsync(CancellationToken.None);
+            var pngData = await _fixture.ScreenshotUseCase.CaptureAsync(CancellationToken.None);
 
             Assert.That(pngData.Length, Is.GreaterThan(0));
         }

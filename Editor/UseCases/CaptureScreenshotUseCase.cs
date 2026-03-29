@@ -4,12 +4,12 @@ using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.UseCases
 {
-    internal sealed class CaptureGameViewUseCase
+    internal sealed class CaptureScreenshotUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
         private readonly ICaptureOperations _operations;
 
-        public CaptureGameViewUseCase(IMainThreadDispatcher dispatcher, ICaptureOperations operations)
+        public CaptureScreenshotUseCase(IMainThreadDispatcher dispatcher, ICaptureOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;
@@ -18,7 +18,7 @@ namespace UniCortex.Editor.UseCases
         public async Task<byte[]> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.CaptureGameView(), cancellationToken);
+                () => _operations.CaptureScreenshot(), cancellationToken);
         }
     }
 }

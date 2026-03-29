@@ -8,7 +8,8 @@ using UniCortex.Editor.Handlers.Scene;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Handlers.MenuItem;
 using UniCortex.Editor.Handlers.Input;
-using UniCortex.Editor.Handlers.GameView;
+using UniCortex.Editor.Handlers.Screenshot;
+using UniCortex.Editor.Handlers.View;
 
 using UniCortex.Editor.Handlers.Timeline;
 using UniCortex.Editor.Infrastructures;
@@ -195,8 +196,16 @@ namespace UniCortex.Editor
             var executeMenuItemUseCase = new ExecuteMenuItemUseCase(s_dispatcher, menuItemOps);
             var executeMenuItemHandler = new ExecuteMenuItemHandler(executeMenuItemUseCase);
 
-            var captureGameViewUseCase = new CaptureGameViewUseCase(s_dispatcher, captureOps);
-            var captureGameViewHandler = new CaptureGameViewHandler(captureGameViewUseCase);
+            var captureScreenshotUseCase = new CaptureScreenshotUseCase(s_dispatcher, captureOps);
+            var captureScreenshotHandler = new CaptureScreenshotHandler(captureScreenshotUseCase);
+
+            var editorWindowOps = new EditorWindowOperationsAdapter();
+
+            var focusSceneViewUseCase = new FocusSceneViewUseCase(s_dispatcher, editorWindowOps);
+            var focusSceneViewHandler = new FocusSceneViewHandler(focusSceneViewUseCase);
+
+            var focusGameViewUseCase = new FocusGameViewUseCase(s_dispatcher, editorWindowOps);
+            var focusGameViewHandler = new FocusGameViewHandler(focusGameViewUseCase);
 
 
 #if UNICORTEX_INPUT_SYSTEM
@@ -272,7 +281,9 @@ namespace UniCortex.Editor
             savePrefabHandler.Register(router);
             assetRefreshHandler.Register(router);
             executeMenuItemHandler.Register(router);
-            captureGameViewHandler.Register(router);
+            captureScreenshotHandler.Register(router);
+            focusSceneViewHandler.Register(router);
+            focusGameViewHandler.Register(router);
 
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);

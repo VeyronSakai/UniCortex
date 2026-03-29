@@ -96,7 +96,8 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `console logs\|clear` | Console log management |
 | `asset refresh` | Refresh Asset Database |
 | `menu execute` | Execute menu items |
-| `game-view capture` | Capture Game View screenshot (Play Mode only) |
+| `screenshot capture` | Capture screenshot (Play Mode only) |
+| `view focus-scene\|focus-game` | Switch focus between Scene/Game View |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
 | `timeline create` | Create a TimelineAsset |
 | `timeline track add\|remove\|bind` | Timeline track operations |
@@ -187,8 +188,14 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 
 | Tool | Description |
 |------|-------------|
-| `capture_game_view` | Capture a screenshot of the Game View (Play Mode only) |
+| `capture_screenshot` | Capture a screenshot of the current Unity rendering output (Play Mode only) |
 
+### View
+
+| Tool | Description |
+|------|-------------|
+| `focus_scene_view` | Switch focus to the Scene View window |
+| `focus_game_view` | Switch focus to the Game View window |
 
 ### Input
 

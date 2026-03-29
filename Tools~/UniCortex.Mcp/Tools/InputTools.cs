@@ -87,7 +87,7 @@ public class InputTools(InputUseCase inputUseCase)
          "Does NOT work with legacy UnityEngine.Input.GetMouseButton()."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> SendMouseEventAsync(
-        [Description("X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view screenshots use top-left origin and may include editor chrome, so coordinates from screenshots must be converted.")]
+        [Description("X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_screenshot screenshots use top-left origin and may include editor chrome, so coordinates from screenshots must be converted.")]
         float x,
         [Description("Y coordinate in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. This is the inverse of typical image coordinates where Y increases downward.")]
         float y,
