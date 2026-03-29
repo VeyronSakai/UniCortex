@@ -23,8 +23,10 @@ app.Add<TestCommands>("test");
 app.Add<ConsoleCommands>("console");
 app.Add<AssetCommands>("asset");
 app.Add<MenuItemCommands>("menu");
-app.Add<GameViewCommands>("game-view");
+app.Add<ScreenshotCommands>("screenshot");
 
+app.Add<SceneViewCommands>("scene-view");
+app.Add<GameViewCommands>("game-view");
 app.Add<InputCommands>("input");
 app.Add<TimelineCommands>("timeline");
 app.Add<TimelineTrackCommands>("timeline track");

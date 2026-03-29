@@ -7,18 +7,16 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class GameViewTools(GameViewUseCase gameViewUseCase)
+public class SceneViewTools(SceneViewUseCase sceneViewUseCase)
 {
-    [McpServerTool(Name = "focus_game_view", ReadOnly = false),
-     Description(
-         "Switch focus to the Game View window in the Unity Editor. " +
-         "Useful before capture_screenshot to ensure the Game View is captured."),
+    [McpServerTool(Name = "focus_scene_view", ReadOnly = false),
+     Description("Switch focus to the Scene View window in the Unity Editor."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> FocusGameViewAsync(CancellationToken cancellationToken)
+    public async ValueTask<CallToolResult> FocusSceneViewAsync(CancellationToken cancellationToken)
     {
         try
         {
-            var message = await gameViewUseCase.FocusAsync(cancellationToken);
+            var message = await sceneViewUseCase.FocusAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)

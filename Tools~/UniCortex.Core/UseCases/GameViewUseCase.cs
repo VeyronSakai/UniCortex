@@ -5,10 +5,10 @@ namespace UniCortex.Core.UseCases;
 
 public class GameViewUseCase(IUnityEditorClient client)
 {
-    public async ValueTask<byte[]> CaptureAsync(CancellationToken cancellationToken = default)
+    public async ValueTask<string> FocusAsync(CancellationToken cancellationToken)
     {
-        var response = await client.GetAsync<CaptureGameViewRequest, CaptureGameViewResponse>(
-            ApiRoutes.GameViewCapture, cancellationToken: cancellationToken);
-        return Convert.FromBase64String(response.pngDataBase64);
+        await client.PostAsync<FocusGameViewRequest, FocusGameViewResponse>(
+            ApiRoutes.FocusGameView, cancellationToken: cancellationToken);
+        return "Game View focused successfully.";
     }
 }

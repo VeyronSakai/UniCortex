@@ -7,15 +7,15 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class CaptureOperationsAdapter : ICaptureOperations
     {
-        public byte[] CaptureGameView()
+        public byte[] CaptureScreenshot()
         {
             if (!EditorApplication.isPlaying)
             {
                 throw new InvalidOperationException(
-                    "Game View capture is only available in Play Mode. Enter Play Mode first.");
+                    "Screenshot capture is only available in Play Mode. Enter Play Mode first.");
             }
 
-            // Use ScreenCapture to capture the full Game View output including UI overlays.
+            // Use ScreenCapture to capture the current rendering output including UI overlays.
             // Camera.Render() only renders the camera's own view and misses Screen Space - Overlay canvases.
             var texture = ScreenCapture.CaptureScreenshotAsTexture();
             try
@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Infrastructures
             }
             finally
             {
-                UnityEngine.Object.DestroyImmediate(texture);
+                Object.DestroyImmediate(texture);
             }
         }
     }

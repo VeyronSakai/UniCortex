@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Editor.Handlers.GameView;
+using UniCortex.Editor.Handlers.Screenshot;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
@@ -11,7 +11,7 @@ using UnityEngine;
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class CaptureGameViewHandlerTest
+    internal sealed class CaptureScreenshotHandlerTest
     {
         private SpyCaptureOperations _operations;
         private RequestRouter _router;
@@ -24,25 +24,25 @@ namespace UniCortex.Editor.Tests.Presentations
             {
                 ScreenshotResult = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
             };
-            var useCase = new CaptureGameViewUseCase(dispatcher, _operations);
-            var handler = new CaptureGameViewHandler(useCase);
+            var useCase = new CaptureScreenshotUseCase(dispatcher, _operations);
+            var handler = new CaptureScreenshotHandler(useCase);
             _router = new RequestRouter();
             handler.Register(_router);
         }
 
         [Test]
-        public void HandleCaptureGameView_Returns200_WithPngData()
+        public void HandleCaptureScreenshot_Returns200_WithPngData()
         {
-            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.GameViewCapture);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.ScreenshotCapture);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            var response = JsonUtility.FromJson<CaptureGameViewResponse>(context.ResponseBody);
+            var response = JsonUtility.FromJson<CaptureScreenshotResponse>(context.ResponseBody);
             var pngData = Convert.FromBase64String(response.pngDataBase64);
             Assert.AreEqual(4, pngData.Length);
             Assert.AreEqual(0x89, pngData[0]);
-            Assert.AreEqual(1, _operations.CaptureGameViewCallCount);
+            Assert.AreEqual(1, _operations.CaptureScreenshotCallCount);
         }
     }
 }

@@ -6,20 +6,20 @@ using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
 using UnityEngine;
 
-namespace UniCortex.Editor.Handlers.GameView
+namespace UniCortex.Editor.Handlers.Screenshot
 {
-    internal sealed class CaptureGameViewHandler
+    internal sealed class CaptureScreenshotHandler
     {
-        private readonly CaptureGameViewUseCase _useCase;
+        private readonly CaptureScreenshotUseCase _useCase;
 
-        public CaptureGameViewHandler(CaptureGameViewUseCase useCase)
+        public CaptureScreenshotHandler(CaptureScreenshotUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Get, ApiRoutes.GameViewCapture, HandleAsync);
+            router.Register(HttpMethodType.Get, ApiRoutes.ScreenshotCapture, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Handlers.GameView
             try
             {
                 var pngData = await _useCase.ExecuteAsync(cancellationToken);
-                var json = JsonUtility.ToJson(new CaptureGameViewResponse(Convert.ToBase64String(pngData)));
+                var json = JsonUtility.ToJson(new CaptureScreenshotResponse(Convert.ToBase64String(pngData)));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }
             catch (InvalidOperationException ex)

@@ -4,7 +4,7 @@ using UniCortex.Core.Test.Fixtures;
 namespace UniCortex.Core.Test.UseCases;
 
 [TestFixture]
-public class GameViewUseCaseTest
+public class SceneViewUseCaseTest
 {
     private UnityEditorFixture _fixture = null!;
 
@@ -17,7 +17,7 @@ public class GameViewUseCaseTest
     [Test]
     public async ValueTask Focus_Succeeds()
     {
-        var result = await _fixture.GameViewUseCase.FocusAsync(CancellationToken.None);
+        var result = await _fixture.SceneViewUseCase.FocusAsync(CancellationToken.None);
 
         Assert.That(result, Does.Contain("successfully"));
     }

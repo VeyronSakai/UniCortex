@@ -19,6 +19,8 @@ public sealed class UnityEditorFixture
     public PrefabUseCase PrefabUseCase { get; }
     public AssetUseCase AssetUseCase { get; }
     public MenuItemUseCase MenuItemUseCase { get; }
+    public ScreenshotUseCase ScreenshotUseCase { get; }
+    public SceneViewUseCase SceneViewUseCase { get; }
     public GameViewUseCase GameViewUseCase { get; }
 
     public InputUseCase InputUseCase { get; }
@@ -36,6 +38,8 @@ public sealed class UnityEditorFixture
         PrefabUseCase = provider.GetRequiredService<PrefabUseCase>();
         AssetUseCase = provider.GetRequiredService<AssetUseCase>();
         MenuItemUseCase = provider.GetRequiredService<MenuItemUseCase>();
+        ScreenshotUseCase = provider.GetRequiredService<ScreenshotUseCase>();
+        SceneViewUseCase = provider.GetRequiredService<SceneViewUseCase>();
         GameViewUseCase = provider.GetRequiredService<GameViewUseCase>();
 
         InputUseCase = provider.GetRequiredService<InputUseCase>();
