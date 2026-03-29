@@ -6,7 +6,6 @@ using UniCortex.Editor.Domains.Models;
 using UnityEditor;
 using UnityEditor.Search;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace UniCortex.Editor.Infrastructures
 {
@@ -14,11 +13,6 @@ namespace UniCortex.Editor.Infrastructures
     {
         public List<GameObjectSearchResult> Get(string query)
         {
-            if (string.IsNullOrEmpty(query))
-            {
-                return GetAllGameObjects();
-            }
-
             using var context = SearchService.CreateContext("scene", query);
             var items = SearchService.GetItems(context, SearchFlags.Synchronous);
 
@@ -31,28 +25,6 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             return results;
-        }
-
-        private static List<GameObjectSearchResult> GetAllGameObjects()
-        {
-            var scene = SceneManager.GetActiveScene();
-            var rootObjects = scene.GetRootGameObjects();
-            var results = new List<GameObjectSearchResult>();
-            foreach (var root in rootObjects)
-            {
-                CollectAll(root.transform, results);
-            }
-
-            return results;
-        }
-
-        private static void CollectAll(Transform transform, List<GameObjectSearchResult> results)
-        {
-            results.Add(BuildSearchResult(transform.gameObject));
-            for (var i = 0; i < transform.childCount; i++)
-            {
-                CollectAll(transform.GetChild(i), results);
-            }
         }
 
         private static GameObjectSearchResult BuildSearchResult(GameObject go)

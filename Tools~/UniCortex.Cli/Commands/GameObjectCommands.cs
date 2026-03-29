@@ -6,9 +6,9 @@ namespace UniCortex.Cli.Commands;
 public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
 {
     /// <summary>Find GameObjects in the current scene.</summary>
-    /// <param name="query">Search query string using Unity Search syntax (e.g. "t:Camera", "tag:Player"). Returns all GameObjects if omitted.</param>
+    /// <param name="query">Search query string using Unity Search syntax (e.g. "t:Camera", "tag:Player").</param>
     [Command("find")]
-    public async Task Find(string? query = null, CancellationToken cancellationToken = default)
+    public async Task Find([Argument] string query, CancellationToken cancellationToken = default)
     {
         var json = await gameObjectUseCase.FindAsync(query, cancellationToken);
         Console.WriteLine(json);

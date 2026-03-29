@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Text.Json;
 using NUnit.Framework;
 using UniCortex.Core.Test.Fixtures;
@@ -35,11 +36,17 @@ public class GameObjectUseCaseTest
     }
 
     [Test]
-    public async ValueTask Find_ReturnsJsonWithGameObjects()
+    public void Find_WithNullQuery_ThrowsException()
     {
-        var result = await _fixture.GameObjectUseCase.FindAsync(null, CancellationToken.None);
+        Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.GameObjectUseCase.FindAsync(null!, CancellationToken.None));
+    }
 
-        Assert.That(result, Does.Contain("gameObjects"));
+    [Test]
+    public void Find_WithEmptyQuery_ThrowsException()
+    {
+        Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.GameObjectUseCase.FindAsync("", CancellationToken.None));
     }
 
     [Test]
