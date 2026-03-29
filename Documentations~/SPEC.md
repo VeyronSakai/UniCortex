@@ -899,7 +899,8 @@ console logs|clear
 asset refresh
 menu execute
 screenshot capture
-view focus-scene|focus-game
+scene-view focus
+game-view focus
 input send-key|send-mouse
 timeline create
 timeline track add|remove|bind

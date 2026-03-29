@@ -97,7 +97,8 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `asset refresh` | Refresh Asset Database |
 | `menu execute` | Execute menu items |
 | `screenshot capture` | Capture screenshot (Play Mode only) |
-| `view focus-scene\|focus-game` | Switch focus between Scene/Game View |
+| `scene-view focus` | Switch focus to Scene View |
+| `game-view focus` | Switch focus to Game View |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
 | `timeline create` | Create a TimelineAsset |
 | `timeline track add\|remove\|bind` | Timeline track operations |
