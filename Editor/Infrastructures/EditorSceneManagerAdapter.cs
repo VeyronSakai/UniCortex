@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
+using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
 namespace UniCortex.Editor.Infrastructures
@@ -47,8 +48,19 @@ namespace UniCortex.Editor.Infrastructures
             return UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
         }
 
-        public GetSceneHierarchyResponse GetHierarchy()
+        public GetHierarchyResponse GetHierarchy()
         {
+            var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (prefabStage != null)
+            {
+                var root = prefabStage.prefabContentsRoot;
+                var prefabNodes = new List<GameObjectNode>
+                {
+                    GameObjectNodeBuilder.BuildNode(root.transform)
+                };
+                return new GetHierarchyResponse(root.name, prefabStage.assetPath, prefabNodes);
+            }
+
             var scene = SceneManager.GetActiveScene();
             var rootObjects = scene.GetRootGameObjects();
             var nodes = new List<GameObjectNode>();
@@ -58,7 +70,7 @@ namespace UniCortex.Editor.Infrastructures
                 nodes.Add(GameObjectNodeBuilder.BuildNode(go.transform));
             }
 
-            return new GetSceneHierarchyResponse(scene.name, scene.path, nodes);
+            return new GetHierarchyResponse(scene.name, scene.path, nodes);
         }
     }
 }

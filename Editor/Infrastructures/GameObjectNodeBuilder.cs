@@ -15,15 +15,14 @@ namespace UniCortex.Editor.Infrastructures
                 .Select(c => c.GetType().FullName)
                 .ToList();
 
-            var children = new List<GameObjectNode>();
+            var children = new List<GameObjectNode>(transform.childCount);
             for (var i = 0; i < transform.childCount; i++)
             {
                 children.Add(BuildNode(transform.GetChild(i)));
             }
 
-            var isLocked = (go.hideFlags & HideFlags.NotEditable) != 0;
             return new GameObjectNode(go.name, go.GetInstanceID(), go.activeSelf, go.tag, go.layer, go.isStatic,
-                isLocked, components, children);
+                (int)go.hideFlags, components, children);
         }
     }
 }

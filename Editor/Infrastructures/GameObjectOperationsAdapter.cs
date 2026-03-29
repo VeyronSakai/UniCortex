@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Infrastructures
             using var context = SearchService.CreateContext("scene", query);
             var items = SearchService.GetItems(context, SearchFlags.Synchronous);
 
-            var results = new List<GameObjectSearchResult>();
+            var results = new List<GameObjectSearchResult>(items.Count);
             foreach (var item in items)
             {
                 var go = item.ToObject<GameObject>();
@@ -34,7 +34,6 @@ namespace UniCortex.Editor.Infrastructures
                 .Select(c => c.GetType().FullName)
                 .ToList();
 
-            var isLocked = (go.hideFlags & HideFlags.NotEditable) != 0;
             return new GameObjectSearchResult(
                 go.name,
                 go.GetInstanceID(),
@@ -42,7 +41,7 @@ namespace UniCortex.Editor.Infrastructures
                 go.tag,
                 go.layer,
                 go.isStatic,
-                isLocked,
+                (int)go.hideFlags,
                 components);
         }
 

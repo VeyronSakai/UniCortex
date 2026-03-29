@@ -3,7 +3,7 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class GetSceneHierarchyRequest
+    public class GetHierarchyRequest
     {
     }
 }

@@ -45,8 +45,7 @@ public class EditorUseCase(IUnityEditorClient client)
 
     public async ValueTask<string> GetEditorStatusAsync(CancellationToken cancellationToken)
     {
-        var state = await client.GetAsync<GetEditorStatusRequest, GetEditorStatusResponse>(ApiRoutes.Status,
-            cancellationToken: cancellationToken);
+        var state = await GetStatusAsync(cancellationToken);
 
         if (state.isPlaying && state.isPaused)
         {
@@ -59,6 +58,12 @@ public class EditorUseCase(IUnityEditorClient client)
         }
 
         return "Editor is in edit mode.";
+    }
+
+    public async ValueTask<GetEditorStatusResponse> GetStatusAsync(CancellationToken cancellationToken)
+    {
+        return await client.GetAsync<GetEditorStatusRequest, GetEditorStatusResponse>(ApiRoutes.Status,
+            cancellationToken: cancellationToken);
     }
 
     public async ValueTask<string> PauseAsync(CancellationToken cancellationToken)
@@ -128,8 +133,7 @@ public class EditorUseCase(IUnityEditorClient client)
 
     private async ValueTask<bool> GetIsPlayingAsync(CancellationToken cancellationToken)
     {
-        var status = await client.GetAsync<GetEditorStatusRequest, GetEditorStatusResponse>(ApiRoutes.Status,
-            cancellationToken: cancellationToken);
+        var status = await GetStatusAsync(cancellationToken);
         return status.isPlaying;
     }
 

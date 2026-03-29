@@ -7,21 +7,21 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Scene
 {
-    internal sealed class SceneHierarchyHandler
+    internal sealed class HierarchyHandler
     {
-        private readonly GetSceneHierarchyUseCase _useCase;
+        private readonly GetHierarchyUseCase _useCase;
 
-        public SceneHierarchyHandler(GetSceneHierarchyUseCase useCase)
+        public HierarchyHandler(GetHierarchyUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Get, ApiRoutes.SceneHierarchy, HandleSceneHierarchyAsync);
+            router.Register(HttpMethodType.Get, ApiRoutes.Hierarchy, HandleHierarchyAsync);
         }
 
-        private async Task HandleSceneHierarchyAsync(IRequestContext context, CancellationToken cancellationToken)
+        private async Task HandleHierarchyAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var result = await _useCase.ExecuteAsync(cancellationToken);
             var json = JsonUtility.ToJson(result);
