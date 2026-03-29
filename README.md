@@ -128,7 +128,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `create_scene` | Create a new empty scene and save it at the specified asset path |
 | `open_scene` | Open a scene by path |
 | `save_scene` | Save all open scenes |
-| `get_scene_hierarchy` | Get the GameObject hierarchy tree of the current scene |
+| `get_hierarchy` | Get the GameObject hierarchy tree of the current scene or Prefab |
 
 ### GameObject
 
@@ -252,10 +252,6 @@ dotnet run --project Tools~/UniCortex.Mcp/
 # Run CLI
 dotnet run --project Tools~/UniCortex.Cli/ -- editor ping
 ```
-
-## Note
-
-This README is auto-generated from [`.github/DRAFT_README.md`](.github/DRAFT_README.md) at release time. Edit the draft instead of this file directly.
 
 ## License
 
