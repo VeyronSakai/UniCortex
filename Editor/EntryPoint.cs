@@ -9,7 +9,8 @@ using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Handlers.MenuItem;
 using UniCortex.Editor.Handlers.Input;
 using UniCortex.Editor.Handlers.Screenshot;
-using UniCortex.Editor.Handlers.View;
+using UniCortex.Editor.Handlers.SceneView;
+using UniCortex.Editor.Handlers.GameView;
 
 using UniCortex.Editor.Handlers.Timeline;
 using UniCortex.Editor.Infrastructures;

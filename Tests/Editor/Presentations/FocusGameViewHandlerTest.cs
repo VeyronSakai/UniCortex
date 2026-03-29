@@ -1,6 +1,6 @@
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Editor.Handlers.View;
+using UniCortex.Editor.Handlers.GameView;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;

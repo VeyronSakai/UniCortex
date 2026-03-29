@@ -6,7 +6,7 @@ using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
 using UnityEngine;
 
-namespace UniCortex.Editor.Handlers.View
+namespace UniCortex.Editor.Handlers.GameView
 {
     internal sealed class FocusGameViewHandler
     {
