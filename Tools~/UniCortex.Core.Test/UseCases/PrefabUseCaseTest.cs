@@ -179,7 +179,7 @@ public class PrefabUseCaseTest
 
             await _fixture.PrefabUseCase.OpenAsync("Assets/FindPrefabTest.prefab", ct);
 
-            var findJson = await _fixture.GameObjectUseCase.FindAsync(null, ct);
+            var findJson = await _fixture.GameObjectUseCase.FindAsync("FindPrefabTest", ct);
 
             Assert.That(findJson, Does.Contain("FindPrefabTest"));
 
