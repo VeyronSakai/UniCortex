@@ -25,6 +25,13 @@ namespace UniCortex.Editor.Handlers.GameObject
         {
             var query = context.GetQueryParameter("query");
 
+            if (string.IsNullOrEmpty(query))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("query is required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
             var result = await _useCase.ExecuteAsync(query, cancellationToken);
             var json = JsonUtility.ToJson(new FindGameObjectsResponse(result));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);

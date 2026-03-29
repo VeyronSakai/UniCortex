@@ -21,11 +21,17 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase)
         [Description(
             "Search query. Examples: 'Main Camera', 't:Camera', 'tag=Player', 'id:12345', 'is:root', 'path:Canvas/Button'. " +
             "Multiple tokens can be combined: 'Camera t:Camera layer:0'.")]
-        string? query = null,
+        string query,
         CancellationToken cancellationToken = default)
     {
         try
         {
+            if (string.IsNullOrEmpty(query))
+            {
+                return ToolErrorHandling.CreateErrorResult(
+                    new ArgumentException("query is required. Use get_hierarchy to list all GameObjects."));
+            }
+
             var json = await gameObjectUseCase.FindAsync(query, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
         }

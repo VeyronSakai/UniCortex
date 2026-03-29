@@ -7,9 +7,9 @@ namespace UniCortex.Core.UseCases;
 
 public class GameObjectUseCase(IUnityEditorClient client)
 {
-    public async ValueTask<string> FindAsync(string? query, CancellationToken cancellationToken)
+    public async ValueTask<string> FindAsync(string query, CancellationToken cancellationToken)
     {
-        var request = !string.IsNullOrEmpty(query) ? new FindGameObjectsRequest { query = query } : null;
+        var request = new FindGameObjectsRequest { query = query };
         var response = await client.GetAsync<FindGameObjectsRequest, FindGameObjectsResponse>(
             ApiRoutes.GameObjects, request, cancellationToken);
         return JsonSerializer.Serialize(response, JsonOptions.Default);
