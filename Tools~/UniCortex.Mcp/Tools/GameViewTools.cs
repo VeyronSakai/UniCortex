@@ -7,24 +7,8 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class ViewTools(ViewUseCase viewUseCase)
+public class GameViewTools(GameViewUseCase gameViewUseCase)
 {
-    [McpServerTool(Name = "focus_scene_view", ReadOnly = false),
-     Description("Switch focus to the Scene View window in the Unity Editor."),
-     UsedImplicitly]
-    public async ValueTask<CallToolResult> FocusSceneViewAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var message = await viewUseCase.FocusSceneViewAsync(cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
-
     [McpServerTool(Name = "focus_game_view", ReadOnly = false),
      Description(
          "Switch focus to the Game View window in the Unity Editor. " +
@@ -34,7 +18,7 @@ public class ViewTools(ViewUseCase viewUseCase)
     {
         try
         {
-            var message = await viewUseCase.FocusGameViewAsync(cancellationToken);
+            var message = await gameViewUseCase.FocusAsync(cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)
