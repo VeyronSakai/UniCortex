@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Infrastructures
             }
             finally
             {
-                Object.DestroyImmediate(texture);
+                UnityEngine.Object.DestroyImmediate(texture);
             }
         }
     }
