@@ -22,7 +22,6 @@ public class ScreenshotUseCaseTest
         try
         {
             var pngData = await _fixture.ScreenshotUseCase.CaptureAsync(CancellationToken.None);
-
             Assert.That(pngData.Length, Is.GreaterThan(0));
         }
         finally
