@@ -14,14 +14,14 @@ public class RecordingUseCase(IUnityEditorClient client)
             outputPath = outputPath ?? ""
         };
         await client.PostAsync<StartRecordingRequest, StartRecordingResponse>(
-            ApiRoutes.GameViewRecordStart, request, cancellationToken);
+            ApiRoutes.GameViewRecorderStart, request, cancellationToken);
         return "Recording started.";
     }
 
     public async ValueTask<string> StopAsync(CancellationToken cancellationToken = default)
     {
         var response = await client.PostAsync<StartRecordingRequest, StopRecordingResponse>(
-            ApiRoutes.GameViewRecordStop, cancellationToken: cancellationToken);
+            ApiRoutes.GameViewRecorderStop, cancellationToken: cancellationToken);
         return response.outputPath;
     }
 }

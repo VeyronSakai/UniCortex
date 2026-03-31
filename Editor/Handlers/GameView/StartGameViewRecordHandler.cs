@@ -19,7 +19,7 @@ namespace UniCortex.Editor.Handlers.GameView
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.GameViewRecordStart, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.GameViewRecorderStart, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)

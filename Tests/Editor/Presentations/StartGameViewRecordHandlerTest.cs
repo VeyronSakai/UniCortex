@@ -30,7 +30,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns200_WithSuccess()
         {
             var body = JsonUtility.ToJson(new StartRecordingRequest { fps = 60, outputPath = "/tmp/test.mp4" });
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameViewRecordStart, body);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameViewRecorderStart, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -45,7 +45,7 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_DefaultsFpsTo30_WhenNotSpecified()
         {
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameViewRecordStart);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameViewRecorderStart);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
