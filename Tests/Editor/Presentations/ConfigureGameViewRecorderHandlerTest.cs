@@ -34,8 +34,6 @@ namespace UniCortex.Editor.Tests.Presentations
                 outputPath = "/tmp/out.mp4",
                 source = "Camera",
                 cameraSource = "MainCamera",
-                outputWidth = 1920,
-                outputHeight = 1080,
                 outputFormat = "MP4"
             });
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameViewRecorderSettings, body);

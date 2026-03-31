@@ -585,15 +585,13 @@ Recorder の設定を更新する。Unity Recorder パッケージ（`com.unity.
   "cameraSource": "MainCamera",
   "cameraTag": "",
   "captureUI": false,
-  "outputWidth": 1920,
-  "outputHeight": 1080,
   "outputFormat": "MP4"
 }
 ```
 - `source`: `"GameView"`, `"Camera"`
 - `cameraSource`: `"ActiveCamera"`, `"MainCamera"`, `"TaggedCamera"`（source=Camera 時）
 - `outputFormat`: `"MP4"`, `"WebM"`
-- `outputWidth`/`outputHeight`: 0 = デフォルト（Game View 解像度）。MP4 時は偶数に丸める。
+- 解像度は Game View の解像度を使用（固定）。MP4 時は偶数に丸める。
 
 レスポンス: `{"success": true}`
 

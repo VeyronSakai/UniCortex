@@ -11,12 +11,10 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string LastConfigCameraSource { get; private set; }
         public string LastConfigCameraTag { get; private set; }
         public bool LastConfigCaptureUI { get; private set; }
-        public int LastConfigOutputWidth { get; private set; }
-        public int LastConfigOutputHeight { get; private set; }
         public string LastConfigOutputFormat { get; private set; }
 
         public GetRecorderSettingsResponse SettingsResult { get; set; }
-            = new GetRecorderSettingsResponse("", "GameView", "", "", false, 0, 0, "MP4");
+            = new GetRecorderSettingsResponse("", "GameView", "", "", false, "MP4");
 
         public int StartRecordingCallCount { get; private set; }
         public int LastFps { get; private set; }
@@ -32,7 +30,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string StopRecordingResult { get; set; } = "/tmp/test_recording.mp4";
 
         public void ConfigureRecorder(string outputPath, string source, string cameraSource,
-            string cameraTag, bool captureUI, int outputWidth, int outputHeight, string outputFormat)
+            string cameraTag, bool captureUI, string outputFormat)
         {
             ConfigureCallCount++;
             LastConfigOutputPath = outputPath;
@@ -40,8 +38,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastConfigCameraSource = cameraSource;
             LastConfigCameraTag = cameraTag;
             LastConfigCaptureUI = captureUI;
-            LastConfigOutputWidth = outputWidth;
-            LastConfigOutputHeight = outputHeight;
             LastConfigOutputFormat = outputFormat;
         }
 

@@ -10,8 +10,6 @@ namespace UniCortex.Editor.Domains.Models
         public string cameraSource;
         public string cameraTag;
         public bool captureUI;
-        public int outputWidth;
-        public int outputHeight;
         public string outputFormat;
     }
 }

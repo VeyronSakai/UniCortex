@@ -7,8 +7,7 @@ public class RecordingUseCase(IUnityEditorClient client)
 {
     public async ValueTask<string> ConfigureAsync(
         string? outputPath, string? source, string? cameraSource,
-        string? cameraTag, bool captureUI,
-        int outputWidth, int outputHeight, string? outputFormat,
+        string? cameraTag, bool captureUI, string? outputFormat,
         CancellationToken cancellationToken = default)
     {
         var request = new ConfigureRecorderRequest
@@ -18,8 +17,6 @@ public class RecordingUseCase(IUnityEditorClient client)
             cameraSource = cameraSource ?? "",
             cameraTag = cameraTag ?? "",
             captureUI = captureUI,
-            outputWidth = outputWidth,
-            outputHeight = outputHeight,
             outputFormat = outputFormat ?? "MP4"
         };
         await client.PostAsync<ConfigureRecorderRequest, ConfigureRecorderResponse>(

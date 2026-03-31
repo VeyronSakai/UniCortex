@@ -5,7 +5,7 @@ namespace UniCortex.Editor.Domains.Interfaces
     internal interface IRecordingOperations
     {
         void ConfigureRecorder(string outputPath, string source, string cameraSource,
-            string cameraTag, bool captureUI, int outputWidth, int outputHeight, string outputFormat);
+            string cameraTag, bool captureUI, string outputFormat);
 
         GetRecorderSettingsResponse GetRecorderSettings();
 

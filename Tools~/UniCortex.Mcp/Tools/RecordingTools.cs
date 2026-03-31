@@ -26,10 +26,6 @@ public class RecordingTools(RecordingUseCase recordingUseCase)
         string? cameraTag = null,
         [Description("Capture UI overlay (only for Camera source)")]
         bool captureUI = false,
-        [Description("Output width in pixels (0 = default). Must be even for MP4.")]
-        int outputWidth = 0,
-        [Description("Output height in pixels (0 = default). Must be even for MP4.")]
-        int outputHeight = 0,
         [Description("Output format: MP4, WebM")]
         string? outputFormat = null,
         CancellationToken cancellationToken = default)
@@ -38,7 +34,7 @@ public class RecordingTools(RecordingUseCase recordingUseCase)
         {
             var message = await recordingUseCase.ConfigureAsync(
                 outputPath, source, cameraSource, cameraTag,
-                captureUI, outputWidth, outputHeight, outputFormat,
+                captureUI, outputFormat,
                 cancellationToken);
             return new CallToolResult
             {

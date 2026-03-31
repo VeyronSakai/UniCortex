@@ -16,13 +16,13 @@ namespace UniCortex.Editor.UseCases
         }
 
         public async Task ExecuteAsync(string outputPath, string source, string cameraSource,
-            string cameraTag, bool captureUI, int outputWidth, int outputHeight, string outputFormat,
+            string cameraTag, bool captureUI, string outputFormat,
             CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
                 () => _operations.ConfigureRecorder(
                     outputPath, source, cameraSource, cameraTag,
-                    captureUI, outputWidth, outputHeight, outputFormat),
+                    captureUI, outputFormat),
                 cancellationToken);
         }
     }

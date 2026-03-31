@@ -23,8 +23,6 @@ namespace UniCortex.Editor.Infrastructures
         private string _cameraSource = "";
         private string _cameraTag = "";
         private bool _captureUI;
-        private int _outputWidth;
-        private int _outputHeight;
         private string _outputFormat = "MP4";
 
         public RecordingOperationsAdapter()
@@ -33,15 +31,13 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         public void ConfigureRecorder(string outputPath, string source, string cameraSource,
-            string cameraTag, bool captureUI, int outputWidth, int outputHeight, string outputFormat)
+            string cameraTag, bool captureUI, string outputFormat)
         {
             _outputPath = outputPath ?? "";
             _source = string.IsNullOrEmpty(source) ? "GameView" : source;
             _cameraSource = cameraSource ?? "";
             _cameraTag = cameraTag ?? "";
             _captureUI = captureUI;
-            _outputWidth = outputWidth;
-            _outputHeight = outputHeight;
             _outputFormat = string.IsNullOrEmpty(outputFormat) ? "MP4" : outputFormat;
         }
 
@@ -49,7 +45,7 @@ namespace UniCortex.Editor.Infrastructures
         {
             return new GetRecorderSettingsResponse(
                 _outputPath, _source, _cameraSource, _cameraTag,
-                _captureUI, _outputWidth, _outputHeight, _outputFormat);
+                _captureUI, _outputFormat);
         }
 
         public void StartRecording(int fps, string frameRatePlayback, string recordMode,
@@ -170,16 +166,6 @@ namespace UniCortex.Editor.Infrastructures
             else
             {
                 inputSettings = new GameViewInputSettings();
-            }
-
-            if (_outputWidth > 0)
-            {
-                inputSettings.OutputWidth = _outputWidth;
-            }
-
-            if (_outputHeight > 0)
-            {
-                inputSettings.OutputHeight = _outputHeight;
             }
 
             // H.264 (MP4) requires even width and height.

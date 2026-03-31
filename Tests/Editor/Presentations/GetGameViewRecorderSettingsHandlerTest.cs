@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
             _operations = new SpyRecordingOperations
             {
                 SettingsResult = new GetRecorderSettingsResponse(
-                    "/tmp/out.mp4", "GameView", "", "", false, 1920, 1080, "MP4")
+                    "/tmp/out.mp4", "GameView", "", "", false, "MP4")
             };
             var useCase = new GetRecorderSettingsUseCase(dispatcher, _operations);
             var handler = new GetGameViewRecorderSettingsHandler(useCase);
@@ -41,8 +41,6 @@ namespace UniCortex.Editor.Tests.Presentations
             var response = JsonUtility.FromJson<GetRecorderSettingsResponse>(context.ResponseBody);
             Assert.AreEqual("/tmp/out.mp4", response.outputPath);
             Assert.AreEqual("GameView", response.source);
-            Assert.AreEqual(1920, response.outputWidth);
-            Assert.AreEqual(1080, response.outputHeight);
             Assert.AreEqual("MP4", response.outputFormat);
         }
     }

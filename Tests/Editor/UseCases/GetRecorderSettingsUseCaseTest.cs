@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var operations = new SpyRecordingOperations
             {
                 SettingsResult = new GetRecorderSettingsResponse(
-                    "/tmp/out.mp4", "Camera", "MainCamera", "", false, 1920, 1080, "MP4")
+                    "/tmp/out.mp4", "Camera", "MainCamera", "", false, "MP4")
             };
             var useCase = new GetRecorderSettingsUseCase(dispatcher, operations);
 
@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Tests.UseCases
 
             Assert.AreEqual("/tmp/out.mp4", result.outputPath);
             Assert.AreEqual("Camera", result.source);
-            Assert.AreEqual(1920, result.outputWidth);
+            Assert.AreEqual("MP4", result.outputFormat);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
     }

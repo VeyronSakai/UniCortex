@@ -12,20 +12,17 @@ public class GameViewRecordCommands(RecordingUseCase recordingUseCase)
     /// <param name="cameraSource">Camera source: ActiveCamera, MainCamera, TaggedCamera.</param>
     /// <param name="cameraTag">Camera tag for TaggedCamera source.</param>
     /// <param name="captureUI">Capture UI overlay (Camera source only).</param>
-    /// <param name="width">Output width in pixels (0 = default).</param>
-    /// <param name="height">Output height in pixels (0 = default).</param>
     /// <param name="format">Output format: MP4, WebM.</param>
     [Command("configure")]
     public async Task Configure(
         string? outputPath = null, string? source = null,
         string? cameraSource = null, string? cameraTag = null,
-        bool captureUI = false,
-        int width = 0, int height = 0, string? format = null,
+        bool captureUI = false, string? format = null,
         CancellationToken cancellationToken = default)
     {
         var message = await recordingUseCase.ConfigureAsync(
             outputPath, source, cameraSource, cameraTag,
-            captureUI, width, height, format, cancellationToken);
+            captureUI, format, cancellationToken);
         Console.WriteLine(message);
     }
 

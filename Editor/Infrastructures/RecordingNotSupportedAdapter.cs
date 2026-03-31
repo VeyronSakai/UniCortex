@@ -12,7 +12,7 @@ namespace UniCortex.Editor.Infrastructures
             "Install it via Unity Package Manager to use this feature.";
 
         public void ConfigureRecorder(string outputPath, string source, string cameraSource,
-            string cameraTag, bool captureUI, int outputWidth, int outputHeight, string outputFormat)
+            string cameraTag, bool captureUI, string outputFormat)
         {
             throw new NotSupportedException(Message);
         }

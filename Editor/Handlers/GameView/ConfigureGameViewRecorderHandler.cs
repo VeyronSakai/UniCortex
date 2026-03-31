@@ -33,8 +33,6 @@ namespace UniCortex.Editor.Handlers.GameView
                 var cameraSource = "";
                 var cameraTag = "";
                 var captureUI = false;
-                var outputWidth = 0;
-                var outputHeight = 0;
                 var outputFormat = "MP4";
 
                 if (!string.IsNullOrEmpty(body))
@@ -49,14 +47,12 @@ namespace UniCortex.Editor.Handlers.GameView
                     if (!string.IsNullOrEmpty(request.cameraTag))
                         cameraTag = request.cameraTag;
                     captureUI = request.captureUI;
-                    outputWidth = request.outputWidth;
-                    outputHeight = request.outputHeight;
                     if (!string.IsNullOrEmpty(request.outputFormat))
                         outputFormat = request.outputFormat;
                 }
 
                 await _useCase.ExecuteAsync(outputPath, source, cameraSource, cameraTag,
-                    captureUI, outputWidth, outputHeight, outputFormat, cancellationToken);
+                    captureUI, outputFormat, cancellationToken);
                 var json = JsonUtility.ToJson(new ConfigureRecorderResponse(true));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }
