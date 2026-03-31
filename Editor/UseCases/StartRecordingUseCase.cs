@@ -15,10 +15,15 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task ExecuteAsync(int fps, string outputPath, CancellationToken cancellationToken = default)
+        public async Task ExecuteAsync(int fps, string frameRatePlayback, string recordMode,
+            float startTime, float endTime, int startFrame, int endFrame, int frameNumber,
+            CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.StartRecording(fps, outputPath), cancellationToken);
+                () => _operations.StartRecording(
+                    fps, frameRatePlayback, recordMode,
+                    startTime, endTime, startFrame, endFrame, frameNumber),
+                cancellationToken);
         }
     }
 }

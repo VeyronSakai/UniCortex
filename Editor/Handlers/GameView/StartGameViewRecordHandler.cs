@@ -26,26 +26,34 @@ namespace UniCortex.Editor.Handlers.GameView
         {
             try
             {
-                var body = await context.ReadBodyAsync();
-
                 var fps = 30;
-                var outputPath = "";
+                var frameRatePlayback = "Constant";
+                var recordMode = "Manual";
+                float startTime = 0;
+                float endTime = 0;
+                var startFrame = 0;
+                var endFrame = 0;
+                var frameNumber = 0;
 
+                var body = await context.ReadBodyAsync();
                 if (!string.IsNullOrEmpty(body))
                 {
                     var request = JsonUtility.FromJson<StartRecordingRequest>(body);
                     if (request.fps > 0)
-                    {
                         fps = request.fps;
-                    }
-
-                    if (!string.IsNullOrEmpty(request.outputPath))
-                    {
-                        outputPath = request.outputPath;
-                    }
+                    if (!string.IsNullOrEmpty(request.frameRatePlayback))
+                        frameRatePlayback = request.frameRatePlayback;
+                    if (!string.IsNullOrEmpty(request.recordMode))
+                        recordMode = request.recordMode;
+                    startTime = request.startTime;
+                    endTime = request.endTime;
+                    startFrame = request.startFrame;
+                    endFrame = request.endFrame;
+                    frameNumber = request.frameNumber;
                 }
 
-                await _useCase.ExecuteAsync(fps, outputPath, cancellationToken);
+                await _useCase.ExecuteAsync(fps, frameRatePlayback, recordMode,
+                    startTime, endTime, startFrame, endFrame, frameNumber, cancellationToken);
                 var json = JsonUtility.ToJson(new StartRecordingResponse(true));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }

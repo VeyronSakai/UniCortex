@@ -29,17 +29,23 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns200_WithSuccess()
         {
-            var body = JsonUtility.ToJson(new StartRecordingRequest { fps = 60, outputPath = "/tmp/test.mp4" });
+            var body = JsonUtility.ToJson(new StartRecordingRequest
+            {
+                fps = 60,
+                frameRatePlayback = "Variable",
+                recordMode = "TimeInterval",
+                startTime = 1.0f,
+                endTime = 5.0f
+            });
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameViewRecorderStart, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            var response = JsonUtility.FromJson<StartRecordingResponse>(context.ResponseBody);
-            Assert.IsTrue(response.success);
             Assert.AreEqual(1, _operations.StartRecordingCallCount);
             Assert.AreEqual(60, _operations.LastFps);
-            Assert.AreEqual("/tmp/test.mp4", _operations.LastOutputPath);
+            Assert.AreEqual("Variable", _operations.LastFrameRatePlayback);
+            Assert.AreEqual("TimeInterval", _operations.LastRecordMode);
         }
 
         [Test]
@@ -51,6 +57,8 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual(30, _operations.LastFps);
+            Assert.AreEqual("Constant", _operations.LastFrameRatePlayback);
+            Assert.AreEqual("Manual", _operations.LastRecordMode);
         }
     }
 }

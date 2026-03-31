@@ -15,11 +15,15 @@ namespace UniCortex.Editor.Tests.UseCases
             var operations = new SpyRecordingOperations();
             var useCase = new StartRecordingUseCase(dispatcher, operations);
 
-            useCase.ExecuteAsync(30, "/tmp/test.mp4", CancellationToken.None).GetAwaiter().GetResult();
+            useCase.ExecuteAsync(60, "Variable", "TimeInterval",
+                1.0f, 5.0f, 0, 0, 0, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, operations.StartRecordingCallCount);
-            Assert.AreEqual(30, operations.LastFps);
-            Assert.AreEqual("/tmp/test.mp4", operations.LastOutputPath);
+            Assert.AreEqual(60, operations.LastFps);
+            Assert.AreEqual("Variable", operations.LastFrameRatePlayback);
+            Assert.AreEqual("TimeInterval", operations.LastRecordMode);
+            Assert.AreEqual(1.0f, operations.LastStartTime);
+            Assert.AreEqual(5.0f, operations.LastEndTime);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
     }

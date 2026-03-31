@@ -223,6 +223,12 @@ namespace UniCortex.Editor
             var recordingOps = new RecordingNotSupportedAdapter();
 #endif
 
+            var configureRecorderUseCase = new ConfigureRecorderUseCase(s_dispatcher, recordingOps);
+            var configureGameViewRecorderHandler = new ConfigureGameViewRecorderHandler(configureRecorderUseCase);
+
+            var getRecorderSettingsUseCase = new GetRecorderSettingsUseCase(s_dispatcher, recordingOps);
+            var getGameViewRecorderSettingsHandler = new GetGameViewRecorderSettingsHandler(getRecorderSettingsUseCase);
+
             var startRecordingUseCase = new StartRecordingUseCase(s_dispatcher, recordingOps);
             var startGameViewRecordHandler = new StartGameViewRecordHandler(startRecordingUseCase);
 
@@ -308,6 +314,8 @@ namespace UniCortex.Editor
             getGameViewSizeHandler.Register(router);
             getGameViewSizeListHandler.Register(router);
             setGameViewSizeHandler.Register(router);
+            configureGameViewRecorderHandler.Register(router);
+            getGameViewRecorderSettingsHandler.Register(router);
             startGameViewRecordHandler.Register(router);
             stopGameViewRecordHandler.Register(router);
 
