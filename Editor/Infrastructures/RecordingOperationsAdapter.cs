@@ -53,7 +53,12 @@ namespace UniCortex.Editor.Infrastructures
             _recorderSettings.Enabled = true;
             _recorderSettings.OutputFile = Path.ChangeExtension(outputPath, null);
             _recorderSettings.OutputFormat = MovieRecorderSettings.VideoRecorderOutputFormat.MP4;
-            _recorderSettings.ImageInputSettings = new GameViewInputSettings();
+
+            // MP4 (H.264) requires even width and height. Round down to nearest even number.
+            var gameViewInput = new GameViewInputSettings();
+            gameViewInput.OutputWidth = gameViewInput.OutputWidth & ~1;
+            gameViewInput.OutputHeight = gameViewInput.OutputHeight & ~1;
+            _recorderSettings.ImageInputSettings = gameViewInput;
 
             _controllerSettings.AddRecorderSettings(_recorderSettings);
 
