@@ -28,6 +28,7 @@ app.Add<ScreenshotCommands>("screenshot");
 app.Add<SceneViewCommands>("scene-view");
 app.Add<GameViewCommands>("game-view");
 app.Add<GameViewSizeCommands>("game-view size");
+app.Add<GameViewRecordCommands>("game-view record");
 app.Add<InputCommands>("input");
 app.Add<TimelineCommands>("timeline");
 app.Add<TimelineTrackCommands>("timeline track");

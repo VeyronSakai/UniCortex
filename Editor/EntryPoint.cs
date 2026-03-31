@@ -217,6 +217,17 @@ namespace UniCortex.Editor
             var setGameViewSizeUseCase = new SetGameViewSizeUseCase(s_dispatcher, editorWindowOps);
             var setGameViewSizeHandler = new SetGameViewSizeHandler(setGameViewSizeUseCase);
 
+#if UNICORTEX_RECORDER
+            var recordingOps = new RecordingOperationsAdapter();
+#else
+            var recordingOps = new RecordingNotSupportedAdapter();
+#endif
+
+            var startRecordingUseCase = new StartRecordingUseCase(s_dispatcher, recordingOps);
+            var startGameViewRecordHandler = new StartGameViewRecordHandler(startRecordingUseCase);
+
+            var stopRecordingUseCase = new StopRecordingUseCase(s_dispatcher, recordingOps);
+            var stopGameViewRecordHandler = new StopGameViewRecordHandler(stopRecordingUseCase);
 
 #if UNICORTEX_INPUT_SYSTEM
             var inputSimOps = new InputOperationsAdapter();
@@ -297,6 +308,8 @@ namespace UniCortex.Editor
             getGameViewSizeHandler.Register(router);
             getGameViewSizeListHandler.Register(router);
             setGameViewSizeHandler.Register(router);
+            startGameViewRecordHandler.Register(router);
+            stopGameViewRecordHandler.Register(router);
 
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
