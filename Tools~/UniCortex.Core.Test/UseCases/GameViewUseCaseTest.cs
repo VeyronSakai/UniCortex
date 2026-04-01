@@ -21,4 +21,13 @@ public class GameViewUseCaseTest
 
         Assert.That(result, Does.Contain("successfully"));
     }
+
+    [Test]
+    public async ValueTask GetSize_ReturnsScreenSize()
+    {
+        var result = await _fixture.GameViewUseCase.GetSizeAsync(CancellationToken.None);
+
+        Assert.That(result, Does.Contain("Game View size:"));
+        Assert.That(result, Does.Match(@"\d+x\d+"));
+    }
 }

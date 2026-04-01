@@ -1,6 +1,7 @@
 using System;
 using UniCortex.Editor.Domains.Interfaces;
 using UnityEditor;
+using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
 {
@@ -30,6 +31,12 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             EditorWindow.FocusWindowIfItsOpen(s_gameViewType);
+        }
+
+        public (int width, int height) GetGameViewSize()
+        {
+            var size = Handles.GetMainGameViewSize();
+            return ((int)size.x, (int)size.y);
         }
     }
 }

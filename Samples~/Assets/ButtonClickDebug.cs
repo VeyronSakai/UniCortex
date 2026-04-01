@@ -14,6 +14,6 @@ public class ButtonClickDebug : MonoBehaviour
 
     private void OnButtonClicked()
     {
-        Debug.Log("[ButtonClickDebug] Button clicked");
+        Debug.Log($"[ButtonClickDebug] Button clicked: {gameObject.name}");
     }
 }

@@ -4,5 +4,6 @@ namespace UniCortex.Editor.Domains.Interfaces
     {
         void FocusSceneView();
         void FocusGameView();
+        (int width, int height) GetGameViewSize();
     }
 }
