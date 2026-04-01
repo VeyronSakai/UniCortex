@@ -56,7 +56,7 @@ public class EditorTools(EditorUseCase editorUseCase)
 
     [McpServerTool(Name = "get_editor_status", ReadOnly = true),
      Description(
-         "Get the current state of the Unity Editor (play mode, paused, screen size). Works even when the editor is paused."),
+         "Get the current state of the Unity Editor (play mode, paused). Works even when the editor is paused."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> GetEditorStatusAsync(CancellationToken cancellationToken)
     {

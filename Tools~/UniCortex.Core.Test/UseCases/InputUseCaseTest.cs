@@ -100,9 +100,9 @@ public class InputUseCaseTest
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var status = await _fixture.EditorUseCase.GetStatusAsync(CancellationToken.None);
-            var centerX = status.screenWidth / 2f;
-            var centerY = status.screenHeight / 2f;
+            var size = await _fixture.GameViewUseCase.GetSizeResponseAsync(CancellationToken.None);
+            var centerX = size.screenWidth / 2f;
+            var centerY = size.screenHeight / 2f;
 
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
@@ -133,9 +133,9 @@ public class InputUseCaseTest
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var status = await _fixture.EditorUseCase.GetStatusAsync(CancellationToken.None);
-            var centerX = status.screenWidth / 2f;
-            var centerY = status.screenHeight / 2f;
+            var size = await _fixture.GameViewUseCase.GetSizeResponseAsync(CancellationToken.None);
+            var centerX = size.screenWidth / 2f;
+            var centerY = size.screenHeight / 2f;
 
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
@@ -175,6 +175,66 @@ public class InputUseCaseTest
                 cancellationToken: CancellationToken.None);
 
             Assert.That(logs, Does.Not.Contain("[ButtonClickDebug] Button clicked"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_InPlayMode_ClicksTopLeftButton_UsingGameViewSize()
+    {
+        // TopLeftButton (200x80) is anchored at top-left corner of the screen.
+        // Its center in Input System coordinates (origin bottom-left, Y up) is (100, screenHeight - 40).
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            var size = await _fixture.GameViewUseCase.GetSizeResponseAsync(CancellationToken.None);
+            var x = 100f;
+            var y = size.screenHeight - 40f;
+
+            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
+
+            await _fixture.InputUseCase.SendMouseEventAsync(x, y, MouseButton.Left, InputEventType.Click,
+                CancellationToken.None);
+            await Task.Delay(500);
+
+            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
+                cancellationToken: CancellationToken.None);
+
+            Assert.That(logs, Does.Contain("[ButtonClickDebug] Button clicked: TopLeftButton"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_InPlayMode_ClicksBottomRightButton_UsingGameViewSize()
+    {
+        // BottomRightButton (200x80) is anchored at bottom-right corner of the screen.
+        // Its center in Input System coordinates (origin bottom-left, Y up) is (screenWidth - 100, 40).
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            var size = await _fixture.GameViewUseCase.GetSizeResponseAsync(CancellationToken.None);
+            var x = size.screenWidth - 100f;
+            var y = 40f;
+
+            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
+
+            await _fixture.InputUseCase.SendMouseEventAsync(x, y, MouseButton.Left, InputEventType.Click,
+                CancellationToken.None);
+            await Task.Delay(500);
+
+            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
+                cancellationToken: CancellationToken.None);
+
+            Assert.That(logs, Does.Contain("[ButtonClickDebug] Button clicked: BottomRightButton"));
         }
         finally
         {
