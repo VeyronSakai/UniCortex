@@ -211,6 +211,12 @@ namespace UniCortex.Editor
             var getGameViewSizeUseCase = new GetGameViewSizeUseCase(s_dispatcher, editorWindowOps);
             var getGameViewSizeHandler = new GetGameViewSizeHandler(getGameViewSizeUseCase);
 
+            var getGameViewSizeListUseCase = new GetGameViewSizeListUseCase(s_dispatcher, editorWindowOps);
+            var getGameViewSizeListHandler = new GetGameViewSizeListHandler(getGameViewSizeListUseCase);
+
+            var setGameViewSizeUseCase = new SetGameViewSizeUseCase(s_dispatcher, editorWindowOps);
+            var setGameViewSizeHandler = new SetGameViewSizeHandler(setGameViewSizeUseCase);
+
 
 #if UNICORTEX_INPUT_SYSTEM
             var inputSimOps = new InputOperationsAdapter();
@@ -289,6 +295,8 @@ namespace UniCortex.Editor
             focusSceneViewHandler.Register(router);
             focusGameViewHandler.Register(router);
             getGameViewSizeHandler.Register(router);
+            getGameViewSizeListHandler.Register(router);
+            setGameViewSizeHandler.Register(router);
 
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);

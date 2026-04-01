@@ -1,4 +1,6 @@
+using System;
 using UniCortex.Editor.Domains.Interfaces;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.Tests.TestDoubles
 {
@@ -7,8 +9,20 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int FocusSceneViewCallCount { get; private set; }
         public int FocusGameViewCallCount { get; private set; }
         public int GetGameViewSizeCallCount { get; private set; }
+        public int GetGameViewSizeListCallCount { get; private set; }
+        public int SetGameViewSizeByIndexCallCount { get; private set; }
+        public int SetGameViewSizeCallCount { get; private set; }
         public int GameViewWidth { get; set; } = 800;
         public int GameViewHeight { get; set; } = 600;
+        public int LastSetIndex { get; private set; } = -1;
+
+        public GameViewSizeEntry[] SizeListEntries { get; set; } = new[]
+        {
+            new GameViewSizeEntry { index = 0, name = "Free Aspect", width = 0, height = 0, sizeType = "AspectRatio" },
+            new GameViewSizeEntry { index = 1, name = "1920x1080", width = 1920, height = 1080, sizeType = "FixedResolution" }
+        };
+
+        public int SelectedSizeIndex { get; set; }
 
         public void FocusSceneView()
         {
@@ -24,6 +38,29 @@ namespace UniCortex.Editor.Tests.TestDoubles
         {
             GetGameViewSizeCallCount++;
             return (GameViewWidth, GameViewHeight);
+        }
+
+        public GetGameViewSizeListResponse GetGameViewSizeList()
+        {
+            GetGameViewSizeListCallCount++;
+            return new GetGameViewSizeListResponse
+            {
+                sizes = SizeListEntries,
+                selectedIndex = SelectedSizeIndex
+            };
+        }
+
+        public void SetGameViewSizeByIndex(int index)
+        {
+            SetGameViewSizeByIndexCallCount++;
+            LastSetIndex = index;
+        }
+
+        public void SetGameViewSize(int width, int height)
+        {
+            SetGameViewSizeCallCount++;
+            GameViewWidth = width;
+            GameViewHeight = height;
         }
     }
 }

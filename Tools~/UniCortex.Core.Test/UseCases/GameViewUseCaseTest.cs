@@ -30,4 +30,34 @@ public class GameViewUseCaseTest
         Assert.That(result, Does.Contain("Game View size:"));
         Assert.That(result, Does.Match(@"\d+x\d+"));
     }
+
+    [Test]
+    public async ValueTask GetSizeList_ReturnsSizes()
+    {
+        var result = await _fixture.GameViewUseCase.GetSizeListAsync(CancellationToken.None);
+
+        Assert.That(result, Does.Contain("Game View sizes"));
+        Assert.That(result, Does.Contain("[0]"));
+    }
+
+    [Test]
+    public async ValueTask SetSizeByIndex_Succeeds()
+    {
+        // Get the list first to find a valid index
+        var listResponse = await _fixture.GameViewUseCase.GetSizeListResponseAsync(CancellationToken.None);
+        Assert.That(listResponse.sizes.Length, Is.GreaterThan(0));
+
+        var result = await _fixture.GameViewUseCase.SetSizeByIndexAsync(0, CancellationToken.None);
+
+        Assert.That(result, Does.Contain("successfully"));
+    }
+
+    [Test]
+    public async ValueTask SetSize_Succeeds()
+    {
+        var result = await _fixture.GameViewUseCase.SetSizeAsync(1280, 720, CancellationToken.None);
+
+        Assert.That(result, Does.Contain("successfully"));
+        Assert.That(result, Does.Contain("1280x720"));
+    }
 }
