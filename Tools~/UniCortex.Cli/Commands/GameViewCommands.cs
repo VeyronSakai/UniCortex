@@ -32,7 +32,7 @@ public class GameViewCommands(GameViewUseCase gameViewUseCase)
     /// <summary>Set the Game View resolution by index from the size list.</summary>
     /// <param name="index">Index of the size from the size list.</param>
     [Command("set-size")]
-    public async Task SetSize(int index, CancellationToken cancellationToken = default)
+    public async Task SetSize([Argument] int index, CancellationToken cancellationToken = default)
     {
         var message = await gameViewUseCase.SetSizeAsync(index, cancellationToken);
         Console.WriteLine(message);
