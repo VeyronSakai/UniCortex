@@ -63,10 +63,13 @@ namespace UniCortex.Editor.Infrastructures
                     "A recording is already in progress. Stop the current recording first.");
             }
 
+            var extension = string.Equals(_outputFormat, "WebM", StringComparison.OrdinalIgnoreCase)
+                ? ".webm"
+                : ".mp4";
             var resolvedOutputPath = string.IsNullOrEmpty(_outputPath)
                 ? Path.Combine(Path.GetTempPath(),
-                    $"UniCortex_Recording_{DateTime.Now:yyyyMMdd_HHmmss}.mp4")
-                : _outputPath;
+                    $"UniCortex_Recording_{DateTime.Now:yyyyMMdd_HHmmss}{extension}")
+                : Path.ChangeExtension(_outputPath, extension);
             _activeOutputPath = resolvedOutputPath;
 
             _controllerSettings = ScriptableObject.CreateInstance<RecorderControllerSettings>();

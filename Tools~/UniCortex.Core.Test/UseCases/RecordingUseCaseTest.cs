@@ -17,12 +17,13 @@ public class RecordingUseCaseTest
     [Test]
     public async ValueTask ConfigureAndGetSettings_ReturnsConfiguredValues()
     {
+        var tempPath = Path.Combine(Path.GetTempPath(), "unicortex_test.mp4");
         await _fixture.RecordingUseCase.ConfigureAsync(
-            "/tmp/test.mp4", "GameView", null, null,
+            tempPath, "GameView", null, null,
             false, "MP4", CancellationToken.None);
 
         var settings = await _fixture.RecordingUseCase.GetSettingsAsync(CancellationToken.None);
-        Assert.That(settings.outputPath, Is.EqualTo("/tmp/test.mp4"));
+        Assert.That(settings.outputPath, Is.EqualTo(tempPath));
         Assert.That(settings.source, Is.EqualTo("GameView"));
         Assert.That(settings.outputFormat, Is.EqualTo("MP4"));
     }
