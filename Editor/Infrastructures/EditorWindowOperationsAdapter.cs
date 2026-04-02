@@ -62,23 +62,24 @@ namespace UniCortex.Editor.Infrastructures
             EnsureGameViewTypesAvailable();
 
             var (group, totalCount) = GetSizeGroup();
-            var getGameViewSizeMethod = group.GetType().GetMethod("GetGameViewSize", AllInstance);
-            var baseTextProperty = s_gameViewSizeType.GetProperty("baseText", AllInstance);
-            var sizeWidthProperty = s_gameViewSizeType.GetProperty("width", AllInstance);
-            var sizeHeightProperty = s_gameViewSizeType.GetProperty("height", AllInstance);
-            var sizeTypeProperty = s_gameViewSizeType.GetProperty("sizeType", AllInstance);
+
+            var getGameViewSizeMethod = GetMethodOrThrow(group.GetType(), "GetGameViewSize");
+            var baseTextProperty = GetPropertyOrThrow(s_gameViewSizeType, "baseText");
+            var sizeWidthProperty = GetPropertyOrThrow(s_gameViewSizeType, "width");
+            var sizeHeightProperty = GetPropertyOrThrow(s_gameViewSizeType, "height");
+            var sizeTypeProperty = GetPropertyOrThrow(s_gameViewSizeType, "sizeType");
 
             var entries = new GameViewSizeEntry[totalCount];
             for (var i = 0; i < totalCount; i++)
             {
-                var size = getGameViewSizeMethod!.Invoke(group, new object[] { i });
+                var size = getGameViewSizeMethod.Invoke(group, new object[] { i });
                 entries[i] = new GameViewSizeEntry
                 {
                     index = i,
-                    name = (string)baseTextProperty!.GetValue(size)!,
-                    width = (int)sizeWidthProperty!.GetValue(size)!,
-                    height = (int)sizeHeightProperty!.GetValue(size)!,
-                    sizeType = sizeTypeProperty!.GetValue(size)!.ToString()
+                    name = (string)baseTextProperty.GetValue(size),
+                    width = (int)sizeWidthProperty.GetValue(size),
+                    height = (int)sizeHeightProperty.GetValue(size),
+                    sizeType = sizeTypeProperty.GetValue(size).ToString()
                 };
             }
 
@@ -117,16 +118,16 @@ namespace UniCortex.Editor.Infrastructures
 
         private static (object group, int totalCount) GetSizeGroup()
         {
-            var singletonProperty = s_gameViewSizesType.GetProperty("instance", AllStatic);
-            var instance = singletonProperty!.GetValue(null);
+            var singletonProperty = GetPropertyOrThrow(s_gameViewSizesType, "instance", AllStatic);
+            var instance = singletonProperty.GetValue(null);
 
-            var currentGroupMethod = s_gameViewSizesType.GetMethod("GetGroup", AllInstance);
-            var currentGroupType = (int)s_gameViewSizesType.GetProperty("currentGroupType",
-                AllInstance)!.GetValue(instance);
-            var group = currentGroupMethod!.Invoke(instance, new object[] { currentGroupType })!;
+            var currentGroupMethod = GetMethodOrThrow(s_gameViewSizesType, "GetGroup");
+            var currentGroupTypeProperty = GetPropertyOrThrow(s_gameViewSizesType, "currentGroupType");
+            var currentGroupType = currentGroupTypeProperty.GetValue(instance);
+            var group = currentGroupMethod.Invoke(instance, new[] { currentGroupType });
 
-            var getTotalCountMethod = group.GetType().GetMethod("GetTotalCount", AllInstance);
-            var totalCount = (int)getTotalCountMethod!.Invoke(group, null)!;
+            var getTotalCountMethod = GetMethodOrThrow(group.GetType(), "GetTotalCount");
+            var totalCount = (int)getTotalCountMethod.Invoke(group, null);
 
             return (group, totalCount);
         }
@@ -134,17 +135,32 @@ namespace UniCortex.Editor.Infrastructures
         private static int GetSelectedSizeIndex()
         {
             var gameView = EditorWindow.GetWindow(s_gameViewType);
-            var selectedSizeIndexProp = s_gameViewType!.GetProperty("selectedSizeIndex",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            return (int)selectedSizeIndexProp!.GetValue(gameView)!;
+            var selectedSizeIndexProp = GetPropertyOrThrow(s_gameViewType, "selectedSizeIndex");
+            return (int)selectedSizeIndexProp.GetValue(gameView);
         }
 
         private static void SetSelectedSizeIndex(int index)
         {
             var gameView = EditorWindow.GetWindow(s_gameViewType);
-            var selectedSizeIndexProp = s_gameViewType!.GetProperty("selectedSizeIndex",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            selectedSizeIndexProp!.SetValue(gameView, index);
+            var selectedSizeIndexProp = GetPropertyOrThrow(s_gameViewType, "selectedSizeIndex");
+            selectedSizeIndexProp.SetValue(gameView, index);
+        }
+
+        private static MethodInfo GetMethodOrThrow(Type type, string name)
+        {
+            return type.GetMethod(name, AllInstance)
+                   ?? throw new InvalidOperationException(
+                       $"Unity internal API changed: method '{name}' was not found on {type.Name}. " +
+                       "This Unity version may not be supported.");
+        }
+
+        private static PropertyInfo GetPropertyOrThrow(Type type, string name,
+            BindingFlags flags = AllInstance)
+        {
+            return type.GetProperty(name, flags)
+                   ?? throw new InvalidOperationException(
+                       $"Unity internal API changed: property '{name}' was not found on {type.Name}. " +
+                       "This Unity version may not be supported.");
         }
     }
 }
