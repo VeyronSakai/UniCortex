@@ -42,4 +42,44 @@ public class GameViewTools(GameViewUseCase gameViewUseCase)
             return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
+
+    [McpServerTool(Name = "get_game_view_size_list", ReadOnly = true),
+     Description(
+         "Get the list of available Game View sizes (built-in and custom) in the Unity Editor. " +
+         "Returns each size with its index, name, width, height, and type. " +
+         "Use the index with set_game_view_size to select a resolution."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> GetGameViewSizeListAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var message = await gameViewUseCase.GetSizeListAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
+    [McpServerTool(Name = "set_game_view_size", ReadOnly = false),
+     Description(
+         "Set the Game View resolution in the Unity Editor by selecting a size from the available list. " +
+         "Use get_game_view_size_list to get available sizes and their indices."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> SetGameViewSizeAsync(
+        [Description("Index of the size from get_game_view_size_list.")]
+        int index,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var message = await gameViewUseCase.SetSizeAsync(index, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
 }
