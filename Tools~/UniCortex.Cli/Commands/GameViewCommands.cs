@@ -12,18 +12,21 @@ public class GameViewCommands(GameViewUseCase gameViewUseCase)
         var message = await gameViewUseCase.FocusAsync(cancellationToken);
         Console.WriteLine(message);
     }
+}
 
+public class GameViewSizeCommands(GameViewUseCase gameViewUseCase)
+{
     /// <summary>Get the current Game View size (width and height in pixels).</summary>
-    [Command("size")]
-    public async Task Size(CancellationToken cancellationToken = default)
+    [Command("get")]
+    public async Task Get(CancellationToken cancellationToken = default)
     {
         var message = await gameViewUseCase.GetSizeAsync(cancellationToken);
         Console.WriteLine(message);
     }
 
     /// <summary>List all available Game View sizes (built-in and custom).</summary>
-    [Command("size-list")]
-    public async Task SizeList(CancellationToken cancellationToken = default)
+    [Command("list")]
+    public async Task List(CancellationToken cancellationToken = default)
     {
         var message = await gameViewUseCase.GetSizeListAsync(cancellationToken);
         Console.WriteLine(message);
@@ -31,8 +34,8 @@ public class GameViewCommands(GameViewUseCase gameViewUseCase)
 
     /// <summary>Set the Game View resolution by index from the size list.</summary>
     /// <param name="index">Index of the size from the size list.</param>
-    [Command("set-size")]
-    public async Task SetSize([Argument] int index, CancellationToken cancellationToken = default)
+    [Command("set")]
+    public async Task Set([Argument] int index, CancellationToken cancellationToken = default)
     {
         var message = await gameViewUseCase.SetSizeAsync(index, cancellationToken);
         Console.WriteLine(message);

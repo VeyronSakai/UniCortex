@@ -935,7 +935,8 @@ asset refresh
 menu execute
 screenshot capture
 scene-view focus
-game-view focus|size|size-list|set-size
+game-view focus
+game-view size get|list|set
 input send-key|send-mouse
 timeline create
 timeline track add|remove|bind
