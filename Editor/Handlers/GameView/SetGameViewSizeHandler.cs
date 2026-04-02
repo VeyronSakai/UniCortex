@@ -25,7 +25,7 @@ namespace UniCortex.Editor.Handlers.GameView
         {
             var body = await context.ReadBodyAsync();
             var request = JsonUtility.FromJson<SetGameViewSizeRequest>(body);
-            var result = await _useCase.ExecuteAsync(request, cancellationToken);
+            var result = await _useCase.ExecuteAsync(request.index, cancellationToken);
             var json = JsonUtility.ToJson(result);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }

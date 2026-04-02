@@ -46,19 +46,11 @@ public class GameViewUseCase(IUnityEditorClient client)
             ApiRoutes.GameViewSizeList, cancellationToken: cancellationToken);
     }
 
-    public async ValueTask<string> SetSizeByIndexAsync(int index, CancellationToken cancellationToken)
+    public async ValueTask<string> SetSizeAsync(int index, CancellationToken cancellationToken)
     {
         await client.PostAsync<SetGameViewSizeRequest, SetGameViewSizeResponse>(
             ApiRoutes.GameViewSize, new SetGameViewSizeRequest { index = index },
             cancellationToken);
         return $"Game View size set to index {index} successfully.";
-    }
-
-    public async ValueTask<string> SetSizeAsync(int width, int height, CancellationToken cancellationToken)
-    {
-        await client.PostAsync<SetGameViewSizeRequest, SetGameViewSizeResponse>(
-            ApiRoutes.GameViewSize, new SetGameViewSizeRequest { width = width, height = height },
-            cancellationToken);
-        return $"Game View size set to {width}x{height} successfully.";
     }
 }

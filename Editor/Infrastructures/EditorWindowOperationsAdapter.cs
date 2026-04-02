@@ -91,7 +91,7 @@ namespace UniCortex.Editor.Infrastructures
             };
         }
 
-        public void SetGameViewSizeByIndex(int index)
+        public void SetGameViewSize(int index)
         {
             EnsureGameViewTypesAvailable();
 
@@ -103,54 +103,6 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             SetSelectedSizeIndex(index);
-        }
-
-        public void SetGameViewSize(int width, int height)
-        {
-            EnsureGameViewTypesAvailable();
-
-            var (group, totalCount) = GetSizeGroup();
-            var groupType = group.GetType();
-            var getGameViewSizeMethod = groupType.GetMethod("GetGameViewSize", AllInstance);
-            var sizeWidthProperty = s_gameViewSizeType.GetProperty("width", AllInstance);
-            var sizeHeightProperty = s_gameViewSizeType.GetProperty("height", AllInstance);
-            var sizeTypeProperty = s_gameViewSizeType.GetProperty("sizeType", AllInstance);
-            var fixedResolutionValue = Enum.Parse(s_gameViewSizeTypeEnum, "FixedResolution");
-
-            // Search all sizes (built-in + custom) for a matching resolution
-            for (var i = 0; i < totalCount; i++)
-            {
-                var existingSize = getGameViewSizeMethod!.Invoke(group, new object[] { i });
-                var existingWidth = (int)sizeWidthProperty!.GetValue(existingSize)!;
-                var existingHeight = (int)sizeHeightProperty!.GetValue(existingSize)!;
-                var existingType = sizeTypeProperty!.GetValue(existingSize);
-
-                if (existingWidth == width && existingHeight == height &&
-                    existingType!.Equals(fixedResolutionValue))
-                {
-                    SetSelectedSizeIndex(i);
-                    return;
-                }
-            }
-
-            // Create a new GameViewSize with FixedResolution type
-            var newSize = Activator.CreateInstance(s_gameViewSizeType,
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
-                null,
-                new object[] { fixedResolutionValue, width, height, $"{width}x{height}" },
-                null);
-
-            var getBuiltinCountMethod = groupType.GetMethod("GetBuiltinCount", AllInstance);
-            var builtinCount = (int)getBuiltinCountMethod!.Invoke(group, null)!;
-            var getCustomCountMethod = groupType.GetMethod("GetCustomCount", AllInstance);
-            var customCount = (int)getCustomCountMethod!.Invoke(group, null)!;
-
-            var addCustomSizeMethod = groupType.GetMethod("AddCustomSize", AllInstance);
-            addCustomSizeMethod!.Invoke(group, new[] { newSize });
-
-            // The new custom size index = builtinCount + (previous customCount)
-            var newIndex = builtinCount + customCount;
-            SetSelectedSizeIndex(newIndex);
         }
 
         private static void EnsureGameViewTypesAvailable()

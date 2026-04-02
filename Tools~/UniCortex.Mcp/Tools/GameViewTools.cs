@@ -64,39 +64,17 @@ public class GameViewTools(GameViewUseCase gameViewUseCase)
 
     [McpServerTool(Name = "set_game_view_size", ReadOnly = false),
      Description(
-         "Set the Game View resolution in the Unity Editor. " +
-         "Preferred: specify 'index' from get_game_view_size_list to select an existing size. " +
-         "Alternative: specify 'width' and 'height' to set a custom resolution (creates a new entry if no match found)."),
+         "Set the Game View resolution in the Unity Editor by selecting a size from the available list. " +
+         "Use get_game_view_size_list to get available sizes and their indices."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> SetGameViewSizeAsync(
-        [Description("Index of the size from get_game_view_size_list. Takes priority over width/height.")]
-        int? index = null,
-        [Description("Width in pixels (used when index is not specified)")]
-        int? width = null,
-        [Description("Height in pixels (used when index is not specified)")]
-        int? height = null,
-        CancellationToken cancellationToken = default)
+        [Description("Index of the size from get_game_view_size_list.")]
+        int index,
+        CancellationToken cancellationToken)
     {
         try
         {
-            string message;
-            if (index.HasValue)
-            {
-                message = await gameViewUseCase.SetSizeByIndexAsync(index.Value, cancellationToken);
-            }
-            else if (width.HasValue && height.HasValue)
-            {
-                message = await gameViewUseCase.SetSizeAsync(width.Value, height.Value, cancellationToken);
-            }
-            else
-            {
-                return new CallToolResult
-                {
-                    IsError = true,
-                    Content = [new TextContentBlock { Text = "Either 'index' or both 'width' and 'height' must be specified." }]
-                };
-            }
-
+            var message = await gameViewUseCase.SetSizeAsync(index, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)

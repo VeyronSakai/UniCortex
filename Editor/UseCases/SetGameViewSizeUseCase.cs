@@ -16,20 +16,10 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<SetGameViewSizeResponse> ExecuteAsync(SetGameViewSizeRequest request,
-            CancellationToken cancellationToken)
+        public async Task<SetGameViewSizeResponse> ExecuteAsync(int index, CancellationToken cancellationToken)
         {
-            if (request.index >= 0)
-            {
-                await _dispatcher.RunOnMainThreadAsync(
-                    () => _operations.SetGameViewSizeByIndex(request.index), cancellationToken);
-            }
-            else
-            {
-                await _dispatcher.RunOnMainThreadAsync(
-                    () => _operations.SetGameViewSize(request.width, request.height), cancellationToken);
-            }
-
+            await _dispatcher.RunOnMainThreadAsync(
+                () => _operations.SetGameViewSize(index), cancellationToken);
             return new SetGameViewSizeResponse(true);
         }
     }

@@ -8,7 +8,6 @@ namespace UniCortex.Editor.Domains.Interfaces
         void FocusGameView();
         (int width, int height) GetGameViewSize();
         GetGameViewSizeListResponse GetGameViewSizeList();
-        void SetGameViewSizeByIndex(int index);
-        void SetGameViewSize(int width, int height);
+        void SetGameViewSize(int index);
     }
 }
