@@ -98,7 +98,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `menu execute` | Execute menu items |
 | `screenshot capture` | Capture screenshot (Play Mode only) |
 | `scene-view focus` | Switch focus to Scene View |
-| `game-view focus` | Switch focus to Game View |
+| `game-view focus\|size\|size-list\|set-size\|set-size-index` | Game View control |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
 | `timeline create` | Create a TimelineAsset |
 | `timeline track add\|remove\|bind` | Timeline track operations |
@@ -197,6 +197,9 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 |------|-------------|
 | `focus_scene_view` | Switch focus to the Scene View window |
 | `focus_game_view` | Switch focus to the Game View window |
+| `get_game_view_size` | Get the current Game View size (width and height in pixels) |
+| `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
+| `set_game_view_size` | Set the Game View resolution by index from the size list, or by width/height |
 
 ### Input
 
