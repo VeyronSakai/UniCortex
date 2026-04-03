@@ -6,8 +6,8 @@ using UniCortex.Editor.Domains.Models;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.LowLevel;
+using InputMouseButton = UnityEngine.InputSystem.LowLevel.MouseButton;
 using MouseButtonConst = UniCortex.Editor.Domains.Models.MouseButton;
 
 namespace UniCortex.Editor.Infrastructures
@@ -130,9 +130,8 @@ namespace UniCortex.Editor.Infrastructures
                     $"Invalid key name: {key}. Use Input System Key enum names (e.g. Space, A, LeftArrow, Enter).");
             }
 
-            var keyControl = keyboard[keyEnum];
             var action = ParseButtonAction(eventType);
-            var targetValue = action == InputAction.Press ? 1f : 0f;
+            var targetPressed = action == InputAction.Press;
 
             // Use self-tracked state instead of keyControl.isPressed because
             // isPressed only reflects the last processed state, not queued events.
@@ -140,23 +139,15 @@ namespace UniCortex.Editor.Infrastructures
             // would skip the reset and fail to trigger wasPressedThisFrame.
             var alreadyPressed = s_pressedKeys.Contains(keyEnum);
 
-            if (action == InputAction.Press && alreadyPressed
-                || action == InputAction.Release && !alreadyPressed)
+            if (targetPressed && alreadyPressed
+                || !targetPressed && !alreadyPressed)
             {
-                using (StateEvent.From(keyboard, out var resetPtr))
-                {
-                    keyControl.WriteValueIntoEvent(1f - targetValue, resetPtr);
-                    InputSystem.QueueEvent(resetPtr);
-                }
+                InputSystem.QueueStateEvent(keyboard, BuildKeyboardState(keyEnum, !targetPressed));
             }
 
-            using (StateEvent.From(keyboard, out var eventPtr))
-            {
-                keyControl.WriteValueIntoEvent(targetValue, eventPtr);
-                InputSystem.QueueEvent(eventPtr);
-            }
+            InputSystem.QueueStateEvent(keyboard, BuildKeyboardState(keyEnum, targetPressed));
 
-            if (action == InputAction.Press)
+            if (targetPressed)
             {
                 s_pressedKeys.Add(keyEnum);
             }
@@ -185,63 +176,72 @@ namespace UniCortex.Editor.Infrastructures
             var action = ParseMouseAction(eventType);
             if (action == InputAction.Move)
             {
-                using (StateEvent.From(mouse, out var eventPtr))
-                {
-                    mouse.position.WriteValueIntoEvent(new Vector2(x, y), eventPtr);
-                    InputSystem.QueueEvent(eventPtr);
-                }
+                InputSystem.QueueStateEvent(mouse, BuildMouseState(x, y));
+                return;
+            }
+
+            var buttonName = button ?? MouseButtonConst.Left;
+            var buttonEnum = ToInputMouseButton(buttonName);
+            var targetPressed = action == InputAction.Press;
+
+            // Use self-tracked state instead of buttonControl.isPressed because
+            // isPressed only reflects the last processed state, not queued events.
+            var alreadyPressed = s_pressedMouseButtons.Contains(buttonName);
+            if (targetPressed && alreadyPressed
+                || !targetPressed && !alreadyPressed)
+            {
+                var resetState = BuildMouseState(x, y);
+                resetState = resetState.WithButton(buttonEnum, !targetPressed);
+                InputSystem.QueueStateEvent(mouse, resetState);
+            }
+
+            var mainState = BuildMouseState(x, y);
+            mainState = mainState.WithButton(buttonEnum, targetPressed);
+            InputSystem.QueueStateEvent(mouse, mainState);
+
+            if (targetPressed)
+            {
+                s_pressedMouseButtons.Add(buttonName);
             }
             else
             {
-                ButtonControl buttonControl;
-                if (string.Equals(button, MouseButtonConst.Right, StringComparison.OrdinalIgnoreCase))
-                {
-                    buttonControl = mouse.rightButton;
-                }
-                else if (string.Equals(button, MouseButtonConst.Middle, StringComparison.OrdinalIgnoreCase))
-                {
-                    buttonControl = mouse.middleButton;
-                }
-                else
-                {
-                    buttonControl = mouse.leftButton;
-                }
-
-                var targetValue = action == InputAction.Press ? 1f : 0f;
-
-                // Resolve the button name used as the tracking key.
-                var buttonName = button ?? MouseButtonConst.Left;
-
-                // Use self-tracked state instead of buttonControl.isPressed because
-                // isPressed only reflects the last processed state, not queued events.
-                var alreadyPressed = s_pressedMouseButtons.Contains(buttonName);
-                if (action == InputAction.Press && alreadyPressed
-                    || action == InputAction.Release && !alreadyPressed)
-                {
-                    using (StateEvent.From(mouse, out var resetPtr))
-                    {
-                        mouse.position.WriteValueIntoEvent(new Vector2(x, y), resetPtr);
-                        buttonControl.WriteValueIntoEvent(1f - targetValue, resetPtr);
-                        InputSystem.QueueEvent(resetPtr);
-                    }
-                }
-
-                using (StateEvent.From(mouse, out var eventPtr))
-                {
-                    mouse.position.WriteValueIntoEvent(new Vector2(x, y), eventPtr);
-                    buttonControl.WriteValueIntoEvent(targetValue, eventPtr);
-                    InputSystem.QueueEvent(eventPtr);
-                }
-
-                if (action == InputAction.Press)
-                {
-                    s_pressedMouseButtons.Add(buttonName);
-                }
-                else
-                {
-                    s_pressedMouseButtons.Remove(buttonName);
-                }
+                s_pressedMouseButtons.Remove(buttonName);
             }
+        }
+
+        /// <summary>
+        /// Builds a MouseState from scratch with the given position and all tracked
+        /// button states. Because the state is constructed rather than copied from the
+        /// physical device, no physical mouse state can leak into simulated events.
+        /// </summary>
+        private static MouseState BuildMouseState(float x, float y)
+        {
+            var state = new MouseState { position = new Vector2(x, y) };
+            foreach (var btn in s_pressedMouseButtons)
+                state = state.WithButton(ToInputMouseButton(btn));
+            return state;
+        }
+
+        /// <summary>
+        /// Builds a KeyboardState from scratch with all tracked key states.
+        /// The target key is set to the specified state, overriding any tracked value.
+        /// </summary>
+        private static KeyboardState BuildKeyboardState(Key targetKey, bool targetPressed)
+        {
+            var state = new KeyboardState();
+            foreach (var key in s_pressedKeys)
+                state.Set(key, true);
+            state.Set(targetKey, targetPressed);
+            return state;
+        }
+
+        private static InputMouseButton ToInputMouseButton(string button)
+        {
+            if (string.Equals(button, MouseButtonConst.Right, StringComparison.OrdinalIgnoreCase))
+                return InputMouseButton.Right;
+            if (string.Equals(button, MouseButtonConst.Middle, StringComparison.OrdinalIgnoreCase))
+                return InputMouseButton.Middle;
+            return InputMouseButton.Left;
         }
 
         private static InputAction ParseButtonAction(string eventType)
