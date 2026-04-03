@@ -83,10 +83,14 @@ public sealed class UnityEditorFixture
 
         // Connection check using the retry-capable HttpClient.
         // HttpRequestHandler automatically retries during domain reloads.
+        // After the initial connection succeeds, wait briefly for the server to
+        // fully stabilize (e.g., after a run_tests cycle that may leave the
+        // Editor temporarily busy).
         var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
         var checkClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-        var pingResponse = await checkClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}");
+        using var pingResponse = await checkClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}");
         pingResponse.EnsureSuccessStatusCode();
+        await Task.Delay(3000);
 
         return new UnityEditorFixture(provider, baseUrl);
     }
