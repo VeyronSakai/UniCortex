@@ -5,14 +5,12 @@ namespace UniCortex.Core.Infrastructures;
 public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : DelegatingHandler
 {
     private static readonly TimeSpan s_maxWait = TimeSpan.FromHours(1);
-    private const int MaxServerErrorRetries = 5;
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var startTime = DateTime.UtcNow;
         var logged = false;
-        var serverErrorRetries = 0;
 
         while (true)
         {
@@ -25,19 +23,6 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
                 {
                     response.Dispose();
                     throw new HttpRequestException();
-                }
-
-                // Retry transient server errors (5xx) a limited number of times.
-                // The Unity Editor may return 500 when temporarily busy (e.g., running tests).
-                if ((int)response.StatusCode >= 500 && serverErrorRetries < MaxServerErrorRetries)
-                {
-                    serverErrorRetries++;
-                    logger.LogInformation(
-                        "Unity Editor returned {StatusCode}, retrying ({Attempt}/{Max})...",
-                        (int)response.StatusCode, serverErrorRetries, MaxServerErrorRetries);
-                    response.Dispose();
-                    await Task.Delay(1000, cancellationToken);
-                    continue;
                 }
 
                 if (logged)
