@@ -10,6 +10,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string Unpause = "/editor/unpause";
         public const string Step = "/editor/step";
         public const string DomainReload = "/editor/domain-reload";
+        public const string EditorSave = "/editor/save";        
         public const string Undo = "/editor/undo";
         public const string Redo = "/editor/redo";
         public const string GameObjects = "/gameobjects";
@@ -22,7 +23,6 @@ namespace UniCortex.Editor.Domains.Models
         public const string ConsoleClear = "/console/clear";
         public const string SceneCreate = "/scene/create";
         public const string SceneOpen = "/scene/open";
-        public const string EditorSave = "/editor/save";
         public const string Hierarchy = "/hierarchy";
         public const string ComponentAdd = "/component/add";
         public const string ComponentRemove = "/component/remove";
