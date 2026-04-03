@@ -77,6 +77,14 @@ public class EditorCommands(EditorUseCase editorUseCase)
         Console.WriteLine(message);
     }
 
+    /// <summary>Save the currently active stage in the Unity Editor (Scene, Prefab, or Timeline).</summary>
+    [Command("save")]
+    public async Task Save(CancellationToken cancellationToken)
+    {
+        var message = await editorUseCase.SaveAsync(cancellationToken);
+        Console.WriteLine(message);
+    }
+
     /// <summary>Request a domain reload (script recompilation) in the Unity Editor.</summary>
     [Command("reload-domain")]
     public async Task ReloadDomain(CancellationToken cancellationToken)

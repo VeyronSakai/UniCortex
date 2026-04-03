@@ -42,12 +42,5 @@ namespace UniCortex.Editor.Tests.TestDoubles
         {
             ClosePrefabCallCount++;
         }
-
-        public int SavePrefabCallCount { get; private set; }
-
-        public void SavePrefab()
-        {
-            SavePrefabCallCount++;
-        }
     }
 }

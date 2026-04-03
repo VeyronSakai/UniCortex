@@ -4,21 +4,21 @@ using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.UseCases
 {
-    internal sealed class SavePrefabUseCase
+    internal sealed class SaveUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IPrefabOperations _operations;
+        private readonly IEditorApplication _editorApplication;
 
-        public SavePrefabUseCase(IMainThreadDispatcher dispatcher, IPrefabOperations operations)
+        public SaveUseCase(IMainThreadDispatcher dispatcher, IEditorApplication editorApplication)
         {
             _dispatcher = dispatcher;
-            _operations = operations;
+            _editorApplication = editorApplication;
         }
 
         public async Task ExecuteAsync(CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.SavePrefab(), cancellationToken);
+                () => _editorApplication.Save(), cancellationToken);
         }
     }
 }

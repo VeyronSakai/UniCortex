@@ -43,11 +43,6 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        public bool SaveOpenScenes()
-        {
-            return UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
-        }
-
         public GetHierarchyResponse GetHierarchy()
         {
             var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();

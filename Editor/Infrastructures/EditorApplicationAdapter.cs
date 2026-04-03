@@ -21,5 +21,10 @@ namespace UniCortex.Editor.Infrastructures
         {
             EditorApplication.Step();
         }
+
+        public void Save()
+        {
+            EditorApplication.ExecuteMenuItem("File/Save");
+        }
     }
 }

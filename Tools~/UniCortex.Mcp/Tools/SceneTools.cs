@@ -45,21 +45,6 @@ public class SceneTools(SceneUseCase sceneUseCase)
         }
     }
 
-    [McpServerTool(Name = "save_scene", ReadOnly = false),
-     Description("Save all open scenes in the Unity Editor."), UsedImplicitly]
-    public async ValueTask<CallToolResult> SaveSceneAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var message = await sceneUseCase.SaveAsync(cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
-
     [McpServerTool(Name = "get_hierarchy", ReadOnly = true),
      Description("Get the GameObject hierarchy of the currently open scene or Prefab in the Unity Editor."), UsedImplicitly]
     public async ValueTask<CallToolResult> GetHierarchyAsync(CancellationToken cancellationToken = default)

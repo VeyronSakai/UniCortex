@@ -17,7 +17,7 @@ public class SceneUseCaseTest
         await _fixture.SceneUseCase.CreateAsync(TestScenePath, CancellationToken.None);
         await _fixture.AssetUseCase.RefreshAsync(CancellationToken.None);
         // Save after refresh to prevent "Scene(s) Have Been Modified" dialog
-        await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
+        await _fixture.EditorUseCase.SaveAsync(CancellationToken.None);
     }
 
     [OneTimeTearDown]
@@ -49,16 +49,6 @@ public class SceneUseCaseTest
     }
 
     [Test]
-    public async ValueTask Save_ReturnsSuccess()
-    {
-        await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
-
-        var message = await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
-
-        Assert.That(message, Does.Contain("saved successfully"));
-    }
-
-    [Test]
     public async ValueTask Create_ReturnsSuccess()
     {
         const string newScenePath = "Assets/Scenes/CreateSceneTest.unity";
@@ -74,7 +64,7 @@ public class SceneUseCaseTest
             // Re-open TestScenePath before cleanup to restore active scene.
             // Do NOT call RefreshAsync after deleting to prevent "modified externally" dialog.
             await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
-            await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
+            await _fixture.EditorUseCase.SaveAsync(CancellationToken.None);
             UnityEditorFixture.DeleteAssetFile(newScenePath);
         }
     }
