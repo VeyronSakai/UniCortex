@@ -88,7 +88,7 @@ public sealed class UnityEditorFixture
         // Editor temporarily busy).
         var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
         var checkClient = httpClientFactory.CreateClient(HttpClientNames.UniCortex);
-        var pingResponse = await checkClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}");
+        using var pingResponse = await checkClient.GetAsync($"{baseUrl}{ApiRoutes.Ping}");
         pingResponse.EnsureSuccessStatusCode();
         await Task.Delay(3000);
 
