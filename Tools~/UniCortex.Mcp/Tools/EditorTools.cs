@@ -181,6 +181,22 @@ public class EditorTools(EditorUseCase editorUseCase)
         }
     }
 
+    [McpServerTool(Name = "save", ReadOnly = false),
+     Description("Execute File/Save to save the currently active stage in the Unity Editor. Supports any asset that File/Save can handle, such as Scenes, Prefabs, Timelines, etc."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> SaveAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var message = await editorUseCase.SaveAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
     [McpServerTool(Name = "reload_domain", ReadOnly = false),
      Description("Request a domain reload (script recompilation) in the Unity Editor."), UsedImplicitly]
     public async ValueTask<CallToolResult> ReloadDomainAsync(CancellationToken cancellationToken)

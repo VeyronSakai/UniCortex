@@ -24,7 +24,7 @@ public class PrefabUseCaseTest
     {
         await _fixture.SceneUseCase.CreateAsync(TestScenePath, CancellationToken.None);
         await _fixture.AssetUseCase.RefreshAsync(CancellationToken.None);
-        await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
+        await _fixture.EditorUseCase.SaveAsync(CancellationToken.None);
     }
 
     [TearDown]
@@ -235,9 +235,9 @@ public class PrefabUseCaseTest
 
             await _fixture.PrefabUseCase.OpenAsync("Assets/SavePrefabTest.prefab", ct);
 
-            var message = await _fixture.PrefabUseCase.SaveAsync(ct);
+            var message = await _fixture.EditorUseCase.SaveAsync(ct);
 
-            Assert.That(message, Does.Contain("Prefab saved."));
+            Assert.That(message, Does.Contain("Saved successfully."));
 
             await _fixture.PrefabUseCase.CloseAsync(ct);
         }

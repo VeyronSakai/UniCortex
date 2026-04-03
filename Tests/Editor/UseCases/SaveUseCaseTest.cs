@@ -6,19 +6,19 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.UseCases
 {
     [TestFixture]
-    internal sealed class SavePrefabUseCaseTest
+    internal sealed class SaveUseCaseTest
     {
         [Test]
-        public void ExecuteAsync_CallsSavePrefab_And_DispatchesToMainThread()
+        public void ExecuteAsync_CallsSave_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyPrefabOperations();
-            var useCase = new SavePrefabUseCase(dispatcher, operations);
+            var editorApp = new SpyEditorApplication();
+            var useCase = new SaveUseCase(dispatcher, editorApp);
 
             useCase.ExecuteAsync(CancellationToken.None)
                 .GetAwaiter().GetResult();
 
-            Assert.AreEqual(1, operations.SavePrefabCallCount);
+            Assert.AreEqual(1, editorApp.SaveCallCount);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
     }

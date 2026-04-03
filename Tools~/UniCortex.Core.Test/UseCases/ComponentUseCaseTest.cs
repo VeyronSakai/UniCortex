@@ -24,7 +24,7 @@ public class ComponentUseCaseTest
     {
         await _fixture.SceneUseCase.CreateAsync(TestScenePath, CancellationToken.None);
         await _fixture.AssetUseCase.RefreshAsync(CancellationToken.None);
-        await _fixture.SceneUseCase.SaveAsync(CancellationToken.None);
+        await _fixture.EditorUseCase.SaveAsync(CancellationToken.None);
     }
 
     [TearDown]

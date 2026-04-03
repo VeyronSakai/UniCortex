@@ -10,8 +10,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public bool CreateSceneResult { get; set; } = true;
         public int OpenSceneCallCount { get; private set; }
         public string LastScenePath { get; private set; }
-        public int SaveOpenScenesCallCount { get; private set; }
-        public bool SaveOpenScenesResult { get; set; } = true;
         public int GetHierarchyCallCount { get; private set; }
         public GetHierarchyResponse HierarchyResult { get; set; }
 
@@ -26,12 +24,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
         {
             OpenSceneCallCount++;
             LastScenePath = scenePath;
-        }
-
-        public bool SaveOpenScenes()
-        {
-            SaveOpenScenesCallCount++;
-            return SaveOpenScenesResult;
         }
 
         public GetHierarchyResponse GetHierarchy()

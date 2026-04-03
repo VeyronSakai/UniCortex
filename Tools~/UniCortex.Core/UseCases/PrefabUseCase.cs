@@ -38,9 +38,4 @@ public class PrefabUseCase(IUnityEditorClient client)
         return "Prefab mode closed.";
     }
 
-    public async ValueTask<string> SaveAsync(CancellationToken cancellationToken)
-    {
-        await client.PostAsync<object, SavePrefabResponse>(ApiRoutes.PrefabSave, null, cancellationToken);
-        return "Prefab saved.";
-    }
 }

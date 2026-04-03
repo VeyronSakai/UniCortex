@@ -96,6 +96,12 @@ public class EditorUseCase(IUnityEditorClient client)
         return "Redo performed successfully.";
     }
 
+    public async ValueTask<string> SaveAsync(CancellationToken cancellationToken)
+    {
+        await client.PostAsync<SaveRequest, SaveResponse>(ApiRoutes.EditorSave, cancellationToken: cancellationToken);
+        return "Saved successfully.";
+    }
+
     public async ValueTask<string> ReloadDomainAsync(CancellationToken cancellationToken)
     {
         // Wait for the server to become available before triggering domain reload.

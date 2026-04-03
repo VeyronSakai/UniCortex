@@ -21,13 +21,6 @@ public class SceneUseCase(IUnityEditorClient client)
         return $"Scene opened: {scenePath}";
     }
 
-    public async ValueTask<string> SaveAsync(CancellationToken cancellationToken)
-    {
-        await client.PostAsync<SaveSceneRequest, SaveSceneResponse>(ApiRoutes.SceneSave,
-            cancellationToken: cancellationToken);
-        return "Scene saved successfully.";
-    }
-
     public async ValueTask<string> GetHierarchyAsync(CancellationToken cancellationToken)
     {
         var response = await client.GetAsync<GetHierarchyRequest, GetHierarchyResponse>(

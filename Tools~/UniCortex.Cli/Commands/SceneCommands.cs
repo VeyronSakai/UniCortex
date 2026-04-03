@@ -23,14 +23,6 @@ public class SceneCommands(SceneUseCase sceneUseCase)
         Console.WriteLine(message);
     }
 
-    /// <summary>Save all open scenes in the Unity Editor.</summary>
-    [Command("save")]
-    public async Task Save(CancellationToken cancellationToken)
-    {
-        var message = await sceneUseCase.SaveAsync(cancellationToken);
-        Console.WriteLine(message);
-    }
-
     /// <summary>Get the GameObject hierarchy of the current scene.</summary>
     [Command("hierarchy")]
     public async Task Hierarchy(CancellationToken cancellationToken)
