@@ -133,12 +133,14 @@ namespace UniCortex.Editor.Infrastructures
             var action = ParseButtonAction(eventType);
             var targetPressed = action == InputAction.Press;
 
-            // Use self-tracked state instead of keyControl.isPressed because
-            // isPressed only reflects the last processed state, not queued events.
-            // Without tracking, consecutive press events within the same update
-            // would skip the reset and fail to trigger wasPressedThisFrame.
+            // Track key state ourselves because isPressed only reflects
+            // the last *processed* state, not events still sitting in the queue.
             var alreadyPressed = s_pressedKeys.Contains(keyEnum);
 
+            // wasPressedThisFrame / wasReleasedThisFrame detect a *change* from the
+            // previous frame. If the key is already in the target state, queuing the
+            // same state again would be a no-op. To guarantee a detectable transition
+            // we first queue the opposite state, then queue the desired state.
             if (targetPressed && alreadyPressed
                 || !targetPressed && !alreadyPressed)
             {
@@ -184,9 +186,16 @@ namespace UniCortex.Editor.Infrastructures
             var buttonEnum = ToInputMouseButton(buttonName);
             var targetPressed = action == InputAction.Press;
 
-            // Use self-tracked state instead of buttonControl.isPressed because
-            // isPressed only reflects the last processed state, not queued events.
+            // Track button state ourselves because isPressed only reflects
+            // the last *processed* state, not events still sitting in the queue.
             var alreadyPressed = s_pressedMouseButtons.Contains(buttonName);
+
+            // wasPressedThisFrame / wasReleasedThisFrame detect a *change* from the
+            // previous frame. If the button is already in the target state (e.g.
+            // pressing an already-pressed button), queuing the same state again would
+            // be a no-op. To guarantee a detectable transition we first queue the
+            // opposite state, then queue the desired state — producing a
+            // released→pressed (or pressed→released) edge within one update.
             if (targetPressed && alreadyPressed
                 || !targetPressed && !alreadyPressed)
             {
