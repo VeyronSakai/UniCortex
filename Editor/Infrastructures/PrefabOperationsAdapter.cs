@@ -49,16 +49,5 @@ namespace UniCortex.Editor.Infrastructures
         {
             StageUtility.GoToMainStage();
         }
-
-        public void SavePrefab()
-        {
-            var stage = PrefabStageUtility.GetCurrentPrefabStage();
-            if (stage == null)
-            {
-                throw new InvalidOperationException("No Prefab is currently open in Prefab Mode.");
-            }
-
-            PrefabUtility.SaveAsPrefabAsset(stage.prefabContentsRoot, stage.assetPath);
-        }
     }
 }

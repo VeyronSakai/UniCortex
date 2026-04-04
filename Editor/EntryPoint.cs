@@ -134,8 +134,8 @@ namespace UniCortex.Editor
             var openSceneUseCase = new OpenSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
             var openSceneHandler = new OpenSceneHandler(openSceneUseCase);
 
-            var saveSceneUseCase = new SaveSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
-            var saveSceneHandler = new SaveSceneHandler(saveSceneUseCase);
+            var saveUseCase = new SaveUseCase(s_dispatcher, editorApplication);
+            var saveHandler = new Handlers.Editor.SaveHandler(saveUseCase);
 
             var getHierarchyUseCase = new GetHierarchyUseCase(s_dispatcher, sceneManagerAdapter);
             var hierarchyHandler = new HierarchyHandler(getHierarchyUseCase);
@@ -182,8 +182,6 @@ namespace UniCortex.Editor
             var closePrefabUseCase = new ClosePrefabUseCase(s_dispatcher, prefabOps);
             var closePrefabHandler = new ClosePrefabHandler(closePrefabUseCase);
 
-            var savePrefabUseCase = new SavePrefabUseCase(s_dispatcher, prefabOps);
-            var savePrefabHandler = new SavePrefabHandler(savePrefabUseCase);
 
             var assetDbOps = new AssetDatabaseOperationsAdapter();
 
@@ -291,7 +289,7 @@ namespace UniCortex.Editor
             consoleClearHandler.Register(router);
             createSceneHandler.Register(router);
             openSceneHandler.Register(router);
-            saveSceneHandler.Register(router);
+            saveHandler.Register(router);
             hierarchyHandler.Register(router);
             getGameObjectsHandler.Register(router);
             createGameObjectHandler.Register(router);
@@ -305,7 +303,6 @@ namespace UniCortex.Editor
             instantiatePrefabHandler.Register(router);
             openPrefabHandler.Register(router);
             closePrefabHandler.Register(router);
-            savePrefabHandler.Register(router);
             assetRefreshHandler.Register(router);
             executeMenuItemHandler.Register(router);
             captureScreenshotHandler.Register(router);

@@ -86,12 +86,12 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 
 | Command | Description |
 |---------|-------------|
-| `editor ping\|play\|stop\|status\|pause\|unpause\|step\|undo\|redo\|reload-domain` | Editor control |
+| `editor ping\|play\|stop\|status\|pause\|unpause\|step\|undo\|redo\|save\|reload-domain` | Editor control |
 | `time-scale get\|set` | Time scale control |
-| `scene create\|open\|save\|hierarchy` | Scene operations |
+| `scene create\|open\|hierarchy` | Scene operations |
 | `gameobject find\|create\|delete\|modify` | GameObject operations |
 | `component add\|remove\|properties\|set-property` | Component operations |
-| `prefab create\|instantiate\|open\|close\|save` | Prefab operations |
+| `prefab create\|instantiate\|open\|close` | Prefab operations |
 | `test run` | Run Unity tests |
 | `console logs\|clear` | Console log management |
 | `asset refresh` | Refresh Asset Database |
@@ -122,6 +122,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `reload_domain` | Request script recompilation (domain reload) |
 | `undo` | Undo the last operation |
 | `redo` | Redo an undone operation |
+| `save` | Save the currently active stage (Scene, Prefab, Timeline, etc.) |
 | `set_time_scale` | Set the `Time.timeScale` value (e.g., 0.5 for slow motion, 2 for fast forward, 0 for paused) |
 | `get_time_scale` | Get the current `Time.timeScale` value |
 
@@ -131,7 +132,6 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 |------|-------------|
 | `create_scene` | Create a new empty scene and save it at the specified asset path |
 | `open_scene` | Open a scene by path |
-| `save_scene` | Save all open scenes |
 | `get_hierarchy` | Get the GameObject hierarchy tree of the current scene or Prefab |
 
 ### GameObject
@@ -160,7 +160,6 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `instantiate_prefab` | Instantiate a Prefab into the scene |
 | `open_prefab` | Open a Prefab asset in Prefab Mode for editing |
 | `close_prefab` | Close Prefab Mode and return to the main stage |
-| `save_prefab` | Save the Prefab currently open in Prefab Mode |
 
 ### Asset
 

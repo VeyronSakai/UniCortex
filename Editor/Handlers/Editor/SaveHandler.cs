@@ -5,26 +5,26 @@ using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
 using UnityEngine;
 
-namespace UniCortex.Editor.Handlers.Prefab
+namespace UniCortex.Editor.Handlers.Editor
 {
-    internal sealed class SavePrefabHandler
+    internal sealed class SaveHandler
     {
-        private readonly SavePrefabUseCase _useCase;
+        private readonly SaveUseCase _useCase;
 
-        public SavePrefabHandler(SavePrefabUseCase useCase)
+        public SaveHandler(SaveUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.PrefabSave, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.EditorSave, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             await _useCase.ExecuteAsync(cancellationToken);
-            var json = JsonUtility.ToJson(new SavePrefabResponse(true));
+            var json = JsonUtility.ToJson(new SaveResponse(true));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
