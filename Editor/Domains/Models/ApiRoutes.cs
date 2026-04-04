@@ -48,7 +48,6 @@ namespace UniCortex.Editor.Domains.Models
         public const string FocusGameView = "/game-view/focus";
         public const string GameViewSize = "/game-view/size";
         public const string GameViewSizeList = "/game-view/size/list";
-        public const string TimeScale = "/editor/time-scale";
         public const string GameViewRecorderSettings = "/game-view/recorder/settings";
         public const string GameViewRecorderStart = "/game-view/recorder/start";
         public const string GameViewRecorderStop = "/game-view/recorder/stop";
