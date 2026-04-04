@@ -123,20 +123,6 @@ public class EditorUseCase(IUnityEditorClient client)
         return "Domain reload completed successfully.";
     }
 
-    public async ValueTask<string> SetTimeScaleAsync(float timeScale, CancellationToken cancellationToken)
-    {
-        await client.PostAsync<SetTimeScaleRequest, SetTimeScaleResponse>(
-            ApiRoutes.TimeScale, new SetTimeScaleRequest { timeScale = timeScale }, cancellationToken);
-        return $"Time scale set to {timeScale} successfully.";
-    }
-
-    public async ValueTask<string> GetTimeScaleAsync(CancellationToken cancellationToken)
-    {
-        var response = await client.GetAsync<GetTimeScaleRequest, GetTimeScaleResponse>(
-            ApiRoutes.TimeScale, cancellationToken: cancellationToken);
-        return $"Current time scale: {response.timeScale}";
-    }
-
     private async ValueTask<bool> GetIsPlayingAsync(CancellationToken cancellationToken)
     {
         var status = await GetStatusAsync(cancellationToken);
