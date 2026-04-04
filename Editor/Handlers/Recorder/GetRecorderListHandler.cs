@@ -6,20 +6,20 @@ using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
 using UnityEngine;
 
-namespace UniCortex.Editor.Handlers.GameView
+namespace UniCortex.Editor.Handlers.Recorder
 {
-    internal sealed class GetGameViewRecorderSettingsHandler
+    internal sealed class GetRecorderListHandler
     {
-        private readonly GetRecorderSettingsUseCase _useCase;
+        private readonly GetRecorderListUseCase _useCase;
 
-        public GetGameViewRecorderSettingsHandler(GetRecorderSettingsUseCase useCase)
+        public GetRecorderListHandler(GetRecorderListUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Get, ApiRoutes.GameViewRecorderSettings, HandleAsync);
+            router.Register(HttpMethodType.Get, ApiRoutes.RecorderList, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)

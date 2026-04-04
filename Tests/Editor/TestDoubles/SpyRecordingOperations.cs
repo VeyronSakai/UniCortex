@@ -1,63 +1,63 @@
+using System.Collections.Generic;
+using System.Linq;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
+using UnityEditor;
 
 namespace UniCortex.Editor.Tests.TestDoubles
 {
     internal sealed class SpyRecordingOperations : IRecordingOperations
     {
-        public int ConfigureCallCount { get; private set; }
-        public string LastConfigOutputPath { get; private set; }
-        public string LastConfigSource { get; private set; }
-        public string LastConfigCameraSource { get; private set; }
-        public string LastConfigCameraTag { get; private set; }
-        public bool LastConfigCaptureUI { get; private set; }
-        public string LastConfigOutputFormat { get; private set; }
+        private readonly Dictionary<string, RecorderEntry> _recorders = new Dictionary<string, RecorderEntry>();
 
-        public GetRecorderSettingsResponse SettingsResult { get; set; }
-            = new GetRecorderSettingsResponse("", "GameView", "", "", false, "MP4");
+        public int AddCallCount { get; private set; }
+        public string LastAddName { get; private set; }
+        public string LastAddOutputPath { get; private set; }
+        public string LastAddEncoder { get; private set; }
+        public string LastAddEncodingQuality { get; private set; }
+
+        public int RemoveCallCount { get; private set; }
+        public int LastRemoveIndex { get; private set; }
 
         public int StartRecordingCallCount { get; private set; }
+        public int LastStartIndex { get; private set; }
         public int LastFps { get; private set; }
-        public string LastFrameRatePlayback { get; private set; }
-        public string LastRecordMode { get; private set; }
-        public float LastStartTime { get; private set; }
-        public float LastEndTime { get; private set; }
-        public int LastStartFrame { get; private set; }
-        public int LastEndFrame { get; private set; }
-        public int LastFrameNumber { get; private set; }
 
         public int StopRecordingCallCount { get; private set; }
         public string StopRecordingResult { get; set; } = "/tmp/test_recording.mp4";
 
-        public void ConfigureRecorder(string outputPath, string source, string cameraSource,
-            string cameraTag, bool captureUI, string outputFormat)
+        public string AddRecorder(string name, string outputPath, string encoder,
+            string encodingQuality)
         {
-            ConfigureCallCount++;
-            LastConfigOutputPath = outputPath;
-            LastConfigSource = source;
-            LastConfigCameraSource = cameraSource;
-            LastConfigCameraTag = cameraTag;
-            LastConfigCaptureUI = captureUI;
-            LastConfigOutputFormat = outputFormat;
+            AddCallCount++;
+            LastAddName = name;
+            LastAddOutputPath = outputPath;
+            LastAddEncoder = encoder;
+            LastAddEncodingQuality = encodingQuality;
+            var quality = string.IsNullOrEmpty(encodingQuality) ? "Low" : encodingQuality;
+            _recorders[name] = new RecorderEntry(_recorders.Count, name, true, outputPath,
+                "UnityMediaEncoder", quality, System.Array.Empty<string>());
+            return name;
         }
 
-        public GetRecorderSettingsResponse GetRecorderSettings()
+        public GetRecorderListResponse GetRecorderList()
         {
-            return SettingsResult;
+            return new GetRecorderListResponse(_recorders.Values.ToArray());
         }
 
-        public void StartRecording(int fps, string frameRatePlayback, string recordMode,
-            float startTime, float endTime, int startFrame, int endFrame, int frameNumber)
+        public void RemoveRecorder(int index)
+        {
+            RemoveCallCount++;
+            LastRemoveIndex = index;
+            var key = _recorders.Keys.ElementAt(index);
+            _recorders.Remove(key);
+        }
+
+        public void StartRecording(int index, int fps)
         {
             StartRecordingCallCount++;
+            LastStartIndex = index;
             LastFps = fps;
-            LastFrameRatePlayback = frameRatePlayback;
-            LastRecordMode = recordMode;
-            LastStartTime = startTime;
-            LastEndTime = endTime;
-            LastStartFrame = startFrame;
-            LastEndFrame = endFrame;
-            LastFrameNumber = frameNumber;
         }
 
         public string StopRecording()

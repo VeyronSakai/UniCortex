@@ -99,7 +99,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `scene-view focus` | Switch focus to Scene View |
 | `game-view focus` | Switch focus to Game View |
 | `game-view size get\|list\|set` | Game View size control |
-| `game-view recorder configure\|settings\|start\|stop` | Game View recording (requires com.unity.recorder) |
+| `recorder add\|list\|remove\|start\|stop` | Recording management (requires com.unity.recorder) |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
 | `timeline create` | Create a TimelineAsset |
 | `timeline track add\|remove\|bind` | Timeline track operations |
@@ -202,10 +202,11 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 
 | Tool | Description |
 |------|-------------|
-| `configure_game_view_recorder` | Configure recorder settings: output path, source (GameView/Camera), format (requires com.unity.recorder) |
-| `get_game_view_recorder_settings` | Get the current recorder settings (requires com.unity.recorder) |
-| `start_game_view_recorder` | Start recording with specified FPS, playback mode, and record mode (Play Mode only, requires com.unity.recorder) |
-| `stop_game_view_recorder` | Stop recording and save the video file (requires com.unity.recorder) |
+| `add_recorder` | Add a recorder to the list with output path, source (GameView/Camera), format (requires com.unity.recorder) |
+| `get_recorder_list` | Get the list of configured recorders and their settings (requires com.unity.recorder) |
+| `remove_recorder` | Remove a recorder from the list by index (requires com.unity.recorder) |
+| `start_recorder` | Start recording with the specified recorder (Play Mode only, requires com.unity.recorder) |
+| `stop_recorder` | Stop recording and save the video file (requires com.unity.recorder) |
 
 ### Input
 

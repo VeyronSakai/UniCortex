@@ -5,58 +5,53 @@ namespace UniCortex.Core.UseCases;
 
 public class RecordingUseCase(IUnityEditorClient client)
 {
-    public async ValueTask<string> ConfigureAsync(
-        string? outputPath, string? source, string? cameraSource,
-        string? cameraTag, bool captureUI, string? outputFormat,
+    public async ValueTask<string> AddAsync(
+        string name, string outputPath, string? encoder = null, string? encodingQuality = null,
         CancellationToken cancellationToken = default)
     {
-        var request = new ConfigureRecorderRequest
+        var request = new AddRecorderRequest
         {
-            outputPath = outputPath ?? "",
-            source = source ?? "GameView",
-            cameraSource = cameraSource ?? "",
-            cameraTag = cameraTag ?? "",
-            captureUI = captureUI,
-            outputFormat = outputFormat ?? "MP4"
+            name = name,
+            outputPath = outputPath,
+            encoder = encoder ?? "",
+            encodingQuality = encodingQuality ?? ""
         };
-        await client.PostAsync<ConfigureRecorderRequest, ConfigureRecorderResponse>(
-            ApiRoutes.GameViewRecorderSettings, request, cancellationToken);
-        return "Recorder settings configured.";
+        var response = await client.PostAsync<AddRecorderRequest, AddRecorderResponse>(
+            ApiRoutes.RecorderAdd, request, cancellationToken);
+        return response.name;
     }
 
-    public async ValueTask<GetRecorderSettingsResponse> GetSettingsAsync(
+    public async ValueTask<GetRecorderListResponse> GetListAsync(
         CancellationToken cancellationToken = default)
     {
-        return await client.GetAsync<GetRecorderSettingsRequest, GetRecorderSettingsResponse>(
-            ApiRoutes.GameViewRecorderSettings, cancellationToken: cancellationToken);
+        return await client.GetAsync<object, GetRecorderListResponse>(
+            ApiRoutes.RecorderList, cancellationToken: cancellationToken);
     }
 
-    public async ValueTask<string> StartAsync(
-        int fps, string? frameRatePlayback, string? recordMode,
-        float startTime, float endTime,
-        int startFrame, int endFrame, int frameNumber,
+    public async ValueTask RemoveAsync(int index, CancellationToken cancellationToken = default)
+    {
+        var request = new RemoveRecorderRequest { index = index };
+        await client.PostAsync<RemoveRecorderRequest, RemoveRecorderResponse>(
+            ApiRoutes.RecorderRemove, request, cancellationToken);
+    }
+
+    public async ValueTask StartAsync(
+        int index, int fps = 30,
         CancellationToken cancellationToken = default)
     {
         var request = new StartRecordingRequest
         {
-            fps = fps,
-            frameRatePlayback = frameRatePlayback ?? "Constant",
-            recordMode = recordMode ?? "Manual",
-            startTime = startTime,
-            endTime = endTime,
-            startFrame = startFrame,
-            endFrame = endFrame,
-            frameNumber = frameNumber
+            index = index,
+            fps = fps
         };
         await client.PostAsync<StartRecordingRequest, StartRecordingResponse>(
-            ApiRoutes.GameViewRecorderStart, request, cancellationToken);
-        return "Recording started.";
+            ApiRoutes.RecorderStart, request, cancellationToken);
     }
 
     public async ValueTask<string> StopAsync(CancellationToken cancellationToken = default)
     {
         var response = await client.PostAsync<StopRecordingRequest, StopRecordingResponse>(
-            ApiRoutes.GameViewRecorderStop, cancellationToken: cancellationToken);
+            ApiRoutes.RecorderStop, cancellationToken: cancellationToken);
         return response.outputPath;
     }
 }

@@ -11,7 +11,7 @@ using UniCortex.Editor.Handlers.Input;
 using UniCortex.Editor.Handlers.Screenshot;
 using UniCortex.Editor.Handlers.SceneView;
 using UniCortex.Editor.Handlers.GameView;
-
+using UniCortex.Editor.Handlers.Recorder;
 using UniCortex.Editor.Handlers.Timeline;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
@@ -221,17 +221,20 @@ namespace UniCortex.Editor
             var recordingOps = new RecordingNotSupportedAdapter();
 #endif
 
-            var configureRecorderUseCase = new ConfigureRecorderUseCase(s_dispatcher, recordingOps);
-            var configureGameViewRecorderHandler = new ConfigureGameViewRecorderHandler(configureRecorderUseCase);
+            var addRecorderUseCase = new AddRecorderUseCase(s_dispatcher, recordingOps);
+            var addRecorderHandler = new AddRecorderHandler(addRecorderUseCase);
 
-            var getRecorderSettingsUseCase = new GetRecorderSettingsUseCase(s_dispatcher, recordingOps);
-            var getGameViewRecorderSettingsHandler = new GetGameViewRecorderSettingsHandler(getRecorderSettingsUseCase);
+            var getRecorderListUseCase = new GetRecorderListUseCase(s_dispatcher, recordingOps);
+            var getRecorderListHandler = new GetRecorderListHandler(getRecorderListUseCase);
+
+            var removeRecorderUseCase = new RemoveRecorderUseCase(s_dispatcher, recordingOps);
+            var removeRecorderHandler = new RemoveRecorderHandler(removeRecorderUseCase);
 
             var startRecordingUseCase = new StartRecordingUseCase(s_dispatcher, recordingOps);
-            var startGameViewRecordHandler = new StartGameViewRecordHandler(startRecordingUseCase);
+            var startRecorderHandler = new StartRecorderHandler(startRecordingUseCase);
 
             var stopRecordingUseCase = new StopRecordingUseCase(s_dispatcher, recordingOps);
-            var stopGameViewRecordHandler = new StopGameViewRecordHandler(stopRecordingUseCase);
+            var stopRecorderHandler = new StopRecorderHandler(stopRecordingUseCase);
 
 #if UNICORTEX_INPUT_SYSTEM
             var inputSimOps = new InputOperationsAdapter();
@@ -303,10 +306,11 @@ namespace UniCortex.Editor
             getGameViewSizeHandler.Register(router);
             getGameViewSizeListHandler.Register(router);
             setGameViewSizeHandler.Register(router);
-            configureGameViewRecorderHandler.Register(router);
-            getGameViewRecorderSettingsHandler.Register(router);
-            startGameViewRecordHandler.Register(router);
-            stopGameViewRecordHandler.Register(router);
+            addRecorderHandler.Register(router);
+            getRecorderListHandler.Register(router);
+            removeRecorderHandler.Register(router);
+            startRecorderHandler.Register(router);
+            stopRecorderHandler.Register(router);
 
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);

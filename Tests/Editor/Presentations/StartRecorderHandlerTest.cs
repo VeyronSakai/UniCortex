@@ -1,6 +1,6 @@
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Editor.Handlers.GameView;
+using UniCortex.Editor.Handlers.Recorder;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
@@ -10,7 +10,7 @@ using UnityEngine;
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class StartGameViewRecordHandlerTest
+    internal sealed class StartRecorderHandlerTest
     {
         private SpyRecordingOperations _operations;
         private RequestRouter _router;
@@ -21,7 +21,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var dispatcher = new FakeMainThreadDispatcher();
             _operations = new SpyRecordingOperations();
             var useCase = new StartRecordingUseCase(dispatcher, _operations);
-            var handler = new StartGameViewRecordHandler(useCase);
+            var handler = new StartRecorderHandler(useCase);
             _router = new RequestRouter();
             handler.Register(_router);
         }
@@ -31,34 +31,29 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var body = JsonUtility.ToJson(new StartRecordingRequest
             {
-                fps = 60,
-                frameRatePlayback = "Variable",
-                recordMode = "TimeInterval",
-                startTime = 1.0f,
-                endTime = 5.0f
+                index = 0,
+                fps = 60
             });
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameViewRecorderStart, body);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderStart, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual(1, _operations.StartRecordingCallCount);
+            Assert.AreEqual(0, _operations.LastStartIndex);
             Assert.AreEqual(60, _operations.LastFps);
-            Assert.AreEqual("Variable", _operations.LastFrameRatePlayback);
-            Assert.AreEqual("TimeInterval", _operations.LastRecordMode);
         }
 
         [Test]
         public void Handle_DefaultsFpsTo30_WhenNotSpecified()
         {
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameViewRecorderStart);
+            var body = JsonUtility.ToJson(new StartRecordingRequest { index = 0 });
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderStart, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual(30, _operations.LastFps);
-            Assert.AreEqual("Constant", _operations.LastFrameRatePlayback);
-            Assert.AreEqual("Manual", _operations.LastRecordMode);
         }
     }
 }

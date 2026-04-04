@@ -4,13 +4,13 @@ namespace UniCortex.Editor.Domains.Interfaces
 {
     internal interface IRecordingOperations
     {
-        void ConfigureRecorder(string outputPath, string source, string cameraSource,
-            string cameraTag, bool captureUI, string outputFormat);
+        string AddRecorder(string name, string outputPath, string encoder, string encodingQuality);
 
-        GetRecorderSettingsResponse GetRecorderSettings();
+        GetRecorderListResponse GetRecorderList();
 
-        void StartRecording(int fps, string frameRatePlayback, string recordMode,
-            float startTime, float endTime, int startFrame, int endFrame, int frameNumber);
+        void RemoveRecorder(int index);
+
+        void StartRecording(int index, int fps);
 
         string StopRecording();
     }

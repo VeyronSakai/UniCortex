@@ -5,22 +5,22 @@ using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.UseCases
 {
-    internal sealed class GetRecorderSettingsUseCase
+    internal sealed class GetRecorderListUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
         private readonly IRecordingOperations _operations;
 
-        public GetRecorderSettingsUseCase(IMainThreadDispatcher dispatcher, IRecordingOperations operations)
+        public GetRecorderListUseCase(IMainThreadDispatcher dispatcher, IRecordingOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;
         }
 
-        public async Task<GetRecorderSettingsResponse> ExecuteAsync(
+        public async Task<GetRecorderListResponse> ExecuteAsync(
             CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.GetRecorderSettings(), cancellationToken);
+                () => _operations.GetRecorderList(), cancellationToken);
         }
     }
 }

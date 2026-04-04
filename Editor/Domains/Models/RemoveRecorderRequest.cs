@@ -3,7 +3,8 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class GetRecorderSettingsRequest
+    public class RemoveRecorderRequest
     {
+        public int index;
     }
 }

@@ -1,6 +1,6 @@
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Editor.Handlers.GameView;
+using UniCortex.Editor.Handlers.Recorder;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
@@ -10,7 +10,7 @@ using UnityEngine;
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class GetGameViewRecorderSettingsHandlerTest
+    internal sealed class StopRecorderHandlerTest
     {
         private SpyRecordingOperations _operations;
         private RequestRouter _router;
@@ -21,27 +21,25 @@ namespace UniCortex.Editor.Tests.Presentations
             var dispatcher = new FakeMainThreadDispatcher();
             _operations = new SpyRecordingOperations
             {
-                SettingsResult = new GetRecorderSettingsResponse(
-                    "/tmp/out.mp4", "GameView", "", "", false, "MP4")
+                StopRecordingResult = "/tmp/output.mp4"
             };
-            var useCase = new GetRecorderSettingsUseCase(dispatcher, _operations);
-            var handler = new GetGameViewRecorderSettingsHandler(useCase);
+            var useCase = new StopRecordingUseCase(dispatcher, _operations);
+            var handler = new StopRecorderHandler(useCase);
             _router = new RequestRouter();
             handler.Register(_router);
         }
 
         [Test]
-        public void Handle_Returns200_WithSettings()
+        public void Handle_Returns200_WithOutputPath()
         {
-            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.GameViewRecorderSettings);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderStop);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            var response = JsonUtility.FromJson<GetRecorderSettingsResponse>(context.ResponseBody);
-            Assert.AreEqual("/tmp/out.mp4", response.outputPath);
-            Assert.AreEqual("GameView", response.source);
-            Assert.AreEqual("MP4", response.outputFormat);
+            var response = JsonUtility.FromJson<StopRecordingResponse>(context.ResponseBody);
+            Assert.AreEqual("/tmp/output.mp4", response.outputPath);
+            Assert.AreEqual(1, _operations.StopRecordingCallCount);
         }
     }
 }

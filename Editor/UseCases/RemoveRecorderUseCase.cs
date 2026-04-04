@@ -4,23 +4,21 @@ using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.UseCases
 {
-    internal sealed class StartRecordingUseCase
+    internal sealed class RemoveRecorderUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
         private readonly IRecordingOperations _operations;
 
-        public StartRecordingUseCase(IMainThreadDispatcher dispatcher, IRecordingOperations operations)
+        public RemoveRecorderUseCase(IMainThreadDispatcher dispatcher, IRecordingOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;
         }
 
-        public async Task ExecuteAsync(int index, int fps,
-            CancellationToken cancellationToken = default)
+        public async Task ExecuteAsync(int index, CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.StartRecording(index, fps),
-                cancellationToken);
+                () => _operations.RemoveRecorder(index), cancellationToken);
         }
     }
 }

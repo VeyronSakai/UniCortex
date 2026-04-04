@@ -1,10 +1,14 @@
 #if UNICORTEX_RECORDER
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor;
 using UnityEditor.Recorder;
+using UnityEditor.Recorder.Encoder;
 using UnityEditor.Recorder.Input;
 using UnityEngine;
 
@@ -14,42 +18,78 @@ namespace UniCortex.Editor.Infrastructures
     {
         private RecorderController _controller;
         private RecorderControllerSettings _controllerSettings;
-        private MovieRecorderSettings _recorderSettings;
         private string _activeOutputPath;
-
-        // Persisted settings (survive across recordings)
-        private string _outputPath = "";
-        private string _source = "GameView";
-        private string _cameraSource = "";
-        private string _cameraTag = "";
-        private bool _captureUI;
-        private string _outputFormat = "MP4";
 
         public RecordingOperationsAdapter()
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
-        public void ConfigureRecorder(string outputPath, string source, string cameraSource,
-            string cameraTag, bool captureUI, string outputFormat)
+        public string AddRecorder(string name, string outputPath, string encoder,
+            string encodingQuality)
         {
-            _outputPath = outputPath ?? "";
-            _source = string.IsNullOrEmpty(source) ? "GameView" : source;
-            _cameraSource = cameraSource ?? "";
-            _cameraTag = cameraTag ?? "";
-            _captureUI = captureUI;
-            _outputFormat = string.IsNullOrEmpty(outputFormat) ? "MP4" : outputFormat;
+            var settings = RecorderControllerSettings.GetGlobalSettings();
+            var recorder = ScriptableObject.CreateInstance<MovieRecorderSettings>();
+            recorder.Enabled = true;
+            recorder.name = name;
+
+            recorder.OutputFile = Path.ChangeExtension(outputPath, null);
+            recorder.CaptureAudio = true;
+            recorder.ImageInputSettings = new GameViewInputSettings();
+            recorder.EncoderSettings = CreateEncoderSettings(encoder, encodingQuality);
+
+            settings.AddRecorderSettings(recorder);
+
+            return recorder.name;
         }
 
-        public GetRecorderSettingsResponse GetRecorderSettings()
+        public GetRecorderListResponse GetRecorderList()
         {
-            return new GetRecorderSettingsResponse(
-                _outputPath, _source, _cameraSource, _cameraTag,
-                _captureUI, _outputFormat);
+            var settings = RecorderControllerSettings.GetGlobalSettings();
+            var entries = settings.RecorderSettings
+                .Select((r, i) =>
+                {
+                    var outputPath = "";
+                    var encoder = "";
+                    var quality = "";
+
+                    if (r is MovieRecorderSettings movie)
+                    {
+                        outputPath = movie.OutputFile ?? "";
+                        encoder = movie.EncoderSettings switch
+                        {
+                            CoreEncoderSettings => "UnityMediaEncoder",
+                            ProResEncoderSettings => "ProRes",
+                            GifEncoderSettings => "GIF",
+                            _ => movie.EncoderSettings.GetType().Name
+                        };
+                        if (movie.EncoderSettings is CoreEncoderSettings core)
+                        {
+                            quality = core.EncodingQuality.ToString();
+                        }
+                    }
+
+                    var recorderErrors = GetRecorderErrors(r).ToArray();
+                    return new RecorderEntry(i, r.name, r.Enabled, outputPath, encoder, quality, recorderErrors);
+                })
+                .ToArray();
+            return new GetRecorderListResponse(entries);
         }
 
-        public void StartRecording(int fps, string frameRatePlayback, string recordMode,
-            float startTime, float endTime, int startFrame, int endFrame, int frameNumber)
+        public void RemoveRecorder(int index)
+        {
+            var settings = RecorderControllerSettings.GetGlobalSettings();
+            var recorders = settings.RecorderSettings.ToArray();
+            if (index < 0 || index >= recorders.Length)
+            {
+                throw new InvalidOperationException(
+                    $"Recorder index {index} is out of range (0..{recorders.Length - 1}).");
+            }
+
+            settings.RemoveRecorder(recorders[index]);
+        }
+
+        public void StartRecording(int index, int fps)
         {
             if (!EditorApplication.isPlaying)
             {
@@ -63,34 +103,65 @@ namespace UniCortex.Editor.Infrastructures
                     "A recording is already in progress. Stop the current recording first.");
             }
 
-            var extension = string.Equals(_outputFormat, "WebM", StringComparison.OrdinalIgnoreCase)
-                ? ".webm"
-                : ".mp4";
-            var resolvedOutputPath = string.IsNullOrEmpty(_outputPath)
-                ? Path.Combine(Path.GetTempPath(),
-                    $"UniCortex_Recording_{DateTime.Now:yyyyMMdd_HHmmss}{extension}")
-                : Path.ChangeExtension(_outputPath, extension);
-            _activeOutputPath = resolvedOutputPath;
+            var globalSettings = RecorderControllerSettings.GetGlobalSettings();
+            var recorders = globalSettings.RecorderSettings.ToArray();
+            if (index < 0 || index >= recorders.Length)
+            {
+                throw new InvalidOperationException(
+                    $"Recorder index {index} is out of range (0..{recorders.Length - 1}).");
+            }
+
+            var recorder = recorders[index];
+            if (recorder is not MovieRecorderSettings movie)
+            {
+                throw new InvalidOperationException(
+                    $"Recorder at index {index} is not a Movie recorder.");
+            }
+
+            var errors = GetRecorderErrors(recorder);
+            // Exclude resolution errors since they are corrected to even values at recording time
+            errors.RemoveAll(e => e.Contains("resolution"));
+            if (errors.Count > 0)
+            {
+                throw new InvalidOperationException(
+                    $"Recorder at index {index} has errors: {string.Join("; ", errors)}");
+            }
 
             _controllerSettings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
             _controllerSettings.FrameRate = fps;
-            _controllerSettings.FrameRatePlayback =
-                string.Equals(frameRatePlayback, "Variable", StringComparison.OrdinalIgnoreCase)
-                    ? FrameRatePlayback.Variable
-                    : FrameRatePlayback.Constant;
+            _controllerSettings.FrameRatePlayback = FrameRatePlayback.Constant;
             _controllerSettings.CapFrameRate = true;
+            _controllerSettings.SetRecordModeToManual();
 
-            ApplyRecordMode(recordMode, startTime, endTime, startFrame, endFrame, frameNumber);
+            // Resolve output path from the recorder.
+            // FileNameGenerator may strip the directory from absolute paths,
+            // so fall back to a temp path if the directory is not usable.
+            var ext = "." + ((IEncoderSettings)movie.EncoderSettings).Extension;
+            var rawPath = movie.OutputFile ?? "";
+            var rawDir = Path.GetDirectoryName(rawPath);
+            var needsFallback = string.IsNullOrEmpty(rawPath) || rawPath.Contains("<")
+                || !Path.IsPathRooted(rawPath)
+                || string.IsNullOrEmpty(rawDir) || rawDir == "/"
+                || !Directory.Exists(rawDir);
+            if (needsFallback)
+            {
+                rawPath = Path.Combine(Path.GetTempPath(),
+                    $"UniCortex_{movie.name}_{DateTime.Now:yyyyMMdd_HHmmss}");
+            }
 
-            _recorderSettings = ScriptableObject.CreateInstance<MovieRecorderSettings>();
-            _recorderSettings.Enabled = true;
-            _recorderSettings.OutputFile = Path.ChangeExtension(resolvedOutputPath, null);
+            _activeOutputPath = Path.ChangeExtension(rawPath, ext);
 
-            ApplyOutputFormat();
-            ApplyImageInputSettings();
+            // Clone the recorder settings so we don't mutate the global settings
+            var clone = UnityEngine.Object.Instantiate(movie);
+            clone.name = movie.name;
+            clone.OutputFile = rawPath;
 
-            _controllerSettings.AddRecorderSettings(_recorderSettings);
+            // H.264 (MP4) requires even width and height.
+            var input = clone.ImageInputSettings;
+            input.OutputWidth = input.OutputWidth & ~1;
+            input.OutputHeight = input.OutputHeight & ~1;
 
+            _controllerSettings.AddRecorderSettings(clone);
             _controller = new RecorderController(_controllerSettings);
             _controller.PrepareRecording();
             _controller.StartRecording();
@@ -109,77 +180,39 @@ namespace UniCortex.Editor.Infrastructures
             return outputPath;
         }
 
-        private void ApplyRecordMode(string recordMode,
-            float startTime, float endTime, int startFrame, int endFrame, int frameNumber)
+        private static IEncoderSettings CreateEncoderSettings(string encoder, string encodingQuality)
         {
-            if (string.Equals(recordMode, "SingleFrame", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(encoder) ||
+                string.Equals(encoder, "UnityMediaEncoder", StringComparison.OrdinalIgnoreCase))
             {
-                _controllerSettings.SetRecordModeToSingleFrame(frameNumber);
+                return new CoreEncoderSettings
+                {
+                    Codec = CoreEncoderSettings.OutputCodec.MP4,
+                    EncodingQuality = ParseEncodingQuality(encodingQuality)
+                };
             }
-            else if (string.Equals(recordMode, "FrameInterval", StringComparison.OrdinalIgnoreCase))
-            {
-                _controllerSettings.SetRecordModeToFrameInterval(startFrame, endFrame);
-            }
-            else if (string.Equals(recordMode, "TimeInterval", StringComparison.OrdinalIgnoreCase))
-            {
-                _controllerSettings.SetRecordModeToTimeInterval(startTime, endTime);
-            }
-            else
-            {
-                _controllerSettings.SetRecordModeToManual();
-            }
+
+            if (string.Equals(encoder, "ProRes", StringComparison.OrdinalIgnoreCase))
+                return new ProResEncoderSettings();
+
+            if (string.Equals(encoder, "GIF", StringComparison.OrdinalIgnoreCase))
+                return new GifEncoderSettings();
+
+            throw new InvalidOperationException(
+                $"Unknown encoder: '{encoder}'. Available: UnityMediaEncoder, ProRes, GIF");
         }
 
-        private void ApplyOutputFormat()
+        private static CoreEncoderSettings.VideoEncodingQuality ParseEncodingQuality(string quality)
         {
-            if (string.Equals(_outputFormat, "WebM", StringComparison.OrdinalIgnoreCase))
-            {
-                _recorderSettings.OutputFormat = MovieRecorderSettings.VideoRecorderOutputFormat.WebM;
-            }
-            else
-            {
-                _recorderSettings.OutputFormat = MovieRecorderSettings.VideoRecorderOutputFormat.MP4;
-            }
-        }
-
-        private void ApplyImageInputSettings()
-        {
-            ImageInputSettings inputSettings;
-
-            if (string.Equals(_source, "Camera", StringComparison.OrdinalIgnoreCase))
-            {
-                var cameraInput = new CameraInputSettings();
-                if (string.Equals(_cameraSource, "TaggedCamera", StringComparison.OrdinalIgnoreCase))
-                {
-                    cameraInput.Source = ImageSource.TaggedCamera;
-                    cameraInput.CameraTag = _cameraTag;
-                }
-                else if (string.Equals(_cameraSource, "MainCamera", StringComparison.OrdinalIgnoreCase))
-                {
-                    cameraInput.Source = ImageSource.MainCamera;
-                }
-                else
-                {
-                    cameraInput.Source = ImageSource.ActiveCamera;
-                }
-
-                cameraInput.CaptureUI = _captureUI;
-                inputSettings = cameraInput;
-            }
-            else
-            {
-                inputSettings = new GameViewInputSettings();
-            }
-
-            // H.264 (MP4) requires even width and height.
-            if (string.Equals(_outputFormat, "MP4", StringComparison.OrdinalIgnoreCase)
-                || string.IsNullOrEmpty(_outputFormat))
-            {
-                inputSettings.OutputWidth = inputSettings.OutputWidth & ~1;
-                inputSettings.OutputHeight = inputSettings.OutputHeight & ~1;
-            }
-
-            _recorderSettings.ImageInputSettings = inputSettings;
+            if (string.IsNullOrEmpty(quality) ||
+                string.Equals(quality, "Low", StringComparison.OrdinalIgnoreCase))
+                return CoreEncoderSettings.VideoEncodingQuality.Low;
+            if (string.Equals(quality, "Medium", StringComparison.OrdinalIgnoreCase))
+                return CoreEncoderSettings.VideoEncodingQuality.Medium;
+            if (string.Equals(quality, "High", StringComparison.OrdinalIgnoreCase))
+                return CoreEncoderSettings.VideoEncodingQuality.High;
+            throw new InvalidOperationException(
+                $"Unknown encoding quality: '{quality}'. Available: Low, Medium, High");
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange state)
@@ -201,13 +234,16 @@ namespace UniCortex.Editor.Infrastructures
                 _controllerSettings = null;
             }
 
-            if (_recorderSettings != null)
-            {
-                UnityEngine.Object.DestroyImmediate(_recorderSettings);
-                _recorderSettings = null;
-            }
-
             _activeOutputPath = null;
+        }
+
+        private static List<string> GetRecorderErrors(RecorderSettings recorder)
+        {
+            var errors = new List<string>();
+            var method = typeof(RecorderSettings).GetMethod("GetErrors",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            method?.Invoke(recorder, new object[] { errors });
+            return errors;
         }
     }
 }

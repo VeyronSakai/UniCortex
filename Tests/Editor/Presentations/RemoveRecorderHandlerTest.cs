@@ -1,6 +1,6 @@
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
-using UniCortex.Editor.Handlers.GameView;
+using UniCortex.Editor.Handlers.Recorder;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UniCortex.Editor.UseCases;
@@ -10,7 +10,7 @@ using UnityEngine;
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class ConfigureGameViewRecorderHandlerTest
+    internal sealed class RemoveRecorderHandlerTest
     {
         private SpyRecordingOperations _operations;
         private RequestRouter _router;
@@ -20,8 +20,9 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             _operations = new SpyRecordingOperations();
-            var useCase = new ConfigureRecorderUseCase(dispatcher, _operations);
-            var handler = new ConfigureGameViewRecorderHandler(useCase);
+            _operations.AddRecorder("Movie", "/tmp/out.mp4", "", "");
+            var useCase = new RemoveRecorderUseCase(dispatcher, _operations);
+            var handler = new RemoveRecorderHandler(useCase);
             _router = new RequestRouter();
             handler.Register(_router);
         }
@@ -29,21 +30,14 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns200_WithSuccess()
         {
-            var body = JsonUtility.ToJson(new ConfigureRecorderRequest
-            {
-                outputPath = "/tmp/out.mp4",
-                source = "Camera",
-                cameraSource = "MainCamera",
-                outputFormat = "MP4"
-            });
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameViewRecorderSettings, body);
+            var body = JsonUtility.ToJson(new RemoveRecorderRequest { index = 0 });
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderRemove, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual(1, _operations.ConfigureCallCount);
-            Assert.AreEqual("/tmp/out.mp4", _operations.LastConfigOutputPath);
-            Assert.AreEqual("Camera", _operations.LastConfigSource);
+            Assert.AreEqual(1, _operations.RemoveCallCount);
+            Assert.AreEqual(0, _operations.LastRemoveIndex);
         }
     }
 }

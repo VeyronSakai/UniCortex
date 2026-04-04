@@ -3,11 +3,11 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class ConfigureRecorderResponse
+    public class RemoveRecorderResponse
     {
         public bool success;
 
-        public ConfigureRecorderResponse(bool success)
+        public RemoveRecorderResponse(bool success)
         {
             this.success = success;
         }
