@@ -1,5 +1,7 @@
 # UniCortex
 
+[![SafeSkill 94/100](https://img.shields.io/badge/SafeSkill-94%2F100_Verified%20Safe-brightgreen)](https://safeskill.dev/scan/veyronsakai-unicortex)
+
 > [!CAUTION]
 > This project is still under active development. The API and command structure may change without notice.
 
