@@ -87,7 +87,6 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | Command | Description |
 |---------|-------------|
 | `editor ping\|play\|stop\|status\|pause\|unpause\|step\|undo\|redo\|save\|reload-domain` | Editor control |
-| `time-scale get\|set` | Time scale control |
 | `scene create\|open\|hierarchy` | Scene operations |
 | `gameobject find\|create\|delete\|modify` | GameObject operations |
 | `component add\|remove\|properties\|set-property` | Component operations |
@@ -122,9 +121,6 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `undo` | Undo the last operation |
 | `redo` | Redo an undone operation |
 | `save` | Save the currently active stage (Scene, Prefab, Timeline, etc.) |
-| `set_time_scale` | Set the `Time.timeScale` value (e.g., 0.5 for slow motion, 2 for fast forward, 0 for paused) |
-| `get_time_scale` | Get the current `Time.timeScale` value |
-
 ### Scene
 
 | Tool | Description |
