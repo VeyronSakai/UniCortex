@@ -24,7 +24,7 @@ public class RecordingUseCase(IUnityEditorClient client)
     public async ValueTask<GetRecorderListResponse> GetListAsync(
         CancellationToken cancellationToken = default)
     {
-        return await client.GetAsync<object, GetRecorderListResponse>(
+        return await client.GetAsync<GetRecorderListRequest, GetRecorderListResponse>(
             ApiRoutes.RecorderList, cancellationToken: cancellationToken);
     }
 
