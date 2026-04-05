@@ -16,7 +16,7 @@ public class RecorderCommands(RecordingUseCase recordingUseCase)
     /// <param name="quality">Encoding quality (UnityMediaEncoder only): Low (default), Medium, High.</param>
     [Command("add")]
     public async Task Add(
-        string name, string outputPath,
+        [Argument] string name, [Argument] string outputPath,
         string encoder = RecorderEncoderType.UnityMediaEncoder,
         string quality = RecorderEncodingQuality.Low,
         CancellationToken cancellationToken = default)
@@ -42,7 +42,7 @@ public class RecorderCommands(RecordingUseCase recordingUseCase)
     /// <summary>Remove a recorder from the recorder list by index. Requires com.unity.recorder.</summary>
     /// <param name="index">The index of the recorder to remove (use 'list' to find it).</param>
     [Command("remove")]
-    public async Task Remove(int index, CancellationToken cancellationToken = default)
+    public async Task Remove([Argument] int index, CancellationToken cancellationToken = default)
     {
         await recordingUseCase.RemoveAsync(index, cancellationToken);
         Console.WriteLine($"Recorder at index {index} removed.");
@@ -53,7 +53,7 @@ public class RecorderCommands(RecordingUseCase recordingUseCase)
     /// <param name="fps">Frames per second (default: 30).</param>
     [Command("start")]
     public async Task Start(
-        int index, int fps = RecorderFps.Default,
+        [Argument] int index, int fps = RecorderFps.Default,
         CancellationToken cancellationToken = default)
     {
         await recordingUseCase.StartAsync(index, fps, cancellationToken);
