@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -28,7 +27,7 @@ namespace UniCortex.Editor.Handlers.Recorder
             try
             {
                 var entries = await _useCase.ExecuteAsync(cancellationToken);
-                var json = JsonUtility.ToJson(new GetRecorderListResponse(entries.ToArray()));
+                var json = JsonUtility.ToJson(new GetRecorderListResponse(entries));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }
             catch (NotSupportedException ex)

@@ -40,9 +40,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
             return name;
         }
 
-        public IReadOnlyList<RecorderEntry> GetRecorderList()
+        public RecorderEntry[] GetRecorderList()
         {
-            return _recorders.Values.ToList();
+            return _recorders.Values.ToArray();
         }
 
         public void RemoveRecorder(int index)

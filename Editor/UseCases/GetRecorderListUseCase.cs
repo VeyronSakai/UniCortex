@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -17,7 +16,7 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<IReadOnlyList<RecorderEntry>> ExecuteAsync(
+        public async Task<RecorderEntry[]> ExecuteAsync(
             CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(

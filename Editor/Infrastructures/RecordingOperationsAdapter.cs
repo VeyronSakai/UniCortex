@@ -43,7 +43,7 @@ namespace UniCortex.Editor.Infrastructures
             return recorder.name;
         }
 
-        public IReadOnlyList<RecorderEntry> GetRecorderList()
+        public RecorderEntry[] GetRecorderList()
         {
             var settings = RecorderControllerSettings.GetGlobalSettings();
             return settings.RecorderSettings

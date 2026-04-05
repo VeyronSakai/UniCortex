@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -17,7 +16,7 @@ namespace UniCortex.Editor.Infrastructures
             throw new NotSupportedException(Message);
         }
 
-        public IReadOnlyList<RecorderEntry> GetRecorderList()
+        public RecorderEntry[] GetRecorderList()
         {
             throw new NotSupportedException(Message);
         }
