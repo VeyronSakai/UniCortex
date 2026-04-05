@@ -99,7 +99,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `scene-view focus` | Switch focus to Scene View |
 | `game-view focus` | Switch focus to Game View |
 | `game-view size get\|list\|set` | Game View size control |
-| `recorder add\|list\|remove\|start\|stop` | Recording management (requires com.unity.recorder) |
+| `movie-recorder add\|list\|remove\|start\|stop` | Movie Recorder management (requires com.unity.recorder) |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
 | `timeline create` | Create a TimelineAsset |
 | `timeline track add\|remove\|bind` | Timeline track operations |
@@ -198,15 +198,15 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
 
-### Recording
+### Movie Recorder
 
 | Tool | Description |
 |------|-------------|
-| `add_recorder` | Add a Movie recorder to the list with name, output path, encoder, quality (requires com.unity.recorder) |
-| `get_recorder_list` | Get the list of configured recorders and their settings (requires com.unity.recorder) |
-| `remove_recorder` | Remove a recorder from the list by index (requires com.unity.recorder) |
-| `start_recorder` | Start recording with the specified recorder (Play Mode only, requires com.unity.recorder) |
-| `stop_recorder` | Stop recording and save the video file (requires com.unity.recorder) |
+| `add_movie_recorder` | Add a Movie recorder to the list with name, output path, encoder, quality (requires com.unity.recorder) |
+| `get_movie_recorder_list` | Get the list of configured recorders and their settings (requires com.unity.recorder) |
+| `remove_movie_recorder` | Remove a recorder from the list by index (requires com.unity.recorder) |
+| `start_movie_recorder` | Start recording with the specified recorder (Play Mode only, requires com.unity.recorder) |
+| `stop_movie_recorder` | Stop recording and save the video file (requires com.unity.recorder) |
 
 ### Input
 

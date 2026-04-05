@@ -20,7 +20,7 @@ public sealed class UnityEditorFixture
     public AssetUseCase AssetUseCase { get; }
     public MenuItemUseCase MenuItemUseCase { get; }
     public ScreenshotUseCase ScreenshotUseCase { get; }
-    public RecordingUseCase RecordingUseCase { get; }
+    public MovieRecordingUseCase MovieRecordingUseCase { get; }
     public SceneViewUseCase SceneViewUseCase { get; }
     public GameViewUseCase GameViewUseCase { get; }
 
@@ -40,7 +40,7 @@ public sealed class UnityEditorFixture
         AssetUseCase = provider.GetRequiredService<AssetUseCase>();
         MenuItemUseCase = provider.GetRequiredService<MenuItemUseCase>();
         ScreenshotUseCase = provider.GetRequiredService<ScreenshotUseCase>();
-        RecordingUseCase = provider.GetRequiredService<RecordingUseCase>();
+        MovieRecordingUseCase = provider.GetRequiredService<MovieRecordingUseCase>();
         SceneViewUseCase = provider.GetRequiredService<SceneViewUseCase>();
         GameViewUseCase = provider.GetRequiredService<GameViewUseCase>();
 
