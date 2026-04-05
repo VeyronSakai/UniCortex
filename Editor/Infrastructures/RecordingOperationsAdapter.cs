@@ -131,20 +131,20 @@ namespace UniCortex.Editor.Infrastructures
             settings.SetRecordModeToManual();
 
             // Resolve output path from the recorder.
-            // FileNameGenerator may strip the directory from absolute paths,
-            // so fall back to a temp path if the directory is not usable.
             var ext = "." + ((IEncoderSettings)movie.EncoderSettings).Extension;
             var rawPath = movie.OutputFile ?? string.Empty;
-            var rawDir = Path.GetDirectoryName(rawPath);
-            var needsFallback = string.IsNullOrEmpty(rawPath) || rawPath.Contains("<")
-                || !Path.IsPathRooted(rawPath)
-                || string.IsNullOrEmpty(rawDir) || rawDir == "/"
-                || !Directory.Exists(rawDir);
-            if (needsFallback)
+            if (string.IsNullOrEmpty(rawPath) || rawPath.Contains("<"))
             {
+                // Wildcard or empty: fall back to temp path
                 rawPath = Path.Combine(Path.GetTempPath(),
                     $"UniCortex_{movie.name}_{DateTime.Now:yyyyMMdd_HHmmss}");
                 movie.OutputFile = rawPath;
+            }
+            else if (!Path.IsPathRooted(rawPath))
+            {
+                // Relative path: resolve against project root (parent of Assets)
+                var projectDir = Path.GetDirectoryName(Application.dataPath);
+                rawPath = Path.Combine(projectDir, rawPath);
             }
 
             _activeOutputPath = Path.ChangeExtension(rawPath, ext);
