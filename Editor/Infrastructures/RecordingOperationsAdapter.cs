@@ -207,9 +207,8 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var sessions = method.Invoke(_controller, null) as IEnumerable<RecordingSession>;
-            var session = sessions?.FirstOrDefault();
-            if (session == null)
-                return string.Empty;
+            var session = sessions?.FirstOrDefault()
+                ?? throw new InvalidOperationException("No active recording session found.");
 
             return session.settings.FileNameGenerator.BuildAbsolutePath(session);
         }
