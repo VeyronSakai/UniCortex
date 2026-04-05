@@ -17,6 +17,7 @@ namespace UniCortex.Editor.Infrastructures
     internal sealed class RecordingOperationsAdapter : IRecordingOperations
     {
         private RecorderController _controller;
+        private RecorderSettings _activeRecorderSettings;
 
         public RecordingOperationsAdapter()
         {
@@ -123,6 +124,8 @@ namespace UniCortex.Editor.Infrastructures
                     $"Recorder at index {index} has errors: {string.Join("; ", errors)}");
             }
 
+            _activeRecorderSettings = recorder;
+
             var settings = RecorderControllerSettings.GetGlobalSettings();
             settings.FrameRate = fps;
             settings.FrameRatePlayback = FrameRatePlayback.Constant;
@@ -194,6 +197,7 @@ namespace UniCortex.Editor.Infrastructures
         private void CleanupRecordingState()
         {
             _controller = null;
+            _activeRecorderSettings = null;
         }
 
         private string GetSessionOutputPath()
@@ -207,9 +211,9 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var sessions = method.Invoke(_controller, null) as IEnumerable<RecordingSession>;
-            var session = sessions?.FirstOrDefault()
+            var session = sessions?.FirstOrDefault(s => s.settings == _activeRecorderSettings)
                           ?? throw new InvalidOperationException(
-                              "No active recording session found.");
+                              "No active recording session found for the specified recorder.");
 
             return session.settings.FileNameGenerator.BuildAbsolutePath(session);
         }
