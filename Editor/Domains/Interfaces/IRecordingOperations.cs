@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.Domains.Interfaces
@@ -6,7 +7,7 @@ namespace UniCortex.Editor.Domains.Interfaces
     {
         string AddRecorder(string name, string outputPath, string encoder, string encodingQuality);
 
-        RecorderEntry[] GetRecorderList();
+        IReadOnlyList<RecorderEntry> GetRecorderList();
 
         void RemoveRecorder(int index);
 

@@ -19,7 +19,7 @@ namespace UniCortex.Editor.Tests.UseCases
 
             var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(1, result.Length);
+            Assert.AreEqual(1, result.Count);
             Assert.AreEqual("Movie", result[0].name);
             Assert.AreEqual("/tmp/out.mp4", result[0].outputPath);
             Assert.AreEqual(1, dispatcher.CallCount);
