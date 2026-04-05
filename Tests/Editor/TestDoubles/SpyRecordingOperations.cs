@@ -40,9 +40,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
             return name;
         }
 
-        public GetRecorderListResponse GetRecorderList()
+        public RecorderEntry[] GetRecorderList()
         {
-            return new GetRecorderListResponse(_recorders.Values.ToArray());
+            return _recorders.Values.ToArray();
         }
 
         public void RemoveRecorder(int index)

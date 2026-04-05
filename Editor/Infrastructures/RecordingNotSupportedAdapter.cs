@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Infrastructures
             throw new NotSupportedException(Message);
         }
 
-        public GetRecorderListResponse GetRecorderList()
+        public RecorderEntry[] GetRecorderList()
         {
             throw new NotSupportedException(Message);
         }

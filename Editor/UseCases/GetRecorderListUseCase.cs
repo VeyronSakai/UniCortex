@@ -16,7 +16,7 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<GetRecorderListResponse> ExecuteAsync(
+        public async Task<RecorderEntry[]> ExecuteAsync(
             CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(

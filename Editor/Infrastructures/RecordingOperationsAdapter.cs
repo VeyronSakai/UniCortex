@@ -43,10 +43,10 @@ namespace UniCortex.Editor.Infrastructures
             return recorder.name;
         }
 
-        public GetRecorderListResponse GetRecorderList()
+        public RecorderEntry[] GetRecorderList()
         {
             var settings = RecorderControllerSettings.GetGlobalSettings();
-            var entries = settings.RecorderSettings
+            return settings.RecorderSettings
                 .Select((r, i) =>
                 {
                     var outputPath = "";
@@ -73,7 +73,6 @@ namespace UniCortex.Editor.Infrastructures
                     return new RecorderEntry(i, r.name, r.Enabled, outputPath, encoder, quality, recorderErrors);
                 })
                 .ToArray();
-            return new GetRecorderListResponse(entries);
         }
 
         public void RemoveRecorder(int index)

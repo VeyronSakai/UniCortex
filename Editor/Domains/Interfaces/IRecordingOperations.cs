@@ -6,7 +6,7 @@ namespace UniCortex.Editor.Domains.Interfaces
     {
         string AddRecorder(string name, string outputPath, string encoder, string encodingQuality);
 
-        GetRecorderListResponse GetRecorderList();
+        RecorderEntry[] GetRecorderList();
 
         void RemoveRecorder(int index);
 

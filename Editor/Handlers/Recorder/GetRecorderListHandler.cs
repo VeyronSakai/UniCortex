@@ -26,8 +26,8 @@ namespace UniCortex.Editor.Handlers.Recorder
         {
             try
             {
-                var response = await _useCase.ExecuteAsync(cancellationToken);
-                var json = JsonUtility.ToJson(response);
+                var entries = await _useCase.ExecuteAsync(cancellationToken);
+                var json = JsonUtility.ToJson(new GetRecorderListResponse(entries));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }
             catch (NotSupportedException ex)
