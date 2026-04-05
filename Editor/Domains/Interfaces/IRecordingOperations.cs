@@ -10,7 +10,7 @@ namespace UniCortex.Editor.Domains.Interfaces
 
         void RemoveRecorder(int index);
 
-        void StartRecording(int index, int fps = 30);
+        void StartRecording(int index, int fps = RecorderDefaults.DefaultFps);
 
         string StopRecording();
     }

@@ -35,7 +35,7 @@ namespace UniCortex.Editor.Handlers.Recorder
                 }
 
                 var request = JsonUtility.FromJson<StartRecordingRequest>(body);
-                var fps = request.fps > 0 ? request.fps : 30;
+                var fps = request.fps > 0 ? request.fps : RecorderDefaults.DefaultFps;
                 await _useCase.ExecuteAsync(request.index, fps, cancellationToken);
                 var json = JsonUtility.ToJson(new StartRecordingResponse(true));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);

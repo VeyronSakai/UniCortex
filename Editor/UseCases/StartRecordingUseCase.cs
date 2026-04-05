@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.UseCases
 {
@@ -15,7 +16,7 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task ExecuteAsync(int index, int fps = 30,
+        public async Task ExecuteAsync(int index, int fps = RecorderDefaults.DefaultFps,
             CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
