@@ -6,15 +6,17 @@ namespace UniCortex.Core.UseCases;
 public class RecordingUseCase(IUnityEditorClient client)
 {
     public async ValueTask<string> AddAsync(
-        string name, string outputPath, string? encoder = null, string? encodingQuality = null,
+        string name, string outputPath,
+        string encoder = RecorderEncoderType.UnityMediaEncoder,
+        string encodingQuality = RecorderEncodingQuality.Low,
         CancellationToken cancellationToken = default)
     {
         var request = new AddRecorderRequest
         {
             name = name,
             outputPath = outputPath,
-            encoder = encoder ?? string.Empty,
-            encodingQuality = encodingQuality ?? string.Empty
+            encoder = encoder,
+            encodingQuality = encodingQuality
         };
         var response = await client.PostAsync<AddRecorderRequest, AddRecorderResponse>(
             ApiRoutes.RecorderAdd, request, cancellationToken);

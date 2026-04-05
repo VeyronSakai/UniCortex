@@ -24,9 +24,9 @@ public class RecordingTools(RecordingUseCase recordingUseCase)
         [Description("Output file path for the video (required).")]
         string outputPath,
         [Description("Encoder: UnityMediaEncoder (default), ProRes, GIF")]
-        string? encoder = null,
+        string encoder = RecorderEncoderType.UnityMediaEncoder,
         [Description("Encoding quality (UnityMediaEncoder only): Low (default), Medium, High")]
-        string? encodingQuality = null,
+        string encodingQuality = RecorderEncodingQuality.Low,
         CancellationToken cancellationToken = default)
     {
         try

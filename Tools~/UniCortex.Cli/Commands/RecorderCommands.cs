@@ -14,7 +14,9 @@ public class RecorderCommands(RecordingUseCase recordingUseCase)
     /// <param name="quality">Encoding quality (UnityMediaEncoder only): Low (default), Medium, High.</param>
     [Command("add")]
     public async Task Add(
-        string name, string outputPath, string? encoder = null, string? quality = null,
+        string name, string outputPath,
+        string encoder = RecorderEncoderType.UnityMediaEncoder,
+        string quality = RecorderEncodingQuality.Low,
         CancellationToken cancellationToken = default)
     {
         var resultName = await recordingUseCase.AddAsync(
