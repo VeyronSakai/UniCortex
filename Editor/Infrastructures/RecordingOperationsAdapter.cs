@@ -201,13 +201,13 @@ namespace UniCortex.Editor.Infrastructures
             var method = typeof(RecorderController).GetMethod("GetRecordingSessions",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             if (method == null)
-                return string.Empty;
+            {
+                throw new InvalidOperationException(
+                    "Failed to find RecorderController.GetRecordingSessions via reflection.");
+            }
 
             var sessions = method.Invoke(_controller, null) as IEnumerable<RecordingSession>;
-            if (sessions == null)
-                return string.Empty;
-
-            var session = sessions.FirstOrDefault();
+            var session = sessions?.FirstOrDefault();
             if (session == null)
                 return string.Empty;
 
@@ -219,7 +219,13 @@ namespace UniCortex.Editor.Infrastructures
             var errors = new List<string>();
             var method = typeof(RecorderSettings).GetMethod("GetErrors",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            method?.Invoke(recorder, new object[] { errors });
+            if (method == null)
+            {
+                throw new InvalidOperationException(
+                    "Failed to find RecorderSettings.GetErrors via reflection.");
+            }
+
+            method.Invoke(recorder, new object[] { errors });
             return errors;
         }
     }
