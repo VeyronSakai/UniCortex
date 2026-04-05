@@ -17,8 +17,8 @@ namespace UniCortex.Editor.UseCases
         }
 
         public async Task<string> ExecuteAsync(string name, string outputPath,
-            string encoder = RecorderDefaults.EncoderUnityMedia,
-            string encodingQuality = RecorderDefaults.QualityLow,
+            string encoder = RecorderEncoderType.UnityMediaEncoder,
+            string encodingQuality = RecorderEncodingQuality.Low,
             CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(

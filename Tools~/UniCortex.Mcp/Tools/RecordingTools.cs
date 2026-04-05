@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using UniCortex.Core.UseCases;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Mcp.Tools;
 
@@ -106,7 +107,7 @@ public class RecordingTools(RecordingUseCase recordingUseCase)
         [Description("The index of the recorder to use (obtained from get_recorder_list)")]
         int index,
         [Description("Frames per second (default: 30)")]
-        int fps = 30,
+        int fps = RecorderFps.Default,
         CancellationToken cancellationToken = default)
     {
         try

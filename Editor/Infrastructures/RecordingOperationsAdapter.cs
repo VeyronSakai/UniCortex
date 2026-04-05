@@ -58,9 +58,9 @@ namespace UniCortex.Editor.Infrastructures
                         outputPath = movie.OutputFile ?? string.Empty;
                         encoder = movie.EncoderSettings switch
                         {
-                            CoreEncoderSettings => RecorderDefaults.EncoderUnityMedia,
-                            ProResEncoderSettings => RecorderDefaults.EncoderProRes,
-                            GifEncoderSettings => RecorderDefaults.EncoderGif,
+                            CoreEncoderSettings => RecorderEncoderType.UnityMediaEncoder,
+                            ProResEncoderSettings => RecorderEncoderType.ProRes,
+                            GifEncoderSettings => RecorderEncoderType.Gif,
                             _ => movie.EncoderSettings.GetType().Name
                         };
                         if (movie.EncoderSettings is CoreEncoderSettings core)
@@ -182,7 +182,7 @@ namespace UniCortex.Editor.Infrastructures
         private static IEncoderSettings CreateEncoderSettings(string encoder, string encodingQuality)
         {
             if (string.IsNullOrEmpty(encoder) ||
-                string.Equals(encoder, RecorderDefaults.EncoderUnityMedia, StringComparison.OrdinalIgnoreCase))
+                string.Equals(encoder, RecorderEncoderType.UnityMediaEncoder, StringComparison.OrdinalIgnoreCase))
             {
                 return new CoreEncoderSettings
                 {
@@ -191,27 +191,27 @@ namespace UniCortex.Editor.Infrastructures
                 };
             }
 
-            if (string.Equals(encoder, RecorderDefaults.EncoderProRes, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(encoder, RecorderEncoderType.ProRes, StringComparison.OrdinalIgnoreCase))
                 return new ProResEncoderSettings();
 
-            if (string.Equals(encoder, RecorderDefaults.EncoderGif, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(encoder, RecorderEncoderType.Gif, StringComparison.OrdinalIgnoreCase))
                 return new GifEncoderSettings();
 
             throw new InvalidOperationException(
-                $"Unknown encoder: '{encoder}'. Available: {RecorderDefaults.EncoderUnityMedia}, {RecorderDefaults.EncoderProRes}, {RecorderDefaults.EncoderGif}");
+                $"Unknown encoder: '{encoder}'. Available: {RecorderEncoderType.UnityMediaEncoder}, {RecorderEncoderType.ProRes}, {RecorderEncoderType.Gif}");
         }
 
         private static CoreEncoderSettings.VideoEncodingQuality ParseEncodingQuality(string quality)
         {
             if (string.IsNullOrEmpty(quality) ||
-                string.Equals(quality, RecorderDefaults.QualityLow, StringComparison.OrdinalIgnoreCase))
+                string.Equals(quality, RecorderEncodingQuality.Low, StringComparison.OrdinalIgnoreCase))
                 return CoreEncoderSettings.VideoEncodingQuality.Low;
-            if (string.Equals(quality, RecorderDefaults.QualityMedium, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(quality, RecorderEncodingQuality.Medium, StringComparison.OrdinalIgnoreCase))
                 return CoreEncoderSettings.VideoEncodingQuality.Medium;
-            if (string.Equals(quality, RecorderDefaults.QualityHigh, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(quality, RecorderEncodingQuality.High, StringComparison.OrdinalIgnoreCase))
                 return CoreEncoderSettings.VideoEncodingQuality.High;
             throw new InvalidOperationException(
-                $"Unknown encoding quality: '{quality}'. Available: {RecorderDefaults.QualityLow}, {RecorderDefaults.QualityMedium}, {RecorderDefaults.QualityHigh}");
+                $"Unknown encoding quality: '{quality}'. Available: {RecorderEncodingQuality.Low}, {RecorderEncodingQuality.Medium}, {RecorderEncodingQuality.High}");
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange state)

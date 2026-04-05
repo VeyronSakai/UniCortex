@@ -5,14 +5,14 @@ namespace UniCortex.Editor.Domains.Interfaces
     internal interface IRecordingOperations
     {
         string AddRecorder(string name, string outputPath,
-            string encoder = RecorderDefaults.EncoderUnityMedia,
-            string encodingQuality = RecorderDefaults.QualityLow);
+            string encoder = RecorderEncoderType.UnityMediaEncoder,
+            string encodingQuality = RecorderEncodingQuality.Low);
 
         RecorderEntry[] GetRecorderList();
 
         void RemoveRecorder(int index);
 
-        void StartRecording(int index, int fps = RecorderDefaults.DefaultFps);
+        void StartRecording(int index, int fps = RecorderFps.Default);
 
         string StopRecording();
     }

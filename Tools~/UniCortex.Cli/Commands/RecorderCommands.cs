@@ -1,6 +1,7 @@
 using System.Text.Json;
 using ConsoleAppFramework;
 using UniCortex.Core.UseCases;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Cli.Commands;
 
@@ -48,7 +49,7 @@ public class RecorderCommands(RecordingUseCase recordingUseCase)
     /// <param name="fps">Frames per second (default: 30).</param>
     [Command("start")]
     public async Task Start(
-        int index, int fps = 30,
+        int index, int fps = RecorderFps.Default,
         CancellationToken cancellationToken = default)
     {
         await recordingUseCase.StartAsync(index, fps, cancellationToken);

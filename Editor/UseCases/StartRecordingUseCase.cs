@@ -16,7 +16,7 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task ExecuteAsync(int index, int fps = RecorderDefaults.DefaultFps,
+        public async Task ExecuteAsync(int index, int fps = RecorderFps.Default,
             CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(

@@ -36,7 +36,7 @@ public class RecordingUseCase(IUnityEditorClient client)
     }
 
     public async ValueTask StartAsync(
-        int index, int fps = 30,
+        int index, int fps = RecorderFps.Default,
         CancellationToken cancellationToken = default)
     {
         var request = new StartRecordingRequest

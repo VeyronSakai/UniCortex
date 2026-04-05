@@ -34,9 +34,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastAddOutputPath = outputPath;
             LastAddEncoder = encoder;
             LastAddEncodingQuality = encodingQuality;
-            var quality = string.IsNullOrEmpty(encodingQuality) ? RecorderDefaults.QualityLow : encodingQuality;
+            var quality = string.IsNullOrEmpty(encodingQuality) ? RecorderEncodingQuality.Low : encodingQuality;
             _recorders[name] = new RecorderEntry(_recorders.Count, name, true, outputPath,
-                RecorderDefaults.EncoderUnityMedia, quality, System.Array.Empty<string>());
+                RecorderEncoderType.UnityMediaEncoder, quality, System.Array.Empty<string>());
             return name;
         }
 
