@@ -15,8 +15,9 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<string> ExecuteAsync(string name, string outputPath, string encoder,
-            string encodingQuality, CancellationToken cancellationToken = default)
+        public async Task<string> ExecuteAsync(string name, string outputPath,
+            string encoder = "", string encodingQuality = "",
+            CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(
                 () => _operations.AddRecorder(name, outputPath, encoder, encodingQuality),

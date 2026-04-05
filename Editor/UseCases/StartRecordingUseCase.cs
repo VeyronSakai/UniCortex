@@ -15,7 +15,7 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task ExecuteAsync(int index, int fps,
+        public async Task ExecuteAsync(int index, int fps = 30,
             CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
