@@ -20,14 +20,19 @@ public class RecordingUseCaseTest
         var name = await _fixture.RecordingUseCase.AddAsync(
             "TestRecorder", Path.Combine(Path.GetTempPath(), "UniCortex_test.mp4"),
             cancellationToken: CancellationToken.None);
-
-        var response = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
-        var entry = System.Array.Find(response.recorders, r => r.name == name);
-        Assert.That(entry, Is.Not.Null);
-        Assert.That(entry!.enabled, Is.True);
-
-        // Clean up
-        await _fixture.RecordingUseCase.RemoveAsync(entry.index, CancellationToken.None);
+        try
+        {
+            var response = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
+            var entry = response.recorders.First(r => r.name == name);
+            Assert.That(entry.enabled, Is.True);
+        }
+        finally
+        {
+            var list = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
+            var target = System.Array.Find(list.recorders, r => r.name == name);
+            if (target != null)
+                await _fixture.RecordingUseCase.RemoveAsync(target.index, CancellationToken.None);
+        }
     }
 
     [Test]
@@ -38,14 +43,12 @@ public class RecordingUseCaseTest
             cancellationToken: CancellationToken.None);
 
         var listBefore = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
-        var entry = System.Array.Find(listBefore.recorders, r => r.name == name);
-        Assert.That(entry, Is.Not.Null);
+        var entry = listBefore.recorders.First(r => r.name == name);
 
-        await _fixture.RecordingUseCase.RemoveAsync(entry!.index, CancellationToken.None);
+        await _fixture.RecordingUseCase.RemoveAsync(entry.index, CancellationToken.None);
 
         var response = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
-        var removed = System.Array.Find(response.recorders, r => r.name == name);
-        Assert.That(removed, Is.Null);
+        Assert.That(response.recorders.Any(r => r.name == name), Is.False);
     }
 
     [Test]
@@ -62,10 +65,9 @@ public class RecordingUseCaseTest
                 cancellationToken: CancellationToken.None);
 
             var list = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
-            var entry = System.Array.Find(list.recorders, r => r.name == "RecordingTest");
-            Assert.That(entry, Is.Not.Null);
+            var entry = list.recorders.First(r => r.name == "RecordingTest");
 
-            await _fixture.RecordingUseCase.StartAsync(entry!.index, 30, CancellationToken.None);
+            await _fixture.RecordingUseCase.StartAsync(entry.index, 30, CancellationToken.None);
 
             await Task.Delay(1000);
 
