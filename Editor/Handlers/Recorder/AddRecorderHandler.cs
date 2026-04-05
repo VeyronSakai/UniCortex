@@ -49,11 +49,14 @@ namespace UniCortex.Editor.Handlers.Recorder
                     return;
                 }
 
+                var encoder = string.IsNullOrEmpty(request.encoder)
+                    ? RecorderEncoderType.UnityMediaEncoder
+                    : request.encoder;
+                var encodingQuality = string.IsNullOrEmpty(request.encodingQuality)
+                    ? RecorderEncodingQuality.Low
+                    : request.encodingQuality;
                 var name = await _useCase.ExecuteAsync(
-                    request.name, request.outputPath,
-                    string.IsNullOrEmpty(request.encoder) ? RecorderEncoderType.UnityMediaEncoder : request.encoder,
-                    string.IsNullOrEmpty(request.encodingQuality) ? RecorderEncodingQuality.Low : request.encodingQuality,
-                    cancellationToken);
+                    request.name, request.outputPath, encoder, encodingQuality, cancellationToken);
                 var json = JsonUtility.ToJson(new AddRecorderResponse(name));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }
