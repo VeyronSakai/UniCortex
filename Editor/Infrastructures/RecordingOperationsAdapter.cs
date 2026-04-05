@@ -17,7 +17,6 @@ namespace UniCortex.Editor.Infrastructures
     internal sealed class RecordingOperationsAdapter : IRecordingOperations
     {
         private RecorderController _controller;
-        private RecorderControllerSettings _controllerSettings;
         private string _activeOutputPath;
 
         public RecordingOperationsAdapter()
@@ -125,11 +124,11 @@ namespace UniCortex.Editor.Infrastructures
                     $"Recorder at index {index} has errors: {string.Join("; ", errors)}");
             }
 
-            _controllerSettings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
-            _controllerSettings.FrameRate = fps;
-            _controllerSettings.FrameRatePlayback = FrameRatePlayback.Constant;
-            _controllerSettings.CapFrameRate = true;
-            _controllerSettings.SetRecordModeToManual();
+            var settings = RecorderControllerSettings.GetGlobalSettings();
+            settings.FrameRate = fps;
+            settings.FrameRatePlayback = FrameRatePlayback.Constant;
+            settings.CapFrameRate = true;
+            settings.SetRecordModeToManual();
 
             // Resolve output path from the recorder.
             // FileNameGenerator may strip the directory from absolute paths,
@@ -145,17 +144,12 @@ namespace UniCortex.Editor.Infrastructures
             {
                 rawPath = Path.Combine(Path.GetTempPath(),
                     $"UniCortex_{movie.name}_{DateTime.Now:yyyyMMdd_HHmmss}");
+                movie.OutputFile = rawPath;
             }
 
             _activeOutputPath = Path.ChangeExtension(rawPath, ext);
 
-            // Clone the recorder settings so we don't mutate the global settings
-            var clone = UnityEngine.Object.Instantiate(movie);
-            clone.name = movie.name;
-            clone.OutputFile = rawPath;
-
-            _controllerSettings.AddRecorderSettings(clone);
-            _controller = new RecorderController(_controllerSettings);
+            _controller = new RecorderController(settings);
             _controller.PrepareRecording();
             _controller.StartRecording();
         }
@@ -220,13 +214,6 @@ namespace UniCortex.Editor.Infrastructures
         private void CleanupRecordingState()
         {
             _controller = null;
-
-            if (_controllerSettings != null)
-            {
-                UnityEngine.Object.DestroyImmediate(_controllerSettings);
-                _controllerSettings = null;
-            }
-
             _activeOutputPath = null;
         }
 
