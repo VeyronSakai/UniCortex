@@ -13,16 +13,16 @@ public class MovieRecorderCommands(MovieRecordingUseCase movieRecordingUseCase)
     /// <param name="name">Name for the recorder (required).</param>
     /// <param name="outputPath">Output file path for the video (required).</param>
     /// <param name="encoder">Encoder: UnityMediaEncoder (default), ProRes, GIF.</param>
-    /// <param name="quality">Encoding quality (UnityMediaEncoder only): Low (default), Medium, High.</param>
+    /// <param name="encodingQuality">Encoding quality (UnityMediaEncoder only): Low (default), Medium, High.</param>
     [Command("add")]
     public async Task Add(
         [Argument] string name, [Argument] string outputPath,
         string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
-        string quality = MovieRecorderEncodingQuality.Low,
+        string encodingQuality = MovieRecorderEncodingQuality.Low,
         CancellationToken cancellationToken = default)
     {
         var resultName = await movieRecordingUseCase.AddAsync(
-            name, outputPath, encoder, quality, cancellationToken);
+            name, outputPath, encoder, encodingQuality, cancellationToken);
         Console.WriteLine($"Recorder added: {resultName}");
     }
 

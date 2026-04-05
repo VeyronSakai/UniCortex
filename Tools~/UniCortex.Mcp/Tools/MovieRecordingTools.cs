@@ -14,7 +14,7 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
     [McpServerTool(Name = "add_movie_recorder", ReadOnly = false),
      Description(
          "Add a Movie recorder to the Movie recorder list. " +
-         "Records the Game View in MP4 format with audio. " +
+         "Records the Game View with audio. Output format depends on the chosen encoder (MP4 by default). " +
          "Returns the assigned recorder name. " +
          "Requires the Unity Recorder package (com.unity.recorder) to be installed."),
      UsedImplicitly]

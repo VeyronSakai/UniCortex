@@ -1,14 +1,12 @@
 using System.Collections.Generic;
-using System.Linq;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
-using UnityEditor;
 
 namespace UniCortex.Editor.Tests.TestDoubles
 {
     internal sealed class SpyMovieRecordingOperations : IMovieRecordingOperations
     {
-        private readonly Dictionary<string, MovieRecorderEntry> _recorders = new Dictionary<string, MovieRecorderEntry>();
+        private readonly List<MovieRecorderEntry> _recorders = new List<MovieRecorderEntry>();
 
         public int AddCallCount { get; private set; }
         public string LastAddName { get; private set; }
@@ -34,23 +32,23 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastAddOutputPath = outputPath;
             LastAddEncoder = encoder;
             LastAddEncodingQuality = encodingQuality;
-            var quality = string.IsNullOrEmpty(encodingQuality) ? MovieRecorderEncodingQuality.Low : encodingQuality;
-            _recorders[name] = new MovieRecorderEntry(_recorders.Count, name, true, outputPath,
-                MovieRecorderEncoderType.UnityMediaEncoder, quality, System.Array.Empty<string>());
+            var resolvedEncoder = string.IsNullOrEmpty(encoder) ? MovieRecorderEncoderType.UnityMediaEncoder : encoder;
+            var resolvedQuality = string.IsNullOrEmpty(encodingQuality) ? MovieRecorderEncodingQuality.Low : encodingQuality;
+            _recorders.Add(new MovieRecorderEntry(_recorders.Count, name, true, outputPath,
+                resolvedEncoder, resolvedQuality, System.Array.Empty<string>()));
             return name;
         }
 
         public MovieRecorderEntry[] GetMovieRecorderList()
         {
-            return _recorders.Values.ToArray();
+            return _recorders.ToArray();
         }
 
         public void RemoveMovieRecorder(int index)
         {
             RemoveCallCount++;
             LastRemoveIndex = index;
-            var key = _recorders.Keys.ElementAt(index);
-            _recorders.Remove(key);
+            _recorders.RemoveAt(index);
         }
 
         public void StartMovieRecording(int index, int fps)

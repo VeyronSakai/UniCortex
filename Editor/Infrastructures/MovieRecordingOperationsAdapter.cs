@@ -133,9 +133,19 @@ namespace UniCortex.Editor.Infrastructures
             settings.CapFrameRate = true;
             settings.SetRecordModeToManual();
 
-            _controller = new RecorderController(settings);
-            _controller.PrepareRecording();
-            _controller.StartRecording();
+            var controller = new RecorderController(settings);
+            try
+            {
+                controller.PrepareRecording();
+                controller.StartRecording();
+            }
+            catch
+            {
+                CleanupRecordingState();
+                throw;
+            }
+
+            _controller = controller;
         }
 
         public string StopMovieRecording()
