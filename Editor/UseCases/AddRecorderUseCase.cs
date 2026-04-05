@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.UseCases
 {
@@ -16,7 +17,8 @@ namespace UniCortex.Editor.UseCases
         }
 
         public async Task<string> ExecuteAsync(string name, string outputPath,
-            string encoder = "", string encodingQuality = "",
+            string encoder = RecorderDefaults.EncoderUnityMedia,
+            string encodingQuality = RecorderDefaults.QualityLow,
             CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(

@@ -4,7 +4,9 @@ namespace UniCortex.Editor.Domains.Interfaces
 {
     internal interface IRecordingOperations
     {
-        string AddRecorder(string name, string outputPath, string encoder = "", string encodingQuality = "");
+        string AddRecorder(string name, string outputPath,
+            string encoder = RecorderDefaults.EncoderUnityMedia,
+            string encodingQuality = RecorderDefaults.QualityLow);
 
         RecorderEntry[] GetRecorderList();
 
