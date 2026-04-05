@@ -130,24 +130,7 @@ namespace UniCortex.Editor.Infrastructures
             settings.CapFrameRate = true;
             settings.SetRecordModeToManual();
 
-            // Resolve output path from the recorder.
-            var ext = "." + ((IEncoderSettings)movie.EncoderSettings).Extension;
-            var rawPath = movie.OutputFile ?? string.Empty;
-            if (string.IsNullOrEmpty(rawPath) || rawPath.Contains("<"))
-            {
-                // Wildcard or empty: fall back to temp path
-                rawPath = Path.Combine(Path.GetTempPath(),
-                    $"UniCortex_{movie.name}_{DateTime.Now:yyyyMMdd_HHmmss}");
-                movie.OutputFile = rawPath;
-            }
-            else if (!Path.IsPathRooted(rawPath))
-            {
-                // Relative path: resolve against project root (parent of Assets)
-                var projectDir = Path.GetDirectoryName(Application.dataPath);
-                rawPath = Path.Combine(projectDir, rawPath);
-            }
-
-            _activeOutputPath = Path.ChangeExtension(rawPath, ext);
+            _activeOutputPath = movie.FileNameGenerator.BuildAbsolutePath(null);
 
             _controller = new RecorderController(settings);
             _controller.PrepareRecording();
