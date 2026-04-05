@@ -182,7 +182,8 @@ namespace UniCortex.Editor.Infrastructures
 
         private static IEncoderSettings CreateEncoderSettings(string encoder, string encodingQuality)
         {
-            if (string.Equals(encoder, RecorderEncoderType.UnityMediaEncoder, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(encoder) ||
+                string.Equals(encoder, RecorderEncoderType.UnityMediaEncoder, StringComparison.OrdinalIgnoreCase))
             {
                 return new CoreEncoderSettings
                 {
@@ -203,7 +204,8 @@ namespace UniCortex.Editor.Infrastructures
 
         private static CoreEncoderSettings.VideoEncodingQuality ParseEncodingQuality(string quality)
         {
-            if (string.Equals(quality, RecorderEncodingQuality.Low, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(quality) ||
+                string.Equals(quality, RecorderEncodingQuality.Low, StringComparison.OrdinalIgnoreCase))
                 return CoreEncoderSettings.VideoEncodingQuality.Low;
             if (string.Equals(quality, RecorderEncodingQuality.Medium, StringComparison.OrdinalIgnoreCase))
                 return CoreEncoderSettings.VideoEncodingQuality.Medium;
