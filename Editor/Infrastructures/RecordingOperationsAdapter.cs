@@ -25,8 +25,9 @@ namespace UniCortex.Editor.Infrastructures
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
-        public string AddRecorder(string name, string outputPath, string encoder,
-            string encodingQuality)
+        public string AddRecorder(string name, string outputPath,
+            string encoder = RecorderEncoderType.UnityMediaEncoder,
+            string encodingQuality = RecorderEncodingQuality.Low)
         {
             var settings = RecorderControllerSettings.GetGlobalSettings();
             var recorder = ScriptableObject.CreateInstance<MovieRecorderSettings>();
@@ -88,7 +89,7 @@ namespace UniCortex.Editor.Infrastructures
             settings.RemoveRecorder(recorders[index]);
         }
 
-        public void StartRecording(int index, int fps)
+        public void StartRecording(int index, int fps = RecorderFps.Default)
         {
             if (!EditorApplication.isPlaying)
             {
@@ -181,8 +182,7 @@ namespace UniCortex.Editor.Infrastructures
 
         private static IEncoderSettings CreateEncoderSettings(string encoder, string encodingQuality)
         {
-            if (string.IsNullOrEmpty(encoder) ||
-                string.Equals(encoder, RecorderEncoderType.UnityMediaEncoder, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(encoder, RecorderEncoderType.UnityMediaEncoder, StringComparison.OrdinalIgnoreCase))
             {
                 return new CoreEncoderSettings
                 {
@@ -203,8 +203,7 @@ namespace UniCortex.Editor.Infrastructures
 
         private static CoreEncoderSettings.VideoEncodingQuality ParseEncodingQuality(string quality)
         {
-            if (string.IsNullOrEmpty(quality) ||
-                string.Equals(quality, RecorderEncodingQuality.Low, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(quality, RecorderEncodingQuality.Low, StringComparison.OrdinalIgnoreCase))
                 return CoreEncoderSettings.VideoEncodingQuality.Low;
             if (string.Equals(quality, RecorderEncodingQuality.Medium, StringComparison.OrdinalIgnoreCase))
                 return CoreEncoderSettings.VideoEncodingQuality.Medium;

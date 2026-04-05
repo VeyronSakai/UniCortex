@@ -11,7 +11,9 @@ namespace UniCortex.Editor.Infrastructures
             "Unity Recorder package (com.unity.recorder) is not installed. " +
             "Install it via Unity Package Manager to use this feature.";
 
-        public string AddRecorder(string name, string outputPath, string encoder, string encodingQuality)
+        public string AddRecorder(string name, string outputPath,
+            string encoder = RecorderEncoderType.UnityMediaEncoder,
+            string encodingQuality = RecorderEncodingQuality.Low)
         {
             throw new NotSupportedException(Message);
         }
@@ -26,7 +28,7 @@ namespace UniCortex.Editor.Infrastructures
             throw new NotSupportedException(Message);
         }
 
-        public void StartRecording(int index, int fps)
+        public void StartRecording(int index, int fps = RecorderFps.Default)
         {
             throw new NotSupportedException(Message);
         }
