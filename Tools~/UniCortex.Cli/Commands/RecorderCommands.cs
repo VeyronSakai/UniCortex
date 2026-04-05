@@ -14,7 +14,6 @@ public class RecorderCommands(RecordingUseCase recordingUseCase)
     /// <param name="outputPath">Output file path for the video (required).</param>
     /// <param name="encoder">Encoder: UnityMediaEncoder (default), ProRes, GIF.</param>
     /// <param name="quality">Encoding quality (UnityMediaEncoder only): Low (default), Medium, High.</param>
-
     [Command("add")]
     public async Task Add(
         string name, string outputPath,
@@ -28,7 +27,6 @@ public class RecorderCommands(RecordingUseCase recordingUseCase)
     }
 
     /// <summary>Get the list of configured recorders. Requires com.unity.recorder.</summary>
-
     [Command("list")]
     public async Task List(CancellationToken cancellationToken = default)
     {
@@ -43,7 +41,6 @@ public class RecorderCommands(RecordingUseCase recordingUseCase)
 
     /// <summary>Remove a recorder from the recorder list by index. Requires com.unity.recorder.</summary>
     /// <param name="index">The index of the recorder to remove (use 'list' to find it).</param>
-
     [Command("remove")]
     public async Task Remove(int index, CancellationToken cancellationToken = default)
     {
@@ -54,7 +51,6 @@ public class RecorderCommands(RecordingUseCase recordingUseCase)
     /// <summary>Start recording with the specified recorder. Only available in Play Mode. Requires com.unity.recorder.</summary>
     /// <param name="index">The index of the recorder to use (use 'list' to find it).</param>
     /// <param name="fps">Frames per second (default: 30).</param>
-
     [Command("start")]
     public async Task Start(
         int index, int fps = RecorderFps.Default,
@@ -65,7 +61,6 @@ public class RecorderCommands(RecordingUseCase recordingUseCase)
     }
 
     /// <summary>Stop the current recording and save the video file.</summary>
-
     [Command("stop")]
     public async Task Stop(CancellationToken cancellationToken = default)
     {
