@@ -20,19 +20,13 @@ public class RecordingUseCaseTest
         var name = await _fixture.RecordingUseCase.AddAsync(
             "TestRecorder", Path.Combine(Path.GetTempPath(), "UniCortex_test.mp4"),
             cancellationToken: CancellationToken.None);
-        try
-        {
-            var response = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
-            var entry = response.recorders.First(r => r.name == name);
-            Assert.That(entry.enabled, Is.True);
-        }
-        finally
-        {
-            var list = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
-            var target = System.Array.Find(list.recorders, r => r.name == name);
-            if (target != null)
-                await _fixture.RecordingUseCase.RemoveAsync(target.index, CancellationToken.None);
-        }
+
+        var response = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
+        var entry = response.recorders.First(r => r.name == name);
+        Assert.That(entry.enabled, Is.True);
+
+        // Clean up
+        await _fixture.RecordingUseCase.RemoveAsync(entry.index, CancellationToken.None);
     }
 
     [Test]
@@ -56,6 +50,7 @@ public class RecordingUseCaseTest
     {
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        var outputPath = "";
         try
         {
             // Add recorder after entering Play Mode (domain reload resets global settings)
@@ -71,14 +66,29 @@ public class RecordingUseCaseTest
 
             await Task.Delay(1000);
 
-            var outputPath = await _fixture.RecordingUseCase.StopAsync(CancellationToken.None);
+            outputPath = await _fixture.RecordingUseCase.StopAsync(CancellationToken.None);
             Assert.That(outputPath, Is.Not.Empty);
+
+            // File write may be async; poll for existence
+            await WaitForFileAsync(outputPath);
             Assert.That(File.Exists(outputPath), Is.True,
                 $"Recording file should exist at: {outputPath}");
         }
         finally
         {
             await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+            if (File.Exists(outputPath))
+                File.Delete(outputPath);
+        }
+    }
+
+    private static async Task WaitForFileAsync(string path, int timeoutMs = 5000, int intervalMs = 200)
+    {
+        var elapsed = 0;
+        while (!File.Exists(path) && elapsed < timeoutMs)
+        {
+            await Task.Delay(intervalMs);
+            elapsed += intervalMs;
         }
     }
 }
