@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace UniCortex.Editor.Domains.Models
 {
@@ -9,9 +7,9 @@ namespace UniCortex.Editor.Domains.Models
     {
         public RecorderEntry[] recorders;
 
-        public GetRecorderListResponse(IReadOnlyList<RecorderEntry> recorders)
+        public GetRecorderListResponse(RecorderEntry[] recorders)
         {
-            this.recorders = recorders.ToArray();
+            this.recorders = recorders;
         }
     }
 }
