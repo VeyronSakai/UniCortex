@@ -50,7 +50,7 @@ public class RecordingUseCaseTest
     {
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
-        var outputPath = "";
+        var outputPath = string.Empty;
         try
         {
             // Add recorder after entering Play Mode (domain reload resets global settings)

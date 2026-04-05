@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var operations = new SpyRecordingOperations();
             var useCase = new AddRecorderUseCase(dispatcher, operations);
 
-            var name = useCase.ExecuteAsync("TestRecorder", "/tmp/out.mp4", "", "",
+            var name = useCase.ExecuteAsync("TestRecorder", "/tmp/out.mp4", string.Empty, string.Empty,
                 CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual("TestRecorder", name);

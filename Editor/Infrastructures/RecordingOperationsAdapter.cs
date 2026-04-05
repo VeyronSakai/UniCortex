@@ -49,13 +49,13 @@ namespace UniCortex.Editor.Infrastructures
             return settings.RecorderSettings
                 .Select((r, i) =>
                 {
-                    var outputPath = "";
-                    var encoder = "";
-                    var quality = "";
+                    var outputPath = string.Empty;
+                    var encoder = string.Empty;
+                    var quality = string.Empty;
 
                     if (r is MovieRecorderSettings movie)
                     {
-                        outputPath = movie.OutputFile ?? "";
+                        outputPath = movie.OutputFile ?? string.Empty;
                         encoder = movie.EncoderSettings switch
                         {
                             CoreEncoderSettings => "UnityMediaEncoder",
@@ -136,7 +136,7 @@ namespace UniCortex.Editor.Infrastructures
             // FileNameGenerator may strip the directory from absolute paths,
             // so fall back to a temp path if the directory is not usable.
             var ext = "." + ((IEncoderSettings)movie.EncoderSettings).Extension;
-            var rawPath = movie.OutputFile ?? "";
+            var rawPath = movie.OutputFile ?? string.Empty;
             var rawDir = Path.GetDirectoryName(rawPath);
             var needsFallback = string.IsNullOrEmpty(rawPath) || rawPath.Contains("<")
                 || !Path.IsPathRooted(rawPath)

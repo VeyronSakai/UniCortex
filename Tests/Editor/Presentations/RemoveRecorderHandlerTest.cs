@@ -20,7 +20,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             _operations = new SpyRecordingOperations();
-            _operations.AddRecorder("Movie", "/tmp/out.mp4", "", "");
+            _operations.AddRecorder("Movie", "/tmp/out.mp4", string.Empty, string.Empty);
             var useCase = new RemoveRecorderUseCase(dispatcher, _operations);
             var handler = new RemoveRecorderHandler(useCase);
             _router = new RequestRouter();

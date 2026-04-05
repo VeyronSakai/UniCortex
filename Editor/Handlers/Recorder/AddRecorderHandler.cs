@@ -50,8 +50,8 @@ namespace UniCortex.Editor.Handlers.Recorder
                 }
 
                 var name = await _useCase.ExecuteAsync(
-                    request.name, request.outputPath, request.encoder ?? "",
-                    request.encodingQuality ?? "", cancellationToken);
+                    request.name, request.outputPath, request.encoder ?? string.Empty,
+                    request.encodingQuality ?? string.Empty, cancellationToken);
                 var json = JsonUtility.ToJson(new AddRecorderResponse(name));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }

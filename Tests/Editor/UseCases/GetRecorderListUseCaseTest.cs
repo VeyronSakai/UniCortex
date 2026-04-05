@@ -14,7 +14,7 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var operations = new SpyRecordingOperations();
-            operations.AddRecorder("Movie", "/tmp/out.mp4", "", "");
+            operations.AddRecorder("Movie", "/tmp/out.mp4", string.Empty, string.Empty);
             var useCase = new GetRecorderListUseCase(dispatcher, operations);
 
             var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();

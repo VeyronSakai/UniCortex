@@ -13,8 +13,8 @@ public class RecordingUseCase(IUnityEditorClient client)
         {
             name = name,
             outputPath = outputPath,
-            encoder = encoder ?? "",
-            encodingQuality = encodingQuality ?? ""
+            encoder = encoder ?? string.Empty,
+            encodingQuality = encodingQuality ?? string.Empty
         };
         var response = await client.PostAsync<AddRecorderRequest, AddRecorderResponse>(
             ApiRoutes.RecorderAdd, request, cancellationToken);
