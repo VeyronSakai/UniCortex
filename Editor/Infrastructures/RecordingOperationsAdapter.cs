@@ -17,7 +17,6 @@ namespace UniCortex.Editor.Infrastructures
     internal sealed class RecordingOperationsAdapter : IRecordingOperations
     {
         private RecorderController _controller;
-        private string _activeOutputPath;
 
         public RecordingOperationsAdapter()
         {
@@ -130,8 +129,6 @@ namespace UniCortex.Editor.Infrastructures
             settings.CapFrameRate = true;
             settings.SetRecordModeToManual();
 
-            _activeOutputPath = movie.FileNameGenerator.BuildAbsolutePath(null);
-
             _controller = new RecorderController(settings);
             _controller.PrepareRecording();
             _controller.StartRecording();
@@ -144,8 +141,8 @@ namespace UniCortex.Editor.Infrastructures
                 throw new InvalidOperationException("No recording is in progress.");
             }
 
+            var outputPath = GetSessionOutputPath();
             _controller.StopRecording();
-            var outputPath = _activeOutputPath;
             CleanupRecordingState();
             return outputPath;
         }
@@ -197,7 +194,24 @@ namespace UniCortex.Editor.Infrastructures
         private void CleanupRecordingState()
         {
             _controller = null;
-            _activeOutputPath = null;
+        }
+
+        private string GetSessionOutputPath()
+        {
+            var method = typeof(RecorderController).GetMethod("GetRecordingSessions",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            if (method == null)
+                return string.Empty;
+
+            var sessions = method.Invoke(_controller, null) as IEnumerable<RecordingSession>;
+            if (sessions == null)
+                return string.Empty;
+
+            var session = sessions.FirstOrDefault();
+            if (session == null)
+                return string.Empty;
+
+            return session.settings.FileNameGenerator.BuildAbsolutePath(session);
         }
 
         private static List<string> GetRecorderErrors(RecorderSettings recorder)
