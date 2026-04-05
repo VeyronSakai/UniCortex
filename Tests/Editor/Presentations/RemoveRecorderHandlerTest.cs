@@ -39,5 +39,15 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(1, _operations.RemoveCallCount);
             Assert.AreEqual(0, _operations.LastRemoveIndex);
         }
+
+        [Test]
+        public void Handle_Returns400_WhenBodyEmpty()
+        {
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderRemove, "");
+
+            _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+        }
     }
 }

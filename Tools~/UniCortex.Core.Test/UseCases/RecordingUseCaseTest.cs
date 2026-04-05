@@ -18,7 +18,8 @@ public class RecordingUseCaseTest
     public async ValueTask AddAndGetList_ReturnsAddedRecorder()
     {
         var name = await _fixture.RecordingUseCase.AddAsync(
-            "TestRecorder", "/tmp/test.mp4", cancellationToken: CancellationToken.None);
+            "TestRecorder", Path.Combine(Path.GetTempPath(), "UniCortex_test.mp4"),
+            cancellationToken: CancellationToken.None);
 
         var response = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
         var entry = System.Array.Find(response.recorders, r => r.name == name);
@@ -33,7 +34,8 @@ public class RecordingUseCaseTest
     public async ValueTask Remove_RemovesRecorderFromList()
     {
         var name = await _fixture.RecordingUseCase.AddAsync(
-            "RemoveTestRecorder", "/tmp/remove_test.mp4", cancellationToken: CancellationToken.None);
+            "RemoveTestRecorder", Path.Combine(Path.GetTempPath(), "UniCortex_remove_test.mp4"),
+            cancellationToken: CancellationToken.None);
 
         var listBefore = await _fixture.RecordingUseCase.GetListAsync(CancellationToken.None);
         var entry = System.Array.Find(listBefore.recorders, r => r.name == name);

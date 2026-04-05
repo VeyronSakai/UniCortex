@@ -27,6 +27,13 @@ namespace UniCortex.Editor.Handlers.Recorder
             try
             {
                 var body = await context.ReadBodyAsync();
+                if (string.IsNullOrEmpty(body))
+                {
+                    var errorJson = JsonUtility.ToJson(new ErrorResponse("Request body is required."));
+                    await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                    return;
+                }
+
                 var request = JsonUtility.FromJson<RemoveRecorderRequest>(body);
                 await _useCase.ExecuteAsync(request.index, cancellationToken);
                 var json = JsonUtility.ToJson(new RemoveRecorderResponse(true));
