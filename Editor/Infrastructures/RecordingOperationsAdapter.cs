@@ -55,7 +55,9 @@ namespace UniCortex.Editor.Infrastructures
 
                     if (r is MovieRecorderSettings movie)
                     {
-                        outputPath = movie.OutputFile ?? string.Empty;
+                        outputPath = string.IsNullOrEmpty(movie.OutputFile)
+                            ? string.Empty
+                            : $"{movie.OutputFile}.{movie.EncoderSettings.Extension}";
                         encoder = movie.EncoderSettings switch
                         {
                             CoreEncoderSettings => RecorderEncoderType.UnityMediaEncoder,
@@ -102,8 +104,8 @@ namespace UniCortex.Editor.Infrastructures
                     "A recording is already in progress. Stop the current recording first.");
             }
 
-            var globalSettings = RecorderControllerSettings.GetGlobalSettings();
-            var recorders = globalSettings.RecorderSettings.ToArray();
+            var settings = RecorderControllerSettings.GetGlobalSettings();
+            var recorders = settings.RecorderSettings.ToArray();
             if (index < 0 || index >= recorders.Length)
             {
                 throw new InvalidOperationException(
@@ -111,7 +113,7 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var recorder = recorders[index];
-            if (recorder is not MovieRecorderSettings movie)
+            if (recorder is not MovieRecorderSettings)
             {
                 throw new InvalidOperationException(
                     $"Recorder at index {index} is not a Movie recorder.");
@@ -126,7 +128,6 @@ namespace UniCortex.Editor.Infrastructures
 
             _activeRecorderSettings = recorder;
 
-            var settings = RecorderControllerSettings.GetGlobalSettings();
             settings.FrameRate = fps;
             settings.FrameRatePlayback = FrameRatePlayback.Constant;
             settings.CapFrameRate = true;
@@ -144,7 +145,9 @@ namespace UniCortex.Editor.Infrastructures
                 throw new InvalidOperationException("No recording is in progress.");
             }
 
-            var outputPath = GetSessionOutputPath();
+            var movie = (MovieRecorderSettings)_activeRecorderSettings;
+            var outputPath = $"{movie.OutputFile}.{movie.EncoderSettings.Extension}";
+
             _controller.StopRecording();
             CleanupRecordingState();
             return outputPath;
@@ -198,24 +201,6 @@ namespace UniCortex.Editor.Infrastructures
         {
             _controller = null;
             _activeRecorderSettings = null;
-        }
-
-        private string GetSessionOutputPath()
-        {
-            var method = typeof(RecorderController).GetMethod("GetRecordingSessions",
-                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            if (method == null)
-            {
-                throw new InvalidOperationException(
-                    "Failed to find RecorderController.GetRecordingSessions via reflection.");
-            }
-
-            var sessions = method.Invoke(_controller, null) as IEnumerable<RecordingSession>;
-            var session = sessions?.FirstOrDefault(s => s.settings == _activeRecorderSettings)
-                          ?? throw new InvalidOperationException(
-                              "No active recording session found for the specified recorder.");
-
-            return session.settings.FileNameGenerator.BuildAbsolutePath(session);
         }
 
         private static List<string> GetRecorderErrors(RecorderSettings recorder)
