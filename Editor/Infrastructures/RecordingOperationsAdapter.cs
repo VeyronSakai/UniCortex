@@ -207,7 +207,7 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var sessions = method.Invoke(_controller, null) as IEnumerable<RecordingSession>;
-            var session = sessions?.LastOrDefault()
+            var session = sessions?.FirstOrDefault()
                           ?? throw new InvalidOperationException(
                               "No active recording session found.");
 
