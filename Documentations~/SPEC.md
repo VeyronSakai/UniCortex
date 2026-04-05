@@ -571,7 +571,7 @@ Movie Recorder をリストに追加する。Source は GameView 固定、Audio 
 - `outputPath`: 必須。出力ファイルパス
 - `encoder`: 任意。`"UnityMediaEncoder"`（デフォルト）、`"ProRes"`、`"GIF"`
 - `encodingQuality`: 任意。UnityMediaEncoder のみ有効。`"Low"`（デフォルト）、`"Medium"`、`"High"`
-- MP4 時の奇数解像度は録画開始時に偶数に丸める
+- MP4 時の奇数解像度はエラーとなる。事前に Game View のサイズを偶数に設定すること
 
 レスポンス: `{"name": "MyRecorder"}`
 
@@ -611,7 +611,7 @@ Movie Recorder をリストに追加する。Source は GameView 固定、Audio 
 - Play Mode 離脱時は自動的に録画を停止してクリーンアップ
 - Unity Recorder 未インストール時は 400 エラー
 - Edit Mode 時は 400 エラー
-- Recorder にエラーがある場合（resolution 以外）は 400 エラー
+- Recorder にエラーがある場合は 400 エラー
 
 リクエストボディ:
 ```json

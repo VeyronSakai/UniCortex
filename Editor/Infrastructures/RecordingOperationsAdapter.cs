@@ -119,8 +119,6 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var errors = GetRecorderErrors(recorder);
-            // Exclude resolution errors since they are corrected to even values at recording time
-            errors.RemoveAll(e => e.Contains("resolution"));
             if (errors.Count > 0)
             {
                 throw new InvalidOperationException(
@@ -155,11 +153,6 @@ namespace UniCortex.Editor.Infrastructures
             var clone = UnityEngine.Object.Instantiate(movie);
             clone.name = movie.name;
             clone.OutputFile = rawPath;
-
-            // H.264 (MP4) requires even width and height.
-            var input = clone.ImageInputSettings;
-            input.OutputWidth = input.OutputWidth & ~1;
-            input.OutputHeight = input.OutputHeight & ~1;
 
             _controllerSettings.AddRecorderSettings(clone);
             _controller = new RecorderController(_controllerSettings);
