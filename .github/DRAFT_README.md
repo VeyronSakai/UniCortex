@@ -99,7 +99,8 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `scene-view focus` | Switch focus to Scene View |
 | `game-view focus` | Switch focus to Game View |
 | `game-view size get\|list\|set` | Game View size control |
-| `movie-recorder add\|list\|remove\|start\|stop` | Movie Recorder management (requires com.unity.recorder) |
+| `recorder all list` | List all configured recorders (requires com.unity.recorder) |
+| `recorder movie add\|remove\|start\|stop` | Movie Recorder management (requires com.unity.recorder) |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
 | `timeline create` | Create a TimelineAsset |
 | `timeline track add\|remove\|bind` | Timeline track operations |
