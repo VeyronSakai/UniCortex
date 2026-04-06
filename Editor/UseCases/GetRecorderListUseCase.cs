@@ -8,9 +8,9 @@ namespace UniCortex.Editor.UseCases
     internal sealed class GetRecorderListUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IMovieRecordingOperations _operations;
+        private readonly IRecorderOperations _operations;
 
-        public GetRecorderListUseCase(IMainThreadDispatcher dispatcher, IMovieRecordingOperations operations)
+        public GetRecorderListUseCase(IMainThreadDispatcher dispatcher, IRecorderOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;

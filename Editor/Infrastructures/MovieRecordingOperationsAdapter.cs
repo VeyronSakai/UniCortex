@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    internal sealed class MovieRecordingOperationsAdapter : IMovieRecordingOperations
+    internal sealed class MovieRecordingOperationsAdapter : IRecorderOperations, IMovieRecordingOperations
     {
         private RecorderController _controller;
         private RecorderSettings _activeRecorderSettings;
