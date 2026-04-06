@@ -5,22 +5,22 @@ using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.UseCases
 {
-    internal sealed class GetMovieRecorderListUseCase
+    internal sealed class GetRecorderListUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
         private readonly IMovieRecordingOperations _operations;
 
-        public GetMovieRecorderListUseCase(IMainThreadDispatcher dispatcher, IMovieRecordingOperations operations)
+        public GetRecorderListUseCase(IMainThreadDispatcher dispatcher, IMovieRecordingOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;
         }
 
-        public async Task<MovieRecorderEntry[]> ExecuteAsync(
+        public async Task<RecorderEntry[]> ExecuteAsync(
             CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.GetMovieRecorderList(), cancellationToken);
+                () => _operations.GetRecorderList(), cancellationToken);
         }
     }
 }

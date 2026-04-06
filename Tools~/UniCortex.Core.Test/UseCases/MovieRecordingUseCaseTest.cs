@@ -14,6 +14,12 @@ public class MovieRecordingUseCaseTest
         _fixture = await UnityEditorFixture.CreateAsync();
     }
 
+    [TearDown]
+    public async ValueTask TearDown()
+    {
+        await RemoveAllRecordersAsync();
+    }
+
     [Test]
     public async ValueTask AddAndGetList_ReturnsAddedRecorder()
     {
@@ -25,8 +31,6 @@ public class MovieRecordingUseCaseTest
         var entry = response.recorders.First(r => r.name == name);
         Assert.That(entry.enabled, Is.True);
 
-        // Clean up
-        await _fixture.MovieRecordingUseCase.RemoveAsync(entry.index, CancellationToken.None);
     }
 
     [Test]
@@ -72,7 +76,6 @@ public class MovieRecordingUseCaseTest
         finally
         {
             await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
-            await RemoveAllRecordersAsync();
             DeleteRecordingFiles();
         }
     }

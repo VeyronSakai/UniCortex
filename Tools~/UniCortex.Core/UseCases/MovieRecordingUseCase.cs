@@ -23,11 +23,11 @@ public class MovieRecordingUseCase(IUnityEditorClient client)
         return response.name;
     }
 
-    public async ValueTask<GetMovieRecorderListResponse> GetListAsync(
+    public async ValueTask<GetRecorderListResponse> GetListAsync(
         CancellationToken cancellationToken = default)
     {
-        return await client.GetAsync<GetMovieRecorderListRequest, GetMovieRecorderListResponse>(
-            ApiRoutes.MovieRecorderList, cancellationToken: cancellationToken);
+        return await client.GetAsync<GetRecorderListRequest, GetRecorderListResponse>(
+            ApiRoutes.RecorderList, cancellationToken: cancellationToken);
     }
 
     public async ValueTask RemoveAsync(int index, CancellationToken cancellationToken = default)

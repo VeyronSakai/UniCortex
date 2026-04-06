@@ -8,18 +8,18 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.MovieRecorder
 {
-    internal sealed class GetMovieRecorderListHandler
+    internal sealed class GetRecorderListHandler
     {
-        private readonly GetMovieRecorderListUseCase _useCase;
+        private readonly GetRecorderListUseCase _useCase;
 
-        public GetMovieRecorderListHandler(GetMovieRecorderListUseCase useCase)
+        public GetRecorderListHandler(GetRecorderListUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Get, ApiRoutes.MovieRecorderList, HandleAsync);
+            router.Register(HttpMethodType.Get, ApiRoutes.RecorderList, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Handlers.MovieRecorder
             try
             {
                 var entries = await _useCase.ExecuteAsync(cancellationToken);
-                var json = JsonUtility.ToJson(new GetMovieRecorderListResponse(entries));
+                var json = JsonUtility.ToJson(new GetRecorderListResponse(entries));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }
             catch (NotSupportedException ex)

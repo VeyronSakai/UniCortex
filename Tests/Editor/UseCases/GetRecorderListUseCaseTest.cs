@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.UseCases
 {
     [TestFixture]
-    internal sealed class GetMovieRecorderListUseCaseTest
+    internal sealed class GetRecorderListUseCaseTest
     {
         [Test]
         public void ExecuteAsync_ReturnsList_And_DispatchesToMainThread()
@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var dispatcher = new FakeMainThreadDispatcher();
             var operations = new SpyMovieRecordingOperations();
             operations.AddMovieRecorder("Movie", "/tmp/out.mp4", string.Empty, string.Empty);
-            var useCase = new GetMovieRecorderListUseCase(dispatcher, operations);
+            var useCase = new GetRecorderListUseCase(dispatcher, operations);
 
             var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
 

@@ -575,8 +575,8 @@ Movie Recorder をリストに追加する。Source は Game View 固定、Audio
 
 レスポンス: `{"name": "MyRecorder"}`
 
-#### GET `/movie-recorder/list`
-登録済みの全 Movie Recorder とその設定・エラーを取得する。
+#### GET `/recorder/list`
+登録済みの全 Recorder とその設定・エラーを取得する。
 
 レスポンス:
 ```json
@@ -584,6 +584,7 @@ Movie Recorder をリストに追加する。Source は Game View 固定、Audio
   "recorders": [
     {
       "index": 0,
+      "type": "Movie",
       "name": "MyRecorder",
       "enabled": true,
       "outputPath": "/path/to/output.mp4",
@@ -620,7 +621,7 @@ Movie Recorder をリストに追加する。Source は Game View 固定、Audio
   "fps": 30
 }
 ```
-- `index`: 使用する Movie Recorder のインデックス（`get_movie_recorder_list` で取得）
+- `index`: 使用する Movie Recorder のインデックス（`get_recorder_list` で取得）
 - `fps`: 任意。デフォルト 30
 
 レスポンス: `{"success": true}`

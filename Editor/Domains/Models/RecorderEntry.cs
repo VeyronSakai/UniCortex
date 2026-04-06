@@ -3,9 +3,10 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class MovieRecorderEntry
+    public class RecorderEntry
     {
         public int index;
+        public string type;
         public string name;
         public bool enabled;
         public string outputPath;
@@ -13,11 +14,12 @@ namespace UniCortex.Editor.Domains.Models
         public string encodingQuality;
         public string[] errors;
 
-        public MovieRecorderEntry(int index, string name, bool enabled, string outputPath,
+        public RecorderEntry(int index, string name, string type, bool enabled, string outputPath,
             string encoder, string encodingQuality, string[] errors)
         {
             this.index = index;
             this.name = name;
+            this.type = type;
             this.enabled = enabled;
             this.outputPath = outputPath;
             this.encoder = encoder;

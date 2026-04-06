@@ -49,7 +49,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string GameViewSize = "/game-view/size";
         public const string GameViewSizeList = "/game-view/size/list";
         public const string MovieRecorderAdd = "/movie-recorder/add";
-        public const string MovieRecorderList = "/movie-recorder/list";
+        public const string RecorderList = "/recorder/list";
         public const string MovieRecorderRemove = "/movie-recorder/remove";
         public const string MovieRecorderStart = "/movie-recorder/start";
         public const string MovieRecorderStop = "/movie-recorder/stop";

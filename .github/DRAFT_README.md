@@ -203,7 +203,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | Tool | Description |
 |------|-------------|
 | `add_movie_recorder` | Add a Movie recorder to the list with name, output path, encoder, quality (requires com.unity.recorder) |
-| `get_movie_recorder_list` | Get the list of configured recorders and their settings (requires com.unity.recorder) |
+| `get_recorder_list` | Get the list of all configured recorders and their settings (requires com.unity.recorder) |
 | `remove_movie_recorder` | Remove a recorder from the list by index (requires com.unity.recorder) |
 | `start_movie_recorder` | Start recording with the specified recorder (Play Mode only, requires com.unity.recorder) |
 | `stop_movie_recorder` | Stop recording and save the video file (requires com.unity.recorder) |

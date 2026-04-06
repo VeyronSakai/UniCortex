@@ -8,7 +8,7 @@ namespace UniCortex.Editor.Domains.Interfaces
             string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
             string encodingQuality = MovieRecorderEncodingQuality.Low);
 
-        MovieRecorderEntry[] GetMovieRecorderList();
+        RecorderEntry[] GetRecorderList();
 
         void RemoveMovieRecorder(int index);
 

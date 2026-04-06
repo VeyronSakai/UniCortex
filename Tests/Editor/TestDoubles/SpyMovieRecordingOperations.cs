@@ -7,7 +7,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
 {
     internal sealed class SpyMovieRecordingOperations : IMovieRecordingOperations
     {
-        private readonly List<MovieRecorderEntry> _recorders = new List<MovieRecorderEntry>();
+        private readonly List<RecorderEntry> _recorders = new List<RecorderEntry>();
 
         public int AddCallCount { get; private set; }
         public string LastAddName { get; private set; }
@@ -35,15 +35,15 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastAddEncodingQuality = encodingQuality;
             var resolvedEncoder = string.IsNullOrEmpty(encoder) ? MovieRecorderEncoderType.UnityMediaEncoder : encoder;
             var resolvedQuality = string.IsNullOrEmpty(encodingQuality) ? MovieRecorderEncodingQuality.Low : encodingQuality;
-            _recorders.Add(new MovieRecorderEntry(_recorders.Count, name, true, outputPath,
+            _recorders.Add(new RecorderEntry(_recorders.Count, name, "Movie", true, outputPath,
                 resolvedEncoder, resolvedQuality, System.Array.Empty<string>()));
             return name;
         }
 
-        public MovieRecorderEntry[] GetMovieRecorderList()
+        public RecorderEntry[] GetRecorderList()
         {
             return _recorders.Select((r, i) =>
-                new MovieRecorderEntry(i, r.name, r.enabled, r.outputPath, r.encoder, r.encodingQuality, r.errors))
+                new RecorderEntry(i, r.name, r.type, r.enabled, r.outputPath, r.encoder, r.encodingQuality, r.errors))
                 .ToArray();
         }
 

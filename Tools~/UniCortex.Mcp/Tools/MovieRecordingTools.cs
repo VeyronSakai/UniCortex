@@ -44,9 +44,9 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
         }
     }
 
-    [McpServerTool(Name = "get_movie_recorder_list", ReadOnly = true),
+    [McpServerTool(Name = "get_recorder_list", ReadOnly = true),
      Description(
-         "Get the list of configured Movie recorders and their settings. " +
+         "Get the list of all configured recorders and their settings (Movie, etc.). " +
          "Requires the Unity Recorder package (com.unity.recorder) to be installed."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> GetRecorderListAsync(
@@ -74,11 +74,11 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
     [McpServerTool(Name = "remove_movie_recorder", ReadOnly = false),
      Description(
          "Remove a Movie recorder from the Movie recorder list by its index. " +
-         "Use get_movie_recorder_list to find the index. " +
+         "Use get_recorder_list to find the index. " +
          "Requires the Unity Recorder package (com.unity.recorder) to be installed."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> RemoveRecorderAsync(
-        [Description("The index of the recorder to remove (obtained from get_movie_recorder_list)")]
+        [Description("The index of the recorder to remove (obtained from get_recorder_list)")]
         int index,
         CancellationToken cancellationToken = default)
     {
@@ -104,7 +104,7 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
          "Call stop_movie_recorder to stop and save the recording."),
      UsedImplicitly]
     public async ValueTask<CallToolResult> StartRecorderAsync(
-        [Description("The index of the recorder to use (obtained from get_movie_recorder_list)")]
+        [Description("The index of the recorder to use (obtained from get_recorder_list)")]
         int index,
         [Description("Frames per second (default: 30)")]
         int fps = RecorderFps.Default,
