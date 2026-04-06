@@ -586,7 +586,7 @@ Movie Recorder をリストに追加する。Source は Game View 固定、Audio
       "index": 0,
       "name": "MyRecorder",
       "enabled": true,
-      "outputPath": "/path/to/output",
+      "outputPath": "/path/to/output.mp4",
       "encoder": "UnityMediaEncoder",
       "encodingQuality": "Low",
       "errors": []

@@ -18,6 +18,9 @@ namespace UniCortex.Editor.Infrastructures
     {
         private RecorderController _controller;
         private RecorderSettings _activeRecorderSettings;
+        private float _savedFrameRate;
+        private FrameRatePlayback _savedFrameRatePlayback;
+        private bool _savedCapFrameRate;
 
         public MovieRecordingOperationsAdapter()
         {
@@ -128,6 +131,10 @@ namespace UniCortex.Editor.Infrastructures
 
             _activeRecorderSettings = recorder;
 
+            _savedFrameRate = settings.FrameRate;
+            _savedFrameRatePlayback = settings.FrameRatePlayback;
+            _savedCapFrameRate = settings.CapFrameRate;
+
             settings.FrameRate = fps;
             settings.FrameRatePlayback = FrameRatePlayback.Constant;
             settings.CapFrameRate = true;
@@ -209,8 +216,17 @@ namespace UniCortex.Editor.Infrastructures
 
         private void CleanupRecordingState()
         {
+            RestoreGlobalSettings();
             _controller = null;
             _activeRecorderSettings = null;
+        }
+
+        private void RestoreGlobalSettings()
+        {
+            var settings = RecorderControllerSettings.GetGlobalSettings();
+            settings.FrameRate = _savedFrameRate;
+            settings.FrameRatePlayback = _savedFrameRatePlayback;
+            settings.CapFrameRate = _savedCapFrameRate;
         }
 
         private static List<string> GetRecorderErrors(RecorderSettings recorder)
