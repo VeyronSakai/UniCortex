@@ -5,7 +5,7 @@ using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.Tests.TestDoubles
 {
-    internal sealed class SpyMovieRecordingOperations : IRecorderOperations, IMovieRecordingOperations
+    internal sealed class SpyMovieRecordingOperations : IAllRecorderOperations, IMovieRecordingOperations
     {
         private readonly List<RecorderEntry> _recorders = new List<RecorderEntry>();
 
