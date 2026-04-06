@@ -16,6 +16,7 @@ namespace UniCortex.Editor.Infrastructures
     {
         private RecorderController _controller;
         private RecorderSettings _activeRecorderSettings;
+        private RecorderControllerSettings _activeControllerSettings;
         private float _savedFrameRate;
         private FrameRatePlayback _savedFrameRatePlayback;
         private bool _savedCapFrameRate;
@@ -101,6 +102,7 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             _activeRecorderSettings = movie;
+            _activeControllerSettings = settings;
 
             _savedFrameRate = settings.FrameRate;
             _savedFrameRatePlayback = settings.FrameRatePlayback;
@@ -190,14 +192,15 @@ namespace UniCortex.Editor.Infrastructures
             RestoreGlobalSettings();
             _controller = null;
             _activeRecorderSettings = null;
+            _activeControllerSettings = null;
         }
 
         private void RestoreGlobalSettings()
         {
-            var settings = RecorderControllerSettings.GetGlobalSettings();
-            settings.FrameRate = _savedFrameRate;
-            settings.FrameRatePlayback = _savedFrameRatePlayback;
-            settings.CapFrameRate = _savedCapFrameRate;
+            if (_activeControllerSettings == null) return;
+            _activeControllerSettings.FrameRate = _savedFrameRate;
+            _activeControllerSettings.FrameRatePlayback = _savedFrameRatePlayback;
+            _activeControllerSettings.CapFrameRate = _savedCapFrameRate;
         }
 
     }

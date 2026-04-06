@@ -83,9 +83,11 @@ public class MovieRecordingUseCaseTest
     private async Task RemoveAllRecordersAsync()
     {
         var list = await _fixture.MovieRecordingUseCase.GetListAsync(CancellationToken.None);
-        for (var i = list.recorders.Length - 1; i >= 0; i--)
+        // Remove only Movie recorders in descending index order to keep indices stable.
+        var movieRecorders = list.recorders.Where(r => r.type == "Movie").OrderByDescending(r => r.index);
+        foreach (var entry in movieRecorders)
         {
-            await _fixture.MovieRecordingUseCase.RemoveAsync(i, CancellationToken.None);
+            await _fixture.MovieRecordingUseCase.RemoveAsync(entry.index, CancellationToken.None);
         }
     }
 
