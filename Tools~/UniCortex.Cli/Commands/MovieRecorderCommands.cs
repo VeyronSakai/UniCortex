@@ -1,4 +1,3 @@
-using System.Text.Json;
 using ConsoleAppFramework;
 using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
@@ -26,21 +25,8 @@ public class MovieRecorderCommands(MovieRecordingUseCase movieRecordingUseCase)
         Console.WriteLine($"Recorder added: {resultName}");
     }
 
-    /// <summary>Get the list of configured Movie recorders. Requires com.unity.recorder.</summary>
-    [Command("list")]
-    public async Task List(CancellationToken cancellationToken = default)
-    {
-        var response = await movieRecordingUseCase.GetListAsync(cancellationToken);
-        var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            IncludeFields = true
-        });
-        Console.WriteLine(json);
-    }
-
-    /// <summary>Remove a Movie recorder from the Movie recorder list by index. Requires com.unity.recorder.</summary>
-    /// <param name="index">The index of the recorder to remove (use 'list' to find it).</param>
+    /// <summary>Remove a Movie recorder by index. Use 'recorder all list' to find the index. Requires com.unity.recorder.</summary>
+    /// <param name="index">The index of the recorder to remove (use 'recorder all list' to find it).</param>
     [Command("remove")]
     public async Task Remove([Argument] int index, CancellationToken cancellationToken = default)
     {
@@ -49,7 +35,7 @@ public class MovieRecorderCommands(MovieRecordingUseCase movieRecordingUseCase)
     }
 
     /// <summary>Start recording with the specified Movie recorder. Only available in Play Mode. Requires com.unity.recorder.</summary>
-    /// <param name="index">The index of the recorder to use (use 'list' to find it).</param>
+    /// <param name="index">The index of the recorder to use (use 'recorder all list' to find it).</param>
     /// <param name="fps">Frames per second (default: 30).</param>
     [Command("start")]
     public async Task Start(

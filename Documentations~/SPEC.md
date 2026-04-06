@@ -621,7 +621,7 @@ Movie Recorder をリストに追加する。Source は Game View 固定、Audio
   "fps": 30
 }
 ```
-- `index`: 使用する Movie Recorder のインデックス（`get_recorder_list` で取得）
+- `index`: 使用する Movie Recorder のインデックス（`get_all_recorders` で取得）
 - `fps`: 任意。デフォルト 30
 
 レスポンス: `{"success": true}`
