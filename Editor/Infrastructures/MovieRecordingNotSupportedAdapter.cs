@@ -5,7 +5,7 @@ using UniCortex.Editor.Domains.Models;
 namespace UniCortex.Editor.Infrastructures
 {
     // Fallback used when the Unity Recorder package (com.unity.recorder) is not installed.
-    internal sealed class MovieRecordingNotSupportedAdapter : IAllRecorderOperations, IMovieRecordingOperations
+    internal sealed class MovieRecordingNotSupportedAdapter : IMovieRecordingOperations
     {
         private const string Message =
             "Unity Recorder package (com.unity.recorder) is not installed. " +
@@ -14,11 +14,6 @@ namespace UniCortex.Editor.Infrastructures
         public string AddMovieRecorder(string name, string outputPath,
             string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
             string encodingQuality = MovieRecorderEncodingQuality.Low)
-        {
-            throw new NotSupportedException(Message);
-        }
-
-        public RecorderEntry[] GetRecorderList()
         {
             throw new NotSupportedException(Message);
         }

@@ -40,7 +40,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
             return name;
         }
 
-        public RecorderEntry[] GetRecorderList()
+        RecorderEntry[] IAllRecorderOperations.GetRecorderList()
         {
             return _recorders.Select((r, i) =>
                 new RecorderEntry(i, r.name, r.type, r.enabled, r.outputPath, r.encoder, r.encodingQuality, r.errors))

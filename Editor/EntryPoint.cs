@@ -216,15 +216,17 @@ namespace UniCortex.Editor
             var setGameViewSizeHandler = new SetGameViewSizeHandler(setGameViewSizeUseCase);
 
 #if UNICORTEX_RECORDER
+            var allRecorderOps = new AllRecorderOperationsAdapter();
             var movieRecordingOps = new MovieRecordingOperationsAdapter();
 #else
+            var allRecorderOps = new AllRecorderNotSupportedAdapter();
             var movieRecordingOps = new MovieRecordingNotSupportedAdapter();
 #endif
 
             var addMovieRecorderUseCase = new AddMovieRecorderUseCase(s_dispatcher, movieRecordingOps);
             var addMovieRecorderHandler = new AddMovieRecorderHandler(addMovieRecorderUseCase);
 
-            var getRecorderListUseCase = new GetRecorderListUseCase(s_dispatcher, movieRecordingOps);
+            var getRecorderListUseCase = new GetRecorderListUseCase(s_dispatcher, allRecorderOps);
             var getRecorderListHandler = new GetRecorderListHandler(getRecorderListUseCase);
 
             var removeMovieRecorderUseCase = new RemoveMovieRecorderUseCase(s_dispatcher, movieRecordingOps);

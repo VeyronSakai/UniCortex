@@ -1,9 +1,7 @@
 #if UNICORTEX_RECORDER
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor;
@@ -14,7 +12,7 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    internal sealed class MovieRecordingOperationsAdapter : IAllRecorderOperations, IMovieRecordingOperations
+    internal sealed class MovieRecordingOperationsAdapter : IMovieRecordingOperations
     {
         private RecorderController _controller;
         private RecorderSettings _activeRecorderSettings;
@@ -44,53 +42,6 @@ namespace UniCortex.Editor.Infrastructures
             settings.AddRecorderSettings(recorder);
 
             return recorder.name;
-        }
-
-        public RecorderEntry[] GetRecorderList()
-        {
-            var settings = RecorderControllerSettings.GetGlobalSettings();
-            var allRecorders = settings.RecorderSettings.ToArray();
-            var entries = new RecorderEntry[allRecorders.Length];
-            for (var i = 0; i < allRecorders.Length; i++)
-            {
-                var recorder = allRecorders[i];
-                var recorderErrors = GetRecorderErrors(recorder).ToArray();
-
-                if (recorder is MovieRecorderSettings movie)
-                {
-                    var outputPath = string.IsNullOrEmpty(movie.OutputFile)
-                        ? string.Empty
-                        : $"{movie.OutputFile}.{movie.EncoderSettings.Extension}";
-                    var encoder = movie.EncoderSettings switch
-                    {
-                        CoreEncoderSettings => MovieRecorderEncoderType.UnityMediaEncoder,
-                        ProResEncoderSettings => MovieRecorderEncoderType.ProRes,
-                        GifEncoderSettings => MovieRecorderEncoderType.Gif,
-                        _ => movie.EncoderSettings.GetType().Name
-                    };
-                    var quality = string.Empty;
-                    if (movie.EncoderSettings is CoreEncoderSettings core)
-                    {
-                        quality = core.EncodingQuality.ToString();
-                    }
-
-                    entries[i] = new RecorderEntry(i, recorder.name, "Movie", recorder.Enabled, outputPath,
-                        encoder, quality, recorderErrors);
-                }
-                else
-                {
-                    var type = recorder switch
-                    {
-                        ImageRecorderSettings => "ImageSequence",
-                        AnimationRecorderSettings => "AnimationClip",
-                        _ => recorder.GetType().Name
-                    };
-                    entries[i] = new RecorderEntry(i, recorder.name, type, recorder.Enabled, string.Empty,
-                        string.Empty, string.Empty, recorderErrors);
-                }
-            }
-
-            return entries;
         }
 
         public void RemoveMovieRecorder(int index)
@@ -142,7 +93,7 @@ namespace UniCortex.Editor.Infrastructures
                     $"Recorder at index {index} is not a MovieRecorderSettings (actual: {allRecorders[index].GetType().Name}).");
             }
 
-            var errors = GetRecorderErrors(movie);
+            var errors = RecorderErrorHelper.GetErrors(movie);
             if (errors.Count > 0)
             {
                 throw new InvalidOperationException(
@@ -249,20 +200,6 @@ namespace UniCortex.Editor.Infrastructures
             settings.CapFrameRate = _savedCapFrameRate;
         }
 
-        private static List<string> GetRecorderErrors(RecorderSettings recorder)
-        {
-            var errors = new List<string>();
-            var method = typeof(RecorderSettings).GetMethod("GetErrors",
-                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            if (method == null)
-            {
-                throw new InvalidOperationException(
-                    "Failed to find RecorderSettings.GetErrors via reflection.");
-            }
-
-            method.Invoke(recorder, new object[] { errors });
-            return errors;
-        }
     }
 }
 #endif
