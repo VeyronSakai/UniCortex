@@ -72,7 +72,29 @@ public class MovieRecordingUseCaseTest
         finally
         {
             await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+            await RemoveAllRecordersAsync();
+            DeleteRecordingFiles();
         }
     }
 
+    private async Task RemoveAllRecordersAsync()
+    {
+        var list = await _fixture.MovieRecordingUseCase.GetListAsync(CancellationToken.None);
+        for (var i = list.recorders.Length - 1; i >= 0; i--)
+        {
+            await _fixture.MovieRecordingUseCase.RemoveAsync(i, CancellationToken.None);
+        }
+    }
+
+    private static void DeleteRecordingFiles()
+    {
+        var projectPath = Environment.GetEnvironmentVariable("UNICORTEX_PROJECT_PATH");
+        if (string.IsNullOrEmpty(projectPath))
+            return;
+
+        foreach (var file in Directory.GetFiles(projectPath, "UniCortex_Test_*.mp4"))
+        {
+            File.Delete(file);
+        }
+    }
 }
