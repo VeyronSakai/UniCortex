@@ -49,48 +49,39 @@ namespace UniCortex.Editor.Infrastructures
         public MovieRecorderEntry[] GetMovieRecorderList()
         {
             var settings = RecorderControllerSettings.GetGlobalSettings();
+            var index = 0;
             return settings.RecorderSettings
-                .Select((r, i) =>
+                .OfType<MovieRecorderSettings>()
+                .Select(movie =>
                 {
-                    var outputPath = string.Empty;
-                    var encoder = string.Empty;
-                    var quality = string.Empty;
-
-                    if (r is MovieRecorderSettings movie)
+                    var outputPath = string.IsNullOrEmpty(movie.OutputFile)
+                        ? string.Empty
+                        : $"{movie.OutputFile}.{movie.EncoderSettings.Extension}";
+                    var encoder = movie.EncoderSettings switch
                     {
-                        outputPath = string.IsNullOrEmpty(movie.OutputFile)
-                            ? string.Empty
-                            : $"{movie.OutputFile}.{movie.EncoderSettings.Extension}";
-                        encoder = movie.EncoderSettings switch
-                        {
-                            CoreEncoderSettings => MovieRecorderEncoderType.UnityMediaEncoder,
-                            ProResEncoderSettings => MovieRecorderEncoderType.ProRes,
-                            GifEncoderSettings => MovieRecorderEncoderType.Gif,
-                            _ => movie.EncoderSettings.GetType().Name
-                        };
-                        if (movie.EncoderSettings is CoreEncoderSettings core)
-                        {
-                            quality = core.EncodingQuality.ToString();
-                        }
+                        CoreEncoderSettings => MovieRecorderEncoderType.UnityMediaEncoder,
+                        ProResEncoderSettings => MovieRecorderEncoderType.ProRes,
+                        GifEncoderSettings => MovieRecorderEncoderType.Gif,
+                        _ => movie.EncoderSettings.GetType().Name
+                    };
+                    var quality = string.Empty;
+                    if (movie.EncoderSettings is CoreEncoderSettings core)
+                    {
+                        quality = core.EncodingQuality.ToString();
                     }
 
-                    var recorderErrors = GetRecorderErrors(r).ToArray();
-                    return new MovieRecorderEntry(i, r.name, r.Enabled, outputPath, encoder, quality, recorderErrors);
+                    var recorderErrors = GetRecorderErrors(movie).ToArray();
+                    return new MovieRecorderEntry(index++, movie.name, movie.Enabled, outputPath, encoder, quality,
+                        recorderErrors);
                 })
                 .ToArray();
         }
 
         public void RemoveMovieRecorder(int index)
         {
+            var recorder = GetMovieRecorderSettingsAt(index);
             var settings = RecorderControllerSettings.GetGlobalSettings();
-            var recorders = settings.RecorderSettings.ToArray();
-            if (index < 0 || index >= recorders.Length)
-            {
-                throw new InvalidOperationException(
-                    $"Recorder index {index} is out of range (0..{recorders.Length - 1}).");
-            }
-
-            settings.RemoveRecorder(recorders[index]);
+            settings.RemoveRecorder(recorder);
         }
 
         public void StartMovieRecording(int index, int fps = RecorderFps.Default)
@@ -107,20 +98,7 @@ namespace UniCortex.Editor.Infrastructures
                     "A recording is already in progress. Stop the current recording first.");
             }
 
-            var settings = RecorderControllerSettings.GetGlobalSettings();
-            var recorders = settings.RecorderSettings.ToArray();
-            if (index < 0 || index >= recorders.Length)
-            {
-                throw new InvalidOperationException(
-                    $"Recorder index {index} is out of range (0..{recorders.Length - 1}).");
-            }
-
-            var recorder = recorders[index];
-            if (recorder is not MovieRecorderSettings)
-            {
-                throw new InvalidOperationException(
-                    $"Recorder at index {index} is not a Movie recorder.");
-            }
+            var recorder = GetMovieRecorderSettingsAt(index);
 
             var errors = GetRecorderErrors(recorder);
             if (errors.Count > 0)
@@ -131,6 +109,7 @@ namespace UniCortex.Editor.Infrastructures
 
             _activeRecorderSettings = recorder;
 
+            var settings = RecorderControllerSettings.GetGlobalSettings();
             _savedFrameRate = settings.FrameRate;
             _savedFrameRatePlayback = settings.FrameRatePlayback;
             _savedCapFrameRate = settings.CapFrameRate;
@@ -227,6 +206,19 @@ namespace UniCortex.Editor.Infrastructures
             settings.FrameRate = _savedFrameRate;
             settings.FrameRatePlayback = _savedFrameRatePlayback;
             settings.CapFrameRate = _savedCapFrameRate;
+        }
+
+        private static MovieRecorderSettings GetMovieRecorderSettingsAt(int index)
+        {
+            var settings = RecorderControllerSettings.GetGlobalSettings();
+            var movieRecorders = settings.RecorderSettings.OfType<MovieRecorderSettings>().ToArray();
+            if (index < 0 || index >= movieRecorders.Length)
+            {
+                throw new InvalidOperationException(
+                    $"Movie recorder index {index} is out of range (0..{movieRecorders.Length - 1}).");
+            }
+
+            return movieRecorders[index];
         }
 
         private static List<string> GetRecorderErrors(RecorderSettings recorder)

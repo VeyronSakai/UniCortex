@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -41,7 +42,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
 
         public MovieRecorderEntry[] GetMovieRecorderList()
         {
-            return _recorders.ToArray();
+            return _recorders.Select((r, i) =>
+                new MovieRecorderEntry(i, r.name, r.enabled, r.outputPath, r.encoder, r.encodingQuality, r.errors))
+                .ToArray();
         }
 
         public void RemoveMovieRecorder(int index)
