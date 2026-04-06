@@ -34,7 +34,7 @@ namespace UniCortex.Editor.Tests.Presentations
                 name = "TestRecorder",
                 outputPath = "/tmp/out.mp4"
             });
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.MovieRecorderAdd, body);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderMovieAdd, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -50,7 +50,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns400_WhenNameMissing()
         {
             var body = JsonUtility.ToJson(new AddMovieRecorderRequest { outputPath = "/tmp/out.mp4" });
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.MovieRecorderAdd, body);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderMovieAdd, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -61,7 +61,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns400_WhenOutputPathMissing()
         {
             var body = JsonUtility.ToJson(new AddMovieRecorderRequest { name = "TestRecorder" });
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.MovieRecorderAdd, body);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderMovieAdd, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

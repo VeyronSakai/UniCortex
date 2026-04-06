@@ -19,7 +19,7 @@ namespace UniCortex.Editor.Handlers.MovieRecorder
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Get, ApiRoutes.RecorderList, HandleAsync);
+            router.Register(HttpMethodType.Get, ApiRoutes.RecorderAllList, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)

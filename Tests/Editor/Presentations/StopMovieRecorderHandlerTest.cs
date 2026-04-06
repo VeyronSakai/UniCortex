@@ -32,7 +32,7 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns200_WithOutputPath()
         {
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.MovieRecorderStop);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderMovieStop);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

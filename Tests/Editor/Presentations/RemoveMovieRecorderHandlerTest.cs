@@ -31,7 +31,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns200_WithSuccess()
         {
             var body = JsonUtility.ToJson(new RemoveMovieRecorderRequest { index = 0 });
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.MovieRecorderRemove, body);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderMovieRemove, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -43,7 +43,7 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns400_WhenBodyEmpty()
         {
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.MovieRecorderRemove, "");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderMovieRemove, "");
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

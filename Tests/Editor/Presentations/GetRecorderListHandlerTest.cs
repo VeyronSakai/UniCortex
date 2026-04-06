@@ -30,7 +30,7 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns200_WithRecorderList()
         {
-            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.RecorderList);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.RecorderAllList);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

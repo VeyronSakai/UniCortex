@@ -19,7 +19,7 @@ public class MovieRecordingUseCase(IUnityEditorClient client)
             encodingQuality = encodingQuality
         };
         var response = await client.PostAsync<AddMovieRecorderRequest, AddMovieRecorderResponse>(
-            ApiRoutes.MovieRecorderAdd, request, cancellationToken);
+            ApiRoutes.RecorderMovieAdd, request, cancellationToken);
         return response.name;
     }
 
@@ -27,14 +27,14 @@ public class MovieRecordingUseCase(IUnityEditorClient client)
         CancellationToken cancellationToken = default)
     {
         return await client.GetAsync<GetRecorderListRequest, GetRecorderListResponse>(
-            ApiRoutes.RecorderList, cancellationToken: cancellationToken);
+            ApiRoutes.RecorderAllList, cancellationToken: cancellationToken);
     }
 
     public async ValueTask RemoveAsync(int index, CancellationToken cancellationToken = default)
     {
         var request = new RemoveMovieRecorderRequest { index = index };
         await client.PostAsync<RemoveMovieRecorderRequest, RemoveMovieRecorderResponse>(
-            ApiRoutes.MovieRecorderRemove, request, cancellationToken);
+            ApiRoutes.RecorderMovieRemove, request, cancellationToken);
     }
 
     public async ValueTask StartAsync(
@@ -47,13 +47,13 @@ public class MovieRecordingUseCase(IUnityEditorClient client)
             fps = fps
         };
         await client.PostAsync<StartMovieRecordingRequest, StartMovieRecordingResponse>(
-            ApiRoutes.MovieRecorderStart, request, cancellationToken);
+            ApiRoutes.RecorderMovieStart, request, cancellationToken);
     }
 
     public async ValueTask<string> StopAsync(CancellationToken cancellationToken = default)
     {
         var response = await client.PostAsync<StopMovieRecordingRequest, StopMovieRecordingResponse>(
-            ApiRoutes.MovieRecorderStop, cancellationToken: cancellationToken);
+            ApiRoutes.RecorderMovieStop, cancellationToken: cancellationToken);
         return response.outputPath;
     }
 }

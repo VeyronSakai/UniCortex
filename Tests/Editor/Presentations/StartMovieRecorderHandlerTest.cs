@@ -34,7 +34,7 @@ namespace UniCortex.Editor.Tests.Presentations
                 index = 0,
                 fps = 60
             });
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.MovieRecorderStart, body);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderMovieStart, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -48,7 +48,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_DefaultsFpsTo30_WhenNotSpecified()
         {
             var body = JsonUtility.ToJson(new StartMovieRecordingRequest { index = 0 });
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.MovieRecorderStart, body);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.RecorderMovieStart, body);
 
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
