@@ -11,7 +11,7 @@ using UniCortex.Editor.Handlers.Input;
 using UniCortex.Editor.Handlers.Screenshot;
 using UniCortex.Editor.Handlers.SceneView;
 using UniCortex.Editor.Handlers.GameView;
-
+using UniCortex.Editor.Handlers.MovieRecorder;
 using UniCortex.Editor.Handlers.Timeline;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Settings;
@@ -215,6 +215,28 @@ namespace UniCortex.Editor
             var setGameViewSizeUseCase = new SetGameViewSizeUseCase(s_dispatcher, editorWindowOps);
             var setGameViewSizeHandler = new SetGameViewSizeHandler(setGameViewSizeUseCase);
 
+#if UNICORTEX_RECORDER
+            var allRecorderOps = new AllRecorderOperationsAdapter();
+            var movieRecordingOps = new MovieRecordingOperationsAdapter();
+#else
+            var allRecorderOps = new AllRecorderNotSupportedAdapter();
+            var movieRecordingOps = new MovieRecordingNotSupportedAdapter();
+#endif
+
+            var addMovieRecorderUseCase = new AddMovieRecorderUseCase(s_dispatcher, movieRecordingOps);
+            var addMovieRecorderHandler = new AddMovieRecorderHandler(addMovieRecorderUseCase);
+
+            var getRecorderListUseCase = new GetRecorderListUseCase(s_dispatcher, allRecorderOps);
+            var getRecorderListHandler = new GetRecorderListHandler(getRecorderListUseCase);
+
+            var removeMovieRecorderUseCase = new RemoveMovieRecorderUseCase(s_dispatcher, movieRecordingOps);
+            var removeMovieRecorderHandler = new RemoveMovieRecorderHandler(removeMovieRecorderUseCase);
+
+            var startMovieRecordingUseCase = new StartMovieRecordingUseCase(s_dispatcher, movieRecordingOps);
+            var startMovieRecorderHandler = new StartMovieRecorderHandler(startMovieRecordingUseCase);
+
+            var stopMovieRecordingUseCase = new StopMovieRecordingUseCase(s_dispatcher, movieRecordingOps);
+            var stopMovieRecorderHandler = new StopMovieRecorderHandler(stopMovieRecordingUseCase);
 
 #if UNICORTEX_INPUT_SYSTEM
             var inputSimOps = new InputOperationsAdapter();
@@ -286,6 +308,11 @@ namespace UniCortex.Editor
             getGameViewSizeHandler.Register(router);
             getGameViewSizeListHandler.Register(router);
             setGameViewSizeHandler.Register(router);
+            addMovieRecorderHandler.Register(router);
+            getRecorderListHandler.Register(router);
+            removeMovieRecorderHandler.Register(router);
+            startMovieRecorderHandler.Register(router);
+            stopMovieRecorderHandler.Register(router);
 
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);

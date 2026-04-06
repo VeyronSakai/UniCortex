@@ -3,7 +3,8 @@
     "rootNamespace": "UniCortex.Editor",
     "references": [
         "GUID:75469ad4d38634e559750d17036d5f7c",
-        "GUID:f06555f75b070af458a003d92f9efb00"
+        "GUID:f06555f75b070af458a003d92f9efb00",
+        "GUID:847b179520b009e4c8d15c296b1cbf35"
     ],
     "includePlatforms": [
         "Editor"
@@ -19,6 +20,11 @@
             "name": "com.unity.inputsystem",
             "expression": "1.0.0",
             "define": "UNICORTEX_INPUT_SYSTEM"
+        },
+        {
+            "name": "com.unity.recorder",
+            "expression": "2.0.0",
+            "define": "UNICORTEX_RECORDER"
         }
     ],
     "noEngineReferences": false
