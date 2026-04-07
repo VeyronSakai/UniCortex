@@ -34,6 +34,12 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int LastRemoveClipTrackIndex { get; private set; }
         public int LastRemoveClipIndex { get; private set; }
 
+        public int PlayCallCount { get; private set; }
+        public int LastPlayInstanceId { get; private set; }
+
+        public int StopCallCount { get; private set; }
+        public int LastStopInstanceId { get; private set; }
+
         public CreateTimelineResponse CreateTimeline(string assetPath)
         {
             CreateTimelineCallCount++;
@@ -80,6 +86,18 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastRemoveClipInstanceId = instanceId;
             LastRemoveClipTrackIndex = trackIndex;
             LastRemoveClipIndex = clipIndex;
+        }
+
+        public void Play(int instanceId)
+        {
+            PlayCallCount++;
+            LastPlayInstanceId = instanceId;
+        }
+
+        public void Stop(int instanceId)
+        {
+            StopCallCount++;
+            LastStopInstanceId = instanceId;
         }
     }
 }

@@ -270,6 +270,12 @@ namespace UniCortex.Editor
             var removeTimelineClipUseCase = new RemoveTimelineClipUseCase(s_dispatcher, timelineOps);
             var removeTimelineClipHandler = new RemoveTimelineClipHandler(removeTimelineClipUseCase);
 
+            var playTimelineUseCase = new PlayTimelineUseCase(s_dispatcher, timelineOps);
+            var playTimelineHandler = new PlayTimelineHandler(playTimelineUseCase);
+
+            var stopTimelineUseCase = new StopTimelineUseCase(s_dispatcher, timelineOps);
+            var stopTimelineHandler = new StopTimelineHandler(stopTimelineUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -322,6 +328,8 @@ namespace UniCortex.Editor
             bindTimelineTrackHandler.Register(router);
             addTimelineClipHandler.Register(router);
             removeTimelineClipHandler.Register(router);
+            playTimelineHandler.Register(router);
+            stopTimelineHandler.Register(router);
         }
 
         private static int FindFreePort()

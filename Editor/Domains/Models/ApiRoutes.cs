@@ -44,6 +44,8 @@ namespace UniCortex.Editor.Domains.Models
         public const string TimelineBindTrack = "/timeline/track/bind";
         public const string TimelineAddClip = "/timeline/clip/add";
         public const string TimelineRemoveClip = "/timeline/clip/remove";
+        public const string TimelinePlay = "/timeline/play";
+        public const string TimelineStop = "/timeline/stop";
         public const string FocusSceneView = "/scene-view/focus";
         public const string FocusGameView = "/game-view/focus";
         public const string GameViewSize = "/game-view/size";

@@ -160,4 +160,44 @@ public class TimelineTools(TimelineUseCase timelineUseCase)
             return ToolErrorHandling.CreateErrorResult(ex);
         }
     }
+
+    [McpServerTool(Name = "play_timeline", ReadOnly = false),
+     Description(
+         "Start playback of a Timeline on a PlayableDirector."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> PlayTimelineAsync(
+        [Description("The instanceId of a GameObject with a PlayableDirector component.")]
+        int instanceId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var message = await timelineUseCase.PlayAsync(instanceId, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
+    [McpServerTool(Name = "stop_timeline", ReadOnly = false),
+     Description(
+         "Stop playback of a Timeline on a PlayableDirector and reset to the beginning."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> StopTimelineAsync(
+        [Description("The instanceId of a GameObject with a PlayableDirector component.")]
+        int instanceId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var message = await timelineUseCase.StopAsync(instanceId, cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
 }
