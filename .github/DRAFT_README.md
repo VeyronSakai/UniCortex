@@ -102,7 +102,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `recorder all list` | List all configured recorders (requires com.unity.recorder) |
 | `recorder movie add\|remove\|start\|stop` | Movie Recorder management (requires com.unity.recorder) |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
-| `timeline create` | Create a TimelineAsset |
+| `timeline create\|play\|stop` | Create a TimelineAsset / Play or Stop a Timeline |
 | `timeline track add\|remove\|bind` | Timeline track operations |
 | `timeline clip add\|remove` | Timeline clip operations |
 
@@ -226,6 +226,8 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `bind_timeline_track` | Set the binding of a Timeline track on a PlayableDirector (requires com.unity.timeline) |
 | `add_timeline_clip` | Add a default clip to a Timeline track (requires com.unity.timeline) |
 | `remove_timeline_clip` | Remove a clip from a Timeline track by index (requires com.unity.timeline) |
+| `play_timeline` | Start playback of a Timeline on a PlayableDirector (requires com.unity.timeline) |
+| `stop_timeline` | Stop playback of a Timeline on a PlayableDirector and reset to the beginning (requires com.unity.timeline) |
 
 ## Architecture
 
