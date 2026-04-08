@@ -148,4 +148,41 @@ public class TimelineUseCaseTest
             await _fixture.GameObjectUseCase.DeleteAsync(goId, cancellationToken);
         }
     }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask Play_PlaysTimeline(CancellationToken cancellationToken)
+    {
+        var goId = await CreateTimelineSetupAsync(cancellationToken);
+
+        try
+        {
+            var message = await _fixture.TimelineUseCase.PlayAsync(goId, cancellationToken);
+
+            Assert.That(message, Does.Contain("playback started"));
+        }
+        finally
+        {
+            await _fixture.TimelineUseCase.StopAsync(goId, cancellationToken);
+            await _fixture.GameObjectUseCase.DeleteAsync(goId, cancellationToken);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask Stop_StopsTimeline(CancellationToken cancellationToken)
+    {
+        var goId = await CreateTimelineSetupAsync(cancellationToken);
+
+        try
+        {
+            await _fixture.TimelineUseCase.PlayAsync(goId, cancellationToken);
+
+            var message = await _fixture.TimelineUseCase.StopAsync(goId, cancellationToken);
+
+            Assert.That(message, Does.Contain("playback stopped"));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(goId, cancellationToken);
+        }
+    }
 }

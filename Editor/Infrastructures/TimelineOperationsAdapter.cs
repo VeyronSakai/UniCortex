@@ -149,6 +149,18 @@ namespace UniCortex.Editor.Infrastructures
             EditorUtility.SetDirty(timelineAsset);
         }
 
+        public void Play(int instanceId)
+        {
+            var director = GetPlayableDirector(instanceId);
+            director.Play();
+        }
+
+        public void Stop(int instanceId)
+        {
+            var director = GetPlayableDirector(instanceId);
+            director.Stop();
+        }
+
         private static PlayableDirector GetPlayableDirector(int instanceId)
         {
             var obj = EditorUtility.InstanceIDToObject(instanceId);

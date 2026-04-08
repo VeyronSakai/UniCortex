@@ -63,4 +63,20 @@ public class TimelineUseCase(IUnityEditorClient client)
             cancellationToken);
         return $"Clip removed: track {trackIndex}, clip {clipIndex}";
     }
+
+    public async ValueTask<string> PlayAsync(int instanceId, CancellationToken cancellationToken)
+    {
+        var request = new PlayTimelineRequest { instanceId = instanceId };
+        await client.PostAsync<PlayTimelineRequest, PlayTimelineResponse>(
+            ApiRoutes.TimelinePlay, request, cancellationToken);
+        return "Timeline playback started";
+    }
+
+    public async ValueTask<string> StopAsync(int instanceId, CancellationToken cancellationToken)
+    {
+        var request = new StopTimelineRequest { instanceId = instanceId };
+        await client.PostAsync<StopTimelineRequest, StopTimelineResponse>(
+            ApiRoutes.TimelineStop, request, cancellationToken);
+        return "Timeline playback stopped";
+    }
 }
