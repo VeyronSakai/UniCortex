@@ -99,8 +99,10 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `scene-view focus` | Switch focus to Scene View |
 | `game-view focus` | Switch focus to Game View |
 | `game-view size get\|list\|set` | Game View size control |
+| `recorder all list` | List all configured recorders (requires com.unity.recorder) |
+| `recorder movie add\|remove\|start\|stop` | Movie Recorder management (requires com.unity.recorder) |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
-| `timeline create` | Create a TimelineAsset |
+| `timeline create\|play\|stop` | Create a TimelineAsset / Play or Stop a Timeline |
 | `timeline track add\|remove\|bind` | Timeline track operations |
 | `timeline clip add\|remove` | Timeline clip operations |
 
@@ -197,6 +199,16 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
 
+### Recorder
+
+| Tool | Description |
+|------|-------------|
+| `get_all_recorders` | Get the list of all configured recorders and their settings (requires com.unity.recorder) |
+| `add_movie_recorder` | Add a Movie recorder to the list with name, output path, encoder, quality (requires com.unity.recorder) |
+| `remove_movie_recorder` | Remove a Movie recorder from the list by index (requires com.unity.recorder) |
+| `start_movie_recorder` | Start recording with the specified Movie recorder (Play Mode only, requires com.unity.recorder) |
+| `stop_movie_recorder` | Stop recording and save the video file (requires com.unity.recorder) |
+
 ### Input
 
 | Tool | Description |
@@ -214,6 +226,8 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `bind_timeline_track` | Set the binding of a Timeline track on a PlayableDirector (requires com.unity.timeline) |
 | `add_timeline_clip` | Add a default clip to a Timeline track (requires com.unity.timeline) |
 | `remove_timeline_clip` | Remove a clip from a Timeline track by index (requires com.unity.timeline) |
+| `play_timeline` | Start playback of a Timeline on a PlayableDirector (requires com.unity.timeline) |
+| `stop_timeline` | Stop playback of a Timeline on a PlayableDirector and reset to the beginning (requires com.unity.timeline) |
 
 ## Architecture
 
