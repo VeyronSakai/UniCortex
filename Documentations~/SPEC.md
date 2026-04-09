@@ -577,7 +577,7 @@ Unity Recorder パッケージ（`com.unity.recorder`）を使用した録画機
 ```
 
 #### POST `/recorder/movie/add`
-Movie Recorder をリストに追加する。Source は Game View 固定、Audio ON 固定、解像度は Game View Resolution 固定。
+Movie Recorder をリストに追加する。Source は Game View 固定、解像度は Game View Resolution 固定。Audio はデフォルト OFF。
 
 リクエストボディ:
 ```json
@@ -585,13 +585,15 @@ Movie Recorder をリストに追加する。Source は Game View 固定、Audio
   "name": "MyRecorder",
   "outputPath": "/path/to/output.mp4",
   "encoder": "UnityMediaEncoder",
-  "encodingQuality": "Low"
+  "encodingQuality": "Low",
+  "captureAudio": false
 }
 ```
 - `name`: 必須。Movie Recorder の名前
 - `outputPath`: 必須。出力ファイルパス
 - `encoder`: 任意。`"UnityMediaEncoder"`（デフォルト）、`"ProRes"`、`"GIF"`
 - `encodingQuality`: 任意。UnityMediaEncoder のみ有効。`"Low"`（デフォルト）、`"Medium"`、`"High"`
+- `captureAudio`: 任意。音声キャプチャ。デフォルト `false`
 - MP4 時の奇数解像度はエラーとなる。事前に Game View のサイズを偶数に設定すること
 
 レスポンス: `{"name": "MyRecorder"}`

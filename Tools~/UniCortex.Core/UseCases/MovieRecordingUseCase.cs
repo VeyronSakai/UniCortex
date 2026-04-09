@@ -9,6 +9,7 @@ public class MovieRecordingUseCase(IUnityEditorClient client)
         string name, string outputPath,
         string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
         string encodingQuality = MovieRecorderEncodingQuality.Low,
+        bool captureAudio = false,
         CancellationToken cancellationToken = default)
     {
         var request = new AddMovieRecorderRequest
@@ -16,7 +17,8 @@ public class MovieRecordingUseCase(IUnityEditorClient client)
             name = name,
             outputPath = outputPath,
             encoder = encoder,
-            encodingQuality = encodingQuality
+            encodingQuality = encodingQuality,
+            captureAudio = captureAudio
         };
         var response = await client.PostAsync<AddMovieRecorderRequest, AddMovieRecorderResponse>(
             ApiRoutes.RecorderMovieAdd, request, cancellationToken);

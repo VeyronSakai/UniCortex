@@ -28,7 +28,8 @@ namespace UniCortex.Editor.Infrastructures
 
         public string AddMovieRecorder(string name, string outputPath,
             string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
-            string encodingQuality = MovieRecorderEncodingQuality.Low)
+            string encodingQuality = MovieRecorderEncodingQuality.Low,
+            bool captureAudio = false)
         {
             var settings = RecorderControllerSettings.GetGlobalSettings();
             var recorder = ScriptableObject.CreateInstance<MovieRecorderSettings>();
@@ -36,7 +37,7 @@ namespace UniCortex.Editor.Infrastructures
             recorder.name = name;
 
             recorder.OutputFile = Path.ChangeExtension(outputPath, null);
-            recorder.CaptureAudio = true;
+            recorder.CaptureAudio = captureAudio;
             recorder.ImageInputSettings = new GameViewInputSettings();
             recorder.EncoderSettings = CreateEncoderSettings(encoder, encodingQuality);
 

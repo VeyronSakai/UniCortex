@@ -13,7 +13,8 @@ namespace UniCortex.Editor.Infrastructures
 
         public string AddMovieRecorder(string name, string outputPath,
             string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
-            string encodingQuality = MovieRecorderEncodingQuality.Low)
+            string encodingQuality = MovieRecorderEncodingQuality.Low,
+            bool captureAudio = false)
         {
             throw new NotSupportedException(Message);
         }

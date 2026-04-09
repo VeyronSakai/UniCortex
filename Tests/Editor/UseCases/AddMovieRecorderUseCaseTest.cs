@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var useCase = new AddMovieRecorderUseCase(dispatcher, operations);
 
             var name = useCase.ExecuteAsync("TestRecorder", "/tmp/out.mp4", string.Empty, string.Empty,
-                CancellationToken.None).GetAwaiter().GetResult();
+                false, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual("TestRecorder", name);
             Assert.AreEqual(1, operations.AddCallCount);
