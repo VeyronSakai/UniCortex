@@ -57,7 +57,7 @@ Alternatively, you can specify the URL directly via the `UNICORTEX_URL` environm
   "mcpServers": {
     "Unity": {
       "type": "stdio",
-      "command": "/bin/bash",
+      "command": "bash",
       "args": ["-c", "dotnet run --project ${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-sakai.uni-cortex@*/Tools~/UniCortex.Mcp/"],
       "env": {
         "UNICORTEX_PROJECT_PATH": "/path/to/your/unity/project",
