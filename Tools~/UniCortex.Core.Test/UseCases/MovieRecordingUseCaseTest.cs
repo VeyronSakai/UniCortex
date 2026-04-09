@@ -56,8 +56,14 @@ public class MovieRecordingUseCaseTest
 
         // Pick a fixed-resolution Game View size with even dimensions to avoid MP4 odd-resolution errors
         var sizeList = await _fixture.GameViewUseCase.GetSizeListResponseAsync(CancellationToken.None);
-        var evenSize = sizeList.sizes.First(s =>
-            s.sizeType == "FixedResolution" && s.width % 2 == 0 && s.height % 2 == 0);
+        var matchingSizes = sizeList.sizes
+            .Where(s => s.sizeType == "FixedResolution" && s.width % 2 == 0 && s.height % 2 == 0)
+            .ToList();
+        Assert.That(
+            matchingSizes,
+            Is.Not.Empty,
+            "Expected at least one FixedResolution Game View size with even width and height.");
+        var evenSize = matchingSizes[0];
         await _fixture.GameViewUseCase.SetSizeAsync(evenSize.index, CancellationToken.None);
 
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
