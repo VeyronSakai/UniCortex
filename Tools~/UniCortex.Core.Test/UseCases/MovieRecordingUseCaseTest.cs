@@ -53,6 +53,13 @@ public class MovieRecordingUseCaseTest
     public async ValueTask StartAndStop_InPlayMode_ReturnsOutputPath()
     {
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+
+        // Pick a fixed-resolution Game View size with even dimensions to avoid MP4 odd-resolution errors
+        var sizeList = await _fixture.GameViewUseCase.GetSizeListResponseAsync(CancellationToken.None);
+        var evenSize = sizeList.sizes.First(s =>
+            s.sizeType == "FixedResolution" && s.width % 2 == 0 && s.height % 2 == 0);
+        await _fixture.GameViewUseCase.SetSizeAsync(evenSize.index, CancellationToken.None);
+
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         var outputPath = string.Empty;
         try

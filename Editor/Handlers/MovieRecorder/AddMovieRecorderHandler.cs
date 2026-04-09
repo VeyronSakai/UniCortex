@@ -53,6 +53,7 @@ namespace UniCortex.Editor.Handlers.MovieRecorder
                     request.name, request.outputPath,
                     request.encoder ?? string.Empty,
                     request.encodingQuality ?? string.Empty,
+                    request.captureAudio,
                     cancellationToken);
                 var json = JsonUtility.ToJson(new AddMovieRecorderResponse(name));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);

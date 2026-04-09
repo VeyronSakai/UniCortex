@@ -8,20 +8,22 @@ namespace UniCortex.Cli.Commands;
 
 public class MovieRecorderCommands(MovieRecordingUseCase movieRecordingUseCase)
 {
-    /// <summary>Add a Movie recorder to the Movie recorder list. Records Game View with audio. Requires com.unity.recorder.</summary>
+    /// <summary>Add a Movie recorder to the Movie recorder list. Requires com.unity.recorder.</summary>
     /// <param name="name">Name for the recorder (required).</param>
     /// <param name="outputPath">Output file path for the video (required).</param>
     /// <param name="encoder">Encoder: UnityMediaEncoder (default), ProRes, GIF.</param>
     /// <param name="encodingQuality">Encoding quality (UnityMediaEncoder only): Low (default), Medium, High.</param>
+    /// <param name="captureAudio">Whether to capture audio (default: false).</param>
     [Command("add")]
     public async Task Add(
         [Argument] string name, [Argument] string outputPath,
         string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
         string encodingQuality = MovieRecorderEncodingQuality.Low,
+        bool captureAudio = false,
         CancellationToken cancellationToken = default)
     {
         var resultName = await movieRecordingUseCase.AddAsync(
-            name, outputPath, encoder, encodingQuality, cancellationToken);
+            name, outputPath, encoder, encodingQuality, captureAudio, cancellationToken);
         Console.WriteLine($"Recorder added: {resultName}");
     }
 

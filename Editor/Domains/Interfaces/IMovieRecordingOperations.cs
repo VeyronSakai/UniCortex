@@ -6,7 +6,8 @@ namespace UniCortex.Editor.Domains.Interfaces
     {
         string AddMovieRecorder(string name, string outputPath,
             string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
-            string encodingQuality = MovieRecorderEncodingQuality.Low);
+            string encodingQuality = MovieRecorderEncodingQuality.Low,
+            bool captureAudio = false);
 
         void RemoveMovieRecorder(int index);
 

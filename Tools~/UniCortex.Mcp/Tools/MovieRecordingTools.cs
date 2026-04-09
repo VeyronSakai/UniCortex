@@ -14,7 +14,7 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
     [McpServerTool(Name = "add_movie_recorder", ReadOnly = false),
      Description(
          "Add a Movie recorder to the Movie recorder list. " +
-         "Records the Game View with audio. Output format depends on the chosen encoder (MP4 by default). " +
+         "Records the Game View. Audio capture is off by default. Output format depends on the chosen encoder (MP4 by default). " +
          "Returns the assigned recorder name. " +
          "Requires the Unity Recorder package (com.unity.recorder) to be installed."),
      UsedImplicitly]
@@ -27,12 +27,14 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
         string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
         [Description("Encoding quality (UnityMediaEncoder only): Low (default), Medium, High")]
         string encodingQuality = MovieRecorderEncodingQuality.Low,
+        [Description("Whether to capture audio (default: false)")]
+        bool captureAudio = false,
         CancellationToken cancellationToken = default)
     {
         try
         {
             var resultName = await movieRecordingUseCase.AddAsync(
-                name, outputPath, encoder, encodingQuality, cancellationToken);
+                name, outputPath, encoder, encodingQuality, captureAudio, cancellationToken);
             return new CallToolResult
             {
                 Content = [new TextContentBlock { Text = $"Recorder added: {resultName}" }]

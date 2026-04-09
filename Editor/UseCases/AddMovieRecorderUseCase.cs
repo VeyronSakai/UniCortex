@@ -19,10 +19,11 @@ namespace UniCortex.Editor.UseCases
         public async Task<string> ExecuteAsync(string name, string outputPath,
             string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
             string encodingQuality = MovieRecorderEncodingQuality.Low,
+            bool captureAudio = false,
             CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.AddMovieRecorder(name, outputPath, encoder, encodingQuality),
+                () => _operations.AddMovieRecorder(name, outputPath, encoder, encodingQuality, captureAudio),
                 cancellationToken);
         }
     }

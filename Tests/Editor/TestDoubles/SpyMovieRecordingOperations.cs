@@ -14,6 +14,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string LastAddOutputPath { get; private set; }
         public string LastAddEncoder { get; private set; }
         public string LastAddEncodingQuality { get; private set; }
+        public bool LastAddCaptureAudio { get; private set; }
 
         public int RemoveCallCount { get; private set; }
         public int LastRemoveIndex { get; private set; }
@@ -26,13 +27,14 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string StopMovieRecordingResult { get; set; } = "/tmp/test_recording.mp4";
 
         public string AddMovieRecorder(string name, string outputPath, string encoder,
-            string encodingQuality)
+            string encodingQuality, bool captureAudio = false)
         {
             AddCallCount++;
             LastAddName = name;
             LastAddOutputPath = outputPath;
             LastAddEncoder = encoder;
             LastAddEncodingQuality = encodingQuality;
+            LastAddCaptureAudio = captureAudio;
             var resolvedEncoder = string.IsNullOrEmpty(encoder) ? MovieRecorderEncoderType.UnityMediaEncoder : encoder;
             var resolvedQuality = string.IsNullOrEmpty(encodingQuality) ? MovieRecorderEncodingQuality.Low : encodingQuality;
             _recorders.Add(new RecorderEntry(_recorders.Count, name, "Movie", true, outputPath,

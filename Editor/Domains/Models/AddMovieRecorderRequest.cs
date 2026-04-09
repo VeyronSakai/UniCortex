@@ -9,5 +9,6 @@ namespace UniCortex.Editor.Domains.Models
         public string outputPath;
         public string encoder;
         public string encodingQuality;
+        public bool captureAudio;
     }
 }
