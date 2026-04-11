@@ -105,6 +105,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `timeline create\|play\|stop` | Create a TimelineAsset / Play or Stop a Timeline |
 | `timeline track add\|remove\|bind` | Timeline track operations |
 | `timeline clip add\|remove` | Timeline clip operations |
+| `custom-tool list\|execute` | Custom tool management |
 
 ## Available MCP Tools
 
@@ -228,6 +229,73 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `remove_timeline_clip` | Remove a clip from a Timeline track by index (requires com.unity.timeline) |
 | `play_timeline` | Start playback of a Timeline on a PlayableDirector (requires com.unity.timeline) |
 | `stop_timeline` | Stop playback of a Timeline on a PlayableDirector and reset to the beginning (requires com.unity.timeline) |
+
+### Custom Tools
+
+Custom MCP tools defined in your Unity project are automatically discovered and exposed alongside the built-in tools. See [Custom Tool Extension](#custom-tool-extension) for details.
+
+## Custom Tool Extension
+
+You can define custom MCP tools in your Unity project by creating Editor-only C# classes that inherit from `CustomToolHandler`. They are automatically discovered via `TypeCache` and exposed as MCP tools.
+
+```csharp
+#if UNITY_EDITOR
+using UniCortex.Editor.Handlers.CustomTool;
+using UnityEngine;
+
+public class CountGameObjectsTool : CustomToolHandler
+{
+    public override string ToolName => "count_gameobjects";
+    public override string Description => "Count GameObjects in the current scene.";
+    public override bool ReadOnly => true;
+
+    public override CustomToolSchema InputSchema => new CustomToolSchema(
+        new CustomToolProperty("nameFilter", CustomToolPropertyType.String,
+            "Only count GameObjects whose name contains this string.")
+    );
+
+    public override string Execute(string argumentsJson)
+    {
+        // Runs on the Unity main thread — safe to call Unity APIs
+        var filter = "";
+        if (!string.IsNullOrEmpty(argumentsJson))
+        {
+            var args = JsonUtility.FromJson<Args>(argumentsJson);
+            if (!string.IsNullOrEmpty(args.nameFilter))
+                filter = args.nameFilter;
+        }
+
+        var allObjects = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+        var count = 0;
+        foreach (var obj in allObjects)
+        {
+            if (string.IsNullOrEmpty(filter) || obj.name.Contains(filter))
+                count++;
+        }
+
+        return $"Found {count} GameObject(s).";
+    }
+
+    [System.Serializable]
+    private class Args
+    {
+        public string nameFilter;
+    }
+}
+#endif
+```
+
+### API Reference
+
+| Class | Description |
+|-------|-------------|
+| `CustomToolHandler` | Abstract base class. Override `ToolName`, `Description`, `InputSchema`, and `Execute()` |
+| `CustomToolSchema` | Defines the input parameter schema via `CustomToolProperty` array |
+| `CustomToolProperty` | Defines a single parameter: name, type, description, and whether it is required |
+| `CustomToolPropertyType` | Parameter types: `String`, `Number`, `Integer`, `Boolean` |
+
+> [!NOTE]
+> After adding or removing custom tools, restart the MCP client (e.g., Claude Code) to refresh the tool list.
 
 ## Architecture
 
