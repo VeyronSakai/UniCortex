@@ -45,6 +45,7 @@ Add the following MCP server configuration to your MCP client's settings file (e
 ```
 
 Replace `/path/to/your/unity/project` with the absolute path of your Unity project. After saving the configuration, restart the client to apply the changes.
+If you add or rename custom MCP tools in the Unity project, restart the MCP client again so it reconnects and reloads the latest manifest.
 
 The MCP server reads the port number from `Library/UniCortex/config.json` (written automatically when Unity Editor starts) and connects to the HTTP server.
 
@@ -105,8 +106,78 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `timeline create\|play\|stop` | Create a TimelineAsset / Play or Stop a Timeline |
 | `timeline track add\|remove\|bind` | Timeline track operations |
 | `timeline clip add\|remove` | Timeline clip operations |
+| `custom list` | List custom CLI commands discovered from the Unity project |
+
+## Custom Extensions
+
+You can add custom MCP tools, CLI commands, and HTTP routes from the consuming Unity project by writing Editor-side C# code (for example under `Assets/Editor`). UniCortex discovers implementations of `IUniCortexCustomTool` and `IUniCortexCustomRoute` when the Unity HTTP server starts.
+
+```csharp
+using System;
+using UniCortex.Editor.Extensibility;
+
+namespace MyGame.Editor
+{
+    [Serializable]
+    internal sealed class SpawnNpcArguments
+    {
+        [UniCortexRequired]
+        public string npcName = string.Empty;
+
+        public int count = 1;
+    }
+
+    internal sealed class SpawnNpcTool : UniCortexCustomToolBase<SpawnNpcArguments>
+    {
+        public override UniCortexCustomToolDefinition Definition { get; } =
+            new UniCortexCustomToolDefinition(
+                "spawn_npc",
+                "Spawn NPC placeholders in the active scene.",
+                cliCommand: "project spawn-npc");
+
+        protected override string Execute(SpawnNpcArguments arguments)
+        {
+            return $"Spawned {arguments.count} NPCs for {arguments.npcName}.";
+        }
+    }
+}
+```
+
+This example becomes:
+
+- an MCP tool named `spawn_npc`
+- a CLI command named `project spawn-npc --npc-name Guard --count 3`
+
+Custom CLI commands are manifest-driven. Use `custom list` to inspect them. They support named options only (`--option value` or `--option=value`), with bare booleans allowed as flags and arrays collected by repeating the same option.
+
+Supported custom tool field types are `string`, `bool`, `int`, `float`, and arrays or `List<T>` of those scalar types. The top-level CLI command token must not collide with built-in groups such as `editor`, `scene`, `gameobject`, `custom`, or `timeline`.
+
+For project-specific HTTP endpoints, implement `IUniCortexCustomRoute`:
+
+```csharp
+using UniCortex.Editor.Extensibility;
+using UniCortex.Editor.Domains.Models;
+
+namespace MyGame.Editor
+{
+    internal sealed class ProjectHealthRoute : IUniCortexCustomRoute
+    {
+        public UniCortexCustomRouteDefinition Definition { get; } =
+            new UniCortexCustomRouteDefinition(HttpMethodType.Get, "/custom/health", "Project health endpoint.");
+
+        public UniCortexCustomRouteResponse Handle(UniCortexCustomRouteRequest request)
+        {
+            return new UniCortexCustomRouteResponse(200, "{\"status\":\"ok\"}");
+        }
+    }
+}
+```
+
+Custom routes are registered directly in the Unity Editor process. Duplicate method/path pairs are rejected, and built-in routes cannot be overridden.
 
 ## Available MCP Tools
+
+The tables below list the built-in MCP tools. Any custom tools discovered from the Unity project are added alongside them when the MCP server starts.
 
 ### Editor Control
 
@@ -245,6 +316,7 @@ graph LR
 ```
 
 - **Unity Editor side**: C# `HttpListener` HTTP server embedded in the Editor
+- **Custom project extensions**: Unity-project-side Editor C# discovered at runtime and surfaced to MCP/CLI through a manifest + invoke flow
 - **Shared Core**: `UniCortex.Core` — service layer and HTTP infrastructure shared by MCP and CLI
 - **MCP Server**: `UniCortex.Mcp` — .NET 10 + [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk)
 - **CLI Tool**: `UniCortex.Cli` — .NET 10 + [ConsoleAppFramework](https://github.com/Cysharp/ConsoleAppFramework)
@@ -252,7 +324,7 @@ graph LR
 
 ## Documentation
 
-- [`Documentations~/SPEC.md`](Documentations~/SPEC.md) — Full API endpoint and MCP tool definitions
+- [`Documentations~/SPEC.md`](Documentations~/SPEC.md) — Full API endpoint, extensibility, and MCP tool definitions
 
 ## Contributing
 

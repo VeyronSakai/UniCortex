@@ -51,7 +51,7 @@ namespace UniCortex.Editor.Infrastructures
             _routes = routes;
         }
 
-        internal static CustomExtensionRegistry Discover(IMainThreadDispatcher dispatcher, IEnumerable<Type>? candidateTypes = null)
+        internal static CustomExtensionRegistry Discover(IMainThreadDispatcher dispatcher, IEnumerable<Type> candidateTypes = null)
         {
             var tools = new Dictionary<string, IUniCortexCustomTool>(StringComparer.Ordinal);
             var manifestEntries = new Dictionary<string, CustomToolManifestEntry>(StringComparer.Ordinal);
@@ -78,15 +78,25 @@ namespace UniCortex.Editor.Infrastructures
                     continue;
                 }
 
-                if (instance is IUniCortexCustomTool tool &&
-                    TryCreateManifestEntry(candidateType, tool, out var manifestEntry, out var toolError))
+                if (instance is IUniCortexCustomTool tool)
                 {
-                    if (!tools.TryAdd(manifestEntry.name, tool))
+                    CustomToolManifestEntry manifestEntry;
+                    string toolError;
+                    if (!TryCreateManifestEntry(candidateType, tool, out manifestEntry, out toolError))
+                    {
+                        Debug.LogError(
+                            $"[UniCortex] Skipped custom tool '{candidateType.FullName}': {toolError}");
+                        continue;
+                    }
+
+                    if (tools.ContainsKey(manifestEntry.name))
                     {
                         Debug.LogError(
                             $"[UniCortex] Skipped custom tool '{candidateType.FullName}': Tool name '{manifestEntry.name}' is already registered by another custom tool.");
                         continue;
                     }
+
+                    tools.Add(manifestEntry.name, tool);
 
                     if (manifestEntry.exposeToCli && !cliCommands.Add(manifestEntry.cliCommand))
                     {
@@ -98,24 +108,27 @@ namespace UniCortex.Editor.Infrastructures
 
                     manifestEntries[manifestEntry.name] = manifestEntry;
                 }
-                else if (instance is IUniCortexCustomTool)
-                {
-                    Debug.LogError($"[UniCortex] Skipped custom tool '{candidateType.FullName}': {toolError}");
-                }
 
-                if (instance is IUniCortexCustomRoute route &&
-                    TryValidateRouteDefinition(route.Definition, out var normalizedPath, out var routeError))
+                if (instance is IUniCortexCustomRoute route)
                 {
+                    string normalizedPath;
+                    string routeError;
+                    if (!TryValidateRouteDefinition(route.Definition, out normalizedPath, out routeError))
+                    {
+                        Debug.LogError(
+                            $"[UniCortex] Skipped custom route '{candidateType.FullName}': {routeError}");
+                        continue;
+                    }
+
                     var routeKey = (route.Definition.method, normalizedPath);
-                    if (!routes.TryAdd(routeKey, route))
+                    if (routes.ContainsKey(routeKey))
                     {
                         Debug.LogError(
                             $"[UniCortex] Skipped custom route '{candidateType.FullName}': Route already registered for {route.Definition.method} {normalizedPath}.");
+                        continue;
                     }
-                }
-                else if (instance is IUniCortexCustomRoute)
-                {
-                    Debug.LogError($"[UniCortex] Skipped custom route '{candidateType.FullName}': {routeError}");
+
+                    routes.Add(routeKey, route);
                 }
             }
 
@@ -127,7 +140,7 @@ namespace UniCortex.Editor.Infrastructures
         internal GetCustomToolsManifestResponse GetManifest()
         {
             var tools = _manifestEntries.Values
-                .OrderBy(static tool => tool.name, StringComparer.Ordinal)
+                .OrderBy(tool => tool.name, StringComparer.Ordinal)
                 .ToArray();
             return new GetCustomToolsManifestResponse(tools);
         }
@@ -184,7 +197,7 @@ namespace UniCortex.Editor.Infrastructures
                     context.HttpMethod,
                     await context.ReadBodyAsync(),
                     context.GetQueryParameters()
-                        .Select(static parameter => new UniCortexQueryParameter(parameter.Key, parameter.Value))
+                        .Select(parameter => new UniCortexQueryParameter(parameter.Key, parameter.Value))
                         .ToArray());
 
                 var response = await _dispatcher.RunOnMainThreadAsync(
@@ -228,14 +241,18 @@ namespace UniCortex.Editor.Infrastructures
         {
             try
             {
-                instance = Activator.CreateInstance(candidateType, true)
-                    ?? throw new InvalidOperationException("Activator.CreateInstance returned null.");
+                instance = Activator.CreateInstance(candidateType, true);
+                if (instance == null)
+                {
+                    throw new InvalidOperationException("Activator.CreateInstance returned null.");
+                }
+
                 error = string.Empty;
                 return true;
             }
             catch (Exception ex)
             {
-                instance = null!;
+                instance = null;
                 error = ex.Message;
                 return false;
             }
@@ -250,35 +267,35 @@ namespace UniCortex.Editor.Infrastructures
             var definition = tool.Definition;
             if (definition == null)
             {
-                manifestEntry = null!;
+                manifestEntry = null;
                 error = "Definition is required.";
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(definition.name))
             {
-                manifestEntry = null!;
+                manifestEntry = null;
                 error = "Tool name is required.";
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(definition.description))
             {
-                manifestEntry = null!;
+                manifestEntry = null;
                 error = "Tool description is required.";
                 return false;
             }
 
             if (!definition.exposeToCli && !definition.exposeToMcp)
             {
-                manifestEntry = null!;
+                manifestEntry = null;
                 error = "At least one of exposeToCli or exposeToMcp must be true.";
                 return false;
             }
 
             if (!TryBuildParameterDefinitions(candidateType, tool.ArgumentsType, out var parameters, out error))
             {
-                manifestEntry = null!;
+                manifestEntry = null;
                 return false;
             }
 
@@ -288,7 +305,7 @@ namespace UniCortex.Editor.Infrastructures
                 cliCommand = NormalizeCliCommand(definition.name, definition.cliCommand);
                 if (!TryValidateCliCommand(cliCommand, out error))
                 {
-                    manifestEntry = null!;
+                    manifestEntry = null;
                     return false;
                 }
             }
@@ -339,7 +356,7 @@ namespace UniCortex.Editor.Infrastructures
         {
             return AppDomain.CurrentDomain
                 .GetAssemblies()
-                .Where(static assembly => !assembly.IsDynamic)
+                .Where(assembly => !assembly.IsDynamic)
                 .SelectMany(SafeGetTypes);
         }
 
@@ -351,7 +368,16 @@ namespace UniCortex.Editor.Infrastructures
             }
             catch (ReflectionTypeLoadException ex)
             {
-                return ex.Types.Where(static type => type != null)!;
+                var types = new List<Type>();
+                foreach (var type in ex.Types)
+                {
+                    if (type != null)
+                    {
+                        types.Add(type);
+                    }
+                }
+
+                return types;
             }
         }
 
@@ -365,7 +391,7 @@ namespace UniCortex.Editor.Infrastructures
             {
                 parameters = argumentsType
                     .GetFields(BindingFlags.Instance | BindingFlags.Public)
-                    .Select(static field => CreateParameterDefinition(field))
+                    .Select(field => CreateParameterDefinition(field))
                     .ToArray();
                 error = string.Empty;
                 return true;
@@ -445,7 +471,14 @@ namespace UniCortex.Editor.Infrastructures
         {
             if (collectionType.IsArray)
             {
-                itemType = collectionType.GetElementType()!;
+                var elementType = collectionType.GetElementType();
+                if (elementType == null)
+                {
+                    itemType = typeof(object);
+                    return false;
+                }
+
+                itemType = elementType;
                 return true;
             }
 
@@ -456,7 +489,7 @@ namespace UniCortex.Editor.Infrastructures
                 return true;
             }
 
-            itemType = null!;
+            itemType = typeof(object);
             return false;
         }
 
