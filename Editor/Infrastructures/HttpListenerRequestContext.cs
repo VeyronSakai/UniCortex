@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -25,6 +26,22 @@ namespace UniCortex.Editor.Infrastructures
         public string GetQueryParameter(string name)
         {
             return _context.Request.QueryString[name];
+        }
+
+        public IReadOnlyList<KeyValuePair<string, string>> GetQueryParameters()
+        {
+            var parameters = new List<KeyValuePair<string, string>>();
+            foreach (var key in _context.Request.QueryString.AllKeys)
+            {
+                if (key == null)
+                {
+                    continue;
+                }
+
+                parameters.Add(new KeyValuePair<string, string>(key, _context.Request.QueryString[key] ?? string.Empty));
+            }
+
+            return parameters;
         }
 
         public async Task<string> ReadBodyAsync()

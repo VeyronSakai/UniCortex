@@ -34,6 +34,8 @@ namespace UniCortex.Editor.Domains.Models
         public const string PrefabClose = "/prefab/close";
         public const string AssetDatabaseRefresh = "/asset-database/refresh";
         public const string MenuItemExecute = "/menu-item/execute";
+        public const string CustomToolsManifest = "/custom-tools/manifest";
+        public const string CustomToolsInvoke = "/custom-tools/invoke";
         public const string ScreenshotCapture = "/screenshot/capture";
 
         public const string InputKey = "/input/key";

@@ -45,6 +45,11 @@ namespace UniCortex.Editor.Tests.TestDoubles
             return value;
         }
 
+        public IReadOnlyList<KeyValuePair<string, string>> GetQueryParameters()
+        {
+            return _queryParameters.ToArray();
+        }
+
         public Task<string> ReadBodyAsync()
         {
             return Task.FromResult(Body);

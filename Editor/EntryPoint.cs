@@ -1,6 +1,7 @@
 using UniCortex.Editor.Handlers.Asset;
 using UniCortex.Editor.Handlers.Component;
 using UniCortex.Editor.Handlers.Console;
+using UniCortex.Editor.Handlers.CustomTools;
 using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Prefab;
@@ -78,6 +79,7 @@ namespace UniCortex.Editor
 
         private static void RegisterHandlers(RequestRouter router)
         {
+            var customExtensionRegistry = CustomExtensionRegistry.Discover(s_dispatcher);
             var editorApplication = new EditorApplicationAdapter();
             var compilationPipeline = new CompilationPipelineAdapter();
 
@@ -194,6 +196,8 @@ namespace UniCortex.Editor
 
             var executeMenuItemUseCase = new ExecuteMenuItemUseCase(s_dispatcher, menuItemOps);
             var executeMenuItemHandler = new ExecuteMenuItemHandler(executeMenuItemUseCase);
+            var getCustomToolsManifestHandler = new GetCustomToolsManifestHandler(customExtensionRegistry);
+            var invokeCustomToolHandler = new InvokeCustomToolHandler(customExtensionRegistry);
 
             var captureScreenshotUseCase = new CaptureScreenshotUseCase(s_dispatcher, captureOps);
             var captureScreenshotHandler = new CaptureScreenshotHandler(captureScreenshotUseCase);
@@ -308,6 +312,8 @@ namespace UniCortex.Editor
             closePrefabHandler.Register(router);
             assetRefreshHandler.Register(router);
             executeMenuItemHandler.Register(router);
+            getCustomToolsManifestHandler.Register(router);
+            invokeCustomToolHandler.Register(router);
             captureScreenshotHandler.Register(router);
             focusSceneViewHandler.Register(router);
             focusGameViewHandler.Register(router);
@@ -330,6 +336,7 @@ namespace UniCortex.Editor
             removeTimelineClipHandler.Register(router);
             playTimelineHandler.Register(router);
             stopTimelineHandler.Register(router);
+            customExtensionRegistry.RegisterRoutes(router);
         }
 
         private static int FindFreePort()

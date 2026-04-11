@@ -17,7 +17,13 @@ namespace UniCortex.Editor.Infrastructures
             Func<IRequestContext, CancellationToken, Task> handler)
         {
             var normalized = NormalizePath(path);
-            _handlers[(method, normalized)] = handler;
+            var routeKey = (method, normalized);
+            if (_handlers.ContainsKey(routeKey))
+            {
+                throw new ArgumentException($"Route already registered: {method} {normalized}");
+            }
+
+            _handlers[routeKey] = handler;
         }
 
         public async Task HandleRequestAsync(IRequestContext context, CancellationToken cancellationToken)
