@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -24,7 +23,7 @@ namespace UniCortex.Editor.Handlers.Extension
 
         private Task HandleListAsync(IRequestContext context, CancellationToken cancellationToken)
         {
-            var items = new List<ExtensionInfo>();
+            var items = new List<ExtensionInfo>(_registry.Handlers.Count);
             foreach (var handler in _registry.Handlers.Values)
             {
                 try
@@ -43,8 +42,6 @@ namespace UniCortex.Editor.Handlers.Extension
                         $"[UniCortex] Skipping extension during list because metadata extraction failed: {ex}");
                 }
             }
-
-            items = items.OrderBy(item => item.name).ToList();
 
             var response = new ExtensionListResponse { extensions = items };
             var json = JsonUtility.ToJson(response);

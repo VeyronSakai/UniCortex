@@ -7,7 +7,7 @@ namespace UniCortex.Editor.Handlers.Extension
 {
     internal sealed class ExtensionRegistry
     {
-        private readonly Dictionary<string, ExtensionHandler> _handlers = new();
+        private readonly SortedDictionary<string, ExtensionHandler> _handlers = new(StringComparer.Ordinal);
 
         internal ExtensionRegistry() : this(discover: true)
         {
