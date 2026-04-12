@@ -7,7 +7,7 @@ using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
 
-internal static class ExtensionDynamicHandler
+internal static class ExtensionTools
 {
     internal static async ValueTask<ListToolsResult> ListToolsAsync(
         RequestContext<ListToolsRequestParams> context, CancellationToken cancellationToken)
