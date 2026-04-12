@@ -9,7 +9,7 @@ public class CustomToolUseCase(IUnityEditorClient client)
 {
     public async ValueTask<CustomToolListResponse> ListAsync(CancellationToken cancellationToken)
     {
-        return await client.GetAsync<object, CustomToolListResponse>(
+        return await client.GetAsync<CustomToolListRequest, CustomToolListResponse>(
             ApiRoutes.CustomToolList, cancellationToken: cancellationToken);
     }
 
