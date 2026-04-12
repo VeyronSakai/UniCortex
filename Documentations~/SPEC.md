@@ -782,7 +782,7 @@ PlayableDirector の Timeline 再生を停止し、先頭に戻す。
 レスポンス:
 ```json
 {
-  "tools": [
+  "extensions": [
     {
       "name": "spawn_enemy",
       "description": "Spawn an enemy prefab at the specified position.",

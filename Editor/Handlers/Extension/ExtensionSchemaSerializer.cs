@@ -96,6 +96,12 @@ namespace UniCortex.Editor.Handlers.Extension
                     case '\\':
                         sb.Append("\\\\");
                         break;
+                    case '\b':
+                        sb.Append("\\b");
+                        break;
+                    case '\f':
+                        sb.Append("\\f");
+                        break;
                     case '\n':
                         sb.Append("\\n");
                         break;
@@ -106,7 +112,15 @@ namespace UniCortex.Editor.Handlers.Extension
                         sb.Append("\\t");
                         break;
                     default:
-                        sb.Append(c);
+                        if (c < ' ')
+                        {
+                            sb.AppendFormat("\\u{0:x4}", (int)c);
+                        }
+                        else
+                        {
+                            sb.Append(c);
+                        }
+
                         break;
                 }
             }

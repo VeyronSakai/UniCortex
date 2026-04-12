@@ -45,21 +45,33 @@ namespace UniCortex.Editor.Handlers.Extension
                     continue;
                 }
 
-                if (string.IsNullOrEmpty(handler.Name))
+                string handlerName;
+                try
+                {
+                    handlerName = handler.Name;
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning(
+                        $"[UniCortex] Failed to read Name from extension handler {type.FullName}: {ex.Message}");
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(handlerName))
                 {
                     Debug.LogWarning(
                         $"[UniCortex] Extension handler {type.FullName} has an empty Name, skipping.");
                     continue;
                 }
 
-                if (_handlers.ContainsKey(handler.Name))
+                if (_handlers.ContainsKey(handlerName))
                 {
                     Debug.LogWarning(
-                        $"[UniCortex] Duplicate extension name '{handler.Name}' from {type.FullName}, skipping.");
+                        $"[UniCortex] Duplicate extension name '{handlerName}' from {type.FullName}, skipping.");
                     continue;
                 }
 
-                _handlers[handler.Name] = handler;
+                _handlers[handlerName] = handler;
             }
 
             if (_handlers.Count > 0)

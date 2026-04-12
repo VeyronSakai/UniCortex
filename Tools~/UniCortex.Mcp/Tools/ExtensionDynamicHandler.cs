@@ -15,35 +15,44 @@ internal static class ExtensionDynamicHandler
         var useCase = context.Server.Services!.GetRequiredService<ExtensionUseCase>();
         var logger = context.Server.Services!.GetRequiredService<ILogger<ExtensionUseCase>>();
 
+        List<Tool> tools;
         try
         {
             var response = await useCase.ListAsync(cancellationToken);
-            var tools = new List<Tool>();
+            var extensions = response.extensions ?? [];
+            tools = new List<Tool>(extensions.Count);
 
-            foreach (var info in response.extensions)
+            foreach (var info in extensions)
             {
-                var tool = new Tool
+                try
                 {
-                    Name = info.name,
-                    Description = info.description,
-                    Annotations = new ToolAnnotations { ReadOnlyHint = info.readOnly }
-                };
+                    var tool = new Tool
+                    {
+                        Name = info.name,
+                        Description = info.description,
+                        Annotations = new ToolAnnotations { ReadOnlyHint = info.readOnly }
+                    };
 
-                if (!string.IsNullOrEmpty(info.inputSchema))
-                {
-                    tool.InputSchema = JsonSerializer.Deserialize<JsonElement>(info.inputSchema);
+                    if (!string.IsNullOrEmpty(info.inputSchema))
+                    {
+                        tool.InputSchema = JsonSerializer.Deserialize<JsonElement>(info.inputSchema);
+                    }
+
+                    tools.Add(tool);
                 }
-
-                tools.Add(tool);
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to process extension '{Name}', skipping", info.name);
+                }
             }
-
-            return new ListToolsResult { Tools = tools };
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Failed to list extensions from Unity Editor");
-            return new ListToolsResult { Tools = [] };
+            tools = [];
         }
+
+        return new ListToolsResult { Tools = tools };
     }
 
     internal static async ValueTask<CallToolResult> CallToolAsync(

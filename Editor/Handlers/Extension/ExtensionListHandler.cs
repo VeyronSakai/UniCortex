@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -24,9 +25,8 @@ namespace UniCortex.Editor.Handlers.Extension
         private Task HandleListAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var items = new List<ExtensionInfo>();
-            foreach (var pair in _registry.Handlers)
+            foreach (var handler in _registry.Handlers.Values.OrderBy(h => h.Name))
             {
-                var handler = pair.Value;
                 items.Add(new ExtensionInfo
                 {
                     name = handler.Name,

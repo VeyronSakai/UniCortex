@@ -24,7 +24,8 @@ public class ExtensionCommands(ExtensionUseCase extensionUseCase)
 
     /// <summary>Execute an extension by name.</summary>
     [Command("execute")]
-    public async Task Execute(string name, string? arguments = null, CancellationToken cancellationToken = default)
+    public async Task Execute([Argument] string name, string? arguments = null,
+        CancellationToken cancellationToken = default)
     {
         var result = await extensionUseCase.ExecuteAsync(name, arguments, cancellationToken);
         Console.WriteLine(result);

@@ -17,8 +17,13 @@ internal class SampleListComponentsExtension : ExtensionHandler
 
     public override string Execute(string argumentsJson)
     {
+        if (string.IsNullOrEmpty(argumentsJson))
+        {
+            return "Error: gameObjectName is required.";
+        }
+
         var args = JsonUtility.FromJson<Args>(argumentsJson);
-        if (string.IsNullOrEmpty(args.gameObjectName))
+        if (args == null || string.IsNullOrEmpty(args.gameObjectName))
         {
             return "Error: gameObjectName is required.";
         }
