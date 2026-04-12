@@ -9,11 +9,13 @@ namespace UniCortex.Mcp.Tools;
 
 internal static class ExtensionDynamicHandler
 {
+    private sealed class LogCategory;
+
     internal static async ValueTask<ListToolsResult> ListToolsAsync(
         RequestContext<ListToolsRequestParams> context, CancellationToken cancellationToken)
     {
         var useCase = context.Server.Services!.GetRequiredService<ExtensionUseCase>();
-        var logger = context.Server.Services!.GetRequiredService<ILogger<ExtensionUseCase>>();
+        var logger = context.Server.Services!.GetRequiredService<ILogger<LogCategory>>();
 
         List<Tool> tools;
         try

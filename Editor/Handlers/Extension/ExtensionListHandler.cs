@@ -25,16 +25,26 @@ namespace UniCortex.Editor.Handlers.Extension
         private Task HandleListAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var items = new List<ExtensionInfo>();
-            foreach (var handler in _registry.Handlers.Values.OrderBy(h => h.Name))
+            foreach (var handler in _registry.Handlers.Values)
             {
-                items.Add(new ExtensionInfo
+                try
                 {
-                    name = handler.Name,
-                    description = handler.Description,
-                    readOnly = handler.ReadOnly,
-                    inputSchema = ExtensionSchemaSerializer.ToJsonSchema(handler.InputSchema)
-                });
+                    items.Add(new ExtensionInfo
+                    {
+                        name = handler.Name,
+                        description = handler.Description,
+                        readOnly = handler.ReadOnly,
+                        inputSchema = ExtensionSchemaSerializer.ToJsonSchema(handler.InputSchema)
+                    });
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogWarning(
+                        $"[UniCortex] Skipping extension during list because metadata extraction failed: {ex}");
+                }
             }
+
+            items = items.OrderBy(item => item.name).ToList();
 
             var response = new ExtensionListResponse { extensions = items };
             var json = JsonUtility.ToJson(response);
