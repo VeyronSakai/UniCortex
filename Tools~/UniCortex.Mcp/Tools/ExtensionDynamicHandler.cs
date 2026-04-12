@@ -12,8 +12,13 @@ internal static class ExtensionDynamicHandler
     internal static async ValueTask<ListToolsResult> ListToolsAsync(
         RequestContext<ListToolsRequestParams> context, CancellationToken cancellationToken)
     {
-        var useCase = context.Server.Services!.GetRequiredService<ExtensionUseCase>();
-        var logger = context.Server.Services!.GetRequiredService<ILogger<ExtensionUseCase>>();
+        if (context.Server.Services is not { } services)
+        {
+            return new ListToolsResult { Tools = [] };
+        }
+
+        var useCase = services.GetRequiredService<ExtensionUseCase>();
+        var logger = services.GetRequiredService<ILogger<ExtensionUseCase>>();
 
         List<Tool> tools;
         try
