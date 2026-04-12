@@ -10,7 +10,7 @@ public class ExtensionCommands(ExtensionUseCase extensionUseCase)
     public async Task List(CancellationToken cancellationToken)
     {
         var response = await extensionUseCase.ListAsync(cancellationToken);
-        if (response.extensions == null || response.extensions.Count == 0)
+        if (response.extensions is not { Count: > 0 })
         {
             Console.WriteLine("No extensions registered.");
             return;
