@@ -2,51 +2,54 @@ using System.Text;
 using UnityEngine;
 using UniCortex.Editor.Handlers.Extension;
 
-internal class SampleListComponentsExtension : ExtensionHandler
+namespace Editor
 {
-    public override string Name => "sample_list_components";
-    public override string Description =>
-        "List all components attached to a GameObject specified by name.";
-    public override bool ReadOnly => true;
-
-    public override ExtensionSchema InputSchema => new ExtensionSchema(
-        new ExtensionProperty("gameObjectName", ExtensionPropertyType.String,
-            "The name of the GameObject to inspect.", required: true)
-    );
-
-    public override string Execute(string argumentsJson)
+    internal class SampleListComponentsExtension : ExtensionHandler
     {
-        if (string.IsNullOrEmpty(argumentsJson))
+        public override string Name => "sample_list_components";
+        public override string Description =>
+            "List all components attached to a GameObject specified by name.";
+        public override bool ReadOnly => true;
+
+        public override ExtensionSchema InputSchema => new ExtensionSchema(
+            new ExtensionProperty("gameObjectName", ExtensionPropertyType.String,
+                "The name of the GameObject to inspect.", required: true)
+        );
+
+        public override string Execute(string argumentsJson)
         {
-            return "Error: gameObjectName is required.";
+            if (string.IsNullOrEmpty(argumentsJson))
+            {
+                return "Error: gameObjectName is required.";
+            }
+
+            var args = JsonUtility.FromJson<Args>(argumentsJson);
+            if (args == null || string.IsNullOrEmpty(args.gameObjectName))
+            {
+                return "Error: gameObjectName is required.";
+            }
+
+            var go = GameObject.Find(args.gameObjectName);
+            if (go == null)
+            {
+                return $"GameObject \"{args.gameObjectName}\" not found.";
+            }
+
+            var components = go.GetComponents<Component>();
+            var sb = new StringBuilder();
+            sb.AppendLine($"Components on \"{go.name}\" ({components.Length}):");
+            foreach (var component in components)
+            {
+                sb.AppendLine($"  - {component.GetType().FullName}");
+            }
+
+            return sb.ToString().TrimEnd();
         }
 
-        var args = JsonUtility.FromJson<Args>(argumentsJson);
-        if (args == null || string.IsNullOrEmpty(args.gameObjectName))
+        [System.Serializable]
+        private class Args
         {
-            return "Error: gameObjectName is required.";
+            public string gameObjectName;
         }
-
-        var go = GameObject.Find(args.gameObjectName);
-        if (go == null)
-        {
-            return $"GameObject \"{args.gameObjectName}\" not found.";
-        }
-
-        var components = go.GetComponents<Component>();
-        var sb = new StringBuilder();
-        sb.AppendLine($"Components on \"{go.name}\" ({components.Length}):");
-        foreach (var component in components)
-        {
-            sb.AppendLine($"  - {component.GetType().FullName}");
-        }
-
-        return sb.ToString().TrimEnd();
-    }
-
-    [System.Serializable]
-    private class Args
-    {
-        public string gameObjectName;
     }
 }
