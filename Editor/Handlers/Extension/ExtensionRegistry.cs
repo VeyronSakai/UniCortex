@@ -68,14 +68,13 @@ namespace UniCortex.Editor.Handlers.Extension
                     continue;
                 }
 
-                if (_handlers.ContainsKey(handlerName))
+                if (_handlers.TryAdd(handlerName, handler))
                 {
-                    Debug.LogWarning(
-                        $"[UniCortex] Duplicate extension name '{handlerName}' from {type.FullName}, skipping.");
                     continue;
                 }
 
-                _handlers[handlerName] = handler;
+                Debug.LogWarning(
+                    $"[UniCortex] Duplicate extension name '{handlerName}' from {type.FullName}, skipping.");
             }
 
             if (_handlers.Count > 0)
