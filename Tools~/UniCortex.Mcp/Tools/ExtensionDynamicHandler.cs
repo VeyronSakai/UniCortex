@@ -63,19 +63,29 @@ internal static class ExtensionDynamicHandler
     internal static async ValueTask<CallToolResult> CallToolAsync(
         RequestContext<CallToolRequestParams> context, CancellationToken cancellationToken)
     {
-        var useCase = context.Server.Services!.GetRequiredService<ExtensionUseCase>();
+        if (context.Server.Services is not { } services)
+        {
+            return ToolErrorHandling.CreateErrorResult(
+                new InvalidOperationException("MCP server services are not available."));
+        }
+
+        if (context.Params is not { } parameters)
+        {
+            return ToolErrorHandling.CreateErrorResult(
+                new InvalidOperationException("Tool call parameters are missing."));
+        }
+
+        var useCase = services.GetRequiredService<ExtensionUseCase>();
 
         try
         {
-            var name = context.Params!.Name;
             string? argumentsJson = null;
-
-            if (context.Params.Arguments is { Count: > 0 })
+            if (parameters.Arguments is { Count: > 0 })
             {
-                argumentsJson = JsonSerializer.Serialize(context.Params.Arguments);
+                argumentsJson = JsonSerializer.Serialize(parameters.Arguments);
             }
 
-            var result = await useCase.ExecuteAsync(name, argumentsJson, cancellationToken);
+            var result = await useCase.ExecuteAsync(parameters.Name, argumentsJson, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = result }] };
         }
         catch (Exception ex)
