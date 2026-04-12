@@ -1,7 +1,8 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UniCortex.Editor.Handlers.Extension;
 
-namespace Editor
+namespace Samples
 {
     internal class SampleCountGameObjectsExtension : ExtensionHandler
     {
@@ -51,3 +52,4 @@ namespace Editor
         }
     }
 }
+#endif

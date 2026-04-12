@@ -1,8 +1,9 @@
+#if UNITY_EDITOR
 using System.Text;
 using UnityEngine;
 using UniCortex.Editor.Handlers.Extension;
 
-namespace Editor
+namespace Samples
 {
     internal class SampleListComponentsExtension : ExtensionHandler
     {
@@ -53,3 +54,4 @@ namespace Editor
         }
     }
 }
+#endif
