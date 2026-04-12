@@ -1,3 +1,5 @@
+using System;
+
 namespace UniCortex.Editor.Handlers.Extension
 {
     /// <summary>
@@ -13,6 +15,9 @@ namespace UniCortex.Editor.Handlers.Extension
         public ExtensionProperty(string name, ExtensionPropertyType type, string description,
             bool required = false)
         {
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentException("Property name must not be null or empty.", nameof(name));
+
             Name = name;
             Type = type;
             Description = description;

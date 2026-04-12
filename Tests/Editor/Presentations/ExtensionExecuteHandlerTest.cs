@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
         [SetUp]
         public void SetUp()
         {
-            _registry = new ExtensionRegistry();
+            _registry = new ExtensionRegistry(discover: false);
             _stubHandler = new StubExtensionHandler("test_extension", "Test extension");
             _stubHandler.ExecuteResult = "test result";
             _registry.RegisterForTest(_stubHandler);

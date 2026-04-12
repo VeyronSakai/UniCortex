@@ -9,9 +9,13 @@ namespace UniCortex.Editor.Handlers.Extension
     {
         private readonly Dictionary<string, ExtensionHandler> _handlers = new();
 
-        internal ExtensionRegistry()
+        internal ExtensionRegistry() : this(discover: true)
         {
-            DiscoverHandlers();
+        }
+
+        internal ExtensionRegistry(bool discover)
+        {
+            if (discover) DiscoverHandlers();
         }
 
         internal bool TryGetHandler(string name, out ExtensionHandler handler)

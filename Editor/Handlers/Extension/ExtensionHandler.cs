@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace UniCortex.Editor.Handlers.Extension
 {
     /// <summary>
@@ -26,7 +28,7 @@ namespace UniCortex.Editor.Handlers.Extension
         /// <summary>
         /// The input parameter schema for this extension. Return null if it takes no parameters.
         /// </summary>
-        public virtual ExtensionSchema InputSchema => null;
+        public virtual ExtensionSchema? InputSchema => null;
 
         /// <summary>
         /// Execute the extension. This method runs on the Unity main thread.

@@ -1,10 +1,12 @@
+#nullable enable
+
 using System.Text;
 
 namespace UniCortex.Editor.Handlers.Extension
 {
     internal static class ExtensionSchemaSerializer
     {
-        internal static string ToJsonSchema(ExtensionSchema schema)
+        internal static string? ToJsonSchema(ExtensionSchema? schema)
         {
             if (schema == null || schema.Properties == null || schema.Properties.Length == 0)
             {

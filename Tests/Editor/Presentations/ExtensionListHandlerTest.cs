@@ -13,7 +13,7 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void HandleList_Returns200WithEmptyList_WhenNoExtensions()
         {
-            var registry = new ExtensionRegistry();
+            var registry = new ExtensionRegistry(discover: false);
             var handler = new ExtensionListHandler(registry);
 
             var router = new RequestRouter();

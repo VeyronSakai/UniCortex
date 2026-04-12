@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Text;
 using UnityEngine;
 using UniCortex.Editor.Handlers.Extension;
@@ -51,4 +50,3 @@ internal class SampleListComponentsExtension : ExtensionHandler
         public string gameObjectName;
     }
 }
-#endif

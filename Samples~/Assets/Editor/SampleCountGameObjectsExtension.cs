@@ -1,5 +1,3 @@
-#if UNITY_EDITOR
-using UnityEditor;
 using UnityEngine;
 using UniCortex.Editor.Handlers.Extension;
 
@@ -50,4 +48,3 @@ internal class SampleCountGameObjectsExtension : ExtensionHandler
         public string nameFilter;
     }
 }
-#endif
