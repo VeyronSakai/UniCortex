@@ -26,6 +26,7 @@ public sealed class UnityEditorFixture
 
     public InputUseCase InputUseCase { get; }
     public TimelineUseCase TimelineUseCase { get; }
+    public ExtensionUseCase ExtensionUseCase { get; }
     public string BaseUrl { get; }
 
     private UnityEditorFixture(ServiceProvider provider, string baseUrl)
@@ -46,6 +47,7 @@ public sealed class UnityEditorFixture
 
         InputUseCase = provider.GetRequiredService<InputUseCase>();
         TimelineUseCase = provider.GetRequiredService<TimelineUseCase>();
+        ExtensionUseCase = provider.GetRequiredService<ExtensionUseCase>();
         BaseUrl = baseUrl;
     }
 

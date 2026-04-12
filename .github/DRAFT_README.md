@@ -105,6 +105,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `timeline create\|play\|stop` | Create a TimelineAsset / Play or Stop a Timeline |
 | `timeline track add\|remove\|bind` | Timeline track operations |
 | `timeline clip add\|remove` | Timeline clip operations |
+| `extension list\|execute` | Extension management |
 
 ## Available MCP Tools
 
@@ -228,6 +229,73 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `remove_timeline_clip` | Remove a clip from a Timeline track by index (requires com.unity.timeline) |
 | `play_timeline` | Start playback of a Timeline on a PlayableDirector (requires com.unity.timeline) |
 | `stop_timeline` | Stop playback of a Timeline on a PlayableDirector and reset to the beginning (requires com.unity.timeline) |
+
+### Extensions
+
+User-defined extensions in your Unity project are automatically discovered and exposed alongside the built-in tools. See [Extension](#extension) for details.
+
+## Extension
+
+You can define extensions in your Unity project by creating Editor-only C# classes that inherit from `ExtensionHandler`. They are automatically discovered via `TypeCache` and exposed as MCP tools and CLI commands.
+
+```csharp
+#if UNITY_EDITOR
+using UniCortex.Editor.Handlers.Extension;
+using UnityEngine;
+
+public class CountGameObjects : ExtensionHandler
+{
+    public override string Name => "count_gameobjects";
+    public override string Description => "Count GameObjects in the current scene.";
+    public override bool ReadOnly => true;
+
+    public override ExtensionSchema InputSchema => new ExtensionSchema(
+        new ExtensionProperty("nameFilter", ExtensionPropertyType.String,
+            "Only count GameObjects whose name contains this string.")
+    );
+
+    public override string Execute(string argumentsJson)
+    {
+        // Runs on the Unity main thread — safe to call Unity APIs
+        var filter = "";
+        if (!string.IsNullOrEmpty(argumentsJson))
+        {
+            var args = JsonUtility.FromJson<Args>(argumentsJson);
+            if (!string.IsNullOrEmpty(args.nameFilter))
+                filter = args.nameFilter;
+        }
+
+        var allObjects = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+        var count = 0;
+        foreach (var obj in allObjects)
+        {
+            if (string.IsNullOrEmpty(filter) || obj.name.Contains(filter))
+                count++;
+        }
+
+        return $"Found {count} GameObject(s).";
+    }
+
+    [System.Serializable]
+    private class Args
+    {
+        public string nameFilter;
+    }
+}
+#endif
+```
+
+### API Reference
+
+| Class | Description |
+|-------|-------------|
+| `ExtensionHandler` | Abstract base class. Override `Name`, `Description`, `InputSchema`, and `Execute()` |
+| `ExtensionSchema` | Defines the input parameter schema via `ExtensionProperty` array |
+| `ExtensionProperty` | Defines a single parameter: name, type, description, and whether it is required |
+| `ExtensionPropertyType` | Parameter types: `String`, `Number`, `Integer`, `Boolean` |
+
+> [!NOTE]
+> After adding or removing extensions, restart the MCP client (e.g., Claude Code) to refresh the tool list.
 
 ## Architecture
 

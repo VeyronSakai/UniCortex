@@ -16,6 +16,8 @@ builder.Services.AddUniCortexCore();
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
-    .WithToolsFromAssembly();
+    .WithToolsFromAssembly()
+    .WithListToolsHandler(UniCortex.Mcp.Tools.ExtensionTools.ListToolsAsync)
+    .WithCallToolHandler(UniCortex.Mcp.Tools.ExtensionTools.CallToolAsync);
 
 await builder.Build().RunAsync();

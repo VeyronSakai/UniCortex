@@ -1,6 +1,7 @@
 using UniCortex.Editor.Handlers.Asset;
 using UniCortex.Editor.Handlers.Component;
 using UniCortex.Editor.Handlers.Console;
+using UniCortex.Editor.Handlers.Extension;
 using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Prefab;
@@ -330,6 +331,12 @@ namespace UniCortex.Editor
             removeTimelineClipHandler.Register(router);
             playTimelineHandler.Register(router);
             stopTimelineHandler.Register(router);
+
+            var extensionRegistry = new ExtensionRegistry();
+            var extensionListHandler = new ExtensionListHandler(extensionRegistry);
+            var extensionExecuteHandler = new ExtensionExecuteHandler(extensionRegistry, s_dispatcher);
+            extensionListHandler.Register(router);
+            extensionExecuteHandler.Register(router);
         }
 
         private static int FindFreePort()

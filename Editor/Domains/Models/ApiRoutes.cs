@@ -55,5 +55,8 @@ namespace UniCortex.Editor.Domains.Models
         public const string RecorderMovieRemove = "/recorder/movie/remove";
         public const string RecorderMovieStart = "/recorder/movie/start";
         public const string RecorderMovieStop = "/recorder/movie/stop";
+
+        public const string ExtensionList = "/extensions/list";
+        public const string ExtensionExecute = "/extensions/execute";
     }
 }
