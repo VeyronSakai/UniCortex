@@ -105,7 +105,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `timeline create\|play\|stop` | Create a TimelineAsset / Play or Stop a Timeline |
 | `timeline track add\|remove\|bind` | Timeline track operations |
 | `timeline clip add\|remove` | Timeline clip operations |
-| `custom-tool list\|execute` | Custom tool management |
+| `extension list\|execute` | Extension management |
 
 ## Available MCP Tools
 
@@ -230,27 +230,27 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `play_timeline` | Start playback of a Timeline on a PlayableDirector (requires com.unity.timeline) |
 | `stop_timeline` | Stop playback of a Timeline on a PlayableDirector and reset to the beginning (requires com.unity.timeline) |
 
-### Custom Tools
+### Extensions
 
-Custom MCP tools defined in your Unity project are automatically discovered and exposed alongside the built-in tools. See [Custom Tool Extension](#custom-tool-extension) for details.
+User-defined extensions in your Unity project are automatically discovered and exposed alongside the built-in tools. See [Extension](#extension) for details.
 
-## Custom Tool Extension
+## Extension
 
-You can define custom MCP tools in your Unity project by creating Editor-only C# classes that inherit from `CustomToolHandler`. They are automatically discovered via `TypeCache` and exposed as MCP tools.
+You can define extensions in your Unity project by creating Editor-only C# classes that inherit from `ExtensionHandler`. They are automatically discovered via `TypeCache` and exposed as MCP tools and CLI commands.
 
 ```csharp
 #if UNITY_EDITOR
-using UniCortex.Editor.Handlers.CustomTool;
+using UniCortex.Editor.Handlers.Extension;
 using UnityEngine;
 
-public class CountGameObjectsTool : CustomToolHandler
+public class CountGameObjects : ExtensionHandler
 {
-    public override string ToolName => "count_gameobjects";
+    public override string Name => "count_gameobjects";
     public override string Description => "Count GameObjects in the current scene.";
     public override bool ReadOnly => true;
 
-    public override CustomToolSchema InputSchema => new CustomToolSchema(
-        new CustomToolProperty("nameFilter", CustomToolPropertyType.String,
+    public override ExtensionSchema InputSchema => new ExtensionSchema(
+        new ExtensionProperty("nameFilter", ExtensionPropertyType.String,
             "Only count GameObjects whose name contains this string.")
     );
 
@@ -289,13 +289,13 @@ public class CountGameObjectsTool : CustomToolHandler
 
 | Class | Description |
 |-------|-------------|
-| `CustomToolHandler` | Abstract base class. Override `ToolName`, `Description`, `InputSchema`, and `Execute()` |
-| `CustomToolSchema` | Defines the input parameter schema via `CustomToolProperty` array |
-| `CustomToolProperty` | Defines a single parameter: name, type, description, and whether it is required |
-| `CustomToolPropertyType` | Parameter types: `String`, `Number`, `Integer`, `Boolean` |
+| `ExtensionHandler` | Abstract base class. Override `Name`, `Description`, `InputSchema`, and `Execute()` |
+| `ExtensionSchema` | Defines the input parameter schema via `ExtensionProperty` array |
+| `ExtensionProperty` | Defines a single parameter: name, type, description, and whether it is required |
+| `ExtensionPropertyType` | Parameter types: `String`, `Number`, `Integer`, `Boolean` |
 
 > [!NOTE]
-> After adding or removing custom tools, restart the MCP client (e.g., Claude Code) to refresh the tool list.
+> After adding or removing extensions, restart the MCP client (e.g., Claude Code) to refresh the tool list.
 
 ## Architecture
 

@@ -1,7 +1,7 @@
 using UniCortex.Editor.Handlers.Asset;
 using UniCortex.Editor.Handlers.Component;
 using UniCortex.Editor.Handlers.Console;
-using UniCortex.Editor.Handlers.CustomTool;
+using UniCortex.Editor.Handlers.Extension;
 using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Prefab;
@@ -332,11 +332,11 @@ namespace UniCortex.Editor
             playTimelineHandler.Register(router);
             stopTimelineHandler.Register(router);
 
-            var customToolRegistry = new CustomToolRegistry();
-            var customToolListHandler = new CustomToolListHandler(customToolRegistry);
-            var customToolExecuteHandler = new CustomToolExecuteHandler(customToolRegistry, s_dispatcher);
-            customToolListHandler.Register(router);
-            customToolExecuteHandler.Register(router);
+            var extensionRegistry = new ExtensionRegistry();
+            var extensionListHandler = new ExtensionListHandler(extensionRegistry);
+            var extensionExecuteHandler = new ExtensionExecuteHandler(extensionRegistry, s_dispatcher);
+            extensionListHandler.Register(router);
+            extensionExecuteHandler.Register(router);
         }
 
         private static int FindFreePort()

@@ -17,7 +17,7 @@ builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
     .WithToolsFromAssembly()
-    .WithListToolsHandler(UniCortex.Mcp.Tools.CustomToolDynamicHandler.ListToolsAsync)
-    .WithCallToolHandler(UniCortex.Mcp.Tools.CustomToolDynamicHandler.CallToolAsync);
+    .WithListToolsHandler(UniCortex.Mcp.Tools.ExtensionDynamicHandler.ListToolsAsync)
+    .WithCallToolHandler(UniCortex.Mcp.Tools.ExtensionDynamicHandler.CallToolAsync);
 
 await builder.Build().RunAsync();

@@ -38,7 +38,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<GameViewUseCase>();
         services.AddTransient<InputUseCase>();
         services.AddTransient<TimelineUseCase>();
-        services.AddTransient<CustomToolUseCase>();
+        services.AddTransient<ExtensionUseCase>();
 
         return services;
     }
