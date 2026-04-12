@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UniCortex.Editor.Handlers.Extension;
 
-internal class SampleExtension : ExtensionHandler
+internal class SampleCountGameObjectsExtension : ExtensionHandler
 {
     public override string Name => "sample_count_gameobjects";
     public override string Description => "Count GameObjects in the current scene, optionally filtered by name.";
