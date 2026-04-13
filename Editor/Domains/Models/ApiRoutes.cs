@@ -50,6 +50,10 @@ namespace UniCortex.Editor.Domains.Models
         public const string FocusGameView = "/game-view/focus";
         public const string GameViewSize = "/game-view/size";
         public const string GameViewSizeList = "/game-view/size/list";
+        public const string ProfilerFocus = "/profiler/focus";
+        public const string ProfilerStatus = "/profiler/status";
+        public const string ProfilerStartRecording = "/profiler/recording/start";
+        public const string ProfilerStopRecording = "/profiler/recording/stop";
         public const string RecorderAllList = "/recorder/all/list";
         public const string RecorderMovieAdd = "/recorder/movie/add";
         public const string RecorderMovieRemove = "/recorder/movie/remove";

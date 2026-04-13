@@ -99,6 +99,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `scene-view focus` | Switch focus to Scene View |
 | `game-view focus` | Switch focus to Game View |
 | `game-view size get\|list\|set` | Game View size control |
+| `profiler focus\|status\|start\|stop` | Profiler window and recording control |
 | `recorder all list` | List all configured recorders (requires com.unity.recorder) |
 | `recorder movie add\|remove\|start\|stop` | Movie Recorder management (requires com.unity.recorder) |
 | `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
@@ -198,6 +199,15 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `get_game_view_size` | Get the current Game View size (width and height in pixels) |
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
+
+### Profiler
+
+| Tool | Description |
+|------|-------------|
+| `focus_profiler_window` | Open or focus the Profiler window in the Unity Editor |
+| `get_profiler_status` | Get the current Profiler window and recording state as JSON |
+| `start_profiler_recording` | Start Profiler recording in the Unity Editor; optionally enable Editor profiling |
+| `stop_profiler_recording` | Stop Profiler recording in the Unity Editor |
 
 ### Recorder
 

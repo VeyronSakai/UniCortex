@@ -28,6 +28,7 @@ app.Add<ScreenshotCommands>("screenshot");
 app.Add<SceneViewCommands>("scene-view");
 app.Add<GameViewCommands>("game-view");
 app.Add<GameViewSizeCommands>("game-view size");
+app.Add<ProfilerCommands>("profiler");
 app.Add<RecorderAllCommands>("recorder all");
 app.Add<MovieRecorderCommands>("recorder movie");
 app.Add<InputCommands>("input");

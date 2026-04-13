@@ -23,6 +23,7 @@ public sealed class UnityEditorFixture
     public MovieRecordingUseCase MovieRecordingUseCase { get; }
     public SceneViewUseCase SceneViewUseCase { get; }
     public GameViewUseCase GameViewUseCase { get; }
+    public ProfilerUseCase ProfilerUseCase { get; }
 
     public InputUseCase InputUseCase { get; }
     public TimelineUseCase TimelineUseCase { get; }
@@ -44,6 +45,7 @@ public sealed class UnityEditorFixture
         MovieRecordingUseCase = provider.GetRequiredService<MovieRecordingUseCase>();
         SceneViewUseCase = provider.GetRequiredService<SceneViewUseCase>();
         GameViewUseCase = provider.GetRequiredService<GameViewUseCase>();
+        ProfilerUseCase = provider.GetRequiredService<ProfilerUseCase>();
 
         InputUseCase = provider.GetRequiredService<InputUseCase>();
         TimelineUseCase = provider.GetRequiredService<TimelineUseCase>();

@@ -12,6 +12,7 @@ using UniCortex.Editor.Handlers.Input;
 using UniCortex.Editor.Handlers.Screenshot;
 using UniCortex.Editor.Handlers.SceneView;
 using UniCortex.Editor.Handlers.GameView;
+using UniCortex.Editor.Handlers.Profiler;
 using UniCortex.Editor.Handlers.MovieRecorder;
 using UniCortex.Editor.Handlers.Timeline;
 using UniCortex.Editor.Infrastructures;
@@ -216,6 +217,20 @@ namespace UniCortex.Editor
             var setGameViewSizeUseCase = new SetGameViewSizeUseCase(s_dispatcher, editorWindowOps);
             var setGameViewSizeHandler = new SetGameViewSizeHandler(setGameViewSizeUseCase);
 
+            var profilerOps = new ProfilerOperationsAdapter();
+
+            var focusProfilerWindowUseCase = new FocusProfilerWindowUseCase(s_dispatcher, profilerOps);
+            var focusProfilerWindowHandler = new FocusProfilerWindowHandler(focusProfilerWindowUseCase);
+
+            var getProfilerStatusUseCase = new GetProfilerStatusUseCase(s_dispatcher, profilerOps);
+            var getProfilerStatusHandler = new GetProfilerStatusHandler(getProfilerStatusUseCase);
+
+            var startProfilerRecordingUseCase = new StartProfilerRecordingUseCase(s_dispatcher, profilerOps);
+            var startProfilerRecordingHandler = new StartProfilerRecordingHandler(startProfilerRecordingUseCase);
+
+            var stopProfilerRecordingUseCase = new StopProfilerRecordingUseCase(s_dispatcher, profilerOps);
+            var stopProfilerRecordingHandler = new StopProfilerRecordingHandler(stopProfilerRecordingUseCase);
+
 #if UNICORTEX_RECORDER
             var allRecorderOps = new AllRecorderOperationsAdapter();
             var movieRecordingOps = new MovieRecordingOperationsAdapter();
@@ -315,6 +330,10 @@ namespace UniCortex.Editor
             getGameViewSizeHandler.Register(router);
             getGameViewSizeListHandler.Register(router);
             setGameViewSizeHandler.Register(router);
+            focusProfilerWindowHandler.Register(router);
+            getProfilerStatusHandler.Register(router);
+            startProfilerRecordingHandler.Register(router);
+            stopProfilerRecordingHandler.Register(router);
             addMovieRecorderHandler.Register(router);
             getRecorderListHandler.Register(router);
             removeMovieRecorderHandler.Register(router);
