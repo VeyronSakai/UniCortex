@@ -6,6 +6,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
     internal sealed class SpyEditorWindowOperations : IEditorWindowOperations
     {
         public int FocusSceneViewCallCount { get; private set; }
+        public int SetSceneViewCameraCallCount { get; private set; }
         public int FocusGameViewCallCount { get; private set; }
         public int GetGameViewSizeCallCount { get; private set; }
         public int GetGameViewSizeListCallCount { get; private set; }
@@ -13,6 +14,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int GameViewWidth { get; set; } = 800;
         public int GameViewHeight { get; set; } = 600;
         public int LastSetIndex { get; private set; } = -1;
+        public SetSceneViewCameraRequest? LastSceneViewCameraRequest { get; private set; }
 
         public GameViewSizeEntry[] SizeListEntries { get; set; } = new[]
         {
@@ -25,6 +27,12 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public void FocusSceneView()
         {
             FocusSceneViewCallCount++;
+        }
+
+        public void SetSceneViewCamera(SetSceneViewCameraRequest request)
+        {
+            SetSceneViewCameraCallCount++;
+            LastSceneViewCameraRequest = request;
         }
 
         public void FocusGameView()

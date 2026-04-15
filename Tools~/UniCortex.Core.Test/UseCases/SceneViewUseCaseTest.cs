@@ -21,4 +21,16 @@ public class SceneViewUseCaseTest
 
         Assert.That(result, Does.Contain("successfully"));
     }
+
+    [Test]
+    public async ValueTask SetCamera_Succeeds()
+    {
+        var result = await _fixture.SceneViewUseCase.SetCameraAsync(
+            0f, 1f, -10f,
+            0f, 0f, 0f, 1f,
+            8f, false,
+            CancellationToken.None);
+
+        Assert.That(result, Does.Contain("successfully"));
+    }
 }

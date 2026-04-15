@@ -96,7 +96,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `asset refresh` | Refresh Asset Database |
 | `menu execute` | Execute menu items |
 | `screenshot capture` | Capture screenshot (Play Mode only) |
-| `scene-view focus` | Switch focus to Scene View |
+| `scene-view focus\|set-camera` | Scene View focus and camera control |
 | `game-view focus` | Switch focus to Game View |
 | `game-view size get\|list\|set` | Game View size control |
 | `recorder all list` | List all configured recorders (requires com.unity.recorder) |
@@ -195,6 +195,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | Tool | Description |
 |------|-------------|
 | `focus_scene_view` | Switch focus to the Scene View window |
+| `set_scene_view_camera` | Set the Scene View camera pose from world position and rotation quaternion |
 | `focus_game_view` | Switch focus to the Game View window |
 | `get_game_view_size` | Get the current Game View size (width and height in pixels) |
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
