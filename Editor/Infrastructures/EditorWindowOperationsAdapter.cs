@@ -65,10 +65,14 @@ namespace UniCortex.Editor.Infrastructures
                 throw new ArgumentException("Scene View camera rotation is required.");
             }
 
-            if (request.size.HasValue && request.size.Value <= 0f)
+            if (request.size.HasValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(request.size),
-                    "Scene View camera size must be greater than 0.");
+                EnsureFinite(request.size.Value, nameof(SetSceneViewCameraRequest.size));
+                if (request.size.Value <= 0f)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(request.size),
+                        "Scene View camera size must be greater than 0.");
+                }
             }
 
             var position = ToVector3(request.position, nameof(request.position));
