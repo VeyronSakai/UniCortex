@@ -40,6 +40,19 @@ namespace UniCortex.Editor.Infrastructures
             EditorWindow.FocusWindowIfItsOpen(typeof(SceneView));
         }
 
+        public GetSceneViewCameraResponse GetSceneViewCamera()
+        {
+            var sceneView = GetOrOpenSceneView();
+            var rotation = sceneView.rotation;
+            var position = sceneView.pivot - rotation * Vector3.forward * sceneView.cameraDistance;
+
+            return new GetSceneViewCameraResponse(
+                ToVector3Data(position),
+                ToQuaternionData(rotation),
+                sceneView.size,
+                sceneView.orthographic);
+        }
+
         public void SetSceneViewCamera(SetSceneViewCameraRequest request)
         {
             if (request.position == null)
@@ -60,7 +73,7 @@ namespace UniCortex.Editor.Infrastructures
 
             var position = ToVector3(request.position, nameof(request.position));
             var rotation = ToQuaternion(request.rotation, nameof(request.rotation));
-            var sceneView = SceneView.lastActiveSceneView ?? EditorWindow.GetWindow<SceneView>();
+            var sceneView = GetOrOpenSceneView();
 
             sceneView.Focus();
 
@@ -184,12 +197,27 @@ namespace UniCortex.Editor.Infrastructures
             selectedSizeIndexProp.SetValue(gameView, index);
         }
 
+        private static SceneView GetOrOpenSceneView()
+        {
+            return SceneView.lastActiveSceneView ?? EditorWindow.GetWindow<SceneView>();
+        }
+
         private static Vector3 ToVector3(Vector3Data value, string fieldName)
         {
             EnsureFinite(value.x, $"{fieldName}.x");
             EnsureFinite(value.y, $"{fieldName}.y");
             EnsureFinite(value.z, $"{fieldName}.z");
             return new Vector3(value.x, value.y, value.z);
+        }
+
+        private static Vector3Data ToVector3Data(Vector3 value)
+        {
+            return new Vector3Data
+            {
+                x = value.x,
+                y = value.y,
+                z = value.z
+            };
         }
 
         private static Quaternion ToQuaternion(QuaternionData value, string fieldName)
@@ -215,6 +243,17 @@ namespace UniCortex.Editor.Infrastructures
                 value.y * inverseMagnitude,
                 value.z * inverseMagnitude,
                 value.w * inverseMagnitude);
+        }
+
+        private static QuaternionData ToQuaternionData(Quaternion value)
+        {
+            return new QuaternionData
+            {
+                x = value.x,
+                y = value.y,
+                z = value.z,
+                w = value.w
+            };
         }
 
         private static void EnsureFinite(float value, string fieldName)

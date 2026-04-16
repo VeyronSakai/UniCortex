@@ -1,3 +1,5 @@
+using System.Text.Json;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -10,6 +12,18 @@ public class SceneViewUseCase(IUnityEditorClient client)
         await client.PostAsync<FocusSceneViewRequest, FocusSceneViewResponse>(
             ApiRoutes.FocusSceneView, cancellationToken: cancellationToken);
         return "Scene View focused successfully.";
+    }
+
+    public async ValueTask<string> GetCameraAsync(CancellationToken cancellationToken)
+    {
+        var response = await GetCameraResponseAsync(cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
+    }
+
+    public async ValueTask<GetSceneViewCameraResponse> GetCameraResponseAsync(CancellationToken cancellationToken)
+    {
+        return await client.GetAsync<GetSceneViewCameraRequest, GetSceneViewCameraResponse>(
+            ApiRoutes.SceneViewCamera, cancellationToken: cancellationToken);
     }
 
     public async ValueTask<string> SetCameraAsync(

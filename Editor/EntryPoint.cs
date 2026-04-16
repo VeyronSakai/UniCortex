@@ -204,6 +204,9 @@ namespace UniCortex.Editor
             var focusSceneViewUseCase = new FocusSceneViewUseCase(s_dispatcher, editorWindowOps);
             var focusSceneViewHandler = new FocusSceneViewHandler(focusSceneViewUseCase);
 
+            var getSceneViewCameraUseCase = new GetSceneViewCameraUseCase(s_dispatcher, editorWindowOps);
+            var getSceneViewCameraHandler = new GetSceneViewCameraHandler(getSceneViewCameraUseCase);
+
             var setSceneViewCameraUseCase = new SetSceneViewCameraUseCase(s_dispatcher, editorWindowOps);
             var setSceneViewCameraHandler = new SetSceneViewCameraHandler(setSceneViewCameraUseCase);
 
@@ -314,6 +317,7 @@ namespace UniCortex.Editor
             executeMenuItemHandler.Register(router);
             captureScreenshotHandler.Register(router);
             focusSceneViewHandler.Register(router);
+            getSceneViewCameraHandler.Register(router);
             setSceneViewCameraHandler.Register(router);
             focusGameViewHandler.Register(router);
             getGameViewSizeHandler.Register(router);

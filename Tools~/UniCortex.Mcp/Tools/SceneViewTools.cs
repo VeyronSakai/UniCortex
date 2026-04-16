@@ -25,6 +25,24 @@ public class SceneViewTools(SceneViewUseCase sceneViewUseCase)
         }
     }
 
+    [McpServerTool(Name = "get_scene_view_camera", ReadOnly = true),
+     Description(
+         "Get the current Scene View camera pose in the Unity Editor as position, rotation quaternion, size, and orthographic mode. " +
+         "Opens a Scene View automatically if none is active."),
+     UsedImplicitly]
+    public async ValueTask<CallToolResult> GetSceneViewCameraAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var json = await sceneViewUseCase.GetCameraAsync(cancellationToken);
+            return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
     [McpServerTool(Name = "set_scene_view_camera", ReadOnly = false),
      Description(
          "Set the Scene View camera pose in the Unity Editor by directly specifying its world position and rotation quaternion. " +

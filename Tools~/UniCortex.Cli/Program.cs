@@ -26,6 +26,7 @@ app.Add<MenuItemCommands>("menu");
 app.Add<ScreenshotCommands>("screenshot");
 
 app.Add<SceneViewCommands>("scene-view");
+app.Add<SceneViewCameraCommands>("scene-view camera");
 app.Add<GameViewCommands>("game-view");
 app.Add<GameViewSizeCommands>("game-view size");
 app.Add<RecorderAllCommands>("recorder all");

@@ -33,4 +33,26 @@ public class SceneViewUseCaseTest
 
         Assert.That(result, Does.Contain("successfully"));
     }
+
+    [Test]
+    public async ValueTask GetCamera_ReturnsCurrentCameraState()
+    {
+        await _fixture.SceneViewUseCase.SetCameraAsync(
+            2f, 3f, -12f,
+            0f, 0f, 0f, 1f,
+            9f, true,
+            CancellationToken.None);
+
+        var response = await _fixture.SceneViewUseCase.GetCameraResponseAsync(CancellationToken.None);
+
+        Assert.That(response.position.x, Is.EqualTo(2f).Within(0.001f));
+        Assert.That(response.position.y, Is.EqualTo(3f).Within(0.001f));
+        Assert.That(response.position.z, Is.EqualTo(-12f).Within(0.001f));
+        Assert.That(response.rotation.x, Is.EqualTo(0f).Within(0.001f));
+        Assert.That(response.rotation.y, Is.EqualTo(0f).Within(0.001f));
+        Assert.That(response.rotation.z, Is.EqualTo(0f).Within(0.001f));
+        Assert.That(response.rotation.w, Is.EqualTo(1f).Within(0.001f));
+        Assert.That(response.size, Is.GreaterThan(0f));
+        Assert.That(response.orthographic, Is.True);
+    }
 }

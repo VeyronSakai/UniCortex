@@ -1,3 +1,5 @@
+using System.Text.Json;
+using UniCortex.Core.Domains;
 using ConsoleAppFramework;
 using UniCortex.Core.UseCases;
 
@@ -12,6 +14,18 @@ public class SceneViewCommands(SceneViewUseCase sceneViewUseCase)
         var message = await sceneViewUseCase.FocusAsync(cancellationToken);
         Console.WriteLine(message);
     }
+}
+
+public class SceneViewCameraCommands(SceneViewUseCase sceneViewUseCase)
+{
+    /// <summary>Get the current Scene View camera pose as JSON.</summary>
+    [Command("get")]
+    public async Task Get(CancellationToken cancellationToken = default)
+    {
+        var response = await sceneViewUseCase.GetCameraResponseAsync(cancellationToken);
+        var json = JsonSerializer.Serialize(response, JsonOptions.Default);
+        Console.WriteLine(json);
+    }
 
     /// <summary>Set the Scene View camera pose using world position and rotation quaternion.</summary>
     /// <param name="positionX">Scene View camera world position X.</param>
@@ -23,7 +37,7 @@ public class SceneViewCommands(SceneViewUseCase sceneViewUseCase)
     /// <param name="rotationW">Scene View camera rotation quaternion W.</param>
     /// <param name="size">Optional Scene View size (zoom). Must be greater than 0 when provided.</param>
     /// <param name="orthographic">Optional orthographic toggle. true for orthographic, false for perspective.</param>
-    [Command("set-camera")]
+    [Command("set")]
     public async Task SetCamera(
         [Argument] float positionX,
         [Argument] float positionY,
