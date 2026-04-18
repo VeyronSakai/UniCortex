@@ -18,7 +18,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.RequestTimeout, context.ResponseStatusCode);
-            StringAssert.Contains("Request was cancelled.", context.ResponseBody);
+            StringAssert.Contains(ErrorMessages.RequestWasCancelled, context.ResponseBody);
         }
 
         [Test]

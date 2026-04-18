@@ -13,7 +13,7 @@ namespace UniCortex.Editor.Infrastructures
             if (exception is OperationCanceledException)
             {
                 return context.WriteResponseAsync(HttpStatusCodes.RequestTimeout,
-                    JsonUtility.ToJson(new ErrorResponse("Request was cancelled.")));
+                    JsonUtility.ToJson(new ErrorResponse(ErrorMessages.RequestWasCancelled)));
             }
 
             return context.WriteResponseAsync(HttpStatusCodes.InternalServerError,

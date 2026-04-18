@@ -14,14 +14,14 @@ public class TestUseCaseUnitTest
     {
         var client = new FakeUnityEditorClient
         {
-            PostException = new HttpRequestException("Request was cancelled.")
+            PostException = new HttpRequestException(ErrorMessages.RequestWasCancelled)
         };
         var useCase = new TestUseCase(client);
 
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
             await useCase.RunAsync(cancellationToken: CancellationToken.None));
 
-        Assert.That(ex!.Message, Is.EqualTo("Request was cancelled."));
+        Assert.That(ex!.Message, Is.EqualTo(ErrorMessages.RequestWasCancelled));
     }
 
     private sealed class FakeUnityEditorClient : IUnityEditorClient
