@@ -6,6 +6,9 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class ProjectViewOperationsAdapter : IProjectViewOperations
     {
+        private static readonly Type s_projectBrowserType =
+            typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.ProjectBrowser");
+
         public void SelectAsset(string assetPath)
         {
             if (string.IsNullOrEmpty(assetPath))
@@ -19,7 +22,14 @@ namespace UniCortex.Editor.Infrastructures
                 throw new ArgumentException($"Asset not found at path: {assetPath}");
             }
 
-            EditorUtility.FocusProjectWindow();
+            if (s_projectBrowserType == null)
+            {
+                throw new InvalidOperationException(
+                    "ProjectBrowser type not found. This Unity version may not be supported.");
+            }
+
+            var projectBrowser = EditorWindow.GetWindow(s_projectBrowserType);
+            projectBrowser.Focus();
             Selection.activeObject = asset;
             EditorGUIUtility.PingObject(asset);
         }
