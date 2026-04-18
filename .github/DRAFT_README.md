@@ -312,6 +312,21 @@ dotnet tool run unicortex -- scene hierarchy
 
 If the tool is already installed, run `dotnet tool update --local UniCortex.Cli` instead.
 
+If you share the tool manifest with your team, run `dotnet tool restore` before the first `dotnet tool run ...` so the manifest-defined tools are installed locally.
+
+### Install as a `dotnet` global tool
+
+Install `UniCortex.Cli` globally when you want to invoke `unicortex` directly from your shell.
+
+```bash
+dotnet tool install --global UniCortex.Cli
+
+unicortex editor ping
+unicortex scene hierarchy
+```
+
+If the tool is already installed, run `dotnet tool update --global UniCortex.Cli` instead.
+
 ### Argument and output conventions
 
 - Required parameters are positional arguments, for example `scene open Assets/Scenes/Main.unity`.
