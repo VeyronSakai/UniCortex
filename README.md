@@ -419,51 +419,6 @@ dotnet run --project "$UNICORTEX_CLI_PROJECT" -- extension list
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- extension execute count_gameobjects --arguments '{"nameFilter":"Camera"}'
 ```
 
-## Architecture
-
-```mermaid
-graph LR
-    Agent["AI Agent"]
-    MCP["UniCortex.Mcp<br/>.NET 10"]
-    CLI["UniCortex.Cli<br/>.NET 10"]
-    Unity["Unity Editor<br/>HTTP Server"]
-
-    Agent -- "MCP / stdio" --> MCP
-    Agent -- "CLI" --> CLI
-    MCP -- "HTTP" --> Unity
-    CLI -- "HTTP" --> Unity
-```
-
-- **Unity Editor side**: C# `HttpListener` HTTP server embedded in the Editor
-- **Shared Core**: `UniCortex.Core` — service layer and HTTP infrastructure shared by MCP and CLI
-- **MCP Server**: `UniCortex.Mcp` — .NET 10 + [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk)
-- **CLI Tool**: `UniCortex.Cli` — .NET 10 + [ConsoleAppFramework](https://github.com/Cysharp/ConsoleAppFramework)
-- **UPM Package**: `com.veyron-sakai.uni-cortex`
-
-## Documentation
-
-- [`Documentations~/SPEC.md`](Documentations~/SPEC.md) — Full API endpoint and MCP tool definitions
-
-## Contributing
-
-When developing this package locally:
-
-```bash
-# Build all projects
-dotnet build Tools~/UniCortex.Core/
-dotnet build Tools~/UniCortex.Mcp/
-dotnet build Tools~/UniCortex.Cli/
-
-# Run tests
-UNICORTEX_PROJECT_PATH=$(pwd)/Samples~ dotnet test Tools~/UniCortex.Core.Test/
-
-# Run MCP server
-dotnet run --project Tools~/UniCortex.Mcp/
-
-# Run CLI
-dotnet run --project Tools~/UniCortex.Cli/ -- editor ping
-```
-
 ## Extension
 
 You can define extensions in your Unity project by creating Editor-only C# classes that inherit from `ExtensionHandler`. They are automatically discovered via `TypeCache` and exposed as MCP tools and CLI commands.
@@ -526,6 +481,51 @@ public class CountGameObjects : ExtensionHandler
 
 > [!NOTE]
 > After adding or removing extensions, restart the MCP client (e.g., Claude Code) to refresh the tool list.
+
+## Architecture
+
+```mermaid
+graph LR
+    Agent["AI Agent"]
+    MCP["UniCortex.Mcp<br/>.NET 10"]
+    CLI["UniCortex.Cli<br/>.NET 10"]
+    Unity["Unity Editor<br/>HTTP Server"]
+
+    Agent -- "MCP / stdio" --> MCP
+    Agent -- "CLI" --> CLI
+    MCP -- "HTTP" --> Unity
+    CLI -- "HTTP" --> Unity
+```
+
+- **Unity Editor side**: C# `HttpListener` HTTP server embedded in the Editor
+- **Shared Core**: `UniCortex.Core` — service layer and HTTP infrastructure shared by MCP and CLI
+- **MCP Server**: `UniCortex.Mcp` — .NET 10 + [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk)
+- **CLI Tool**: `UniCortex.Cli` — .NET 10 + [ConsoleAppFramework](https://github.com/Cysharp/ConsoleAppFramework)
+- **UPM Package**: `com.veyron-sakai.uni-cortex`
+
+## Documentation
+
+- [`Documentations~/SPEC.md`](Documentations~/SPEC.md) — Full API endpoint and MCP tool definitions
+
+## Contributing
+
+When developing this package locally:
+
+```bash
+# Build all projects
+dotnet build Tools~/UniCortex.Core/
+dotnet build Tools~/UniCortex.Mcp/
+dotnet build Tools~/UniCortex.Cli/
+
+# Run tests
+UNICORTEX_PROJECT_PATH=$(pwd)/Samples~ dotnet test Tools~/UniCortex.Core.Test/
+
+# Run MCP server
+dotnet run --project Tools~/UniCortex.Mcp/
+
+# Run CLI
+dotnet run --project Tools~/UniCortex.Cli/ -- editor ping
+```
 
 ## License
 
