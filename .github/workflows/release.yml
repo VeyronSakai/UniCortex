@@ -20,6 +20,10 @@ env:
   GITHUB_BOT_NAME: github-actions[bot]
   GITHUB_BOT_EMAIL: github-actions[bot]@users.noreply.github.com
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   paths-filter:
     name: Paths Filter
@@ -55,9 +59,6 @@ jobs:
     needs: update-draft
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: pwsh
     concurrency:
       group: ${{ github.workflow }}
       cancel-in-progress: true
@@ -124,9 +125,6 @@ jobs:
     needs: [update-draft, paths-filter]
     environment: Release
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: pwsh
     concurrency:
       group: ${{ github.workflow }}
       cancel-in-progress: false
