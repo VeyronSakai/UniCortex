@@ -339,97 +339,123 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 
 #### `editor`
 
-- `editor ping` — Check connectivity with the Unity Editor.
-- `editor play` — Start Play Mode in the Unity Editor.
-- `editor stop` — Stop Play Mode in the Unity Editor.
-- `editor status` — Show the current play/paused state.
-- `editor pause` — Pause the Unity Editor.
-- `editor unpause` — Unpause the Unity Editor.
-- `editor step` — Advance the Unity Editor by one frame while paused.
-- `editor undo` — Perform Undo.
-- `editor redo` — Perform Redo.
-- `editor save` — Save the active stage.
-- `editor reload-domain` — Request script recompilation.
+| Command | Description |
+| --- | --- |
+| `editor ping` | Check connectivity with the Unity Editor. |
+| `editor play` | Start Play Mode in the Unity Editor. |
+| `editor stop` | Stop Play Mode in the Unity Editor. |
+| `editor status` | Show the current play/paused state. |
+| `editor pause` | Pause the Unity Editor. |
+| `editor unpause` | Unpause the Unity Editor. |
+| `editor step` | Advance the Unity Editor by one frame while paused. |
+| `editor undo` | Perform Undo. |
+| `editor redo` | Perform Redo. |
+| `editor save` | Save the active stage. |
+| `editor reload-domain` | Request script recompilation. |
 
 #### `scene`
 
-- `scene create` — Create a new empty scene at the specified asset path.
-- `scene open` — Open a scene by asset path.
-- `scene hierarchy` — Print the current scene hierarchy as JSON.
+| Command | Description |
+| --- | --- |
+| `scene create` | Create a new empty scene at the specified asset path. |
+| `scene open` | Open a scene by asset path. |
+| `scene hierarchy` | Print the current scene hierarchy as JSON. |
 
 #### `gameobject`
 
-- `gameobject find` — Search GameObjects by Unity Search query.
-- `gameobject create` — Create a new empty GameObject.
-- `gameobject delete` — Delete a GameObject by `instanceId`.
-- `gameobject modify` — Rename, reparent, or change active state, tag, or layer.
+| Command | Description |
+| --- | --- |
+| `gameobject find` | Search GameObjects by Unity Search query. |
+| `gameobject create` | Create a new empty GameObject. |
+| `gameobject delete` | Delete a GameObject by `instanceId`. |
+| `gameobject modify` | Rename, reparent, or change active state, tag, or layer. |
 
 #### `component`
 
-- `component add` — Add a component to a GameObject.
-- `component remove` — Remove a component from a GameObject.
-- `component properties` — Print serialized component properties as JSON.
-- `component set-property` — Set a serialized property by path.
+| Command | Description |
+| --- | --- |
+| `component add` | Add a component to a GameObject. |
+| `component remove` | Remove a component from a GameObject. |
+| `component properties` | Print serialized component properties as JSON. |
+| `component set-property` | Set a serialized property by path. |
 
 #### `prefab`
 
-- `prefab create` — Save a scene GameObject as a Prefab asset.
-- `prefab instantiate` — Instantiate a Prefab into the current scene.
-- `prefab open` — Open a Prefab in Prefab Mode.
-- `prefab close` — Close Prefab Mode and return to the main stage.
+| Command | Description |
+| --- | --- |
+| `prefab create` | Save a scene GameObject as a Prefab asset. |
+| `prefab instantiate` | Instantiate a Prefab into the current scene. |
+| `prefab open` | Open a Prefab in Prefab Mode. |
+| `prefab close` | Close Prefab Mode and return to the main stage. |
 
 #### `test`
 
-- `test run` — Run Unity Test Runner tests. Supports filters such as `--test-mode`, `--test-names`, `--group-names`, `--category-names`, and `--assembly-names`.
+| Command | Description |
+| --- | --- |
+| `test run` | Run Unity Test Runner tests. Supports filters such as `--test-mode`, `--test-names`, `--group-names`, `--category-names`, and `--assembly-names`. |
 
 #### `console`
 
-- `console logs` — Read Unity Editor console logs.
-- `console clear` — Clear Unity Editor console logs.
+| Command | Description |
+| --- | --- |
+| `console logs` | Read Unity Editor console logs. |
+| `console clear` | Clear Unity Editor console logs. |
 
 #### `asset`, `project-window`, `menu`, `screenshot`
 
-- `asset refresh` — Refresh the Unity Asset Database.
-- `project-window select` — Select and ping an asset in the Project Window.
-- `menu execute` — Execute a Unity menu item by path.
-- `screenshot capture` — Capture a PNG screenshot. Play Mode only.
+| Command | Description |
+| --- | --- |
+| `asset refresh` | Refresh the Unity Asset Database. |
+| `project-window select` | Select and ping an asset in the Project Window. |
+| `menu execute` | Execute a Unity menu item by path. |
+| `screenshot capture` | Capture a PNG screenshot. Play Mode only. |
 
 #### `scene-view`, `game-view`, `game-view size`
 
-- `scene-view focus` — Focus the Scene View window.
-- `game-view focus` — Focus the Game View window.
-- `game-view size get` — Show the current Game View size.
-- `game-view size list` — List available Game View sizes.
-- `game-view size set` — Set the Game View size by index.
+| Command | Description |
+| --- | --- |
+| `scene-view focus` | Focus the Scene View window. |
+| `game-view focus` | Focus the Game View window. |
+| `game-view size get` | Show the current Game View size. |
+| `game-view size list` | List available Game View sizes. |
+| `game-view size set` | Set the Game View size by index. |
 
 #### `input`
 
-- `input send-key` — Send an Input System key event. Requires `com.unity.inputsystem`; Play Mode only.
-- `input send-mouse` — Send an Input System mouse event. Requires `com.unity.inputsystem`; Play Mode only.
+| Command | Description |
+| --- | --- |
+| `input send-key` | Send an Input System key event. Requires `com.unity.inputsystem`; Play Mode only. |
+| `input send-mouse` | Send an Input System mouse event. Requires `com.unity.inputsystem`; Play Mode only. |
 
 #### `recorder all`, `recorder movie`
 
-- `recorder all list` — List configured recorders. Requires `com.unity.recorder`.
-- `recorder movie add` — Add a Movie recorder. Requires `com.unity.recorder`.
-- `recorder movie remove` — Remove a Movie recorder by index. Requires `com.unity.recorder`.
-- `recorder movie start` — Start movie recording. Play Mode only; requires `com.unity.recorder`.
-- `recorder movie stop` — Stop movie recording and save the output file.
+| Command | Description |
+| --- | --- |
+| `recorder all list` | List configured recorders. Requires `com.unity.recorder`. |
+| `recorder movie add` | Add a Movie recorder. Requires `com.unity.recorder`. |
+| `recorder movie remove` | Remove a Movie recorder by index. Requires `com.unity.recorder`. |
+| `recorder movie start` | Start movie recording. Play Mode only; requires `com.unity.recorder`. |
+| `recorder movie stop` | Stop movie recording and save the output file. |
 
 #### `timeline`, `timeline track`, `timeline clip`
 
-- `timeline create` — Create a Timeline asset. Requires `com.unity.timeline`.
-- `timeline play` — Start Timeline playback on a PlayableDirector. Requires `com.unity.timeline`.
-- `timeline stop` — Stop Timeline playback and reset to the beginning. Requires `com.unity.timeline`.
-- `timeline track add` — Add a Timeline track. Requires `com.unity.timeline`.
-- `timeline track remove` — Remove a Timeline track by index. Requires `com.unity.timeline`.
-- `timeline track bind` — Bind a Timeline track to a target object. Requires `com.unity.timeline`.
-- `timeline clip add` — Add a clip to a Timeline track. Requires `com.unity.timeline`.
-- `timeline clip remove` — Remove a clip from a Timeline track. Requires `com.unity.timeline`.
+| Command | Description |
+| --- | --- |
+| `timeline create` | Create a Timeline asset. Requires `com.unity.timeline`. |
+| `timeline play` | Start Timeline playback on a PlayableDirector. Requires `com.unity.timeline`. |
+| `timeline stop` | Stop Timeline playback and reset to the beginning. Requires `com.unity.timeline`. |
+| `timeline track add` | Add a Timeline track. Requires `com.unity.timeline`. |
+| `timeline track remove` | Remove a Timeline track by index. Requires `com.unity.timeline`. |
+| `timeline track bind` | Bind a Timeline track to a target object. Requires `com.unity.timeline`. |
+| `timeline clip add` | Add a clip to a Timeline track. Requires `com.unity.timeline`. |
+| `timeline clip remove` | Remove a clip from a Timeline track. Requires `com.unity.timeline`. |
 
 #### `extension`
 
-- `extension list` — List registered extensions from the Unity project.
-- `extension execute` — Execute an extension by name, optionally passing JSON through `--arguments`.
+| Command | Description |
+| --- | --- |
+| `extension list` | List registered extensions from the Unity project. |
+| `extension execute` | Execute an extension by name, optionally passing JSON through `--arguments`. |
 
 ### Representative workflows
 
