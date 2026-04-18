@@ -55,6 +55,9 @@ jobs:
     needs: update-draft
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
     concurrency:
       group: ${{ github.workflow }}
       cancel-in-progress: true
@@ -65,11 +68,23 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Update versioned files
         run: |
-          json_content=$(cat "${PACKAGE_JSON_PATH}")
-          updated_json=$(echo "${json_content}" | jq --arg version "${VERSION}" '.version = $version')
-          echo "${updated_json}" | jq '.' > "${PACKAGE_JSON_PATH}"
+          $packageJson = Get-Content $env:PACKAGE_JSON_PATH -Raw | ConvertFrom-Json
+          $packageJson.version = $env:VERSION
+          $packageJson | ConvertTo-Json -Depth 100 | Set-Content $env:PACKAGE_JSON_PATH
 
-          sed -i "s#<PackageVersion>.*</PackageVersion>#<PackageVersion>${VERSION}</PackageVersion>#" "${CLI_CSPROJ_PATH}"
+          $csprojContent = Get-Content $env:CLI_CSPROJ_PATH -Raw
+          $updatedCsprojContent = [regex]::Replace(
+            $csprojContent,
+            '<PackageVersion>.*?</PackageVersion>',
+            "<PackageVersion>$($env:VERSION)</PackageVersion>",
+            1
+          )
+
+          if ($updatedCsprojContent -eq $csprojContent) {
+            throw "PackageVersion element was not found in $($env:CLI_CSPROJ_PATH)."
+          }
+
+          Set-Content -Path $env:CLI_CSPROJ_PATH -Value $updatedCsprojContent
       - name: Commit versioned files
         uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
         id: commit-versioned-files
@@ -81,7 +96,7 @@ jobs:
           new_branch: ${{ env.SOURCE_BRANCH }}
       - name: Update README.md
         run: |
-          cp -f .github/DRAFT_README.md README.md
+          Copy-Item .github/DRAFT_README.md README.md -Force
       - name: Commit README.md
         uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
         id: commit-readme
@@ -101,14 +116,17 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.create-github-app-token.outputs.token }}
         run: |
-          gh pr create --title "Update files for release" --body "Update files for release" --base main --head "${SOURCE_BRANCH}"
-          gh pr merge "${SOURCE_BRANCH}" --auto --merge
+          gh pr create --title "Update files for release" --body "Update files for release" --base main --head $env:SOURCE_BRANCH
+          gh pr merge $env:SOURCE_BRANCH --auto --merge
 
   release:
     name: Release
     needs: [update-draft, paths-filter]
     environment: Release
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
     concurrency:
       group: ${{ github.workflow }}
       cancel-in-progress: false
@@ -127,27 +145,36 @@ jobs:
           token: ${{ steps.create-github-app-token.outputs.token }}
       - name: Validate versioned files
         run: |
-          package_version=$(jq -r '.version' "${PACKAGE_JSON_PATH}")
-          if [[ "${package_version}" != "${VERSION}" ]]; then
-            echo "::error::version in package.json (${package_version}) does not match the release draft tag (${VERSION})"
-            exit 1
-          fi
+          $packageVersion = (Get-Content $env:PACKAGE_JSON_PATH -Raw | ConvertFrom-Json).version
+          if ($packageVersion -ne $env:VERSION) {
+            throw "version in package.json ($packageVersion) does not match the release draft tag ($($env:VERSION))"
+          }
 
-          csproj_version=$(sed -n 's#.*<PackageVersion>\\(.*\\)</PackageVersion>.*#\\1#p' "${CLI_CSPROJ_PATH}")
-          if [[ "${csproj_version}" != "${VERSION}" ]]; then
-            echo "::error::version in ${CLI_CSPROJ_PATH} (${csproj_version}) does not match the release draft tag (${VERSION})"
-            exit 1
-          fi
+          $csprojContent = Get-Content $env:CLI_CSPROJ_PATH -Raw
+          $csprojVersionMatch = [regex]::Match($csprojContent, '<PackageVersion>(.*?)</PackageVersion>')
+          if (-not $csprojVersionMatch.Success) {
+            throw "PackageVersion element was not found in $($env:CLI_CSPROJ_PATH)."
+          }
+
+          $csprojVersion = $csprojVersionMatch.Groups[1].Value
+          if ($csprojVersion -ne $env:VERSION) {
+            throw "version in $($env:CLI_CSPROJ_PATH) ($csprojVersion) does not match the release draft tag ($($env:VERSION))"
+          }
       - name: Pack CLI tool package
         run: |
-          dotnet pack "${CLI_CSPROJ_PATH}" --configuration Release --output ./artifacts/cli-tool
+          dotnet pack $env:CLI_CSPROJ_PATH --configuration Release --output ./artifacts/cli-tool
       - name: Publish CLI tool package to NuGet.org
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          dotnet nuget push ./artifacts/cli-tool/*.nupkg \
-            --api-key "${NUGET_API_KEY}" \
-            --source "${NUGET_SOURCE_URL}" \
+          $packagePath = (Get-ChildItem ./artifacts/cli-tool/*.nupkg | Select-Object -First 1).FullName
+          if (-not $packagePath) {
+            throw "CLI package was not found under ./artifacts/cli-tool."
+          }
+
+          dotnet nuget push $packagePath `
+            --api-key $env:NUGET_API_KEY `
+            --source $env:NUGET_SOURCE_URL `
             --skip-duplicate
       - uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32 # v7.2.0
         id: release-drafter
@@ -157,19 +184,24 @@ jobs:
       - name: Get semver
         id: get-semver
         run: |
-          read -r major minor patch <<< "$(echo "${VERSION}" | grep -oE '^([0-9]+)\.([0-9]+)\.([0-9]+)' | awk -F '.' '{print $1 " " $2 " " $3}')"
-          {
-            echo "major=${major}"
-            echo "minor=${major}.${minor}"
-            echo "patch=${major}.${minor}.${patch}"
-          } >> "${GITHUB_OUTPUT}"
+          if ($env:VERSION -notmatch '^(\d+)\.(\d+)\.(\d+)') {
+            throw "Release draft tag '$($env:VERSION)' is not a valid semver value."
+          }
+
+          "major=$($Matches[1])" >> $env:GITHUB_OUTPUT
+          "minor=$($Matches[1]).$($Matches[2])" >> $env:GITHUB_OUTPUT
+          "patch=$($Matches[1]).$($Matches[2]).$($Matches[3])" >> $env:GITHUB_OUTPUT
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ env.VERSION }}
       - name: Update major tag
         if: steps.get-semver.outputs.major != '0'
+        env:
+          MAJOR_TAG: ${{ steps.get-semver.outputs.major }}
         run: |
-          git push -f origin "refs/tags/${{ env.VERSION }}:refs/tags/${{ steps.get-semver.outputs.major }}"
+          git push -f origin "refs/tags/$($env:VERSION):refs/tags/$($env:MAJOR_TAG)"
       - name: Update minor tag
+        env:
+          MINOR_TAG: ${{ steps.get-semver.outputs.minor }}
         run: |
-          git push -f origin "refs/tags/${{ env.VERSION }}:refs/tags/${{ steps.get-semver.outputs.minor }}"
+          git push -f origin "refs/tags/$($env:VERSION):refs/tags/$($env:MINOR_TAG)"
