@@ -22,6 +22,7 @@ app.Add<PrefabCommands>("prefab");
 app.Add<TestCommands>("test");
 app.Add<ConsoleCommands>("console");
 app.Add<AssetCommands>("asset");
+app.Add<ProjectViewCommands>("project-view");
 app.Add<MenuItemCommands>("menu");
 app.Add<ScreenshotCommands>("screenshot");
 

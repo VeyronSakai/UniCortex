@@ -33,6 +33,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string PrefabOpen = "/prefab/open";
         public const string PrefabClose = "/prefab/close";
         public const string AssetDatabaseRefresh = "/asset-database/refresh";
+        public const string ProjectViewSelect = "/project-view/select";
         public const string MenuItemExecute = "/menu-item/execute";
         public const string ScreenshotCapture = "/screenshot/capture";
 
