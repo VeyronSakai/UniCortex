@@ -16,6 +16,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   PACKAGE_JSON_PATH: package.json
   CLI_CSPROJ_PATH: Tools~/UniCortex.Cli/UniCortex.Cli.csproj
+  NUGET_SOURCE_URL: https://api.nuget.org/v3/index.json
   GITHUB_BOT_NAME: github-actions[bot]
   GITHUB_BOT_EMAIL: github-actions[bot]@users.noreply.github.com
 
@@ -137,6 +138,17 @@ jobs:
             echo "::error::version in ${CLI_CSPROJ_PATH} (${csproj_version}) does not match the release draft tag (${VERSION})"
             exit 1
           fi
+      - name: Pack CLI tool package
+        run: |
+          dotnet pack "${CLI_CSPROJ_PATH}" --configuration Release --output ./artifacts/cli-tool
+      - name: Publish CLI tool package to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push ./artifacts/cli-tool/*.nupkg \
+            --api-key "${NUGET_API_KEY}" \
+            --source "${NUGET_SOURCE_URL}" \
+            --skip-duplicate
       - uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32 # v7.2.0
         id: release-drafter
         with:

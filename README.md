@@ -300,7 +300,21 @@ dotnet run --project "$UNICORTEX_CLI_PROJECT" -- test run --test-mode EditMode
 
 ### Install as a `dotnet` local tool
 
-If you call the CLI frequently from the same repository or Unity project, you can pack it once and install it through a local tool manifest.
+Once `UniCortex.Cli` is published to NuGet.org, you can install it as a local tool without running `dotnet pack`.
+
+```bash
+dotnet new tool-manifest
+dotnet tool install --local UniCortex.Cli
+
+dotnet tool run unicortex -- editor ping
+dotnet tool run unicortex -- scene hierarchy
+```
+
+If the tool is already installed, run `dotnet tool update --local UniCortex.Cli` instead.
+
+### Install a local development build
+
+If you want to test unreleased changes from your local package cache or a working copy, create a `.nupkg` first and install from that local source.
 
 ```bash
 export UNICORTEX_PROJECT_PATH="/path/to/your/unity/project"
