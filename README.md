@@ -210,69 +210,6 @@ The MCP server exposes the following built-in tools.
 
 User-defined extensions in your Unity project are automatically discovered and exposed alongside the built-in tools. See [Extension](#extension) for details.
 
-## Extension
-
-You can define extensions in your Unity project by creating Editor-only C# classes that inherit from `ExtensionHandler`. They are automatically discovered via `TypeCache` and exposed as MCP tools and CLI commands.
-
-```csharp
-#if UNITY_EDITOR
-using UniCortex.Editor.Handlers.Extension;
-using UnityEngine;
-
-public class CountGameObjects : ExtensionHandler
-{
-    public override string Name => "count_gameobjects";
-    public override string Description => "Count GameObjects in the current scene.";
-    public override bool ReadOnly => true;
-
-    public override ExtensionSchema InputSchema => new ExtensionSchema(
-        new ExtensionProperty("nameFilter", ExtensionPropertyType.String,
-            "Only count GameObjects whose name contains this string.")
-    );
-
-    public override string Execute(string argumentsJson)
-    {
-        // Runs on the Unity main thread — safe to call Unity APIs
-        var filter = "";
-        if (!string.IsNullOrEmpty(argumentsJson))
-        {
-            var args = JsonUtility.FromJson<Args>(argumentsJson);
-            if (!string.IsNullOrEmpty(args.nameFilter))
-                filter = args.nameFilter;
-        }
-
-        var allObjects = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
-        var count = 0;
-        foreach (var obj in allObjects)
-        {
-            if (string.IsNullOrEmpty(filter) || obj.name.Contains(filter))
-                count++;
-        }
-
-        return $"Found {count} GameObject(s).";
-    }
-
-    [System.Serializable]
-    private class Args
-    {
-        public string nameFilter;
-    }
-}
-#endif
-```
-
-### API Reference
-
-| Class | Description |
-|-------|-------------|
-| `ExtensionHandler` | Abstract base class. Override `Name`, `Description`, `InputSchema`, and `Execute()` |
-| `ExtensionSchema` | Defines the input parameter schema via `ExtensionProperty` array |
-| `ExtensionProperty` | Defines a single parameter: name, type, description, and whether it is required |
-| `ExtensionPropertyType` | Parameter types: `String`, `Number`, `Integer`, `Boolean` |
-
-> [!NOTE]
-> After adding or removing extensions, restart the MCP client (e.g., Claude Code) to refresh the tool list.
-
 ## Use UniCortex as a CLI Tool
 
 Use this mode when you want to control Unity Editor directly from a terminal. Like the MCP server, the CLI talks to the same Unity-side HTTP server, so the Unity Editor must be open with the UniCortex package loaded.
@@ -522,6 +459,69 @@ dotnet run --project Tools~/UniCortex.Mcp/
 # Run CLI
 dotnet run --project Tools~/UniCortex.Cli/ -- editor ping
 ```
+
+## Extension
+
+You can define extensions in your Unity project by creating Editor-only C# classes that inherit from `ExtensionHandler`. They are automatically discovered via `TypeCache` and exposed as MCP tools and CLI commands.
+
+```csharp
+#if UNITY_EDITOR
+using UniCortex.Editor.Handlers.Extension;
+using UnityEngine;
+
+public class CountGameObjects : ExtensionHandler
+{
+    public override string Name => "count_gameobjects";
+    public override string Description => "Count GameObjects in the current scene.";
+    public override bool ReadOnly => true;
+
+    public override ExtensionSchema InputSchema => new ExtensionSchema(
+        new ExtensionProperty("nameFilter", ExtensionPropertyType.String,
+            "Only count GameObjects whose name contains this string.")
+    );
+
+    public override string Execute(string argumentsJson)
+    {
+        // Runs on the Unity main thread — safe to call Unity APIs
+        var filter = "";
+        if (!string.IsNullOrEmpty(argumentsJson))
+        {
+            var args = JsonUtility.FromJson<Args>(argumentsJson);
+            if (!string.IsNullOrEmpty(args.nameFilter))
+                filter = args.nameFilter;
+        }
+
+        var allObjects = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+        var count = 0;
+        foreach (var obj in allObjects)
+        {
+            if (string.IsNullOrEmpty(filter) || obj.name.Contains(filter))
+                count++;
+        }
+
+        return $"Found {count} GameObject(s).";
+    }
+
+    [System.Serializable]
+    private class Args
+    {
+        public string nameFilter;
+    }
+}
+#endif
+```
+
+### API Reference
+
+| Class | Description |
+|-------|-------------|
+| `ExtensionHandler` | Abstract base class. Override `Name`, `Description`, `InputSchema`, and `Execute()` |
+| `ExtensionSchema` | Defines the input parameter schema via `ExtensionProperty` array |
+| `ExtensionProperty` | Defines a single parameter: name, type, description, and whether it is required |
+| `ExtensionPropertyType` | Parameter types: `String`, `Number`, `Integer`, `Boolean` |
+
+> [!NOTE]
+> After adding or removing extensions, restart the MCP client (e.g., Claude Code) to refresh the tool list.
 
 ## License
 
