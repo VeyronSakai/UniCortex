@@ -4,7 +4,7 @@ using UniCortex.Core.Test.Fixtures;
 namespace UniCortex.Core.Test.UseCases;
 
 [TestFixture]
-public class ProjectViewUseCaseTest
+public class ProjectWindowUseCaseTest
 {
     private UnityEditorFixture _fixture = null!;
 
@@ -17,7 +17,7 @@ public class ProjectViewUseCaseTest
     [Test]
     public async ValueTask Select_ReturnsSuccess_WhenAssetExists()
     {
-        var message = await _fixture.ProjectViewUseCase.SelectAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        var message = await _fixture.ProjectWindowUseCase.SelectAsync(TestConstants.SampleScenePath, CancellationToken.None);
 
         Assert.That(message, Does.Contain(TestConstants.SampleScenePath));
     }
@@ -26,7 +26,7 @@ public class ProjectViewUseCaseTest
     public void Select_ThrowsException_WhenAssetDoesNotExist()
     {
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.ProjectViewUseCase.SelectAsync("Assets/DoesNotExist.asset", CancellationToken.None));
+            await _fixture.ProjectWindowUseCase.SelectAsync("Assets/DoesNotExist.asset", CancellationToken.None));
 
         Assert.That(ex!.Message, Does.Contain("Asset not found"));
     }

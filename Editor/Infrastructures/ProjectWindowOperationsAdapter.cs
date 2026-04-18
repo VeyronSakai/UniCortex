@@ -4,7 +4,7 @@ using UnityEditor;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    internal sealed class ProjectViewOperationsAdapter : IProjectViewOperations
+    internal sealed class ProjectWindowOperationsAdapter : IProjectWindowOperations
     {
         private static readonly Type s_projectBrowserType =
             typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.ProjectBrowser");

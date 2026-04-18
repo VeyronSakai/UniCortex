@@ -10,7 +10,7 @@ using UnityEngine;
 namespace UniCortex.Editor.Tests.UseCases
 {
     [TestFixture]
-    internal sealed class SelectProjectViewAssetUseCaseTest
+    internal sealed class SelectProjectWindowAssetUseCaseTest
     {
         private static readonly Type s_projectBrowserType =
             typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.ProjectBrowser");
@@ -19,8 +19,8 @@ namespace UniCortex.Editor.Tests.UseCases
         public void ExecuteAsync_CallsSelectAsset_And_DispatchesToMainThread()
         {
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new SpyProjectViewOperations();
-            var useCase = new SelectProjectViewAssetUseCase(dispatcher, operations);
+            var operations = new SpyProjectWindowOperations();
+            var useCase = new SelectProjectWindowAssetUseCase(dispatcher, operations);
 
             useCase.ExecuteAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None)
                 .GetAwaiter().GetResult();
@@ -31,14 +31,14 @@ namespace UniCortex.Editor.Tests.UseCases
         }
 
         [Test]
-        public void ExecuteAsync_OpensProjectView_WhenClosed()
+        public void ExecuteAsync_OpensProjectWindow_WhenClosed()
         {
             Assert.That(s_projectBrowserType, Is.Not.Null);
 
             CloseAllProjectBrowsers();
             var dispatcher = new FakeMainThreadDispatcher();
-            var operations = new ProjectViewOperationsAdapter();
-            var useCase = new SelectProjectViewAssetUseCase(dispatcher, operations);
+            var operations = new ProjectWindowOperationsAdapter();
+            var useCase = new SelectProjectWindowAssetUseCase(dispatcher, operations);
 
             useCase.ExecuteAsync("Assets/Scenes/SampleScene.unity", CancellationToken.None)
                 .GetAwaiter().GetResult();

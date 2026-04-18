@@ -5,20 +5,20 @@ using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
 using UnityEngine;
 
-namespace UniCortex.Editor.Handlers.ProjectView
+namespace UniCortex.Editor.Handlers.ProjectWindow
 {
-    internal sealed class SelectProjectViewAssetHandler
+    internal sealed class SelectProjectWindowAssetHandler
     {
-        private readonly SelectProjectViewAssetUseCase _useCase;
+        private readonly SelectProjectWindowAssetUseCase _useCase;
 
-        public SelectProjectViewAssetHandler(SelectProjectViewAssetUseCase useCase)
+        public SelectProjectWindowAssetHandler(SelectProjectWindowAssetUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.ProjectViewSelect, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.ProjectWindowSelect, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -32,7 +32,7 @@ namespace UniCortex.Editor.Handlers.ProjectView
                 return;
             }
 
-            var request = JsonUtility.FromJson<SelectProjectViewAssetRequest>(body);
+            var request = JsonUtility.FromJson<SelectProjectWindowAssetRequest>(body);
 
             if (string.IsNullOrEmpty(request.assetPath))
             {
@@ -42,7 +42,7 @@ namespace UniCortex.Editor.Handlers.ProjectView
             }
 
             await _useCase.ExecuteAsync(request.assetPath, cancellationToken);
-            var json = JsonUtility.ToJson(new SelectProjectViewAssetResponse(true));
+            var json = JsonUtility.ToJson(new SelectProjectWindowAssetResponse(true));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }

@@ -7,19 +7,19 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class ProjectViewTools(ProjectViewUseCase projectViewUseCase)
+public class ProjectWindowTools(ProjectWindowUseCase projectWindowUseCase)
 {
-    [McpServerTool(Name = "select_project_view_asset", ReadOnly = false),
-     Description("Select an asset in the Unity Project view, focus the Project window, and ping the asset."),
+    [McpServerTool(Name = "select_project_window_asset", ReadOnly = false),
+     Description("Select an asset in the Unity Project Window, focus the window, and ping the asset."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> SelectProjectViewAssetAsync(
+    public async ValueTask<CallToolResult> SelectProjectWindowAssetAsync(
         [Description("Asset path to select, for example Assets/Scenes/Main.unity.")]
         string assetPath,
         CancellationToken cancellationToken)
     {
         try
         {
-            var message = await projectViewUseCase.SelectAsync(assetPath, cancellationToken);
+            var message = await projectWindowUseCase.SelectAsync(assetPath, cancellationToken);
             return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
         }
         catch (Exception ex)

@@ -3,11 +3,11 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class SelectProjectViewAssetResponse
+    public class SelectProjectWindowAssetResponse
     {
         public bool success;
 
-        public SelectProjectViewAssetResponse(bool success)
+        public SelectProjectWindowAssetResponse(bool success)
         {
             this.success = success;
         }

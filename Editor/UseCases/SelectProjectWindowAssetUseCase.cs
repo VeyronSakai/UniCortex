@@ -4,12 +4,12 @@ using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.UseCases
 {
-    internal sealed class SelectProjectViewAssetUseCase
+    internal sealed class SelectProjectWindowAssetUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IProjectViewOperations _operations;
+        private readonly IProjectWindowOperations _operations;
 
-        public SelectProjectViewAssetUseCase(IMainThreadDispatcher dispatcher, IProjectViewOperations operations)
+        public SelectProjectWindowAssetUseCase(IMainThreadDispatcher dispatcher, IProjectWindowOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;

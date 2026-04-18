@@ -1,6 +1,6 @@
 namespace UniCortex.Editor.Domains.Interfaces
 {
-    internal interface IProjectViewOperations
+    internal interface IProjectWindowOperations
     {
         void SelectAsset(string assetPath);
     }
