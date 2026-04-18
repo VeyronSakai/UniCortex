@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http;
 using NUnit.Framework;
 using UniCortex.Core.Domains.Interfaces;
@@ -14,14 +15,18 @@ public class TestUseCaseUnitTest
     {
         var client = new FakeUnityEditorClient
         {
-            PostException = new HttpRequestException(ErrorMessages.RequestWasCancelled)
+            PostException = new HttpRequestException(
+                ErrorMessages.RequestWasCancelled,
+                null,
+                HttpStatusCode.RequestTimeout)
         };
         var useCase = new TestUseCase(client);
 
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
             await useCase.RunAsync(cancellationToken: CancellationToken.None));
 
-        Assert.That(ex!.Message, Is.EqualTo(ErrorMessages.RequestWasCancelled));
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.RequestTimeout));
+        Assert.That(ex.Message, Is.EqualTo(ErrorMessages.RequestWasCancelled));
     }
 
     private sealed class FakeUnityEditorClient : IUnityEditorClient

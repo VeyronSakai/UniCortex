@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Http;
 using System.Text.Json;
 using NUnit.Framework;
 using UniCortex.Core.Test.Fixtures;
@@ -29,13 +31,14 @@ public class TestUseCaseTest
     }
 
     [Test, CancelAfter(300_000)]
-    public async ValueTask Run_PlayMode_ReturnsJson()
+    public void Run_PlayMode_RethrowsCancellationError()
     {
-        var json = await _fixture.TestUseCase.RunAsync(testMode: TestModes.PlayMode,
-            cancellationToken: CancellationToken.None);
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.TestUseCase.RunAsync(testMode: TestModes.PlayMode,
+                cancellationToken: CancellationToken.None));
 
-        var response = JsonSerializer.Deserialize<RunTestsResponse>(json, s_jsonOptions);
-        Assert.That(response, Is.Not.Null);
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.RequestTimeout));
+        Assert.That(ex.Message, Is.EqualTo(ErrorMessages.RequestWasCancelled));
     }
 
     [Test, CancelAfter(300_000)]
