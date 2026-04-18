@@ -17,9 +17,15 @@ public class TestUseCaseTest
     public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
+        await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
     }
 
-    [Test, CancelAfter(300_000)]
+    [OneTimeTearDown]
+    public async ValueTask OneTimeTearDown()
+    {
+        await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+    }
+    [Test, Order(1), CancelAfter(300_000)]
     public async ValueTask Run_EditMode_ReturnsJsonWithResults()
     {
         var json = await _fixture.TestUseCase.RunAsync(testMode: TestModes.EditMode,
@@ -30,18 +36,7 @@ public class TestUseCaseTest
         Assert.That(response!.passed + response.failed + response.skipped, Is.GreaterThan(0));
     }
 
-    [Test, CancelAfter(300_000)]
-    public void Run_PlayMode_RethrowsCancellationError()
-    {
-        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.TestUseCase.RunAsync(testMode: TestModes.PlayMode,
-                cancellationToken: CancellationToken.None));
-
-        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.RequestTimeout));
-        Assert.That(ex.Message, Is.EqualTo(ErrorMessages.RequestWasCancelled));
-    }
-
-    [Test, CancelAfter(300_000)]
+    [Test, Order(2), CancelAfter(300_000)]
     public async ValueTask Run_WithTestNames_NonExistent_ReturnsZeroResults()
     {
         var json = await _fixture.TestUseCase.RunAsync(
@@ -54,7 +49,7 @@ public class TestUseCaseTest
         Assert.That(response!.results, Has.Count.EqualTo(0));
     }
 
-    [Test, CancelAfter(300_000)]
+    [Test, Order(3), CancelAfter(300_000)]
     public async ValueTask Run_WithCategoryNames_NonExistent_ReturnsZeroResults()
     {
         var json = await _fixture.TestUseCase.RunAsync(
@@ -67,7 +62,7 @@ public class TestUseCaseTest
         Assert.That(response!.results, Has.Count.EqualTo(0));
     }
 
-    [Test, CancelAfter(300_000)]
+    [Test, Order(4), CancelAfter(300_000)]
     public async ValueTask Run_WithAssemblyNames_NonExistent_ReturnsZeroResults()
     {
         var json = await _fixture.TestUseCase.RunAsync(
@@ -78,5 +73,16 @@ public class TestUseCaseTest
         var response = JsonSerializer.Deserialize<RunTestsResponse>(json, s_jsonOptions);
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.results, Has.Count.EqualTo(0));
+    }
+
+    [Test, Order(5), CancelAfter(300_000)]
+    public void Run_PlayMode_RethrowsCancellationError()
+    {
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.TestUseCase.RunAsync(testMode: TestModes.PlayMode,
+                cancellationToken: CancellationToken.None));
+
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.RequestTimeout));
+        Assert.That(ex.Message, Is.EqualTo(ErrorMessages.RequestWasCancelled));
     }
 }

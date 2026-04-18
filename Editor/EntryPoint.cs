@@ -373,7 +373,7 @@ namespace UniCortex.Editor
             // Register SessionStoreTestCallbacks directly (without the TestCallbacks wrapper)
             // so that test results are still persisted to SessionState via TestResultStore.
             var api = ScriptableObject.CreateInstance<TestRunnerApi>();
-            api.RegisterCallbacks(new SessionStoreTestCallbacks());
+            api.RegisterCallbacks(new SessionStoreTestCallbacks(api));
             Debug.Log("[UniCortex] Re-registered test callbacks after domain reload");
         }
 

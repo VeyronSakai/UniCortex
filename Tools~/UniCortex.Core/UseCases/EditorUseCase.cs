@@ -68,36 +68,42 @@ public class EditorUseCase(IUnityEditorClient client)
 
     public async ValueTask<string> PauseAsync(CancellationToken cancellationToken)
     {
+        await client.WaitForServerAsync(cancellationToken);
         await client.PostAsync<PauseRequest, PauseResponse>(ApiRoutes.Pause, cancellationToken: cancellationToken);
         return "Editor paused successfully.";
     }
 
     public async ValueTask<string> UnpauseAsync(CancellationToken cancellationToken)
     {
+        await client.WaitForServerAsync(cancellationToken);
         await client.PostAsync<UnpauseRequest, UnpauseResponse>(ApiRoutes.Unpause, cancellationToken: cancellationToken);
         return "Editor unpaused successfully.";
     }
 
     public async ValueTask<string> StepAsync(CancellationToken cancellationToken)
     {
+        await client.WaitForServerAsync(cancellationToken);
         await client.PostAsync<StepRequest, StepResponse>(ApiRoutes.Step, cancellationToken: cancellationToken);
         return "Editor stepped one frame successfully.";
     }
 
     public async ValueTask<string> UndoAsync(CancellationToken cancellationToken)
     {
+        await client.WaitForServerAsync(cancellationToken);
         await client.PostAsync<UndoRequest, UndoResponse>(ApiRoutes.Undo, cancellationToken: cancellationToken);
         return "Undo performed successfully.";
     }
 
     public async ValueTask<string> RedoAsync(CancellationToken cancellationToken)
     {
+        await client.WaitForServerAsync(cancellationToken);
         await client.PostAsync<RedoRequest, RedoResponse>(ApiRoutes.Redo, cancellationToken: cancellationToken);
         return "Redo performed successfully.";
     }
 
     public async ValueTask<string> SaveAsync(CancellationToken cancellationToken)
     {
+        await client.WaitForServerAsync(cancellationToken);
         await client.PostAsync<SaveRequest, SaveResponse>(ApiRoutes.EditorSave, cancellationToken: cancellationToken);
         return "Saved successfully.";
     }
