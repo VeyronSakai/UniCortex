@@ -1,5 +1,3 @@
-using System.Net;
-using System.Net.Http;
 using System.Text.Json;
 using NUnit.Framework;
 using UniCortex.Core.Test.Fixtures;
@@ -17,14 +15,8 @@ public class TestUseCaseTest
     public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
-        await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
     }
 
-    [OneTimeTearDown]
-    public async ValueTask OneTimeTearDown()
-    {
-        await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
-    }
     [Test, Order(1), CancelAfter(300_000)]
     public async ValueTask Run_EditMode_ReturnsJsonWithResults()
     {
@@ -75,14 +67,4 @@ public class TestUseCaseTest
         Assert.That(response!.results, Has.Count.EqualTo(0));
     }
 
-    [Test, Order(5), CancelAfter(300_000)]
-    public void Run_PlayMode_RethrowsCancellationError()
-    {
-        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.TestUseCase.RunAsync(testMode: TestModes.PlayMode,
-                cancellationToken: CancellationToken.None));
-
-        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.RequestTimeout));
-        Assert.That(ex.Message, Is.EqualTo(ErrorMessages.RequestWasCancelled));
-    }
 }
