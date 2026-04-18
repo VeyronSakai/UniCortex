@@ -335,7 +335,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 - State-changing commands usually print a short status message, such as `editor play`, `scene open`, `component add`, and `timeline track bind`.
 - `screenshot capture` writes a file to the path you pass, and recorder commands create media files in the configured output path.
 
-### CLI subcommand reference
+### Available CLI Commands
 
 #### `editor`
 
