@@ -122,25 +122,61 @@ If the tool is already installed, repack and run `dotnet tool update --local --a
 - State-changing commands usually print a short status message, such as `editor play`, `scene open`, `component add`, and `timeline track bind`.
 - `screenshot capture` writes a file to the path you pass, and recorder commands create media files in the configured output path.
 
-### Command groups
+### Command quick reference
 
-| Group | Subcommands | Details |
-|------|-------------|---------|
-| `editor` | `ping`, `play`, `stop`, `status`, `pause`, `unpause`, `step`, `undo`, `redo`, `save`, `reload-domain` | Control Editor state, Play Mode, save/undo flow, and script recompilation. |
-| `scene` | `create`, `open`, `hierarchy` | Create or open scenes, then inspect the current hierarchy as JSON. |
-| `gameobject` | `find`, `create`, `delete`, `modify` | Search by Unity Search query, create empty objects, delete by `instanceId`, or rename/reparent/change tag, layer, or active state. |
-| `component` | `add`, `remove`, `properties`, `set-property` | Work with fully-qualified component type names such as `UnityEngine.Transform` and serialized property paths such as `m_LocalPosition.x`. |
-| `prefab` | `create`, `instantiate`, `open`, `close` | Save scene objects as prefabs, instantiate prefabs, or move into and out of Prefab Mode. |
-| `test` | `run` | Run Unity Test Runner tests. Supports optional filters such as `--test-mode`. |
-| `console` | `logs`, `clear` | Inspect or clear Unity Editor logs. |
-| `asset` / `project-window` / `menu` | `refresh` / `select` / `execute` | Refresh the Asset Database, select and ping assets, or invoke Unity menu items by path. |
-| `scene-view` / `game-view` | `focus` / `focus` | Switch the active Scene View or Game View window. |
-| `game-view size` | `get`, `list`, `set` | Inspect available Game View resolutions and change the selected index. |
-| `screenshot` | `capture` | Capture the current rendering output to an image file. Play Mode only. |
-| `input` | `send-key`, `send-mouse` | Send Input System keyboard or mouse events. Requires `com.unity.inputsystem`; Play Mode only. |
-| `recorder all` / `recorder movie` | `list` / `add`, `remove`, `start`, `stop` | Inspect and control Unity Recorder movie recorders. Requires `com.unity.recorder`. |
-| `timeline` / `timeline track` / `timeline clip` | `create`, `play`, `stop` / `add`, `remove`, `bind` / `add`, `remove` | Create and edit Timeline assets and control playback. Requires `com.unity.timeline`. |
-| `extension` | `list`, `execute` | Discover and invoke custom `ExtensionHandler` implementations from your Unity project. |
+#### Editor and views
+
+- `editor ping|play|stop|status|pause|unpause|step|undo|redo|save|reload-domain`  
+  Control Editor state, Play Mode, save/undo flow, and script recompilation.
+- `scene-view focus`  
+  Switch the active Scene View window.
+- `game-view focus`  
+  Switch the active Game View window.
+- `game-view size get|list|set`  
+  Inspect available Game View resolutions and change the selected index.
+
+#### Scene, GameObject, Component, Prefab
+
+- `scene create|open|hierarchy`  
+  Create or open scenes, then inspect the current hierarchy as JSON.
+- `gameobject find|create|delete|modify`  
+  Search by Unity Search query, create empty objects, delete by `instanceId`, or rename/reparent/change tag, layer, or active state.
+- `component add|remove|properties|set-property`  
+  Work with fully-qualified component type names such as `UnityEngine.Transform` and serialized property paths such as `m_LocalPosition.x`.
+- `prefab create|instantiate|open|close`  
+  Save scene objects as prefabs, instantiate prefabs, or move into and out of Prefab Mode.
+
+#### Assets, logs, and testing
+
+- `test run`  
+  Run Unity Test Runner tests. Supports optional filters such as `--test-mode`.
+- `console logs|clear`  
+  Inspect or clear Unity Editor logs.
+- `asset refresh`  
+  Refresh the Asset Database.
+- `project-window select`  
+  Select and ping an asset in the Project Window.
+- `menu execute`  
+  Invoke a Unity menu item by path.
+- `screenshot capture`  
+  Capture the current rendering output to an image file. Play Mode only.
+
+#### Input, recorder, timeline, extensions
+
+- `input send-key|send-mouse`  
+  Send Input System keyboard or mouse events. Requires `com.unity.inputsystem`; Play Mode only.
+- `recorder all list`  
+  List configured recorders. Requires `com.unity.recorder`.
+- `recorder movie add|remove|start|stop`  
+  Manage Unity Recorder movie recorders. Requires `com.unity.recorder`.
+- `timeline create|play|stop`  
+  Create Timeline assets and control playback. Requires `com.unity.timeline`.
+- `timeline track add|remove|bind`  
+  Edit Timeline tracks. Requires `com.unity.timeline`.
+- `timeline clip add|remove`  
+  Edit Timeline clips. Requires `com.unity.timeline`.
+- `extension list|execute`  
+  Discover and invoke custom `ExtensionHandler` implementations from your Unity project.
 
 ### Representative workflows
 

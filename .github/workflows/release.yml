@@ -15,6 +15,7 @@ permissions:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   PACKAGE_JSON_PATH: package.json
+  CLI_CSPROJ_PATH: Tools~/UniCortex.Cli/UniCortex.Cli.csproj
   GITHUB_BOT_NAME: github-actions[bot]
   GITHUB_BOT_EMAIL: github-actions[bot]@users.noreply.github.com
 
@@ -61,19 +62,21 @@ jobs:
       SOURCE_BRANCH: github-actions/update-files/${{ github.run_number }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Update package.json
+      - name: Update versioned files
         run: |
           json_content=$(cat "${PACKAGE_JSON_PATH}")
           updated_json=$(echo "${json_content}" | jq --arg version "${VERSION}" '.version = $version')
           echo "${updated_json}" | jq '.' > "${PACKAGE_JSON_PATH}"
-      - name: Commit package.json
+
+          sed -i "s#<PackageVersion>.*</PackageVersion>#<PackageVersion>${VERSION}</PackageVersion>#" "${CLI_CSPROJ_PATH}"
+      - name: Commit versioned files
         uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
-        id: commit-package-json
+        id: commit-versioned-files
         with:
           author_name: ${{ env.GITHUB_BOT_NAME }}
           author_email: ${{ env.GITHUB_BOT_EMAIL }}
-          message: "Update package.json"
-          add: ${{ env.PACKAGE_JSON_PATH }}
+          message: "Update release version files"
+          add: "${{ env.PACKAGE_JSON_PATH }} ${{ env.CLI_CSPROJ_PATH }}"
           new_branch: ${{ env.SOURCE_BRANCH }}
       - name: Update README.md
         run: |
@@ -93,7 +96,7 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Create pull request and merge
-        if: ${{ steps.commit-package-json.outputs.committed == 'true' || steps.commit-readme.outputs.committed == 'true' }}
+        if: ${{ steps.commit-versioned-files.outputs.committed == 'true' || steps.commit-readme.outputs.committed == 'true' }}
         env:
           GH_TOKEN: ${{ steps.create-github-app-token.outputs.token }}
         run: |
@@ -121,11 +124,17 @@ jobs:
         with:
           ref: main
           token: ${{ steps.create-github-app-token.outputs.token }}
-      - name: Validate version in package.json
+      - name: Validate versioned files
         run: |
           package_version=$(jq -r '.version' "${PACKAGE_JSON_PATH}")
           if [[ "${package_version}" != "${VERSION}" ]]; then
             echo "::error::version in package.json (${package_version}) does not match the release draft tag (${VERSION})"
+            exit 1
+          fi
+
+          csproj_version=$(sed -n 's#.*<PackageVersion>\\(.*\\)</PackageVersion>.*#\\1#p' "${CLI_CSPROJ_PATH}")
+          if [[ "${csproj_version}" != "${VERSION}" ]]; then
+            echo "::error::version in ${CLI_CSPROJ_PATH} (${csproj_version}) does not match the release draft tag (${VERSION})"
             exit 1
           fi
       - uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32 # v7.2.0
