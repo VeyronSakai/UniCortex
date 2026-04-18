@@ -26,7 +26,7 @@ public class TestUseCase(IUnityEditorClient client)
             response = await client.PostAsync<RunTestsRequest, RunTestsResponse>(ApiRoutes.TestsRun, request,
                 cancellationToken);
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex) when (ex.Message != "Request was cancelled.")
         {
             // Server disrupted (e.g., domain reload during PlayMode entry)
         }
