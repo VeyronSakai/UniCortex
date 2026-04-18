@@ -311,7 +311,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | Command | Description |
 | --- | --- |
 | `gameobject find` | Search GameObjects by Unity Search query. |
-| `gameobject create` | Create a new empty GameObject. |
+| `gameobject create` | Create a new empty GameObject with the specified name. |
 | `gameobject delete` | Delete a GameObject by `instanceId`. |
 | `gameobject modify` | Rename, reparent, or change active state, tag, or layer. |
 
