@@ -74,6 +74,7 @@ jobs:
           $packageJson | ConvertTo-Json -Depth 100 | Set-Content $env:PACKAGE_JSON_PATH
 
           $csprojContent = Get-Content $env:CLI_CSPROJ_PATH -Raw
+          # Replace only the first PackageVersion element so we fail fast if the expected node is missing or duplicated unexpectedly.
           $updatedCsprojContent = [regex]::Replace(
             $csprojContent,
             '<PackageVersion>.*?</PackageVersion>',
