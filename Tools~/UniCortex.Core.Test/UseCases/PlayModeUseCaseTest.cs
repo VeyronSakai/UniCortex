@@ -13,6 +13,7 @@ public class PlayModeUseCaseTest
     public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
 
         // Ensure not in play mode before tests (idempotent: no-op if already stopped)
         await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
