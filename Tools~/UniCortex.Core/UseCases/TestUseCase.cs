@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
@@ -26,7 +27,7 @@ public class TestUseCase(IUnityEditorClient client)
             response = await client.PostAsync<RunTestsRequest, RunTestsResponse>(ApiRoutes.TestsRun, request,
                 cancellationToken);
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex) when (ex.StatusCode != HttpStatusCode.RequestTimeout)
         {
             // Server disrupted (e.g., domain reload during PlayMode entry)
         }
@@ -35,10 +36,9 @@ public class TestUseCase(IUnityEditorClient client)
             // Empty response body (e.g., PlayMode test triggers domain reload before response is sent)
         }
 
-        // PlayMode tests trigger a domain reload when entering play mode,
-        // which disrupts the HTTP server. Poll GET /tests/result for results.
-        // The HttpRequestHandler retries GET on Content-Length: 0, so this
-        // automatically polls until results are stored in SessionState.
+        // Domain reload can disrupt the POST /tests/run response path.
+        // For transport-level failures other than explicit cancellation (408),
+        // poll GET /tests/result until the stored result becomes available.
         response ??= await client.GetAsync<GetTestResultRequest, RunTestsResponse>(ApiRoutes.TestsResult,
             cancellationToken: cancellationToken);
 

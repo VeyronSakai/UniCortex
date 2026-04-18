@@ -117,19 +117,30 @@ namespace UniCortex.Editor.Infrastructures
             {
                 await _router.HandleRequestAsync(context, token);
             }
+            catch (OperationCanceledException e)
+            {
+                Debug.LogWarning(
+                    $"[UniCortex] {httpContext.Request.HttpMethod} {httpContext.Request.Url.AbsolutePath} request was cancelled: {e.Message}");
+                await TryWriteExceptionResponseAsync(context, e);
+            }
             catch (Exception e)
             {
                 Debug.LogError($"[UniCortex] Request handling failed: {e}");
+                await TryWriteExceptionResponseAsync(context, e);
+            }
+        }
 
-                try
-                {
-                    await context.WriteResponseAsync(HttpStatusCodes.InternalServerError,
-                        JsonUtility.ToJson(new ErrorResponse("Internal server error")));
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[UniCortex] Failed to write error response: {ex}");
-                }
+        private static async Task TryWriteExceptionResponseAsync(IRequestContext context, Exception exception)
+        {
+            try
+            {
+                await RequestExceptionResponder.RespondAsync(context, exception);
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (HttpListenerException)
+            {
             }
         }
     }

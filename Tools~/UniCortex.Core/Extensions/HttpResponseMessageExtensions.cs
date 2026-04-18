@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using UniCortex.Core.Domains;
 using UniCortex.Editor.Domains.Models;
@@ -36,6 +37,8 @@ public static class HttpResponseMessageExtensions
         throw new HttpRequestException(
             string.IsNullOrEmpty(errorMessage)
                 ? $"HTTP {(int)response.StatusCode} {response.ReasonPhrase}"
-                : errorMessage);
+                : errorMessage,
+            null,
+            response.StatusCode);
     }
 }

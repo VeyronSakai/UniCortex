@@ -45,7 +45,6 @@ namespace UniCortex.Editor.Infrastructures
             }
             catch (OperationCanceledException)
             {
-                Debug.LogWarning($"[UniCortex] {method} {path} request was cancelled");
                 throw;
             }
             catch (Exception ex)
