@@ -222,7 +222,11 @@ The CLI resolves the Unity Editor endpoint in the following order:
 2. Otherwise, it uses `UNICORTEX_PROJECT_PATH` to read `Library/UniCortex/config.json`, which is written when the Unity Editor starts.
 3. If neither is set, the CLI exits with an error.
 
-### Run commands with `dotnet run --project`
+### Choose how to run the CLI
+
+Use one of the following options depending on how you want to invoke the CLI. These are alternatives, not sequential setup steps.
+
+#### Option 1: Run commands with `dotnet run --project`
 
 ```bash
 export UNICORTEX_PROJECT_PATH="/path/to/your/unity/project"
@@ -235,7 +239,7 @@ dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component properties 1234 Unity
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- test run --test-mode EditMode
 ```
 
-### Install as a `dotnet` local tool
+#### Option 2: Install as a `dotnet` local tool
 
 Install `UniCortex.Cli` from NuGet.org as a local tool.
 
@@ -251,7 +255,7 @@ If the tool is already installed, run `dotnet tool update --local UniCortex.Cli`
 
 If you share the tool manifest with your team, run `dotnet tool restore` before the first `dotnet tool run ...` so the manifest-defined tools are installed locally.
 
-### Install as a `dotnet` global tool
+#### Option 3: Install as a `dotnet` global tool
 
 Install `UniCortex.Cli` globally when you want to invoke `unicortex` directly from your shell.
 
