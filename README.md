@@ -5,7 +5,12 @@
 
 A toolkit for controlling Unity Editor externally via REST API, MCP (Model Context Protocol), and CLI.
 
-Primarily designed for AI agents (Claude Code, Codex CLI, etc.) to operate Unity Editor through MCP. Also provides a CLI tool for terminal-based control.
+UniCortex can be used in two ways:
+
+1. As an **MCP server** for AI agents such as Claude Code or Codex CLI
+2. As a **CLI tool** for direct terminal-based control
+
+In both cases, you must install the UniCortex Unity package into the target Unity project first.
 
 ## Requirements
 
@@ -24,6 +29,10 @@ Add via Unity Package Manager using a Git URL:
 ```
 https://github.com/VeyronSakai/UniCortex.git
 ```
+
+## Use UniCortex as an MCP Server
+
+Use this mode when you want an MCP client to call Unity operations as tools. The UniCortex Unity package must be installed in the target Unity project.
 
 ### MCP Server Setup
 
@@ -68,48 +77,11 @@ Alternatively, you can specify the URL directly via the `UNICORTEX_URL` environm
 }
 ```
 
-## CLI Usage
+### Available MCP Tools
 
-UniCortex also provides a CLI tool for controlling Unity Editor from the terminal:
+The MCP server exposes the following built-in tools.
 
-```bash
-# Set the Unity project path
-export UNICORTEX_PROJECT_PATH="/path/to/your/unity/project"
-
-# Run CLI commands
-dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-sakai.uni-cortex@*/Tools~/UniCortex.Cli/" -- editor ping
-dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-sakai.uni-cortex@*/Tools~/UniCortex.Cli/" -- scene hierarchy
-dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-sakai.uni-cortex@*/Tools~/UniCortex.Cli/" -- gameobject find "t:Camera"
-```
-
-### CLI Commands
-
-| Command | Description |
-|---------|-------------|
-| `editor ping\|play\|stop\|status\|pause\|unpause\|step\|undo\|redo\|save\|reload-domain` | Editor control |
-| `scene create\|open\|hierarchy` | Scene operations |
-| `gameobject find\|create\|delete\|modify` | GameObject operations |
-| `component add\|remove\|properties\|set-property` | Component operations |
-| `prefab create\|instantiate\|open\|close` | Prefab operations |
-| `test run` | Run Unity tests |
-| `console logs\|clear` | Console log management |
-| `asset refresh` | Refresh Asset Database |
-| `project-window select` | Select and ping an asset in Project Window |
-| `menu execute` | Execute menu items |
-| `screenshot capture` | Capture screenshot (Play Mode only) |
-| `scene-view focus` | Switch focus to Scene View |
-| `game-view focus` | Switch focus to Game View |
-| `game-view size get\|list\|set` | Game View size control |
-| `recorder all list` | List all configured recorders (requires com.unity.recorder) |
-| `recorder movie add\|remove\|start\|stop` | Movie Recorder management (requires com.unity.recorder) |
-| `input send-key\|send-mouse` | Simulate input via Input System in Play Mode |
-| `timeline create\|play\|stop` | Create a TimelineAsset / Play or Stop a Timeline |
-| `timeline track add\|remove\|bind` | Timeline track operations |
-| `timeline clip add\|remove` | Timeline clip operations |
-
-## Available MCP Tools
-
-### Editor Control
+#### Editor Control
 
 | Tool | Description |
 |------|-------------|
@@ -124,7 +96,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `undo` | Undo the last operation |
 | `redo` | Redo an undone operation |
 | `save` | Save the currently active stage (Scene, Prefab, Timeline, etc.) |
-### Scene
+#### Scene
 
 | Tool | Description |
 |------|-------------|
@@ -132,7 +104,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `open_scene` | Open a scene by path |
 | `get_hierarchy` | Get the GameObject hierarchy tree of the current scene or Prefab |
 
-### GameObject
+#### GameObject
 
 | Tool | Description |
 |------|-------------|
@@ -141,7 +113,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `delete_game_object` | Delete a GameObject (supports Undo) |
 | `modify_game_object` | Modify name, active state, tag, layer, or parent |
 
-### Component
+#### Component
 
 | Tool | Description |
 |------|-------------|
@@ -150,7 +122,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `get_component_properties` | Get serialized properties of a component |
 | `set_component_property` | Set a serialized property on a component |
 
-### Prefab
+#### Prefab
 
 | Tool | Description |
 |------|-------------|
@@ -159,44 +131,44 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `open_prefab` | Open a Prefab asset in Prefab Mode for editing |
 | `close_prefab` | Close Prefab Mode and return to the main stage |
 
-### Asset
+#### Asset
 
 | Tool | Description |
 |------|-------------|
 | `refresh_asset_database` | Refresh the Unity Asset Database |
 
-### Project Window
+#### Project Window
 
 | Tool | Description |
 |------|-------------|
 | `select_project_window_asset` | Select an asset in the Project Window, focus the window, and ping it |
 
-### Console
+#### Console
 
 | Tool | Description |
 |------|-------------|
 | `get_console_logs` | Get console log entries from the Unity Editor |
 | `clear_console_logs` | Clear all console logs |
 
-### Test
+#### Test
 
 | Tool | Description |
 |------|-------------|
 | `run_tests` | Run Unity Test Runner tests and return results |
 
-### Menu Item
+#### Menu Item
 
 | Tool | Description |
 |------|-------------|
 | `execute_menu_item` | Execute a Unity Editor menu item by path |
 
-### Screenshot
+#### Screenshot
 
 | Tool | Description |
 |------|-------------|
 | `capture_screenshot` | Capture a screenshot of the current Unity rendering output (Play Mode only) |
 
-### View
+#### View
 
 | Tool | Description |
 |------|-------------|
@@ -206,7 +178,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
 
-### Recorder
+#### Recorder
 
 | Tool | Description |
 |------|-------------|
@@ -216,14 +188,14 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `start_movie_recorder` | Start recording with the specified Movie recorder (Play Mode only, requires com.unity.recorder) |
 | `stop_movie_recorder` | Stop recording and save the video file (requires com.unity.recorder) |
 
-### Input
+#### Input
 
 | Tool | Description |
 |------|-------------|
 | `send_key_event` | Send a keyboard event via Input System in Play Mode (requires com.unity.inputsystem) |
 | `send_mouse_event` | Send a mouse event via Input System in Play Mode (requires com.unity.inputsystem). Supports press, release, and move for drag simulation |
 
-### Timeline
+#### Timeline
 
 | Tool | Description |
 |------|-------------|
@@ -235,6 +207,284 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `remove_timeline_clip` | Remove a clip from a Timeline track by index (requires com.unity.timeline) |
 | `play_timeline` | Start playback of a Timeline on a PlayableDirector (requires com.unity.timeline) |
 | `stop_timeline` | Stop playback of a Timeline on a PlayableDirector and reset to the beginning (requires com.unity.timeline) |
+
+#### Extensions
+
+User-defined extensions in your Unity project are automatically discovered and exposed alongside the built-in tools. See [Extension](#extension) for details.
+
+## Use UniCortex as a CLI Tool
+
+Use this mode when you want to control Unity Editor directly from a terminal. As with the MCP server, the UniCortex Unity package must be installed in the target Unity project, and the Unity Editor must be open with the package loaded.
+
+### Connection settings
+
+The CLI resolves the Unity Editor endpoint in the following order:
+
+1. If `UNICORTEX_URL` is set, the CLI connects directly to that URL.
+2. Otherwise, it uses `UNICORTEX_PROJECT_PATH` to read `Library/UniCortex/config.json`, which is written when the Unity Editor starts.
+3. If neither is set, the CLI exits with an error.
+
+### Choose how to run the CLI
+
+Choose one of the following options depending on how you want to invoke the CLI.
+
+Whichever option you choose, make sure the CLI version matches the UniCortex package version installed in the Unity project. Running via `dotnet run --project` from `Library/PackageCache` naturally uses the same package version.
+
+#### Option 1: Run commands with `dotnet run --project`
+
+```bash
+export UNICORTEX_PROJECT_PATH="/path/to/your/unity/project"
+export UNICORTEX_CLI_PROJECT=$(echo "${UNICORTEX_PROJECT_PATH}"/Library/PackageCache/com.veyron-sakai.uni-cortex@*/Tools~/UniCortex.Cli)
+
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- editor ping
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scene hierarchy
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject find "t:Camera"
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component properties 1234 UnityEngine.Transform
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- test run --test-mode EditMode
+```
+
+#### Option 2: Install as a `dotnet` local tool
+
+Install `UniCortex.Cli` from NuGet.org as a local tool.
+
+```bash
+dotnet new tool-manifest
+dotnet tool install --local UniCortex.Cli
+
+dotnet tool run unicortex -- editor ping
+dotnet tool run unicortex -- scene hierarchy
+```
+
+If the tool is already installed, run `dotnet tool update --local UniCortex.Cli` instead.
+
+If you share the tool manifest with your team, run `dotnet tool restore` before the first `dotnet tool run ...` so the manifest-defined tools are installed locally.
+
+#### Option 3: Install as a `dotnet` global tool
+
+Install `UniCortex.Cli` globally when you want to invoke `unicortex` directly from your shell.
+
+```bash
+dotnet tool install --global UniCortex.Cli
+
+unicortex editor ping
+unicortex scene hierarchy
+```
+
+If the tool is already installed, run `dotnet tool update --global UniCortex.Cli` instead.
+
+### Argument and output conventions
+
+- Required parameters are positional arguments, for example `scene open Assets/Scenes/Main.unity`.
+- Optional parameters with defaults become named options, for example `gameobject modify 1234 --name CameraRig --active-self true`.
+- Read/query commands usually print JSON, such as `scene hierarchy`, `gameobject find`, `component properties`, and `recorder all list`.
+- State-changing commands usually print a short status message, such as `editor play`, `scene open`, `component add`, and `timeline track bind`.
+- `screenshot capture` writes a file to the path you pass, and recorder commands create media files in the configured output path.
+
+### Available CLI Commands
+
+#### `editor`
+
+| Command | Description |
+| --- | --- |
+| `editor ping` | Check connectivity with the Unity Editor. |
+| `editor play` | Start Play Mode in the Unity Editor. |
+| `editor stop` | Stop Play Mode in the Unity Editor. |
+| `editor status` | Show the current play/paused state. |
+| `editor pause` | Pause the Unity Editor. |
+| `editor unpause` | Unpause the Unity Editor. |
+| `editor step` | Advance the Unity Editor by one frame while paused. |
+| `editor undo` | Perform Undo. |
+| `editor redo` | Perform Redo. |
+| `editor save` | Save the active stage. |
+| `editor reload-domain` | Request script recompilation. |
+
+#### `scene`
+
+| Command | Description |
+| --- | --- |
+| `scene create` | Create a new empty scene at the specified asset path. |
+| `scene open` | Open a scene by asset path. |
+| `scene hierarchy` | Print the current scene hierarchy as JSON. |
+
+#### `gameobject`
+
+| Command | Description |
+| --- | --- |
+| `gameobject find` | Search GameObjects by Unity Search query. |
+| `gameobject create` | Create a new empty GameObject with the specified name. |
+| `gameobject delete` | Delete a GameObject by `instanceId`. |
+| `gameobject modify` | Rename, reparent, or change active state, tag, or layer. |
+
+#### `component`
+
+| Command | Description |
+| --- | --- |
+| `component add` | Add a component to a GameObject. |
+| `component remove` | Remove a component from a GameObject. |
+| `component properties` | Print serialized component properties as JSON. |
+| `component set-property` | Set a serialized property by path. |
+
+#### `prefab`
+
+| Command | Description |
+| --- | --- |
+| `prefab create` | Save a scene GameObject as a Prefab asset. |
+| `prefab instantiate` | Instantiate a Prefab into the current scene. |
+| `prefab open` | Open a Prefab in Prefab Mode. |
+| `prefab close` | Close Prefab Mode and return to the main stage. |
+
+#### `test`
+
+| Command | Description |
+| --- | --- |
+| `test run` | Run Unity Test Runner tests. Supports filters such as `--test-mode`, `--test-names`, `--group-names`, `--category-names`, and `--assembly-names`. |
+
+#### `console`
+
+| Command | Description |
+| --- | --- |
+| `console logs` | Read Unity Editor console logs. |
+| `console clear` | Clear Unity Editor console logs. |
+
+#### `asset`, `project-window`, `menu`, `screenshot`
+
+| Command | Description |
+| --- | --- |
+| `asset refresh` | Refresh the Unity Asset Database. |
+| `project-window select` | Select and ping an asset in the Project Window. |
+| `menu execute` | Execute a Unity menu item by path. |
+| `screenshot capture` | Capture a PNG screenshot. Play Mode only. |
+
+#### `scene-view`, `game-view`, `game-view size`
+
+| Command | Description |
+| --- | --- |
+| `scene-view focus` | Focus the Scene View window. |
+| `game-view focus` | Focus the Game View window. |
+| `game-view size get` | Show the current Game View size. |
+| `game-view size list` | List available Game View sizes. |
+| `game-view size set` | Set the Game View size by index. |
+
+#### `input`
+
+| Command | Description |
+| --- | --- |
+| `input send-key` | Send an Input System key event. Requires `com.unity.inputsystem`; Play Mode only. |
+| `input send-mouse` | Send an Input System mouse event. Requires `com.unity.inputsystem`; Play Mode only. |
+
+#### `recorder all`, `recorder movie`
+
+| Command | Description |
+| --- | --- |
+| `recorder all list` | List configured recorders. Requires `com.unity.recorder`. |
+| `recorder movie add` | Add a Movie recorder. Requires `com.unity.recorder`. |
+| `recorder movie remove` | Remove a Movie recorder by index. Requires `com.unity.recorder`. |
+| `recorder movie start` | Start movie recording. Play Mode only; requires `com.unity.recorder`. |
+| `recorder movie stop` | Stop movie recording and save the output file. |
+
+#### `timeline`, `timeline track`, `timeline clip`
+
+| Command | Description |
+| --- | --- |
+| `timeline create` | Create a Timeline asset. Requires `com.unity.timeline`. |
+| `timeline play` | Start Timeline playback on a PlayableDirector. Requires `com.unity.timeline`. |
+| `timeline stop` | Stop Timeline playback and reset to the beginning. Requires `com.unity.timeline`. |
+| `timeline track add` | Add a Timeline track. Requires `com.unity.timeline`. |
+| `timeline track remove` | Remove a Timeline track by index. Requires `com.unity.timeline`. |
+| `timeline track bind` | Bind a Timeline track to a target object. Requires `com.unity.timeline`. |
+| `timeline clip add` | Add a clip to a Timeline track. Requires `com.unity.timeline`. |
+| `timeline clip remove` | Remove a clip from a Timeline track. Requires `com.unity.timeline`. |
+
+#### `extension`
+
+| Command | Description |
+| --- | --- |
+| `extension list` | List registered extensions from the Unity project. |
+| `extension execute` | Execute an extension by name, optionally passing JSON through `--arguments`. |
+
+### Representative workflows
+
+```bash
+# Find cameras and inspect a component
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject find "t:Camera"
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component properties 1234 UnityEngine.Transform
+
+# Rename and reparent a GameObject
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject modify 1234 --name CameraRig --parent-instance-id 5678
+
+# Set a serialized property
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component set-property 1234 UnityEngine.Transform m_LocalPosition.x 1.5
+
+# Capture a screenshot
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- screenshot capture ./Artifacts/gameview.png
+
+# Discover and run a custom extension
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- extension list
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- extension execute count_gameobjects --arguments '{"nameFilter":"Camera"}'
+```
+
+## Extension
+
+You can define extensions in your Unity project by creating Editor-only C# classes that inherit from `ExtensionHandler`. They are automatically discovered via `TypeCache` and exposed as MCP tools and CLI commands.
+
+```csharp
+#if UNITY_EDITOR
+using UniCortex.Editor.Handlers.Extension;
+using UnityEngine;
+
+public class CountGameObjects : ExtensionHandler
+{
+    public override string Name => "count_gameobjects";
+    public override string Description => "Count GameObjects in the current scene.";
+    public override bool ReadOnly => true;
+
+    public override ExtensionSchema InputSchema => new ExtensionSchema(
+        new ExtensionProperty("nameFilter", ExtensionPropertyType.String,
+            "Only count GameObjects whose name contains this string.")
+    );
+
+    public override string Execute(string argumentsJson)
+    {
+        // Runs on the Unity main thread — safe to call Unity APIs
+        var filter = "";
+        if (!string.IsNullOrEmpty(argumentsJson))
+        {
+            var args = JsonUtility.FromJson<Args>(argumentsJson);
+            if (!string.IsNullOrEmpty(args.nameFilter))
+                filter = args.nameFilter;
+        }
+
+        var allObjects = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+        var count = 0;
+        foreach (var obj in allObjects)
+        {
+            if (string.IsNullOrEmpty(filter) || obj.name.Contains(filter))
+                count++;
+        }
+
+        return $"Found {count} GameObject(s).";
+    }
+
+    [System.Serializable]
+    private class Args
+    {
+        public string nameFilter;
+    }
+}
+#endif
+```
+
+### API Reference
+
+| Class | Description |
+|-------|-------------|
+| `ExtensionHandler` | Abstract base class. Override `Name`, `Description`, `InputSchema`, and `Execute()` |
+| `ExtensionSchema` | Defines the input parameter schema via `ExtensionProperty` array |
+| `ExtensionProperty` | Defines a single parameter: name, type, description, and whether it is required |
+| `ExtensionPropertyType` | Parameter types: `String`, `Number`, `Integer`, `Boolean` |
+
+> [!NOTE]
+> After adding or removing extensions, restart the MCP client (e.g., Claude Code) to refresh the tool list.
 
 ## Architecture
 

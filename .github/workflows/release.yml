@@ -15,8 +15,14 @@ permissions:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   PACKAGE_JSON_PATH: package.json
+  CLI_CSPROJ_PATH: Tools~/UniCortex.Cli/UniCortex.Cli.csproj
+  NUGET_SOURCE_URL: https://api.nuget.org/v3/index.json
   GITHUB_BOT_NAME: github-actions[bot]
   GITHUB_BOT_EMAIL: github-actions[bot]@users.noreply.github.com
+
+defaults:
+  run:
+    shell: pwsh
 
 jobs:
   paths-filter:
@@ -61,23 +67,38 @@ jobs:
       SOURCE_BRANCH: github-actions/update-files/${{ github.run_number }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Update package.json
+      - name: Update versioned files
         run: |
-          json_content=$(cat "${PACKAGE_JSON_PATH}")
-          updated_json=$(echo "${json_content}" | jq --arg version "${VERSION}" '.version = $version')
-          echo "${updated_json}" | jq '.' > "${PACKAGE_JSON_PATH}"
-      - name: Commit package.json
+          $packageJson = Get-Content $env:PACKAGE_JSON_PATH -Raw | ConvertFrom-Json
+          $packageJson.version = $env:VERSION
+          $packageJson | ConvertTo-Json -Depth 100 | Set-Content $env:PACKAGE_JSON_PATH
+
+          $csprojContent = Get-Content $env:CLI_CSPROJ_PATH -Raw
+          # Replace only the first PackageVersion element so we fail fast if the expected node is missing or duplicated unexpectedly.
+          $updatedCsprojContent = [regex]::Replace(
+            $csprojContent,
+            '<PackageVersion>.*?</PackageVersion>',
+            "<PackageVersion>$($env:VERSION)</PackageVersion>",
+            1
+          )
+
+          if ($updatedCsprojContent -eq $csprojContent) {
+            throw "PackageVersion element was not found in $($env:CLI_CSPROJ_PATH)."
+          }
+
+          Set-Content -Path $env:CLI_CSPROJ_PATH -Value $updatedCsprojContent
+      - name: Commit versioned files
         uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
-        id: commit-package-json
+        id: commit-versioned-files
         with:
           author_name: ${{ env.GITHUB_BOT_NAME }}
           author_email: ${{ env.GITHUB_BOT_EMAIL }}
-          message: "Update package.json"
-          add: ${{ env.PACKAGE_JSON_PATH }}
+          message: "Update release version files"
+          add: "${{ env.PACKAGE_JSON_PATH }} ${{ env.CLI_CSPROJ_PATH }}"
           new_branch: ${{ env.SOURCE_BRANCH }}
       - name: Update README.md
         run: |
-          cp -f .github/DRAFT_README.md README.md
+          Copy-Item .github/DRAFT_README.md README.md -Force
       - name: Commit README.md
         uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
         id: commit-readme
@@ -93,12 +114,12 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Create pull request and merge
-        if: ${{ steps.commit-package-json.outputs.committed == 'true' || steps.commit-readme.outputs.committed == 'true' }}
+        if: ${{ steps.commit-versioned-files.outputs.committed == 'true' || steps.commit-readme.outputs.committed == 'true' }}
         env:
           GH_TOKEN: ${{ steps.create-github-app-token.outputs.token }}
         run: |
-          gh pr create --title "Update files for release" --body "Update files for release" --base main --head "${SOURCE_BRANCH}"
-          gh pr merge "${SOURCE_BRANCH}" --auto --merge
+          gh pr create --title "Update files for release" --body "Update files for release" --base main --head $env:SOURCE_BRANCH
+          gh pr merge $env:SOURCE_BRANCH --auto --merge
 
   release:
     name: Release
@@ -121,13 +142,39 @@ jobs:
         with:
           ref: main
           token: ${{ steps.create-github-app-token.outputs.token }}
-      - name: Validate version in package.json
+      - name: Validate versioned files
         run: |
-          package_version=$(jq -r '.version' "${PACKAGE_JSON_PATH}")
-          if [[ "${package_version}" != "${VERSION}" ]]; then
-            echo "::error::version in package.json (${package_version}) does not match the release draft tag (${VERSION})"
-            exit 1
-          fi
+          $packageVersion = (Get-Content $env:PACKAGE_JSON_PATH -Raw | ConvertFrom-Json).version
+          if ($packageVersion -ne $env:VERSION) {
+            throw "version in package.json ($packageVersion) does not match the release draft tag ($($env:VERSION))"
+          }
+
+          $csprojContent = Get-Content $env:CLI_CSPROJ_PATH -Raw
+          $csprojVersionMatch = [regex]::Match($csprojContent, '<PackageVersion>(.*?)</PackageVersion>')
+          if (-not $csprojVersionMatch.Success) {
+            throw "PackageVersion element was not found in $($env:CLI_CSPROJ_PATH)."
+          }
+
+          $csprojVersion = $csprojVersionMatch.Groups[1].Value
+          if ($csprojVersion -ne $env:VERSION) {
+            throw "version in $($env:CLI_CSPROJ_PATH) ($csprojVersion) does not match the release draft tag ($($env:VERSION))"
+          }
+      - name: Pack CLI tool package
+        run: |
+          dotnet pack $env:CLI_CSPROJ_PATH --configuration Release --output ./artifacts/cli-tool
+      - name: Publish CLI tool package to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          $packagePath = (Get-ChildItem ./artifacts/cli-tool/*.nupkg | Select-Object -First 1).FullName
+          if (-not $packagePath) {
+            throw "CLI package was not found under ./artifacts/cli-tool."
+          }
+
+          dotnet nuget push $packagePath `
+            --api-key $env:NUGET_API_KEY `
+            --source $env:NUGET_SOURCE_URL `
+            --skip-duplicate
       - uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32 # v7.2.0
         id: release-drafter
         with:
@@ -136,19 +183,24 @@ jobs:
       - name: Get semver
         id: get-semver
         run: |
-          read -r major minor patch <<< "$(echo "${VERSION}" | grep -oE '^([0-9]+)\.([0-9]+)\.([0-9]+)' | awk -F '.' '{print $1 " " $2 " " $3}')"
-          {
-            echo "major=${major}"
-            echo "minor=${major}.${minor}"
-            echo "patch=${major}.${minor}.${patch}"
-          } >> "${GITHUB_OUTPUT}"
+          if ($env:VERSION -notmatch '^(\d+)\.(\d+)\.(\d+)') {
+            throw "Release draft tag '$($env:VERSION)' is not a valid semver value."
+          }
+
+          "major=$($Matches[1])" >> $env:GITHUB_OUTPUT
+          "minor=$($Matches[1]).$($Matches[2])" >> $env:GITHUB_OUTPUT
+          "patch=$($Matches[1]).$($Matches[2]).$($Matches[3])" >> $env:GITHUB_OUTPUT
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ env.VERSION }}
       - name: Update major tag
         if: steps.get-semver.outputs.major != '0'
+        env:
+          MAJOR_TAG: ${{ steps.get-semver.outputs.major }}
         run: |
-          git push -f origin "refs/tags/${{ env.VERSION }}:refs/tags/${{ steps.get-semver.outputs.major }}"
+          git push -f origin "refs/tags/$($env:VERSION):refs/tags/$($env:MAJOR_TAG)"
       - name: Update minor tag
+        env:
+          MINOR_TAG: ${{ steps.get-semver.outputs.minor }}
         run: |
-          git push -f origin "refs/tags/${{ env.VERSION }}:refs/tags/${{ steps.get-semver.outputs.minor }}"
+          git push -f origin "refs/tags/$($env:VERSION):refs/tags/$($env:MINOR_TAG)"

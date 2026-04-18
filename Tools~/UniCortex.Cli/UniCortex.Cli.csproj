@@ -5,6 +5,19 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>UniCortex.Cli</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <PackageId>UniCortex.Cli</PackageId>
+    <PackageVersion>0.1.29</PackageVersion>
+    <ToolCommandName>unicortex</ToolCommandName>
+    <Description>Control Unity Editor from the terminal via UniCortex.</Description>
+    <Authors>veyron-sakai</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/VeyronSakai/UniCortex</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/VeyronSakai/UniCortex</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageTags>unity;cli;mcp;dotnet-tool</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ConsoleAppFramework" Version="5.6.0" />
@@ -13,5 +26,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../UniCortex.Core/UniCortex.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
