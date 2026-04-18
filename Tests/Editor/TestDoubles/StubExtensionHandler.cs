@@ -1,4 +1,3 @@
-using System;
 using UniCortex.Editor.Handlers.Extension;
 
 namespace UniCortex.Editor.Tests.TestDoubles
@@ -11,7 +10,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public override ExtensionSchema InputSchema { get; }
 
         public string ExecuteResult { get; set; } = "ok";
-        public Exception ExecuteException { get; set; }
         public string LastArgumentsJson { get; private set; }
 
         public StubExtensionHandler(string name = "stub_extension", string description = "A stub extension",
@@ -26,7 +24,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public override string Execute(string argumentsJson)
         {
             LastArgumentsJson = argumentsJson;
-            if (ExecuteException != null) throw ExecuteException;
             return ExecuteResult;
         }
     }

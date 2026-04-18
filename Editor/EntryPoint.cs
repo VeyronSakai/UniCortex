@@ -12,6 +12,7 @@ using UniCortex.Editor.Handlers.Input;
 using UniCortex.Editor.Handlers.Screenshot;
 using UniCortex.Editor.Handlers.SceneView;
 using UniCortex.Editor.Handlers.GameView;
+using UniCortex.Editor.Handlers.ProjectWindow;
 using UniCortex.Editor.Handlers.MovieRecorder;
 using UniCortex.Editor.Handlers.Timeline;
 using UniCortex.Editor.Infrastructures;
@@ -185,9 +186,14 @@ namespace UniCortex.Editor
 
 
             var assetDbOps = new AssetDatabaseOperationsAdapter();
+            var projectWindowOps = new ProjectWindowOperationsAdapter();
 
             var refreshAssetDatabaseUseCase = new RefreshAssetDatabaseUseCase(s_dispatcher, assetDbOps);
             var assetRefreshHandler = new AssetDatabaseRefreshHandler(refreshAssetDatabaseUseCase);
+
+            var selectProjectWindowAssetUseCase = new SelectProjectWindowAssetUseCase(s_dispatcher, projectWindowOps);
+            var selectProjectWindowAssetHandler =
+                new SelectProjectWindowAssetHandler(selectProjectWindowAssetUseCase);
 
 
             var menuItemOps = new MenuItemOperationsAdapter();
@@ -308,6 +314,7 @@ namespace UniCortex.Editor
             openPrefabHandler.Register(router);
             closePrefabHandler.Register(router);
             assetRefreshHandler.Register(router);
+            selectProjectWindowAssetHandler.Register(router);
             executeMenuItemHandler.Register(router);
             captureScreenshotHandler.Register(router);
             focusSceneViewHandler.Register(router);

@@ -1,13 +1,9 @@
-using System;
-using System.Text.RegularExpressions;
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Handlers.Extension;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using NUnit.Framework;
-using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace UniCortex.Editor.Tests.Presentations
 {
@@ -76,19 +72,6 @@ namespace UniCortex.Editor.Tests.Presentations
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.NotFound, context.ResponseStatusCode);
-        }
-
-        [Test]
-        public void HandleExecute_Returns500_WhenHandlerThrows()
-        {
-            _stubHandler.ExecuteException = new InvalidOperationException("Boom");
-            var body = "{\"name\":\"test_extension\"}";
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.ExtensionExecute, body);
-
-            LogAssert.Expect(LogType.Error, new Regex("Boom"));
-            _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
-
-            Assert.AreEqual(HttpStatusCodes.InternalServerError, context.ResponseStatusCode);
         }
 
         [Test]

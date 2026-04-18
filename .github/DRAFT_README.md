@@ -94,6 +94,7 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | `test run` | Run Unity tests |
 | `console logs\|clear` | Console log management |
 | `asset refresh` | Refresh Asset Database |
+| `project-window select` | Select and ping an asset in Project Window |
 | `menu execute` | Execute menu items |
 | `screenshot capture` | Capture screenshot (Play Mode only) |
 | `scene-view focus` | Switch focus to Scene View |
@@ -164,6 +165,12 @@ dotnet run --project "${UNICORTEX_PROJECT_PATH}/Library/PackageCache/com.veyron-
 | Tool | Description |
 |------|-------------|
 | `refresh_asset_database` | Refresh the Unity Asset Database |
+
+### Project Window
+
+| Tool | Description |
+|------|-------------|
+| `select_project_window_asset` | Select an asset in the Project Window, focus the window, and ping it |
 
 ### Console
 

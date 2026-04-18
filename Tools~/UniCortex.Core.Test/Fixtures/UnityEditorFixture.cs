@@ -18,6 +18,7 @@ public sealed class UnityEditorFixture
     public ComponentUseCase ComponentUseCase { get; }
     public PrefabUseCase PrefabUseCase { get; }
     public AssetUseCase AssetUseCase { get; }
+    public ProjectWindowUseCase ProjectWindowUseCase { get; }
     public MenuItemUseCase MenuItemUseCase { get; }
     public ScreenshotUseCase ScreenshotUseCase { get; }
     public MovieRecordingUseCase MovieRecordingUseCase { get; }
@@ -39,6 +40,7 @@ public sealed class UnityEditorFixture
         ComponentUseCase = provider.GetRequiredService<ComponentUseCase>();
         PrefabUseCase = provider.GetRequiredService<PrefabUseCase>();
         AssetUseCase = provider.GetRequiredService<AssetUseCase>();
+        ProjectWindowUseCase = provider.GetRequiredService<ProjectWindowUseCase>();
         MenuItemUseCase = provider.GetRequiredService<MenuItemUseCase>();
         ScreenshotUseCase = provider.GetRequiredService<ScreenshotUseCase>();
         MovieRecordingUseCase = provider.GetRequiredService<MovieRecordingUseCase>();
