@@ -10,6 +10,8 @@ UniCortex can be used in two ways:
 1. As an **MCP server** for AI agents such as Claude Code or Codex CLI
 2. As a **CLI tool** for direct terminal-based control
 
+In both cases, you must install the UniCortex Unity package into the target Unity project first.
+
 ## Requirements
 
 - Unity 2022.3 or later
@@ -30,7 +32,7 @@ https://github.com/VeyronSakai/UniCortex.git
 
 ## Use UniCortex as an MCP Server
 
-Use this mode when you want an MCP client to call Unity operations as tools.
+Use this mode when you want an MCP client to call Unity operations as tools. The UniCortex Unity package must be installed in the target Unity project.
 
 ### MCP Server Setup
 
@@ -212,7 +214,7 @@ User-defined extensions in your Unity project are automatically discovered and e
 
 ## Use UniCortex as a CLI Tool
 
-Use this mode when you want to control Unity Editor directly from a terminal. Like the MCP server, the CLI talks to the same Unity-side HTTP server, so the Unity Editor must be open with the UniCortex package loaded.
+Use this mode when you want to control Unity Editor directly from a terminal. As with the MCP server, the UniCortex Unity package must be installed in the target Unity project, and the Unity Editor must be open with the package loaded.
 
 ### Connection settings
 
