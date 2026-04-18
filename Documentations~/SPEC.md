@@ -64,6 +64,7 @@ UniCortex/
 ### 技術要素
 
 - `System.Net.HttpListener` で `http://localhost:<port>/` をリッスン
+- 受信した HTTP リクエストは単一の FIFO キューに積み、1 本のワーカーが **順番に 1 件ずつ** 処理する
 - ポートは Editor 起動時にランダムな空きポートを自動割り当て（`TcpListener` port 0 で取得）
 - `SessionState` でポート番号をドメインリロード間で維持（Editor 再起動時のみ変わる）
 - `[InitializeOnLoad]` で Editor 起動時に自動開始
@@ -90,10 +91,12 @@ UniCortex/
 
 Unity API はメインスレッドからのみ呼び出し可能。HttpListener のコールバックはスレッドプールで実行されるため、以下のパターンでブリッジする:
 
-1. HTTP スレッドで `MainThreadDispatcher.RunOnMainThread<T>(Func<T> func)` を呼ぶ
-2. `TaskCompletionSource<T>` を作成し `ConcurrentQueue` にエンキュー
-3. メインスレッド（`EditorApplication.update`）でデキュー → `func()` 実行 → `tcs.SetResult()`
-4. HTTP スレッドで await 完了 → レスポンスを返す
+1. 受信した HTTP リクエストを FIFO キューに積む
+2. 単一ワーカーがキューをデキューし、リクエスト全体を順番に処理する
+3. そのリクエスト内で Unity API が必要になったら `MainThreadDispatcher.RunOnMainThread<T>(Func<T> func)` を呼ぶ
+4. `TaskCompletionSource<T>` を作成し `ConcurrentQueue` にエンキュー
+5. メインスレッド（`EditorApplication.update`）でデキュー → `func()` 実行 → `tcs.SetResult()`
+6. HTTP ワーカーが await 完了 → レスポンスを返す
 
 ---
 

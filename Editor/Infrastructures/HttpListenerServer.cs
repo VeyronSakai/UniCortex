@@ -56,13 +56,28 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             _cts = new CancellationTokenSource();
-            // Start on a thread-pool thread so that async continuations never post
-            // back to UnitySynchronizationContext, which stops being pumped during
-            // Play Mode + Pause. All handlers that need Unity main-thread APIs
-            // dispatch via MainThreadDispatcher.
-            Task.Run(() => ListenLoopAsync(_cts.Token)).ContinueWith(
+            var token = _cts.Token;
+            var requestQueue = new SequentialRequestQueue<HttpListenerContext>();
+            // Accept on a thread-pool thread so async continuations never post back
+            // to UnitySynchronizationContext. A single request worker drains the
+            // queue in FIFO order so Unity-side request execution stays serialized.
+            Task.Run(() => requestQueue.RunAsync(HandleContextAsync, token)).ContinueWith(
+                t =>
+                {
+                    requestQueue.Dispose();
+                    if (t.Exception != null)
+                    {
+                        Debug.LogError($"[UniCortex] Request processor failed: {t.Exception}");
+                    }
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.None,
+                TaskScheduler.Default);
+            Task.Run(() => ListenLoopAsync(requestQueue, token)).ContinueWith(
                 t => Debug.LogError($"[UniCortex] Listen loop failed: {t.Exception}"),
-                TaskContinuationOptions.OnlyOnFaulted);
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted,
+                TaskScheduler.Default);
 
             Debug.Log($"[UniCortex] Server started on http://localhost:{_port}/");
         }
@@ -90,14 +105,21 @@ namespace UniCortex.Editor.Infrastructures
             _cts = null;
         }
 
-        private async Task ListenLoopAsync(CancellationToken token)
+        private async Task ListenLoopAsync(SequentialRequestQueue<HttpListenerContext> requestQueue,
+            CancellationToken token)
         {
-            while (_listener is { IsListening: true } && !token.IsCancellationRequested)
+            var listener = _listener;
+            if (listener == null)
+            {
+                return;
+            }
+
+            while (listener.IsListening && !token.IsCancellationRequested)
             {
                 try
                 {
-                    var httpContext = await _listener.GetContextAsync();
-                    await HandleContextAsync(httpContext, token);
+                    var httpContext = await listener.GetContextAsync();
+                    requestQueue.Enqueue(httpContext);
                 }
                 catch (ObjectDisposedException)
                 {

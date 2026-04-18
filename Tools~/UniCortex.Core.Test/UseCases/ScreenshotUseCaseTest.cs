@@ -21,6 +21,11 @@ public class ScreenshotUseCaseTest
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
+            await _fixture.GameViewUseCase.FocusAsync(CancellationToken.None);
+            // EnterPlayModeAsync waits for the play-state flag, not the first rendered frame.
+            // Give Game View one frame to render before capturing via ScreenCapture.
+            await Task.Delay(500);
+
             var pngData = await _fixture.ScreenshotUseCase.CaptureAsync(CancellationToken.None);
             Assert.That(pngData.Length, Is.GreaterThan(0));
         }
