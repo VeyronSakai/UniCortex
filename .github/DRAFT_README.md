@@ -319,27 +319,6 @@ dotnet tool run unicortex -- scene hierarchy
 
 If the tool is already installed, repack and run `dotnet tool update --local --add-source ./.unicortex-tools/nupkg UniCortex.Cli` instead.
 
-### Install as a `dotnet` global tool
-
-If you want to invoke the CLI from anywhere on your machine, you can install the packed tool globally.
-
-```bash
-export UNICORTEX_PROJECT_PATH="/path/to/your/unity/project"
-export UNICORTEX_CLI_PROJECT=$(echo "${UNICORTEX_PROJECT_PATH}"/Library/PackageCache/com.veyron-sakai.uni-cortex@*/Tools~/UniCortex.Cli)
-
-mkdir -p ./.unicortex-tools/nupkg
-dotnet pack "$UNICORTEX_CLI_PROJECT" -o ./.unicortex-tools/nupkg
-
-dotnet tool install --global --add-source ./.unicortex-tools/nupkg UniCortex.Cli
-
-unicortex editor ping
-unicortex scene hierarchy
-```
-
-If the tool is already installed, run `dotnet tool update --global --add-source ./.unicortex-tools/nupkg UniCortex.Cli` instead.
-
-If your shell cannot find `unicortex`, restart the shell or ensure `~/.dotnet/tools` is included in `PATH`.
-
 ### Argument and output conventions
 
 - Required parameters are positional arguments, for example `scene open Assets/Scenes/Main.unity`.
