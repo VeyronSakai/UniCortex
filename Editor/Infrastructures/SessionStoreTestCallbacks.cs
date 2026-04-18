@@ -8,7 +8,13 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class SessionStoreTestCallbacks : ICallbacks
     {
+        private readonly TestRunnerApi _testRunnerApi;
         private readonly List<TestResultItem> _results = new();
+
+        public SessionStoreTestCallbacks(TestRunnerApi testRunnerApi = null)
+        {
+            _testRunnerApi = testRunnerApi;
+        }
 
         internal IReadOnlyList<TestResultItem> Results => _results;
 
@@ -39,6 +45,7 @@ namespace UniCortex.Editor.Infrastructures
 
             var response = new RunTestsResponse(passed, failed, skipped, entries);
             TestResultStore.StoreResult(JsonUtility.ToJson(response));
+            _testRunnerApi?.UnregisterCallbacks(this);
             Debug.Log("[UniCortex] Test results stored in SessionState");
         }
 

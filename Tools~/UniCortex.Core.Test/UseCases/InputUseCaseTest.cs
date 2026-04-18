@@ -13,8 +13,14 @@ public class InputUseCaseTest
     public async ValueTask OneTimeSetUp()
     {
         _fixture = await UnityEditorFixture.CreateAsync();
+        await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
     }
 
+    [OneTimeTearDown]
+    public async ValueTask OneTimeTearDown()
+    {
+        await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+    }
     [Test, CancelAfter(120_000)]
     public async ValueTask SendKeyEvent_ReturnsError_WhenNotInPlayMode()
     {

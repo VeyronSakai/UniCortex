@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -31,7 +30,7 @@ namespace UniCortex.Editor.Infrastructures
                     TestResultStore.MarkPending();
 
                     var testRunnerApi = ScriptableObject.CreateInstance<TestRunnerApi>();
-                    var callbacks = new TestCallbacks(tcs);
+                    var callbacks = new TestCallbacks(testRunnerApi, tcs);
                     testRunnerApi.RegisterCallbacks(callbacks);
 
                     var filter = new Filter
@@ -83,12 +82,15 @@ namespace UniCortex.Editor.Infrastructures
 
         private sealed class TestCallbacks : ICallbacks
         {
+            private readonly TestRunnerApi _testRunnerApi;
             private readonly TaskCompletionSource<IReadOnlyList<TestResultItem>> _tcs;
-            private readonly SessionStoreTestCallbacks _inner = new();
+            private readonly SessionStoreTestCallbacks _inner;
 
-            public TestCallbacks(TaskCompletionSource<IReadOnlyList<TestResultItem>> tcs)
+            public TestCallbacks(TestRunnerApi testRunnerApi, TaskCompletionSource<IReadOnlyList<TestResultItem>> tcs)
             {
+                _testRunnerApi = testRunnerApi;
                 _tcs = tcs;
+                _inner = new SessionStoreTestCallbacks();
             }
 
             public void RunStarted(ITestAdaptor testsToRun) => _inner.RunStarted(testsToRun);
@@ -100,6 +102,7 @@ namespace UniCortex.Editor.Infrastructures
             public void RunFinished(ITestResultAdaptor result)
             {
                 _inner.RunFinished(result);
+                _testRunnerApi.UnregisterCallbacks(this);
                 _tcs.TrySetResult(_inner.Results);
             }
         }

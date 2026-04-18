@@ -30,6 +30,14 @@ namespace UniCortex.Editor.Infrastructures
             s_logEntriesType?.GetMethod("Clear",
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
+        private static readonly PropertyInfo s_consoleFlagsProperty =
+            s_logEntriesType?.GetProperty("consoleFlags",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+
+        private static readonly MethodInfo s_setFilteringTextMethod =
+            s_logEntriesType?.GetMethod("SetFilteringText",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+
         private static readonly FieldInfo s_messageField =
             s_logEntryType?.GetField("message");
 
@@ -42,27 +50,39 @@ namespace UniCortex.Editor.Infrastructures
         // LogMessageFlags bit masks
         private const int Error = 1 << 0;
         private const int Assert = 1 << 1;
+        private const int Log = 1 << 2;
+        private const int Fatal = 1 << 4;
         private const int AssetImportError = 1 << 6;
         private const int AssetImportWarning = 1 << 7;
         private const int ScriptingError = 1 << 8;
         private const int ScriptingWarning = 1 << 9;
+        private const int ScriptingLog = 1 << 10;
         private const int ScriptCompileError = 1 << 11;
         private const int ScriptCompileWarning = 1 << 12;
         private const int ScriptingException = 1 << 17;
         private const int ScriptingAssertion = 1 << 21;
 
-        private const int ErrorMask = Error | Assert | ScriptingError | ScriptCompileError |
-                                      ScriptingException | ScriptingAssertion | AssetImportError;
+        private const int LogLevelLog = 1 << 7;
+        private const int LogLevelWarning = 1 << 8;
+        private const int LogLevelError = 1 << 9;
 
+        private const int ConsoleLogLevelMask = LogLevelLog | LogLevelWarning | LogLevelError;
+        private const int ErrorMask = Error | Assert | Fatal | ScriptingError | ScriptCompileError |
+                                      ScriptingException | ScriptingAssertion | AssetImportError;
+        private const int InfoMask = Log | ScriptingLog;
         private const int WarningMask = ScriptingWarning | ScriptCompileWarning | AssetImportWarning;
 
         public List<ConsoleLogEntry> GetLogs(int count, bool includeStackTrace = false,
             bool showLog = true, bool showWarning = true, bool showError = true)
         {
-            if (count <= 0 || s_startMethod == null)
+            if (count <= 0 || s_startMethod == null || s_getEntryMethod == null || s_logEntryType == null ||
+                s_modeField == null || s_messageField == null)
             {
                 return new List<ConsoleLogEntry>();
             }
+
+            s_consoleFlagsProperty?.SetValue(null, ConsoleLogLevelMask);
+            s_setFilteringTextMethod?.Invoke(null, new object[] { string.Empty });
 
             var totalRows = (int)s_startMethod.Invoke(null, null);
             try
@@ -92,8 +112,8 @@ namespace UniCortex.Editor.Infrastructures
                         continue;
                     }
 
-                    var message = (string)s_messageField.GetValue(entry);
-                    var callstackStart = (int)s_callstackStartField.GetValue(entry);
+                    var message = (string?)s_messageField.GetValue(entry) ?? string.Empty;
+                    var callstackStart = (int?)s_callstackStartField?.GetValue(entry) ?? -1;
 
                     var logMessage = callstackStart > 0 && callstackStart < message.Length
                         ? message[..callstackStart]
@@ -112,7 +132,7 @@ namespace UniCortex.Editor.Infrastructures
             }
             finally
             {
-                s_endMethod.Invoke(null, null);
+                s_endMethod?.Invoke(null, null);
             }
         }
 
@@ -142,6 +162,11 @@ namespace UniCortex.Editor.Infrastructures
             if ((mode & WarningMask) != 0)
             {
                 return "Warning";
+            }
+
+            if ((mode & InfoMask) != 0)
+            {
+                return "Log";
             }
 
             return "Log";
