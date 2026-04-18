@@ -228,6 +228,8 @@ The CLI resolves the Unity Editor endpoint in the following order:
 
 Use one of the following options depending on how you want to invoke the CLI. These are alternatives, not sequential setup steps.
 
+Whichever option you choose, make sure the CLI version matches the UniCortex package version installed in the Unity project. Running via `dotnet run --project` from `Library/PackageCache` naturally uses the same package version.
+
 #### Option 1: Run commands with `dotnet run --project`
 
 ```bash
