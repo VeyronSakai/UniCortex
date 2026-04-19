@@ -3,13 +3,14 @@ using System.Text.Json;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
+public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase, IAsyncOperationSequencer sequencer)
 {
     [McpServerTool(Name = "add_movie_recorder", ReadOnly = false),
      Description(
@@ -18,7 +19,7 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
          "Returns the assigned recorder name. " +
          "Requires the Unity Recorder package (com.unity.recorder) to be installed."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> AddRecorderAsync(
+    public ValueTask<CallToolResult> AddRecorderAsync(
         [Description("Name for the recorder (required).")]
         string name,
         [Description("Output file path for the video (required).")]
@@ -30,48 +31,29 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
         [Description("Whether to capture audio (default: false)")]
         bool captureAudio = false,
         CancellationToken cancellationToken = default)
-    {
-        try
+        => McpToolExecution.ExecuteAsync(sequencer, async ct =>
         {
             var resultName = await movieRecordingUseCase.AddAsync(
-                name, outputPath, encoder, encodingQuality, captureAudio, cancellationToken);
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"Recorder added: {resultName}" }]
-            };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
+                name, outputPath, encoder, encodingQuality, captureAudio, ct);
+            return McpToolExecution.CreateTextResult($"Recorder added: {resultName}");
+        }, cancellationToken);
 
     [McpServerTool(Name = "get_all_recorders", ReadOnly = true),
      Description(
          "Get the list of all configured recorders and their settings (Movie, etc.). " +
          "Requires the Unity Recorder package (com.unity.recorder) to be installed."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> GetRecorderListAsync(
-        CancellationToken cancellationToken = default)
-    {
-        try
+    public ValueTask<CallToolResult> GetRecorderListAsync(CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteAsync(sequencer, async ct =>
         {
-            var response = await movieRecordingUseCase.GetListAsync(cancellationToken);
+            var response = await movieRecordingUseCase.GetListAsync(ct);
             var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
             {
                 WriteIndented = true,
                 IncludeFields = true
             });
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = json }]
-            };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
+            return McpToolExecution.CreateTextResult(json);
+        }, cancellationToken);
 
     [McpServerTool(Name = "remove_movie_recorder", ReadOnly = false),
      Description(
@@ -79,24 +61,15 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
          "Use get_all_recorders to find the index. " +
          "Requires the Unity Recorder package (com.unity.recorder) to be installed."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> RemoveRecorderAsync(
+    public ValueTask<CallToolResult> RemoveRecorderAsync(
         [Description("The index of the recorder to remove (obtained from get_all_recorders)")]
         int index,
         CancellationToken cancellationToken = default)
-    {
-        try
+        => McpToolExecution.ExecuteAsync(sequencer, async ct =>
         {
-            await movieRecordingUseCase.RemoveAsync(index, cancellationToken);
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"Recorder at index {index} removed." }]
-            };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
+            await movieRecordingUseCase.RemoveAsync(index, ct);
+            return McpToolExecution.CreateTextResult($"Recorder at index {index} removed.");
+        }, cancellationToken);
 
     [McpServerTool(Name = "start_movie_recorder", ReadOnly = false),
      Description(
@@ -105,46 +78,27 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase)
          "Add a Movie recorder first with add_movie_recorder. " +
          "Call stop_movie_recorder to stop and save the recording."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> StartRecorderAsync(
+    public ValueTask<CallToolResult> StartRecorderAsync(
         [Description("The index of the recorder to use (obtained from get_all_recorders)")]
         int index,
         [Description("Frames per second (default: 30)")]
         int fps = RecorderFps.Default,
         CancellationToken cancellationToken = default)
-    {
-        try
+        => McpToolExecution.ExecuteAsync(sequencer, async ct =>
         {
-            await movieRecordingUseCase.StartAsync(index, fps, cancellationToken);
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"Recording started with recorder at index {index}." }]
-            };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
+            await movieRecordingUseCase.StartAsync(index, fps, ct);
+            return McpToolExecution.CreateTextResult($"Recording started with recorder at index {index}.");
+        }, cancellationToken);
 
     [McpServerTool(Name = "stop_movie_recorder", ReadOnly = false),
      Description(
          "Stop the current Movie recording and save the video file. " +
          "Returns the output file path where the recording was saved."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> StopRecorderAsync(
-        CancellationToken cancellationToken = default)
-    {
-        try
+    public ValueTask<CallToolResult> StopRecorderAsync(CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteAsync(sequencer, async ct =>
         {
-            var outputPath = await movieRecordingUseCase.StopAsync(cancellationToken);
-            return new CallToolResult
-            {
-                Content = [new TextContentBlock { Text = $"Recording saved to: {outputPath}" }]
-            };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
+            var outputPath = await movieRecordingUseCase.StopAsync(ct);
+            return McpToolExecution.CreateTextResult($"Recording saved to: {outputPath}");
+        }, cancellationToken);
 }

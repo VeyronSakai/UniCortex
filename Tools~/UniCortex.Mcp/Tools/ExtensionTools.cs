@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.UseCases;
 
 namespace UniCortex.Mcp.Tools;
@@ -69,28 +70,25 @@ internal static class ExtensionTools
                 new InvalidOperationException("MCP server services are not available."));
         }
 
-        if (context.Params is not { } parameters)
-        {
-            return ToolErrorHandling.CreateErrorResult(
-                new InvalidOperationException("Tool call parameters are missing."));
-        }
+        var sequencer = services.GetRequiredService<IAsyncOperationSequencer>();
 
-        var useCase = services.GetRequiredService<ExtensionUseCase>();
-
-        try
+        return await McpToolExecution.ExecuteAsync(sequencer, async ct =>
         {
+            if (context.Params is not { } parameters)
+            {
+                throw new InvalidOperationException("Tool call parameters are missing.");
+            }
+
+            var useCase = services.GetRequiredService<ExtensionUseCase>();
+
             string? argumentsJson = null;
             if (parameters.Arguments is { Count: > 0 })
             {
                 argumentsJson = JsonSerializer.Serialize(parameters.Arguments);
             }
 
-            var result = await useCase.ExecuteAsync(parameters.Name, argumentsJson, cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = result }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
+            var result = await useCase.ExecuteAsync(parameters.Name, argumentsJson, ct);
+            return McpToolExecution.CreateTextResult(result);
+        }, cancellationToken);
     }
 }

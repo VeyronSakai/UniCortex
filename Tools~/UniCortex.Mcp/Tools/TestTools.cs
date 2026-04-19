@@ -2,17 +2,18 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class TestTools(TestUseCase testUseCase)
+public class TestTools(TestUseCase testUseCase, IAsyncOperationSequencer sequencer)
 {
     [McpServerTool(Name = "run_tests", ReadOnly = true),
      Description("Run Unity Test Runner tests and wait for completion."), UsedImplicitly]
-    public async ValueTask<CallToolResult> RunTestsAsync(
+    public ValueTask<CallToolResult> RunTestsAsync(
         [Description("Test mode: '" + TestModes.EditMode + "' or '" + TestModes.PlayMode + "'. Defaults to '" + TestModes.EditMode + "'.")]
         string? testMode = null,
         [Description("Array of full test names to run (e.g. [\"MyTests.TestA\", \"MyTests.TestB\"]).")]
@@ -24,16 +25,7 @@ public class TestTools(TestUseCase testUseCase)
         [Description("Array of test assembly names to filter by (e.g. [\"MyTests\"]).")]
         string[]? assemblyNames = null,
         CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var json = await testUseCase.RunAsync(testMode, testNames, groupNames, categoryNames,
-                assemblyNames, cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = json }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => testUseCase.RunAsync(testMode, testNames, groupNames, categoryNames, assemblyNames, ct),
+            cancellationToken);
 }

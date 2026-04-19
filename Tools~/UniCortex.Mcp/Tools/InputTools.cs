@@ -2,13 +2,14 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Mcp.Tools;
 
 [McpServerToolType, UsedImplicitly]
-public class InputTools(InputUseCase inputUseCase)
+public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequencer)
 {
     [McpServerTool(Name = "send_key_event", ReadOnly = false),
      Description(
@@ -18,7 +19,7 @@ public class InputTools(InputUseCase inputUseCase)
          "Requires the Input System package to be installed. " +
          "Does NOT work with legacy UnityEngine.Input.GetKey()."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> SendKeyEventAsync(
+    public ValueTask<CallToolResult> SendKeyEventAsync(
         [Description(
             "Input System Key enum name. Available keys: " +
             // Letters
@@ -66,17 +67,8 @@ public class InputTools(InputUseCase inputUseCase)
         [Description($"Event type: \"{InputEventType.Press}\" (default) or \"{InputEventType.Release}\".")]
         string eventType = InputEventType.Press,
         CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var message = await inputUseCase.SendKeyEventAsync(key, eventType, cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => inputUseCase.SendKeyEventAsync(key, eventType, ct), cancellationToken);
 
     [McpServerTool(Name = "send_mouse_event", ReadOnly = false),
      Description(
@@ -86,7 +78,7 @@ public class InputTools(InputUseCase inputUseCase)
          "Requires the Input System package to be installed. " +
          "Does NOT work with legacy UnityEngine.Input.GetMouseButton()."),
      UsedImplicitly]
-    public async ValueTask<CallToolResult> SendMouseEventAsync(
+    public ValueTask<CallToolResult> SendMouseEventAsync(
         [Description("X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_screenshot screenshots use top-left origin and may include editor chrome, so coordinates from screenshots must be converted.")]
         float x,
         [Description("Y coordinate in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. This is the inverse of typical image coordinates where Y increases downward.")]
@@ -96,16 +88,6 @@ public class InputTools(InputUseCase inputUseCase)
         [Description($"Event type: \"{InputEventType.Click}\" (default, press then release after one frame), \"{InputEventType.Press}\", \"{InputEventType.Release}\", or \"{InputEventType.Move}\" (position only, no button).")]
         string eventType = InputEventType.Click,
         CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var message =
-                await inputUseCase.SendMouseEventAsync(x, y, button, eventType, cancellationToken);
-            return new CallToolResult { Content = [new TextContentBlock { Text = message }] };
-        }
-        catch (Exception ex)
-        {
-            return ToolErrorHandling.CreateErrorResult(ex);
-        }
-    }
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => inputUseCase.SendMouseEventAsync(x, y, button, eventType, ct), cancellationToken);
 }
