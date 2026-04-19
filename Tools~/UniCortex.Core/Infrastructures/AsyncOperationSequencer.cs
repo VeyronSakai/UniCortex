@@ -4,7 +4,7 @@ namespace UniCortex.Core.Infrastructures;
 
 public sealed class AsyncOperationSequencer : IAsyncOperationSequencer
 {
-    private readonly object _syncRoot = new();
+    private readonly Lock _syncRoot = new();
     private Task _tail = Task.CompletedTask;
 
     public async ValueTask<T> EnqueueAsync<T>(Func<CancellationToken, ValueTask<T>> operation,

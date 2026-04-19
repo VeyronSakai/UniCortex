@@ -5,6 +5,10 @@ namespace UniCortex.Mcp.Tools;
 
 internal static class McpToolExecution
 {
+    // Serialize whole MCP tool calls at the MCP boundary rather than relying only on
+    // Unity-side HTTP request ordering. A single tool call can span multiple HTTP
+    // requests (wait-for-server, polling, follow-up fetches), so request-level FIFO
+    // inside Unity does not guarantee FIFO completion order between tool calls.
     internal static ValueTask<CallToolResult> ExecuteAsync(
         IAsyncOperationSequencer sequencer,
         Func<CancellationToken, ValueTask<CallToolResult>> operation,
