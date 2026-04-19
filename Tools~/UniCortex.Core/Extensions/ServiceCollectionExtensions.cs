@@ -10,6 +10,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddUniCortexCore(this IServiceCollection services)
     {
+        services.AddSingleton<IAsyncOperationSequencer, AsyncOperationSequencer>();
         services.AddTransient<HttpRequestHandler>();
         services.AddTransient<IUnityServerUrlProvider, UnityServerUrlProvider>();
         services.AddHttpClient(HttpClientNames.UniCortex, client =>
