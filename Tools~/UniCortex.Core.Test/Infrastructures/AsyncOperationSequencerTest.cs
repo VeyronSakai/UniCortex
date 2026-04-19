@@ -72,6 +72,7 @@ public class AsyncOperationSequencerTest
         var order = new List<int>();
         var firstEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var releaseFirst = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var thirdStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var first = sequencer.EnqueueAsync(async _ =>
         {
@@ -93,14 +94,24 @@ public class AsyncOperationSequencerTest
         var third = sequencer.EnqueueAsync(_ =>
         {
             order.Add(3);
+            thirdStarted.TrySetResult(true);
             return ValueTask.FromResult(3);
         });
 
         secondCts.Cancel();
+
+        // A canceled waiter must not release its slot early and allow a later
+        // operation to start before the currently running operation completes.
+        var startedBeforeFirstCompleted = await Task.WhenAny(
+            thirdStarted.Task,
+            Task.Delay(TimeSpan.FromMilliseconds(100)));
+
+        Assert.That(startedBeforeFirstCompleted, Is.Not.SameAs(thirdStarted.Task));
+
         releaseFirst.TrySetResult(true);
 
         Assert.That(await first, Is.EqualTo(1));
-        Assert.ThrowsAsync<TaskCanceledException>(async () => await second);
+        Assert.ThrowsAsync<OperationCanceledException>(async () => await second);
         Assert.That(await third, Is.EqualTo(3));
         Assert.That(order, Is.EqualTo(new[] { 1, 3 }));
     }

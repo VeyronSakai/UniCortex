@@ -22,7 +22,11 @@ public sealed class AsyncOperationSequencer : IAsyncOperationSequencer
 
         try
         {
-            await previous.WaitAsync(cancellationToken);
+            // Preserve strict FIFO ordering even when a waiting caller is canceled.
+            // If we cancel this wait itself, the current slot completes early and a
+            // later operation can overtake the still-running previous operation.
+            await previous;
+            cancellationToken.ThrowIfCancellationRequested();
             return await operation(cancellationToken);
         }
         finally
