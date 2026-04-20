@@ -1,7 +1,7 @@
 {
   "name": "com.veyron-sakai.uni-cortex",
   "displayName": "UniCortex",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "description": "Control Unity Editor via REST API and MCP.",
   "author": {
     "name": "veyron-sakai",
