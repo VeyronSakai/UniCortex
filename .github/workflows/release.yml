@@ -49,7 +49,7 @@ jobs:
     outputs:
       tag_name: ${{ steps.release-drafter.outputs.tag_name }}
     steps:
-      - uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32 # v7.2.0
+      - uses: release-drafter/release-drafter@563bf132657a13ded0b01fcb723c5a58cdd824e2 # v7.2.1
         id: release-drafter
         with:
           commitish: main
@@ -175,7 +175,7 @@ jobs:
             --api-key $env:NUGET_API_KEY `
             --source $env:NUGET_SOURCE_URL `
             --skip-duplicate
-      - uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32 # v7.2.0
+      - uses: release-drafter/release-drafter@563bf132657a13ded0b01fcb723c5a58cdd824e2 # v7.2.1
         id: release-drafter
         with:
           publish: true
