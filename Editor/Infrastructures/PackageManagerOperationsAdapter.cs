@@ -10,6 +10,7 @@ using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 using PackageManagerClient = UnityEditor.PackageManager.Client;
 using PackageManagerError = UnityEditor.PackageManager.Error;
+using PackageManagerPackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace UniCortex.Editor.Infrastructures
 {
@@ -169,7 +170,7 @@ namespace UniCortex.Editor.Infrastructures
 
         private static class PackageInfoMapper
         {
-            public static PackageEntry ToEntry(PackageInfo packageInfo)
+            public static PackageEntry ToEntry(PackageManagerPackageInfo packageInfo)
             {
                 return new PackageEntry(
                     packageInfo.name ?? string.Empty,
@@ -186,7 +187,7 @@ namespace UniCortex.Editor.Infrastructures
                     ToErrors(packageInfo.errors));
             }
 
-            private static string GetStatus(PackageInfo packageInfo)
+            private static string GetStatus(PackageManagerPackageInfo packageInfo)
             {
                 if (packageInfo.errors != null && packageInfo.errors.Length > 0)
                 {
