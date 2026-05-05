@@ -137,6 +137,16 @@ The MCP server exposes the following built-in tools.
 |------|-------------|
 | `refresh_asset_database` | Refresh the Unity Asset Database |
 
+#### Package Manager
+
+| Tool | Description |
+|------|-------------|
+| `list_unity_packages` | List Unity packages in the project |
+| `search_unity_package` | Search the Unity package registry by package name or ID |
+| `add_unity_package` | Add a package dependency using a Package Manager identifier |
+| `remove_unity_package` | Remove a direct package dependency by package name |
+| `resolve_unity_packages` | Force Unity Package Manager to resolve packages |
+
 #### Project Window
 
 | Tool | Description |
@@ -276,7 +286,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 
 - Required parameters are positional arguments, for example `scene open Assets/Scenes/Main.unity`.
 - Optional parameters with defaults become named options, for example `gameobject modify 1234 --name CameraRig --active-self true`.
-- Read/query commands usually print JSON, such as `scene hierarchy`, `gameobject find`, `component properties`, and `recorder all list`.
+- Read/query commands usually print JSON, such as `scene hierarchy`, `gameobject find`, `component properties`, `package list`, and `recorder all list`.
 - State-changing commands usually print a short status message, such as `editor play`, `scene open`, `component add`, and `timeline track bind`.
 - `screenshot capture` writes a file to the path you pass, and recorder commands create media files in the configured output path.
 
@@ -346,11 +356,16 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `console logs` | Read Unity Editor console logs. |
 | `console clear` | Clear Unity Editor console logs. |
 
-#### `asset`, `project-window`, `menu`, `screenshot`
+#### `asset`, `package`, `project-window`, `menu`, `screenshot`
 
 | Command | Description |
 | --- | --- |
 | `asset refresh` | Refresh the Unity Asset Database. |
+| `package list` | List Unity packages in the project. |
+| `package search` | Search the Unity package registry by package name or ID. |
+| `package add` | Add a package dependency using a Package Manager identifier. |
+| `package remove` | Remove a direct package dependency by package name. |
+| `package resolve` | Force Unity Package Manager to resolve packages. |
 | `project-window select` | Select and ping an asset in the Project Window. |
 | `menu execute` | Execute a Unity menu item by path. |
 | `screenshot capture` | Capture a PNG screenshot. Play Mode only. |

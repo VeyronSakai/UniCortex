@@ -36,6 +36,11 @@ namespace UniCortex.Editor.Handlers.Extension
             foreach (var type in types)
             {
                 if (type.IsAbstract) continue;
+                if (type.Namespace != null &&
+                    type.Namespace.StartsWith("UniCortex.Editor.Tests.", StringComparison.Ordinal))
+                {
+                    continue;
+                }
 
                 ExtensionHandler handler;
                 try
