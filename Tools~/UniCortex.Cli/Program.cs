@@ -18,6 +18,7 @@ app.Add<EditorCommands>("editor");
 app.Add<SceneCommands>("scene");
 app.Add<GameObjectCommands>("gameobject");
 app.Add<ComponentCommands>("component");
+app.Add<ProjectSettingsCommands>("project-settings");
 app.Add<PrefabCommands>("prefab");
 app.Add<TestCommands>("test");
 app.Add<ConsoleCommands>("console");

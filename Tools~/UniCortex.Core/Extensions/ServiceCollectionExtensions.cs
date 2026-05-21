@@ -26,6 +26,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<EditorUseCase>();
         services.AddTransient<GameObjectUseCase>();
         services.AddTransient<ComponentUseCase>();
+        services.AddTransient<ProjectSettingsUseCase>();
         services.AddTransient<SceneUseCase>();
         services.AddTransient<PrefabUseCase>();
         services.AddTransient<TestUseCase>();
