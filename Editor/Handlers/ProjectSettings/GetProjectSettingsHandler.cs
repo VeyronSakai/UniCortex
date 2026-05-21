@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Handlers.ProjectSettings
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
-            var category = context.GetQueryParameter("category");
+            var category = context.GetQueryParameter(QueryParameterNames.Category);
             if (string.IsNullOrEmpty(category))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("category query parameter is required."));
