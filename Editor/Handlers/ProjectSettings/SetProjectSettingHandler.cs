@@ -23,12 +23,19 @@ namespace UniCortex.Editor.Handlers.ProjectSettings
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
+            // Bind error-message field references to the DTO fields at compile time
+            // (JsonUtility uses C# field names as JSON property names, so nameof matches
+            // what the caller actually sends).
+            const string CategoryField = nameof(SetProjectSettingRequest.category);
+            const string PropertyPathField = nameof(SetProjectSettingRequest.propertyPath);
+            const string ValueField = nameof(SetProjectSettingRequest.value);
+
             var body = await context.ReadBodyAsync();
 
             if (string.IsNullOrEmpty(body))
             {
                 var errorJson = JsonUtility.ToJson(
-                    new ErrorResponse("category, propertyPath, and value are required."));
+                    new ErrorResponse($"{CategoryField}, {PropertyPathField}, and {ValueField} are required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
@@ -37,21 +44,21 @@ namespace UniCortex.Editor.Handlers.ProjectSettings
 
             if (string.IsNullOrEmpty(request.category))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("category is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse($"{CategoryField} is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             if (string.IsNullOrEmpty(request.propertyPath))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("propertyPath is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse($"{PropertyPathField} is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             if (request.value == null)
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("value is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse($"{ValueField} is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
