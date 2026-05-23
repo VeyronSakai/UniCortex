@@ -26,7 +26,8 @@ namespace UniCortex.Editor.Handlers.ProjectSettings
             var category = context.GetQueryParameter(QueryParameterNames.Category);
             if (string.IsNullOrEmpty(category))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("category query parameter is required."));
+                var errorJson = JsonUtility.ToJson(
+                    new ErrorResponse($"{QueryParameterNames.Category} query parameter is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
