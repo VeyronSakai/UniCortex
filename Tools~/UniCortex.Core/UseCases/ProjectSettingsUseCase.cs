@@ -27,10 +27,10 @@ public class ProjectSettingsUseCase(IUnityEditorClient client)
         return $"Setting '{propertyPath}' in '{category}' set to '{value}' successfully.";
     }
 
-    public async ValueTask<string> ListCategoriesAsync(CancellationToken cancellationToken = default)
+    public async ValueTask<string> GetCategoriesAsync(CancellationToken cancellationToken = default)
     {
         var response = await client
-            .GetAsync<ListProjectSettingsCategoriesRequest, ListProjectSettingsCategoriesResponse>(
+            .GetAsync<GetProjectSettingsCategoriesRequest, GetProjectSettingsCategoriesResponse>(
                 ApiRoutes.ProjectSettingsCategories, cancellationToken: cancellationToken);
         return JsonSerializer.Serialize(response, JsonOptions.Default);
     }

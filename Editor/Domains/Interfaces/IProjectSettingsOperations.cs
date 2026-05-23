@@ -4,7 +4,7 @@ namespace UniCortex.Editor.Domains.Interfaces
 {
     internal interface IProjectSettingsOperations
     {
-        ListProjectSettingsCategoriesResponse GetCategories();
+        GetProjectSettingsCategoriesResponse GetCategories();
         GetProjectSettingsResponse GetSettings(string category);
         void SetSetting(string category, string propertyPath, string value);
     }

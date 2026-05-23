@@ -33,7 +33,7 @@ namespace UniCortex.Editor.Infrastructures
                 ["ScriptExecutionOrder"] = "ProjectSettings/MonoManager.asset",
             };
 
-        public ListProjectSettingsCategoriesResponse GetCategories()
+        public GetProjectSettingsCategoriesResponse GetCategories()
         {
             var categories = new List<ProjectSettingsCategoryEntry>();
             foreach (var pair in s_categoryToAssetPath)
@@ -41,7 +41,7 @@ namespace UniCortex.Editor.Infrastructures
                 categories.Add(new ProjectSettingsCategoryEntry(pair.Key, pair.Value));
             }
 
-            return new ListProjectSettingsCategoriesResponse(categories);
+            return new GetProjectSettingsCategoriesResponse(categories);
         }
 
         public GetProjectSettingsResponse GetSettings(string category)
@@ -89,7 +89,7 @@ namespace UniCortex.Editor.Infrastructures
             if (string.IsNullOrEmpty(category) || !s_categoryToAssetPath.TryGetValue(category, out var assetPath))
             {
                 throw new ArgumentException(
-                    $"Unknown ProjectSettings category '{category}'. Use list_project_settings_categories to see valid names.");
+                    $"Unknown ProjectSettings category '{category}'. Use get_project_settings_categories to see valid names.");
             }
 
             var assets = AssetDatabase.LoadAllAssetsAtPath(assetPath);

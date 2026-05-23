@@ -179,10 +179,10 @@ namespace UniCortex.Editor
             var setProjectSettingUseCase = new SetProjectSettingUseCase(s_dispatcher, projectSettingsOps);
             var setProjectSettingHandler = new SetProjectSettingHandler(setProjectSettingUseCase);
 
-            var listProjectSettingsCategoriesUseCase =
-                new ListProjectSettingsCategoriesUseCase(s_dispatcher, projectSettingsOps);
-            var listProjectSettingsCategoriesHandler =
-                new ListProjectSettingsCategoriesHandler(listProjectSettingsCategoriesUseCase);
+            var getProjectSettingsCategoriesUseCase =
+                new GetProjectSettingsCategoriesUseCase(s_dispatcher, projectSettingsOps);
+            var getProjectSettingsCategoriesHandler =
+                new GetProjectSettingsCategoriesHandler(getProjectSettingsCategoriesUseCase);
 
             var prefabOps = new PrefabOperationsAdapter();
 
@@ -325,7 +325,7 @@ namespace UniCortex.Editor
             setComponentPropertyHandler.Register(router);
             getProjectSettingsHandler.Register(router);
             setProjectSettingHandler.Register(router);
-            listProjectSettingsCategoriesHandler.Register(router);
+            getProjectSettingsCategoriesHandler.Register(router);
             createPrefabHandler.Register(router);
             instantiatePrefabHandler.Register(router);
             openPrefabHandler.Register(router);

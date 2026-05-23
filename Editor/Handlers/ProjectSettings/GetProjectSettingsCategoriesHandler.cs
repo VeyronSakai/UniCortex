@@ -7,11 +7,11 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.ProjectSettings
 {
-    internal sealed class ListProjectSettingsCategoriesHandler
+    internal sealed class GetProjectSettingsCategoriesHandler
     {
-        private readonly ListProjectSettingsCategoriesUseCase _useCase;
+        private readonly GetProjectSettingsCategoriesUseCase _useCase;
 
-        public ListProjectSettingsCategoriesHandler(ListProjectSettingsCategoriesUseCase useCase)
+        public GetProjectSettingsCategoriesHandler(GetProjectSettingsCategoriesUseCase useCase)
         {
             _useCase = useCase;
         }

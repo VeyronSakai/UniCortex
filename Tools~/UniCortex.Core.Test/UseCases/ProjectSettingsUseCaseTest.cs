@@ -20,7 +20,7 @@ public class ProjectSettingsUseCaseTest
     [Test]
     public async ValueTask ListCategories_ContainsPlayer()
     {
-        var json = await _fixture.ProjectSettingsUseCase.ListCategoriesAsync(CancellationToken.None);
+        var json = await _fixture.ProjectSettingsUseCase.GetCategoriesAsync(CancellationToken.None);
 
         Assert.That(json, Does.Contain("Player"));
         Assert.That(json, Does.Contain("ProjectSettings/ProjectSettings.asset"));

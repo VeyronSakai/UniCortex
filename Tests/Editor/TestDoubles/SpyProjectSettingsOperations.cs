@@ -6,7 +6,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
     internal sealed class SpyProjectSettingsOperations : IProjectSettingsOperations
     {
         public int GetCategoriesCallCount { get; private set; }
-        public ListProjectSettingsCategoriesResponse GetCategoriesResult { get; set; }
+        public GetProjectSettingsCategoriesResponse GetCategoriesResult { get; set; }
 
         public int GetSettingsCallCount { get; private set; }
         public string LastGetSettingsCategory { get; private set; }
@@ -17,7 +17,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string LastSetSettingPropertyPath { get; private set; }
         public string LastSetSettingValue { get; private set; }
 
-        public ListProjectSettingsCategoriesResponse GetCategories()
+        public GetProjectSettingsCategoriesResponse GetCategories()
         {
             GetCategoriesCallCount++;
             return GetCategoriesResult;

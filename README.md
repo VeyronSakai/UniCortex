@@ -128,7 +128,7 @@ The MCP server exposes the following built-in tools.
 |------|-------------|
 | `get_project_settings` | Get serialized properties of a ProjectSettings category (e.g. Player, Quality, Time) |
 | `set_project_setting` | Set a serialized property on a ProjectSettings category (supports Undo) |
-| `list_project_settings_categories` | List the available ProjectSettings category names |
+| `get_project_settings_categories` | Get the available ProjectSettings category names |
 
 #### Prefab
 

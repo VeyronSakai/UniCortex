@@ -30,7 +30,7 @@ public class ProjectSettingsCommands(ProjectSettingsUseCase projectSettingsUseCa
     [Command("categories")]
     public async Task Categories(CancellationToken cancellationToken = default)
     {
-        var json = await projectSettingsUseCase.ListCategoriesAsync(cancellationToken);
+        var json = await projectSettingsUseCase.GetCategoriesAsync(cancellationToken);
         Console.WriteLine(json);
     }
 }

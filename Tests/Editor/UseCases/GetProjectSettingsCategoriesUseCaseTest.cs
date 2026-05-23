@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.UseCases
 {
     [TestFixture]
-    internal sealed class ListProjectSettingsCategoriesUseCaseTest
+    internal sealed class GetProjectSettingsCategoriesUseCaseTest
     {
         [Test]
         public void ExecuteAsync_ReturnsCategories_And_DispatchesToMainThread()
@@ -16,13 +16,13 @@ namespace UniCortex.Editor.Tests.UseCases
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyProjectSettingsOperations
             {
-                GetCategoriesResult = new ListProjectSettingsCategoriesResponse(
+                GetCategoriesResult = new GetProjectSettingsCategoriesResponse(
                     new List<ProjectSettingsCategoryEntry>
                     {
                         new ProjectSettingsCategoryEntry("Player", "ProjectSettings/ProjectSettings.asset")
                     })
             };
-            var useCase = new ListProjectSettingsCategoriesUseCase(dispatcher, ops);
+            var useCase = new GetProjectSettingsCategoriesUseCase(dispatcher, ops);
 
             var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
 
