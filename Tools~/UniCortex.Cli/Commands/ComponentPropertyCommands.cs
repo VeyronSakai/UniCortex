@@ -7,7 +7,7 @@ public class ComponentPropertyCommands(ComponentUseCase componentUseCase)
 {
     /// <summary>List serialized properties of a component on a GameObject.</summary>
     /// <param name="instanceId">Instance ID of the target GameObject.</param>
-    /// <param name="componentType">Fully qualified component type name (e.g. "UnityEngine.Transform").</param>
+    /// <param name="componentType">Assembly-qualified component type name (e.g. "UnityEngine.Transform, UnityEngine.CoreModule").</param>
     /// <param name="componentIndex">Index when multiple components of the same type exist.</param>
     [Command("list")]
     public async Task List([Argument] int instanceId, [Argument] string componentType, int componentIndex = 0,
@@ -20,7 +20,7 @@ public class ComponentPropertyCommands(ComponentUseCase componentUseCase)
 
     /// <summary>Set a serialized property on a component.</summary>
     /// <param name="instanceId">Instance ID of the target GameObject.</param>
-    /// <param name="componentType">Fully qualified component type name (e.g. "UnityEngine.Transform").</param>
+    /// <param name="componentType">Assembly-qualified component type name (e.g. "UnityEngine.Transform, UnityEngine.CoreModule").</param>
     /// <param name="propertyPath">Serialized property path (e.g. "m_LocalPosition.x").</param>
     /// <param name="value">Value to set as a string. Type is auto-detected from the property.</param>
     [Command("set")]

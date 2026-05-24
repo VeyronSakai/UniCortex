@@ -11,7 +11,7 @@ public class ScriptableObjectUseCaseTest
     // UniCortex.Editor.Tests assembly is loaded in the Samples~ project via the
     // "testables" entry in Packages/manifest.json (UNITY_INCLUDE_TESTS defined).
     private const string TestTypeName =
-        "UniCortex.Editor.Tests.TestDoubles.AllPropertyTypesScriptableObject";
+        "UniCortex.Editor.Tests.TestDoubles.AllPropertyTypesScriptableObject, UniCortex.Editor.Tests";
 
     private const string TestAssetPath = "Assets/ScriptableObjectUseCaseTest.asset";
 
