@@ -122,6 +122,18 @@ The MCP server exposes the following built-in tools.
 | `get_component_properties` | Get serialized properties of a component |
 | `set_component_property` | Set a serialized property on a component |
 
+Component type arguments are supplied as a fully-qualified type name plus the defining assembly name (e.g. `UnityEngine.Rigidbody` + `UnityEngine.PhysicsModule`).
+
+#### ScriptableObject
+
+| Tool | Description |
+|------|-------------|
+| `create_scriptable_object` | Create a new ScriptableObject `.asset` file from a type name |
+| `get_scriptable_object_properties` | Get serialized properties of an existing `.asset` file |
+| `set_scriptable_object_property` | Set a serialized property on an existing `.asset` file |
+
+`create_scriptable_object` takes the ScriptableObject subclass name plus the defining assembly name (e.g. `MyNamespace.MyData` + `Assembly-CSharp`). Property paths and value formats match `set_component_property`.
+
 #### Prefab
 
 | Tool | Description |
@@ -239,7 +251,7 @@ export UNICORTEX_CLI_PROJECT=$(echo "${UNICORTEX_PROJECT_PATH}"/Library/PackageC
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- editor ping
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scene hierarchy
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject find "t:Camera"
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component properties 1234 UnityEngine.Transform
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property list 1234 UnityEngine.Transform UnityEngine.CoreModule
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- test run --test-mode EditMode
 ```
 
@@ -276,7 +288,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 
 - Required parameters are positional arguments, for example `scene open Assets/Scenes/Main.unity`.
 - Optional parameters with defaults become named options, for example `gameobject modify 1234 --name CameraRig --active-self true`.
-- Read/query commands usually print JSON, such as `scene hierarchy`, `gameobject find`, `component properties`, and `recorder all list`.
+- Read/query commands usually print JSON, such as `scene hierarchy`, `gameobject find`, `component property list`, and `recorder all list`.
 - State-changing commands usually print a short status message, such as `editor play`, `scene open`, `component add`, and `timeline track bind`.
 - `screenshot capture` writes a file to the path you pass, and recorder commands create media files in the configured output path.
 
@@ -321,8 +333,20 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | --- | --- |
 | `component add` | Add a component to a GameObject. |
 | `component remove` | Remove a component from a GameObject. |
-| `component properties` | Print serialized component properties as JSON. |
-| `component set-property` | Set a serialized property by path. |
+| `component property list` | Print serialized component properties as JSON. |
+| `component property set` | Set a serialized property by path. |
+
+Component commands accept the fully-qualified component type name plus the defining assembly name (e.g. `UnityEngine.Rigidbody UnityEngine.PhysicsModule`).
+
+#### `scriptable-object`
+
+| Command | Description |
+| --- | --- |
+| `scriptable-object create` | Create a new ScriptableObject `.asset` file at the specified path. |
+| `scriptable-object property list` | Print serialized properties of an existing `.asset` file as JSON. |
+| `scriptable-object property set` | Set a serialized property on an existing `.asset` file by path. |
+
+`scriptable-object create` accepts the fully-qualified ScriptableObject subclass name plus the defining assembly name (e.g. `MyNamespace.MyData Assembly-CSharp`).
 
 #### `prefab`
 
@@ -407,13 +431,17 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 ```bash
 # Find cameras and inspect a component
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject find "t:Camera"
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component properties 1234 UnityEngine.Transform
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property list 1234 UnityEngine.Transform UnityEngine.CoreModule
 
 # Rename and reparent a GameObject
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject modify 1234 --name CameraRig --parent-instance-id 5678
 
 # Set a serialized property
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component set-property 1234 UnityEngine.Transform m_LocalPosition.x 1.5
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property set 1234 UnityEngine.Transform UnityEngine.CoreModule m_LocalPosition.x 1.5
+
+# Create and edit a ScriptableObject .asset
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scriptable-object create MyNamespace.MyData Assembly-CSharp Assets/Data/MyData.asset
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scriptable-object property set Assets/Data/MyData.asset m_Speed 1.5
 
 # Capture a screenshot
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- screenshot capture ./Artifacts/gameview.png
