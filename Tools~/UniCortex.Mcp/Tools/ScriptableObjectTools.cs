@@ -18,7 +18,7 @@ public class ScriptableObjectTools(
      UsedImplicitly]
     public ValueTask<CallToolResult> CreateScriptableObjectAsync(
         [Description(
-            "The full namespace-qualified type name of the ScriptableObject subclass to create (e.g. \"MyNamespace.MyScriptableObject\").")]
+            "The full namespace-qualified type name of the ScriptableObject subclass (e.g. \"MyNamespace.MyScriptableObject\"). When the same type name exists in multiple loaded assemblies, pass an assembly-qualified name to disambiguate (e.g. \"MyNamespace.MyScriptableObject, Assembly-CSharp\").")]
         string typeName,
         [Description(
             "The asset path where the ScriptableObject should be saved (e.g. \"Assets/Data/MyData.asset\").")]

@@ -11,7 +11,7 @@ namespace UniCortex.Editor.Infrastructures
     {
         public CreateScriptableObjectResponse Create(string typeName, string assetPath)
         {
-            var type = ResolveScriptableObjectType(typeName);
+            var type = UnityTypeResolver.Resolve<ScriptableObject>(typeName);
             if (type == null)
             {
                 throw new ArgumentException($"ScriptableObject type '{typeName}' not found.");
@@ -86,19 +86,5 @@ namespace UniCortex.Editor.Infrastructures
             AssetDatabase.SaveAssets();
         }
 
-        private static Type ResolveScriptableObjectType(string fullTypeName)
-        {
-            // Search all loaded assemblies by full namespace-qualified name
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                var type = assembly.GetType(fullTypeName);
-                if (type != null && typeof(ScriptableObject).IsAssignableFrom(type))
-                {
-                    return type;
-                }
-            }
-
-            return null;
-        }
     }
 }
