@@ -27,8 +27,8 @@ namespace UniCortex.Editor.Handlers.ScriptableObject
 
             if (string.IsNullOrEmpty(body))
             {
-                var errorJson = JsonUtility.ToJson(
-                    new ErrorResponse("typeName and assetPath are required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(CreateScriptableObjectRequest.typeName)} and {nameof(CreateScriptableObjectRequest.assetPath)} are required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
@@ -37,14 +37,16 @@ namespace UniCortex.Editor.Handlers.ScriptableObject
 
             if (string.IsNullOrEmpty(request.typeName))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("typeName is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(CreateScriptableObjectRequest.typeName)} is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             if (string.IsNullOrEmpty(request.assetPath))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("assetPath is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(CreateScriptableObjectRequest.assetPath)} is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }

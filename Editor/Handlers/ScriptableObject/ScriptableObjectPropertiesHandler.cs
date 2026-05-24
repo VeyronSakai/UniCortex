@@ -23,10 +23,11 @@ namespace UniCortex.Editor.Handlers.ScriptableObject
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
-            var assetPath = context.GetQueryParameter("assetPath");
+            var assetPath = context.GetQueryParameter(nameof(GetScriptableObjectPropertiesRequest.assetPath));
             if (string.IsNullOrEmpty(assetPath))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("assetPath query parameter is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(GetScriptableObjectPropertiesRequest.assetPath)} query parameter is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }

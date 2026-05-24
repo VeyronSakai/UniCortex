@@ -27,8 +27,8 @@ namespace UniCortex.Editor.Handlers.ScriptableObject
 
             if (string.IsNullOrEmpty(body))
             {
-                var errorJson = JsonUtility.ToJson(
-                    new ErrorResponse("assetPath, propertyPath, and value are required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(SetScriptableObjectPropertyRequest.assetPath)}, {nameof(SetScriptableObjectPropertyRequest.propertyPath)}, and {nameof(SetScriptableObjectPropertyRequest.value)} are required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
@@ -37,21 +37,24 @@ namespace UniCortex.Editor.Handlers.ScriptableObject
 
             if (string.IsNullOrEmpty(request.assetPath))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("assetPath is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(SetScriptableObjectPropertyRequest.assetPath)} is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             if (string.IsNullOrEmpty(request.propertyPath))
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("propertyPath is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(SetScriptableObjectPropertyRequest.propertyPath)} is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
 
             if (request.value == null)
             {
-                var errorJson = JsonUtility.ToJson(new ErrorResponse("value is required."));
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(SetScriptableObjectPropertyRequest.value)} is required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
