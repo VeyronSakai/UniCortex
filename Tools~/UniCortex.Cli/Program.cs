@@ -19,6 +19,7 @@ app.Add<SceneCommands>("scene");
 app.Add<GameObjectCommands>("gameobject");
 app.Add<ComponentCommands>("component");
 app.Add<PrefabCommands>("prefab");
+app.Add<ScriptableObjectCommands>("scriptable-object");
 app.Add<TestCommands>("test");
 app.Add<ConsoleCommands>("console");
 app.Add<AssetCommands>("asset");

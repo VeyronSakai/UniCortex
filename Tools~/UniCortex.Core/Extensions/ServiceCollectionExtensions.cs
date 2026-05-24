@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ComponentUseCase>();
         services.AddTransient<SceneUseCase>();
         services.AddTransient<PrefabUseCase>();
+        services.AddTransient<ScriptableObjectUseCase>();
         services.AddTransient<TestUseCase>();
         services.AddTransient<ConsoleUseCase>();
         services.AddTransient<AssetUseCase>();
