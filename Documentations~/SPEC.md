@@ -385,7 +385,7 @@ GameObject からコンポーネントを削除する。`Undo.DestroyObjectImmed
 
 ### ProjectSettings
 
-ProjectSettings（Player / Quality / Editor / Physics / Tags 等）を `SerializedObject` 経由で読み書きする。各カテゴリは `ProjectSettings/*.asset`（`AssetDatabase.LoadAllAssetsAtPath` で取得する設定オブジェクト）に対応し、コンポーネントと同じ `SerializedProperty` API を使用する。
+ProjectSettings を `SerializedObject` 経由で読み書きする。カテゴリはプロジェクトルートの `ProjectSettings/*.asset` を動的に列挙して提供する（カテゴリ名 = ファイル名（拡張子なし））。各エントリは `AssetDatabase.LoadAllAssetsAtPath` で取得し、コンポーネントと同じ `SerializedProperty` API で読み書きする。固定カテゴリ名のマッピングは持たないため、Unity 本体に加えてパッケージや独自の `*.asset` も自動的に対象になる。
 
 #### GET `/project-settings/categories`
 編集可能な ProjectSettings カテゴリ名と、対応するアセットパスの一覧を返す。
@@ -394,14 +394,14 @@ ProjectSettings（Player / Quality / Editor / Physics / Tags 等）を `Serializ
 ```json
 {
   "categories": [
-    {"name": "Player", "assetPath": "ProjectSettings/ProjectSettings.asset"},
-    {"name": "Quality", "assetPath": "ProjectSettings/QualitySettings.asset"},
-    {"name": "Time", "assetPath": "ProjectSettings/TimeManager.asset"}
+    {"name": "ProjectSettings", "assetPath": "ProjectSettings/ProjectSettings.asset"},
+    {"name": "QualitySettings", "assetPath": "ProjectSettings/QualitySettings.asset"},
+    {"name": "TimeManager", "assetPath": "ProjectSettings/TimeManager.asset"}
   ]
 }
 ```
 
-#### GET `/project-settings?category=Time`
+#### GET `/project-settings?category=TimeManager`
 指定カテゴリのシリアライズ済みプロパティを返す。
 
 クエリパラメータ:
@@ -410,7 +410,7 @@ ProjectSettings（Player / Quality / Editor / Physics / Tags 等）を `Serializ
 レスポンス:
 ```json
 {
-  "category": "Time",
+  "category": "TimeManager",
   "properties": [
     {"path": "Fixed Timestep", "type": "Float", "value": "0.02"},
     {"path": "m_TimeScale", "type": "Float", "value": "1"}
@@ -424,7 +424,7 @@ ProjectSettings（Player / Quality / Editor / Physics / Tags 等）を `Serializ
 リクエストボディ:
 ```json
 {
-  "category": "Time",
+  "category": "TimeManager",
   "propertyPath": "m_TimeScale",
   "value": "2"
 }

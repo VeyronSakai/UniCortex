@@ -1,47 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor;
-using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class ProjectSettingsOperationsAdapter : IProjectSettingsOperations
     {
-        // Friendly category name (case-insensitive) -> ProjectSettings asset path.
-        // Each asset is a native settings object that can be wrapped in a SerializedObject,
-        // so the same SerializedProperty read/write flow used for components applies here.
-        private static readonly Dictionary<string, string> s_categoryToAssetPath =
-            new(StringComparer.OrdinalIgnoreCase)
-            {
-                ["Player"] = "ProjectSettings/ProjectSettings.asset",
-                ["Editor"] = "ProjectSettings/EditorSettings.asset",
-                ["Graphics"] = "ProjectSettings/GraphicsSettings.asset",
-                ["Quality"] = "ProjectSettings/QualitySettings.asset",
-                ["Physics"] = "ProjectSettings/DynamicsManager.asset",
-                ["Physics2D"] = "ProjectSettings/Physics2DSettings.asset",
-                ["Tags"] = "ProjectSettings/TagManager.asset",
-                ["Time"] = "ProjectSettings/TimeManager.asset",
-                ["Audio"] = "ProjectSettings/AudioManager.asset",
-                ["Input"] = "ProjectSettings/InputManager.asset",
-                ["Preset"] = "ProjectSettings/PresetManager.asset",
-                ["VFX"] = "ProjectSettings/VFXManager.asset",
-                ["Navigation"] = "ProjectSettings/NavMeshAreas.asset",
-                ["Memory"] = "ProjectSettings/MemorySettings.asset",
-                ["EditorBuildSettings"] = "ProjectSettings/EditorBuildSettings.asset",
-                ["ScriptExecutionOrder"] = "ProjectSettings/MonoManager.asset",
-            };
+        // Settings assets live under the project-root "ProjectSettings" folder.
+        // The Unity Editor's working directory is the project root, so a relative path is sufficient.
+        private const string ProjectSettingsDirectory = "ProjectSettings";
+        private const string AssetExtension = ".asset";
 
         public GetProjectSettingsCategoriesResponse GetCategories()
         {
-            var categories = new List<ProjectSettingsCategoryEntry>();
-            foreach (var pair in s_categoryToAssetPath)
-            {
-                categories.Add(new ProjectSettingsCategoryEntry(pair.Key, pair.Value));
-            }
+            var entries = EnumerateAssetPaths()
+                .Select(path => new ProjectSettingsCategoryEntry(
+                    Path.GetFileNameWithoutExtension(path),
+                    NormalizePath(path)))
+                .OrderBy(entry => entry.name, StringComparer.Ordinal)
+                .ToList();
 
-            return new GetProjectSettingsCategoriesResponse(categories);
+            return new GetProjectSettingsCategoriesResponse(entries);
         }
 
         public GetProjectSettingsResponse GetSettings(string category)
@@ -84,9 +67,35 @@ namespace UniCortex.Editor.Infrastructures
             AssetDatabase.SaveAssets();
         }
 
+        private static IEnumerable<string> EnumerateAssetPaths()
+        {
+            if (!Directory.Exists(ProjectSettingsDirectory))
+            {
+                return Array.Empty<string>();
+            }
+
+            return Directory.EnumerateFiles(ProjectSettingsDirectory, "*" + AssetExtension,
+                SearchOption.TopDirectoryOnly);
+        }
+
+        private static string NormalizePath(string path)
+        {
+            // Unify path separators so the value is stable across OSes and matches
+            // what AssetDatabase APIs expect (forward slashes).
+            return path.Replace('\\', '/');
+        }
+
         private static SerializedObject LoadSerializedSettings(string category)
         {
-            if (string.IsNullOrEmpty(category) || !s_categoryToAssetPath.TryGetValue(category, out var assetPath))
+            if (string.IsNullOrEmpty(category))
+            {
+                throw new ArgumentException(
+                    "ProjectSettings category is required. Use get_project_settings_categories to see valid names.");
+            }
+
+            var assetPath = NormalizePath(Path.Combine(ProjectSettingsDirectory, category + AssetExtension));
+
+            if (!File.Exists(assetPath))
             {
                 throw new ArgumentException(
                     $"Unknown ProjectSettings category '{category}'. Use get_project_settings_categories to see valid names.");

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.UseCases;
+using UnityEditor;
 using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.ProjectSettings

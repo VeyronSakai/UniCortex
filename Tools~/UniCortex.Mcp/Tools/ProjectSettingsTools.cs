@@ -11,10 +11,10 @@ namespace UniCortex.Mcp.Tools;
 public class ProjectSettingsTools(ProjectSettingsUseCase projectSettingsUseCase, IAsyncOperationSequencer sequencer)
 {
     [McpServerTool(Name = "get_project_settings", ReadOnly = true),
-     Description("Get serialized properties of a ProjectSettings category (e.g. Player, Quality, Editor, Physics, Tags, Time, Audio, Graphics)."),
+     Description("Get serialized properties of a ProjectSettings category. Call get_project_settings_categories for the full list."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetProjectSettingsAsync(
-        [Description("The ProjectSettings category name (e.g. Player, Quality, Editor, Physics, Physics2D, Tags, Time, Audio, Graphics, Input, VFX, Navigation, Memory). Call get_project_settings_categories for the full list.")]
+        [Description("The ProjectSettings category name. Call get_project_settings_categories for the full list.")]
         string category,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -24,7 +24,7 @@ public class ProjectSettingsTools(ProjectSettingsUseCase projectSettingsUseCase,
      Description("Set a serialized property on a ProjectSettings category. Uses SerializedProperty API with automatic Undo."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetProjectSettingAsync(
-        [Description("The ProjectSettings category name (e.g. Player, Quality, Time). Call get_project_settings_categories for the full list.")]
+        [Description("The ProjectSettings category name. Call get_project_settings_categories for the full list.")]
         string category,
         [Description("The serialized property path (e.g. m_TimeScale). Call get_project_settings to discover available paths.")]
         string propertyPath,
