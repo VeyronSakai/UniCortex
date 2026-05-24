@@ -18,7 +18,7 @@ namespace UniCortex.Editor.Handlers.ProjectSettings
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Get, ApiRoutes.ProjectSettingsGet, HandleAsync);
+            router.Register(HttpMethodType.Get, ApiRoutes.ProjectSettings, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)

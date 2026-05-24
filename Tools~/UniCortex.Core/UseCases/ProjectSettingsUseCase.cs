@@ -11,7 +11,7 @@ public class ProjectSettingsUseCase(IUnityEditorClient client)
     {
         var request = new GetProjectSettingsRequest { category = category };
         var response = await client.GetAsync<GetProjectSettingsRequest, GetProjectSettingsResponse>(
-            ApiRoutes.ProjectSettingsGet, request, cancellationToken);
+            ApiRoutes.ProjectSettings, request, cancellationToken);
         return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 
@@ -23,7 +23,7 @@ public class ProjectSettingsUseCase(IUnityEditorClient client)
             category = category, propertyPath = propertyPath, value = value
         };
         await client.PostAsync<SetProjectSettingRequest, SetProjectSettingResponse>(
-            ApiRoutes.ProjectSettingsSet, request, cancellationToken);
+            ApiRoutes.ProjectSettings, request, cancellationToken);
         return $"Setting '{propertyPath}' in '{category}' set to '{value}' successfully.";
     }
 
