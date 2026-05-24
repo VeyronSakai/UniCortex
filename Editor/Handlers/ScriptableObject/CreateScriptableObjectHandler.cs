@@ -1,0 +1,68 @@
+using System.Threading;
+using System.Threading.Tasks;
+using UniCortex.Editor.Domains.Interfaces;
+using UniCortex.Editor.Domains.Models;
+using UniCortex.Editor.UseCases;
+using UnityEngine;
+
+namespace UniCortex.Editor.Handlers.ScriptableObject
+{
+    internal sealed class CreateScriptableObjectHandler
+    {
+        private readonly CreateScriptableObjectUseCase _useCase;
+
+        public CreateScriptableObjectHandler(CreateScriptableObjectUseCase useCase)
+        {
+            _useCase = useCase;
+        }
+
+        public void Register(IRequestRouter router)
+        {
+            router.Register(HttpMethodType.Post, ApiRoutes.ScriptableObjectCreate, HandleAsync);
+        }
+
+        private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
+        {
+            var body = await context.ReadBodyAsync();
+
+            if (string.IsNullOrEmpty(body))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(CreateScriptableObjectRequest.typeName)}, {nameof(CreateScriptableObjectRequest.assemblyName)}, and {nameof(CreateScriptableObjectRequest.assetPath)} are required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
+            var request = JsonUtility.FromJson<CreateScriptableObjectRequest>(body);
+
+            if (string.IsNullOrEmpty(request.typeName))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(CreateScriptableObjectRequest.typeName)} is required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(request.assemblyName))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(CreateScriptableObjectRequest.assemblyName)} is required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(request.assetPath))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(CreateScriptableObjectRequest.assetPath)} is required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
+            var response = await _useCase.ExecuteAsync(request.typeName, request.assemblyName, request.assetPath,
+                cancellationToken);
+            var json = JsonUtility.ToJson(response);
+            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+        }
+    }
+}

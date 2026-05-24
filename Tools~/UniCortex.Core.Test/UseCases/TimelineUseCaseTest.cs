@@ -51,11 +51,12 @@ public class TimelineUseCaseTest
 
         // Add PlayableDirector component
         await _fixture.ComponentUseCase.AddAsync(goResponse.instanceId,
-            "UnityEngine.Playables.PlayableDirector", cancellationToken);
+            "UnityEngine.Playables.PlayableDirector", "UnityEngine.DirectorModule", cancellationToken);
 
         // Assign the TimelineAsset to PlayableDirector via set_component_property
         await _fixture.ComponentUseCase.SetPropertyAsync(goResponse.instanceId,
-            "UnityEngine.Playables.PlayableDirector", "m_PlayableAsset", TimelineAssetPath, cancellationToken);
+            "UnityEngine.Playables.PlayableDirector", "UnityEngine.DirectorModule",
+            "m_PlayableAsset", TimelineAssetPath, cancellationToken);
 
         return goResponse.instanceId;
     }

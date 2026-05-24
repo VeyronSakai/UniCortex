@@ -6,6 +6,7 @@ using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Prefab;
 using UniCortex.Editor.Handlers.Scene;
+using UniCortex.Editor.Handlers.ScriptableObject;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Handlers.MenuItem;
 using UniCortex.Editor.Handlers.Input;
@@ -184,6 +185,21 @@ namespace UniCortex.Editor
             var closePrefabUseCase = new ClosePrefabUseCase(s_dispatcher, prefabOps);
             var closePrefabHandler = new ClosePrefabHandler(closePrefabUseCase);
 
+            var scriptableObjectOps = new ScriptableObjectOperationsAdapter();
+
+            var createScriptableObjectUseCase = new CreateScriptableObjectUseCase(s_dispatcher, scriptableObjectOps);
+            var createScriptableObjectHandler = new CreateScriptableObjectHandler(createScriptableObjectUseCase);
+
+            var getScriptableObjectPropertiesUseCase =
+                new GetScriptableObjectPropertiesUseCase(s_dispatcher, scriptableObjectOps);
+            var scriptableObjectPropertiesHandler =
+                new ScriptableObjectPropertiesHandler(getScriptableObjectPropertiesUseCase);
+
+            var setScriptableObjectPropertyUseCase =
+                new SetScriptableObjectPropertyUseCase(s_dispatcher, scriptableObjectOps);
+            var setScriptableObjectPropertyHandler =
+                new SetScriptableObjectPropertyHandler(setScriptableObjectPropertyUseCase);
+
 
             var assetDbOps = new AssetDatabaseOperationsAdapter();
             var projectWindowOps = new ProjectWindowOperationsAdapter();
@@ -313,6 +329,9 @@ namespace UniCortex.Editor
             instantiatePrefabHandler.Register(router);
             openPrefabHandler.Register(router);
             closePrefabHandler.Register(router);
+            createScriptableObjectHandler.Register(router);
+            scriptableObjectPropertiesHandler.Register(router);
+            setScriptableObjectPropertyHandler.Register(router);
             assetRefreshHandler.Register(router);
             selectProjectWindowAssetHandler.Register(router);
             executeMenuItemHandler.Register(router);

@@ -10,7 +10,7 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class ComponentOperationsAdapter : IComponentOperations
     {
-        public void AddComponent(int instanceId, string componentType)
+        public void AddComponent(int instanceId, string componentType, string assemblyName)
         {
             var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
             if (go == null)
@@ -18,16 +18,17 @@ namespace UniCortex.Editor.Infrastructures
                 throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
             }
 
-            var type = ResolveComponentType(componentType);
+            var type = UnityTypeResolver.Resolve<Component>(componentType, assemblyName);
             if (type == null)
             {
-                throw new ArgumentException($"Component type '{componentType}' not found.");
+                throw new ArgumentException(
+                    $"Component type '{componentType}' not found in assembly '{assemblyName}'.");
             }
 
             Undo.AddComponent(go, type);
         }
 
-        public void RemoveComponent(int instanceId, string componentType, int componentIndex)
+        public void RemoveComponent(int instanceId, string componentType, string assemblyName, int componentIndex)
         {
             var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
             if (go == null)
@@ -35,8 +36,15 @@ namespace UniCortex.Editor.Infrastructures
                 throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
             }
 
+            var type = UnityTypeResolver.Resolve<Component>(componentType, assemblyName);
+            if (type == null)
+            {
+                throw new ArgumentException(
+                    $"Component type '{componentType}' not found in assembly '{assemblyName}'.");
+            }
+
             var components = go.GetComponents<Component>()
-                .Where(c => c != null && c.GetType().FullName == componentType)
+                .Where(c => c != null && c.GetType() == type)
                 .ToArray();
 
             if (components.Length == 0)
@@ -54,7 +62,8 @@ namespace UniCortex.Editor.Infrastructures
             Undo.DestroyObjectImmediate(components[componentIndex]);
         }
 
-        public GetComponentPropertiesResponse GetProperties(int instanceId, string componentType, int componentIndex)
+        public GetComponentPropertiesResponse GetProperties(int instanceId, string componentType,
+            string assemblyName, int componentIndex)
         {
             var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
             if (go == null)
@@ -62,8 +71,15 @@ namespace UniCortex.Editor.Infrastructures
                 throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
             }
 
+            var type = UnityTypeResolver.Resolve<Component>(componentType, assemblyName);
+            if (type == null)
+            {
+                throw new ArgumentException(
+                    $"Component type '{componentType}' not found in assembly '{assemblyName}'.");
+            }
+
             var components = go.GetComponents<Component>()
-                .Where(c => c != null && c.GetType().FullName == componentType)
+                .Where(c => c != null && c.GetType() == type)
                 .ToArray();
 
             if (components.Length == 0)
@@ -96,10 +112,11 @@ namespace UniCortex.Editor.Infrastructures
                     SerializedPropertyValueConverter.ToValueString(iterator)));
             }
 
-            return new GetComponentPropertiesResponse(componentType, properties);
+            return new GetComponentPropertiesResponse(type.FullName, properties);
         }
 
-        public void SetProperty(int instanceId, string componentType, string propertyPath, string value)
+        public void SetProperty(int instanceId, string componentType, string assemblyName,
+            string propertyPath, string value)
         {
             var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
             if (go == null)
@@ -107,8 +124,15 @@ namespace UniCortex.Editor.Infrastructures
                 throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
             }
 
+            var type = UnityTypeResolver.Resolve<Component>(componentType, assemblyName);
+            if (type == null)
+            {
+                throw new ArgumentException(
+                    $"Component type '{componentType}' not found in assembly '{assemblyName}'.");
+            }
+
             var component = go.GetComponents<Component>()
-                .FirstOrDefault(c => c != null && c.GetType().FullName == componentType);
+                .FirstOrDefault(c => c != null && c.GetType() == type);
 
             if (component == null)
             {
@@ -127,25 +151,8 @@ namespace UniCortex.Editor.Infrastructures
                     $"Property '{propertyPath}' not found on component '{componentType}'.");
             }
 
-            // Parse the string value and write it into the SerializedProperty,
-            // then apply the modification to persist the change.
             SerializedPropertyValueParser.ApplyValue(property, value);
             serializedObject.ApplyModifiedProperties();
-        }
-
-        private static Type ResolveComponentType(string fullTypeName)
-        {
-            // Search all loaded assemblies by full namespace-qualified name
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                var type = assembly.GetType(fullTypeName);
-                if (type != null && typeof(Component).IsAssignableFrom(type))
-                {
-                    return type;
-                }
-            }
-
-            return null;
         }
     }
 }

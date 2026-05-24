@@ -17,10 +17,11 @@ namespace UniCortex.Editor.UseCases
         }
 
         public async Task<GetComponentPropertiesResponse> ExecuteAsync(int instanceId, string componentType,
-            int componentIndex, CancellationToken cancellationToken = default)
+            string assemblyName, int componentIndex, CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.GetProperties(instanceId, componentType, componentIndex), cancellationToken);
+                () => _operations.GetProperties(instanceId, componentType, assemblyName, componentIndex),
+                cancellationToken);
         }
     }
 }

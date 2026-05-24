@@ -48,8 +48,15 @@ namespace UniCortex.Editor.Handlers.Component
                 return;
             }
 
-            await _useCase.ExecuteAsync(request.instanceId, request.componentType, request.componentIndex,
-                cancellationToken);
+            if (string.IsNullOrEmpty(request.assemblyName))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("assemblyName is required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
+            await _useCase.ExecuteAsync(request.instanceId, request.componentType, request.assemblyName,
+                request.componentIndex, cancellationToken);
             var json = JsonUtility.ToJson(new RemoveComponentResponse(true));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }

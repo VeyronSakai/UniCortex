@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.ComponentRemove,
-                "{\"instanceId\":456,\"componentType\":\"UnityEngine.Rigidbody\",\"componentIndex\":0}");
+                "{\"instanceId\":456,\"componentType\":\"UnityEngine.Rigidbody\",\"assemblyName\":\"UnityEngine.PhysicsModule\",\"componentIndex\":0}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -31,6 +31,7 @@ namespace UniCortex.Editor.Tests.Presentations
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(456, ops.LastRemoveComponentInstanceId);
             Assert.AreEqual("UnityEngine.Rigidbody", ops.LastRemoveComponentType);
+            Assert.AreEqual("UnityEngine.PhysicsModule", ops.LastRemoveComponentAssembly);
             Assert.AreEqual(0, ops.LastRemoveComponentIndex);
         }
 

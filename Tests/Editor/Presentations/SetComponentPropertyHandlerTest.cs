@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.ComponentSetProperty,
-                "{\"instanceId\":123,\"componentType\":\"UnityEngine.Transform\",\"propertyPath\":\"m_LocalPosition.x\",\"value\":\"1.5\"}");
+                "{\"instanceId\":123,\"componentType\":\"UnityEngine.Transform\",\"assemblyName\":\"UnityEngine.CoreModule\",\"propertyPath\":\"m_LocalPosition.x\",\"value\":\"1.5\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -31,6 +31,7 @@ namespace UniCortex.Editor.Tests.Presentations
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(123, ops.LastSetPropertyInstanceId);
             Assert.AreEqual("UnityEngine.Transform", ops.LastSetPropertyComponentType);
+            Assert.AreEqual("UnityEngine.CoreModule", ops.LastSetPropertyAssembly);
             Assert.AreEqual("m_LocalPosition.x", ops.LastSetPropertyPath);
             Assert.AreEqual("1.5", ops.LastSetPropertyValue);
         }
@@ -65,7 +66,7 @@ namespace UniCortex.Editor.Tests.Presentations
             handler.Register(router);
 
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.ComponentSetProperty,
-                "{\"instanceId\":123,\"componentType\":\"UnityEngine.Transform\"}");
+                "{\"instanceId\":123,\"componentType\":\"UnityEngine.Transform\",\"assemblyName\":\"UnityEngine.CoreModule\"}");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

@@ -7,6 +7,7 @@ namespace UniCortex.Editor.Domains.Models
     {
         public int instanceId;
         public string componentType;
+        public string assemblyName;
         public int componentIndex;
     }
 }
