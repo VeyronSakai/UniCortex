@@ -122,6 +122,14 @@ The MCP server exposes the following built-in tools.
 | `get_component_properties` | Get serialized properties of a component |
 | `set_component_property` | Set a serialized property on a component |
 
+#### ProjectSettings
+
+| Tool | Description |
+|------|-------------|
+| `get_project_settings` | Get serialized properties of a ProjectSettings category |
+| `set_project_setting` | Set a serialized property on a ProjectSettings category (supports Undo) |
+| `get_project_settings_categories` | Get the available ProjectSettings category names |
+
 #### Prefab
 
 | Tool | Description |
@@ -323,6 +331,14 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `component remove` | Remove a component from a GameObject. |
 | `component properties` | Print serialized component properties as JSON. |
 | `component set-property` | Set a serialized property by path. |
+
+#### `project-settings`
+
+| Command | Description |
+| --- | --- |
+| `project-settings get` | Print serialized ProjectSettings properties as JSON. |
+| `project-settings set` | Set a serialized ProjectSettings property by path. |
+| `project-settings categories` | List the available ProjectSettings category names. |
 
 #### `prefab`
 

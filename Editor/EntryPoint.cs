@@ -5,6 +5,7 @@ using UniCortex.Editor.Handlers.Extension;
 using UniCortex.Editor.Handlers.Editor;
 using UniCortex.Editor.Handlers.GameObject;
 using UniCortex.Editor.Handlers.Prefab;
+using UniCortex.Editor.Handlers.ProjectSettings;
 using UniCortex.Editor.Handlers.Scene;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Handlers.MenuItem;
@@ -170,6 +171,19 @@ namespace UniCortex.Editor
             var setComponentPropertyUseCase = new SetComponentPropertyUseCase(s_dispatcher, componentOps);
             var setComponentPropertyHandler = new SetComponentPropertyHandler(setComponentPropertyUseCase);
 
+            var projectSettingsOps = new ProjectSettingsOperationsAdapter();
+
+            var getProjectSettingsUseCase = new GetProjectSettingsUseCase(s_dispatcher, projectSettingsOps);
+            var getProjectSettingsHandler = new GetProjectSettingsHandler(getProjectSettingsUseCase);
+
+            var setProjectSettingUseCase = new SetProjectSettingUseCase(s_dispatcher, projectSettingsOps);
+            var setProjectSettingHandler = new SetProjectSettingHandler(setProjectSettingUseCase);
+
+            var getProjectSettingsCategoriesUseCase =
+                new GetProjectSettingsCategoriesUseCase(s_dispatcher, projectSettingsOps);
+            var getProjectSettingsCategoriesHandler =
+                new GetProjectSettingsCategoriesHandler(getProjectSettingsCategoriesUseCase);
+
             var prefabOps = new PrefabOperationsAdapter();
 
             var createPrefabUseCase = new CreatePrefabUseCase(s_dispatcher, prefabOps);
@@ -309,6 +323,9 @@ namespace UniCortex.Editor
             removeComponentHandler.Register(router);
             componentPropertiesHandler.Register(router);
             setComponentPropertyHandler.Register(router);
+            getProjectSettingsHandler.Register(router);
+            setProjectSettingHandler.Register(router);
+            getProjectSettingsCategoriesHandler.Register(router);
             createPrefabHandler.Register(router);
             instantiatePrefabHandler.Register(router);
             openPrefabHandler.Register(router);
