@@ -9,12 +9,13 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class ScriptableObjectOperationsAdapter : IScriptableObjectOperations
     {
-        public CreateScriptableObjectResponse Create(string typeName, string assetPath)
+        public CreateScriptableObjectResponse Create(string typeName, string assemblyName, string assetPath)
         {
-            var type = UnityTypeResolver.Resolve<ScriptableObject>(typeName);
+            var type = UnityTypeResolver.Resolve<ScriptableObject>(typeName, assemblyName);
             if (type == null)
             {
-                throw new ArgumentException($"ScriptableObject type '{typeName}' not found.");
+                throw new ArgumentException(
+                    $"ScriptableObject type '{typeName}' not found in assembly '{assemblyName}'.");
             }
 
             var asset = ScriptableObject.CreateInstance(type);

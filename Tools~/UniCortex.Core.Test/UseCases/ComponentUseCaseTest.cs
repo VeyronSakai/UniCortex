@@ -47,7 +47,7 @@ public class ComponentUseCaseTest
         try
         {
             var message = await _fixture.ComponentUseCase.AddAsync(
-                createResponse.instanceId, "UnityEngine.Rigidbody, UnityEngine.PhysicsModule", ct);
+                createResponse.instanceId, "UnityEngine.Rigidbody", "UnityEngine.PhysicsModule", ct);
 
             Assert.That(message, Does.Contain("added successfully"));
         }
@@ -68,10 +68,11 @@ public class ComponentUseCaseTest
         try
         {
             await _fixture.ComponentUseCase.AddAsync(
-                createResponse.instanceId, "UnityEngine.Rigidbody, UnityEngine.PhysicsModule", ct);
+                createResponse.instanceId, "UnityEngine.Rigidbody", "UnityEngine.PhysicsModule", ct);
 
             var message = await _fixture.ComponentUseCase.RemoveAsync(
-                createResponse.instanceId, "UnityEngine.Rigidbody, UnityEngine.PhysicsModule", cancellationToken: ct);
+                createResponse.instanceId, "UnityEngine.Rigidbody", "UnityEngine.PhysicsModule",
+                cancellationToken: ct);
 
             Assert.That(message, Does.Contain("removed successfully"));
         }
@@ -92,7 +93,8 @@ public class ComponentUseCaseTest
         try
         {
             var json = await _fixture.ComponentUseCase.GetPropertiesAsync(
-                createResponse.instanceId, "UnityEngine.Transform, UnityEngine.CoreModule", cancellationToken: ct);
+                createResponse.instanceId, "UnityEngine.Transform", "UnityEngine.CoreModule",
+                cancellationToken: ct);
 
             Assert.That(json, Does.Contain("UnityEngine.Transform"));
             Assert.That(json, Does.Contain("m_LocalPosition"));
@@ -114,7 +116,7 @@ public class ComponentUseCaseTest
         try
         {
             var message = await _fixture.ComponentUseCase.SetPropertyAsync(
-                createResponse.instanceId, "UnityEngine.Transform, UnityEngine.CoreModule",
+                createResponse.instanceId, "UnityEngine.Transform", "UnityEngine.CoreModule",
                 "m_LocalPosition.x", "1.5", ct);
 
             Assert.That(message, Does.Contain("Property 'm_LocalPosition.x' set to '1.5' successfully."));

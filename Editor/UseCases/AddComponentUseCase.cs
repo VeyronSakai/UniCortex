@@ -15,11 +15,11 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task ExecuteAsync(int instanceId, string componentType,
+        public async Task ExecuteAsync(int instanceId, string componentType, string assemblyName,
             CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.AddComponent(instanceId, componentType), cancellationToken);
+                () => _operations.AddComponent(instanceId, componentType, assemblyName), cancellationToken);
         }
     }
 }

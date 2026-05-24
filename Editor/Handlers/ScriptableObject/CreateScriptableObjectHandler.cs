@@ -28,7 +28,7 @@ namespace UniCortex.Editor.Handlers.ScriptableObject
             if (string.IsNullOrEmpty(body))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse(
-                    $"{nameof(CreateScriptableObjectRequest.typeName)} and {nameof(CreateScriptableObjectRequest.assetPath)} are required."));
+                    $"{nameof(CreateScriptableObjectRequest.typeName)}, {nameof(CreateScriptableObjectRequest.assemblyName)}, and {nameof(CreateScriptableObjectRequest.assetPath)} are required."));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
                 return;
             }
@@ -43,6 +43,14 @@ namespace UniCortex.Editor.Handlers.ScriptableObject
                 return;
             }
 
+            if (string.IsNullOrEmpty(request.assemblyName))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(
+                    $"{nameof(CreateScriptableObjectRequest.assemblyName)} is required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
             if (string.IsNullOrEmpty(request.assetPath))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse(
@@ -51,7 +59,8 @@ namespace UniCortex.Editor.Handlers.ScriptableObject
                 return;
             }
 
-            var response = await _useCase.ExecuteAsync(request.typeName, request.assetPath, cancellationToken);
+            var response = await _useCase.ExecuteAsync(request.typeName, request.assemblyName, request.assetPath,
+                cancellationToken);
             var json = JsonUtility.ToJson(response);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }

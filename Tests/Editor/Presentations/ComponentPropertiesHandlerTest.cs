@@ -31,6 +31,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.ComponentProperties);
             context.SetQueryParameter("instanceId", "123");
             context.SetQueryParameter("componentType", "UnityEngine.Transform");
+            context.SetQueryParameter("assemblyName", "UnityEngine.CoreModule");
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 

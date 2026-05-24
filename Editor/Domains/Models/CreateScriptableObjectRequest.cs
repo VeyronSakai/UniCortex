@@ -6,6 +6,7 @@ namespace UniCortex.Editor.Domains.Models
     public class CreateScriptableObjectRequest
     {
         public string typeName;
+        public string assemblyName;
         public string assetPath;
     }
 }

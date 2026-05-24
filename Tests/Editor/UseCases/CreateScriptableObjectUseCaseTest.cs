@@ -19,11 +19,12 @@ namespace UniCortex.Editor.Tests.UseCases
             };
             var useCase = new CreateScriptableObjectUseCase(dispatcher, ops);
 
-            var result = useCase.ExecuteAsync("MyNamespace.MyScriptableObject", "Assets/Data/MyData.asset",
-                CancellationToken.None).GetAwaiter().GetResult();
+            var result = useCase.ExecuteAsync("MyNamespace.MyScriptableObject", "Assembly-CSharp",
+                "Assets/Data/MyData.asset", CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, ops.CreateCallCount);
             Assert.AreEqual("MyNamespace.MyScriptableObject", ops.LastCreateTypeName);
+            Assert.AreEqual("Assembly-CSharp", ops.LastCreateAssembly);
             Assert.AreEqual("Assets/Data/MyData.asset", ops.LastCreateAssetPath);
             Assert.AreEqual(1, dispatcher.CallCount);
             Assert.IsTrue(result.success);

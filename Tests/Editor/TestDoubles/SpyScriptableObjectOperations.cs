@@ -7,6 +7,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
     {
         public int CreateCallCount { get; private set; }
         public string LastCreateTypeName { get; private set; }
+        public string LastCreateAssembly { get; private set; }
         public string LastCreateAssetPath { get; private set; }
         public CreateScriptableObjectResponse CreateResult { get; set; }
 
@@ -19,10 +20,11 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string LastSetPropertyPath { get; private set; }
         public string LastSetPropertyValue { get; private set; }
 
-        public CreateScriptableObjectResponse Create(string typeName, string assetPath)
+        public CreateScriptableObjectResponse Create(string typeName, string assemblyName, string assetPath)
         {
             CreateCallCount++;
             LastCreateTypeName = typeName;
+            LastCreateAssembly = assemblyName;
             LastCreateAssetPath = assetPath;
             return CreateResult;
         }

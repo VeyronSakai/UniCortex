@@ -7,10 +7,13 @@ namespace UniCortex.Core.UseCases;
 
 public class ScriptableObjectUseCase(IUnityEditorClient client)
 {
-    public async ValueTask<string> CreateAsync(string typeName, string assetPath,
+    public async ValueTask<string> CreateAsync(string typeName, string assemblyName, string assetPath,
         CancellationToken cancellationToken)
     {
-        var request = new CreateScriptableObjectRequest { typeName = typeName, assetPath = assetPath };
+        var request = new CreateScriptableObjectRequest
+        {
+            typeName = typeName, assemblyName = assemblyName, assetPath = assetPath
+        };
         var response = await client.PostAsync<CreateScriptableObjectRequest, CreateScriptableObjectResponse>(
             ApiRoutes.ScriptableObjectCreate, request, cancellationToken);
         return JsonSerializer.Serialize(response, JsonOptions.Default);

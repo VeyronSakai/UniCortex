@@ -9,41 +9,38 @@ namespace UniCortex.Editor.Tests.Infrastructures
     internal sealed class UnityTypeResolverTest
     {
         [Test]
-        public void Resolve_AssemblyQualifiedName_ReturnsType()
+        public void Resolve_ValidTypeAndAssembly_ReturnsType()
         {
-            var assemblyQualified =
-                $"UniCortex.Editor.Tests.TestDoubles.AllPropertyTypesScriptableObject, {typeof(AllPropertyTypesScriptableObject).Assembly.GetName().Name}";
+            var assemblyName = typeof(AllPropertyTypesScriptableObject).Assembly.GetName().Name;
 
-            var type = UnityTypeResolver.Resolve<ScriptableObject>(assemblyQualified);
+            var type = UnityTypeResolver.Resolve<ScriptableObject>(
+                "UniCortex.Editor.Tests.TestDoubles.AllPropertyTypesScriptableObject", assemblyName);
 
             Assert.That(type, Is.EqualTo(typeof(AllPropertyTypesScriptableObject)));
         }
 
         [Test]
-        public void Resolve_BuiltInComponent_AssemblyQualified_ReturnsType()
+        public void Resolve_BuiltInComponent_ReturnsType()
         {
-            var type = UnityTypeResolver.Resolve<Component>(
-                "UnityEngine.Transform, UnityEngine.CoreModule");
+            var type = UnityTypeResolver.Resolve<Component>("UnityEngine.Transform", "UnityEngine.CoreModule");
 
             Assert.That(type, Is.EqualTo(typeof(Transform)));
         }
 
         [Test]
-        public void Resolve_NamespaceQualifiedOnly_ReturnsNull()
+        public void Resolve_WrongAssembly_ReturnsNull()
         {
-            // Without an assembly suffix, Type.GetType cannot locate types outside the
-            // executing assembly / mscorlib, so resolution fails.
-            var type = UnityTypeResolver.Resolve<Component>("UnityEngine.Transform");
+            var type = UnityTypeResolver.Resolve<Component>("UnityEngine.Transform", "Assembly-CSharp");
             Assert.That(type, Is.Null);
         }
 
         [Test]
         public void Resolve_WrongBaseType_ReturnsNull()
         {
-            var assemblyQualified =
-                $"UniCortex.Editor.Tests.TestDoubles.AllPropertyTypesScriptableObject, {typeof(AllPropertyTypesScriptableObject).Assembly.GetName().Name}";
+            var assemblyName = typeof(AllPropertyTypesScriptableObject).Assembly.GetName().Name;
 
-            var type = UnityTypeResolver.Resolve<Component>(assemblyQualified);
+            var type = UnityTypeResolver.Resolve<Component>(
+                "UniCortex.Editor.Tests.TestDoubles.AllPropertyTypesScriptableObject", assemblyName);
 
             Assert.That(type, Is.Null);
         }
@@ -52,15 +49,17 @@ namespace UniCortex.Editor.Tests.Infrastructures
         public void Resolve_UnknownName_ReturnsNull()
         {
             var type = UnityTypeResolver.Resolve<ScriptableObject>(
-                "NoSuch.Namespace.NoSuchType, NoSuchAssembly");
+                "NoSuch.Namespace.NoSuchType", "NoSuchAssembly");
             Assert.That(type, Is.Null);
         }
 
         [Test]
         public void Resolve_NullOrEmpty_ReturnsNull()
         {
-            Assert.That(UnityTypeResolver.Resolve<ScriptableObject>(null), Is.Null);
-            Assert.That(UnityTypeResolver.Resolve<ScriptableObject>(""), Is.Null);
+            Assert.That(UnityTypeResolver.Resolve<ScriptableObject>(null, "Some.Assembly"), Is.Null);
+            Assert.That(UnityTypeResolver.Resolve<ScriptableObject>("", "Some.Assembly"), Is.Null);
+            Assert.That(UnityTypeResolver.Resolve<ScriptableObject>("Some.Type", null), Is.Null);
+            Assert.That(UnityTypeResolver.Resolve<ScriptableObject>("Some.Type", ""), Is.Null);
         }
     }
 }

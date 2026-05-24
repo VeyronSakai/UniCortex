@@ -49,6 +49,13 @@ namespace UniCortex.Editor.Handlers.Component
                 return;
             }
 
+            if (string.IsNullOrEmpty(request.assemblyName))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("assemblyName is required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
             if (string.IsNullOrEmpty(request.propertyPath))
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("propertyPath is required."));
@@ -63,8 +70,8 @@ namespace UniCortex.Editor.Handlers.Component
                 return;
             }
 
-            await _useCase.ExecuteAsync(request.instanceId, request.componentType, request.propertyPath,
-                request.value, cancellationToken);
+            await _useCase.ExecuteAsync(request.instanceId, request.componentType, request.assemblyName,
+                request.propertyPath, request.value, cancellationToken);
             var json = JsonUtility.ToJson(new SetComponentPropertyResponse(true));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }

@@ -22,12 +22,13 @@ namespace UniCortex.Editor.Tests.UseCases
                 });
             var useCase = new GetComponentPropertiesUseCase(dispatcher, ops);
 
-            var result = useCase.ExecuteAsync(123, "UnityEngine.Transform", 0, CancellationToken.None)
-                .GetAwaiter().GetResult();
+            var result = useCase.ExecuteAsync(123, "UnityEngine.Transform", "UnityEngine.CoreModule", 0,
+                CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual("UnityEngine.Transform", result.componentType);
             Assert.AreEqual(123, ops.LastGetPropertiesInstanceId);
             Assert.AreEqual("UnityEngine.Transform", ops.LastGetPropertiesComponentType);
+            Assert.AreEqual("UnityEngine.CoreModule", ops.LastGetPropertiesAssembly);
             Assert.AreEqual(0, ops.LastGetPropertiesComponentIndex);
             Assert.AreEqual(1, dispatcher.CallCount);
         }

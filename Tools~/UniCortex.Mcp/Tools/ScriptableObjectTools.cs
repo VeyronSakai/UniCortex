@@ -13,19 +13,18 @@ public class ScriptableObjectTools(
     IAsyncOperationSequencer sequencer)
 {
     [McpServerTool(Name = "create_scriptable_object", ReadOnly = false),
-     Description(
-         "Create a new ScriptableObject .asset file at the given path. Specify the ScriptableObject subclass by its full namespace-qualified name (e.g. \"MyNamespace.MyScriptableObject\")."),
+     Description("Create a new ScriptableObject .asset file at the given path."),
      UsedImplicitly]
     public ValueTask<CallToolResult> CreateScriptableObjectAsync(
-        [Description(
-            "The assembly-qualified type name of the ScriptableObject subclass (e.g. \"MyNamespace.MyScriptableObject, Assembly-CSharp\").")]
+        [Description("The fully-qualified ScriptableObject subclass name (e.g. \"MyNamespace.MyScriptableObject\").")]
         string typeName,
-        [Description(
-            "The asset path where the ScriptableObject should be saved (e.g. \"Assets/Data/MyData.asset\").")]
+        [Description("The name of the assembly that defines the type (e.g. \"Assembly-CSharp\").")]
+        string assemblyName,
+        [Description("The asset path where the ScriptableObject should be saved (e.g. \"Assets/Data/MyData.asset\").")]
         string assetPath,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => scriptableObjectUseCase.CreateAsync(typeName, assetPath, ct), cancellationToken);
+            ct => scriptableObjectUseCase.CreateAsync(typeName, assemblyName, assetPath, ct), cancellationToken);
 
     [McpServerTool(Name = "get_scriptable_object_properties", ReadOnly = true),
      Description(

@@ -39,6 +39,14 @@ namespace UniCortex.Editor.Handlers.Component
                 return;
             }
 
+            var assemblyName = context.GetQueryParameter("assemblyName");
+            if (string.IsNullOrEmpty(assemblyName))
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("assemblyName query parameter is required."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
             var componentIndex = 0;
             var componentIndexParam = context.GetQueryParameter("componentIndex");
             if (!string.IsNullOrEmpty(componentIndexParam) && int.TryParse(componentIndexParam, out var parsed))
@@ -46,7 +54,8 @@ namespace UniCortex.Editor.Handlers.Component
                 componentIndex = parsed;
             }
 
-            var result = await _useCase.ExecuteAsync(instanceId, componentType, componentIndex, cancellationToken);
+            var result = await _useCase.ExecuteAsync(instanceId, componentType, assemblyName, componentIndex,
+                cancellationToken);
             var json = JsonUtility.ToJson(result);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }

@@ -11,7 +11,9 @@ public class ScriptableObjectUseCaseTest
     // UniCortex.Editor.Tests assembly is loaded in the Samples~ project via the
     // "testables" entry in Packages/manifest.json (UNITY_INCLUDE_TESTS defined).
     private const string TestTypeName =
-        "UniCortex.Editor.Tests.TestDoubles.AllPropertyTypesScriptableObject, UniCortex.Editor.Tests";
+        "UniCortex.Editor.Tests.TestDoubles.AllPropertyTypesScriptableObject";
+
+    private const string TestAssemblyName = "UniCortex.Editor.Tests";
 
     private const string TestAssetPath = "Assets/ScriptableObjectUseCaseTest.asset";
 
@@ -36,7 +38,8 @@ public class ScriptableObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var json = await _fixture.ScriptableObjectUseCase.CreateAsync(TestTypeName, TestAssetPath, ct);
+        var json = await _fixture.ScriptableObjectUseCase.CreateAsync(TestTypeName, TestAssemblyName,
+            TestAssetPath, ct);
         var response = JsonSerializer.Deserialize<CreateScriptableObjectResponse>(json, s_jsonOptions);
 
         Assert.That(response, Is.Not.Null);
@@ -49,7 +52,7 @@ public class ScriptableObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        await _fixture.ScriptableObjectUseCase.CreateAsync(TestTypeName, TestAssetPath, ct);
+        await _fixture.ScriptableObjectUseCase.CreateAsync(TestTypeName, TestAssemblyName, TestAssetPath, ct);
 
         var json = await _fixture.ScriptableObjectUseCase.GetPropertiesAsync(TestAssetPath, ct);
 
@@ -63,7 +66,7 @@ public class ScriptableObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        await _fixture.ScriptableObjectUseCase.CreateAsync(TestTypeName, TestAssetPath, ct);
+        await _fixture.ScriptableObjectUseCase.CreateAsync(TestTypeName, TestAssemblyName, TestAssetPath, ct);
 
         var message = await _fixture.ScriptableObjectUseCase.SetPropertyAsync(
             TestAssetPath, "intField", "42", ct);

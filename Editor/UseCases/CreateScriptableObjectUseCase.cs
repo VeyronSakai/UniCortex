@@ -17,11 +17,11 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<CreateScriptableObjectResponse> ExecuteAsync(string typeName, string assetPath,
-            CancellationToken cancellationToken = default)
+        public async Task<CreateScriptableObjectResponse> ExecuteAsync(string typeName, string assemblyName,
+            string assetPath, CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.Create(typeName, assetPath), cancellationToken);
+                () => _operations.Create(typeName, assemblyName, assetPath), cancellationToken);
         }
     }
 }
