@@ -41,7 +41,11 @@ jobs:
 
   update-draft:
     name: Update Draft
-    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main') || github.event_name == 'workflow_dispatch'}}
+    # Skip when a PR is closed without being merged: release-drafter loads its
+    # config from the PR merge ref (refs/pull/N/merge), which no longer exists
+    # for a closed-unmerged PR, so the lookup 404s. Still run on open/sync/reopen
+    # and on merge (the release job needs the tag_name output).
+    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && (github.event.action != 'closed' || github.event.pull_request.merged == true)) || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
