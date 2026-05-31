@@ -34,3 +34,5 @@ template: |
   ## Changes
 
   $CHANGES
+
+<!-- ci test: close-unmerged release-drafter skip -->
