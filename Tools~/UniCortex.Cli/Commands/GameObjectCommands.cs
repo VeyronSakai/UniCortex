@@ -48,4 +48,15 @@ public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
             parentInstanceId, cancellationToken);
         Console.WriteLine(message);
     }
+
+    /// <summary>Duplicate a GameObject, deep-copying its children and components.</summary>
+    /// <param name="instanceId">Instance ID of the GameObject to duplicate.</param>
+    /// <param name="name">Optional name for the duplicate. If omitted, a Unity-style unique name like "Foo (1)" is assigned.</param>
+    [Command("duplicate")]
+    public async Task Duplicate([Argument] int instanceId, string? name = null,
+        CancellationToken cancellationToken = default)
+    {
+        var json = await gameObjectUseCase.DuplicateAsync(instanceId, name, cancellationToken);
+        Console.WriteLine(json);
+    }
 }

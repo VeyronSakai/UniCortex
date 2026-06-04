@@ -110,5 +110,29 @@ namespace UniCortex.Editor.Infrastructures
                 }
             }
         }
+
+        public DuplicateGameObjectResponse Duplicate(int instanceId, string name)
+        {
+            var source = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+            if (source == null)
+            {
+                throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
+            }
+
+            // Deep copy including children and components, placed under the same parent.
+            var parent = source.transform.parent;
+            var clone = UnityEngine.Object.Instantiate(source, parent);
+
+            // Use the supplied name, or a Unity-style unique sibling name (e.g. "Foo (1)").
+            clone.name = string.IsNullOrEmpty(name)
+                ? GameObjectUtility.GetUniqueNameForSibling(parent, source.name)
+                : name;
+
+            // Place the clone right after the source to mirror Editor "Duplicate" behavior.
+            clone.transform.SetSiblingIndex(source.transform.GetSiblingIndex() + 1);
+
+            Undo.RegisterCreatedObjectUndo(clone, "Duplicate GameObject");
+            return new DuplicateGameObjectResponse(clone.name, clone.GetInstanceID());
+        }
     }
 }

@@ -9,5 +9,6 @@ namespace UniCortex.Editor.Domains.Interfaces
         CreateGameObjectResponse Create(string name);
         void Delete(int instanceId);
         void Modify(int instanceId, string name, bool? activeSelf, string tag, int? layer, int? parentInstanceId);
+        DuplicateGameObjectResponse Duplicate(int instanceId, string name);
     }
 }

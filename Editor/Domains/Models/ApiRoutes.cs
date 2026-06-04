@@ -17,6 +17,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string GameObjectCreate = "/gameobject/create";
         public const string GameObjectDelete = "/gameobject/delete";
         public const string GameObjectModify = "/gameobject/modify";
+        public const string GameObjectDuplicate = "/gameobject/duplicate";
         public const string TestsRun = "/tests/run";
         public const string TestsResult = "/tests/result";
         public const string ConsoleLogs = "/console/logs";
