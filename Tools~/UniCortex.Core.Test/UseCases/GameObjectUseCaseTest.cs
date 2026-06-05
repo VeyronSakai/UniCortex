@@ -203,4 +203,63 @@ public class GameObjectUseCaseTest
             await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
+
+    [Test]
+    public async ValueTask Duplicate_CreatesCopyWithNewInstanceId()
+    {
+        var ct = CancellationToken.None;
+
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("DuplicateSrc", ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+
+        DuplicateGameObjectResponse? duplicateResponse = null;
+        try
+        {
+            var duplicateJson =
+                await _fixture.GameObjectUseCase.DuplicateAsync(createResponse.instanceId, null, ct);
+            duplicateResponse = JsonSerializer.Deserialize<DuplicateGameObjectResponse>(duplicateJson, s_jsonOptions)!;
+
+            Assert.That(duplicateResponse, Is.Not.Null);
+            Assert.That(duplicateResponse.instanceId, Is.Not.EqualTo(createResponse.instanceId));
+            // No explicit name supplied, so a Unity-style unique sibling name is assigned.
+            Assert.That(duplicateResponse.name, Is.EqualTo("DuplicateSrc (1)"));
+        }
+        finally
+        {
+            if (duplicateResponse != null)
+            {
+                await _fixture.GameObjectUseCase.DeleteAsync(duplicateResponse.instanceId, ct);
+            }
+
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
+        }
+    }
+
+    [Test]
+    public async ValueTask Duplicate_WithName_UsesProvidedName()
+    {
+        var ct = CancellationToken.None;
+
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("DuplicateNamedSrc", ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+
+        DuplicateGameObjectResponse? duplicateResponse = null;
+        try
+        {
+            var duplicateJson =
+                await _fixture.GameObjectUseCase.DuplicateAsync(createResponse.instanceId, "CustomCopy", ct);
+            duplicateResponse = JsonSerializer.Deserialize<DuplicateGameObjectResponse>(duplicateJson, s_jsonOptions)!;
+
+            Assert.That(duplicateResponse.name, Is.EqualTo("CustomCopy"));
+        }
+        finally
+        {
+            if (duplicateResponse != null)
+            {
+                await _fixture.GameObjectUseCase.DeleteAsync(duplicateResponse.instanceId, ct);
+            }
+
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
+        }
+    }
 }

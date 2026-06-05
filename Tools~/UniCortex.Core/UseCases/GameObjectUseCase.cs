@@ -48,4 +48,12 @@ public class GameObjectUseCase(IUnityEditorClient client)
             cancellationToken);
         return "GameObject modified successfully.";
     }
+
+    public async ValueTask<string> DuplicateAsync(int instanceId, string? name, CancellationToken cancellationToken)
+    {
+        var request = new DuplicateGameObjectRequest { instanceId = instanceId, name = name };
+        var response = await client.PostAsync<DuplicateGameObjectRequest, DuplicateGameObjectResponse>(
+            ApiRoutes.GameObjectDuplicate, request, cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
+    }
 }

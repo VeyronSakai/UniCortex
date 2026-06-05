@@ -68,4 +68,18 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => gameObjectUseCase.ModifyAsync(instanceId, name, activeSelf, tag, layer, parentInstanceId, ct),
             cancellationToken);
+
+    [McpServerTool(Name = "duplicate_game_object", ReadOnly = false),
+     Description(
+         "Duplicate a GameObject in the current scene, deep-copying its children and components and placing the " +
+         "copy as a sibling right after the original. Supports Undo."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> DuplicateGameObjectAsync(
+        [Description("The instance ID of the GameObject to duplicate.")]
+        int instanceId,
+        [Description("Optional name for the duplicate. If omitted, a Unity-style unique name like 'Foo (1)' is assigned.")]
+        string? name = null,
+        CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => gameObjectUseCase.DuplicateAsync(instanceId, name, ct), cancellationToken);
 }

@@ -157,6 +157,9 @@ namespace UniCortex.Editor
             var modifyGameObjectUseCase = new ModifyGameObjectUseCase(s_dispatcher, gameObjectOps);
             var modifyGameObjectHandler = new ModifyGameObjectHandler(modifyGameObjectUseCase);
 
+            var duplicateGameObjectUseCase = new DuplicateGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var duplicateGameObjectHandler = new DuplicateGameObjectHandler(duplicateGameObjectUseCase);
+
             var componentOps = new ComponentOperationsAdapter();
 
             var addComponentUseCase = new AddComponentUseCase(s_dispatcher, componentOps);
@@ -321,6 +324,7 @@ namespace UniCortex.Editor
             createGameObjectHandler.Register(router);
             deleteGameObjectHandler.Register(router);
             modifyGameObjectHandler.Register(router);
+            duplicateGameObjectHandler.Register(router);
             addComponentHandler.Register(router);
             removeComponentHandler.Register(router);
             componentPropertiesHandler.Register(router);

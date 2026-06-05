@@ -25,6 +25,11 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int? LastModifyLayer { get; private set; }
         public int? LastModifyParentInstanceId { get; private set; }
 
+        public int DuplicateCallCount { get; private set; }
+        public int LastDuplicateInstanceId { get; private set; }
+        public string LastDuplicateName { get; private set; }
+        public DuplicateGameObjectResponse DuplicateResult { get; set; } = new DuplicateGameObjectResponse("New (1)", 2);
+
         public List<GameObjectSearchResult> Get(string query)
         {
             GetCallCount++;
@@ -55,6 +60,14 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastModifyTag = tag;
             LastModifyLayer = layer;
             LastModifyParentInstanceId = parentInstanceId;
+        }
+
+        public DuplicateGameObjectResponse Duplicate(int instanceId, string name)
+        {
+            DuplicateCallCount++;
+            LastDuplicateInstanceId = instanceId;
+            LastDuplicateName = name;
+            return DuplicateResult;
         }
     }
 }

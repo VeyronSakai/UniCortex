@@ -327,6 +327,25 @@ All fields other than `instanceId` are optional. Setting `parentInstanceId` to `
 
 Response: `{"success": true}`
 
+#### POST `/gameobject/duplicate`
+Duplicates a GameObject, deep-copying its children and components. The copy is placed under the same parent, directly after the original (mirroring the Editor's "Duplicate" command). Undo-supported via `Undo.RegisterCreatedObjectUndo`.
+
+Request body:
+```json
+{
+  "instanceId": 12345,
+  "name": "MyCopy"
+}
+```
+
+- `instanceId`: instance ID of the GameObject to duplicate (required)
+- `name`: name for the duplicate (optional). If omitted, a Unity-style unique sibling name (e.g. `Cube (1)`) is assigned via `GameObjectUtility.GetUniqueNameForSibling`.
+
+Response:
+```json
+{"name": "Cube (1)", "instanceId": 67890}
+```
+
 ### Component
 
 Type resolution uses the pair `componentType` (fully qualified type name including namespace) and `assemblyName` (the name of the assembly that defines the type). Internally `Type.GetType($"{componentType}, {assemblyName}")` is used, so `assemblyName` should be the CLR assembly simple name (e.g. `UnityEngine.PhysicsModule`, `Assembly-CSharp`).
@@ -967,7 +986,7 @@ The tool receives the corresponding Core service via constructor DI and wraps th
 | `open_scene` | POST `/scene/open` | Open a scene by path |
 | `get_hierarchy` | GET `/hierarchy` | Get the GameObject hierarchy of the scene or Prefab as a tree |
 
-#### GameObject (4)
+#### GameObject (5)
 
 | Tool | API | Description |
 |------|-----|-------------|
@@ -975,6 +994,7 @@ The tool receives the corresponding Core service via constructor DI and wraps th
 | `create_gameobject` | POST `/gameobject/create` | Create a GameObject (primitive specification supported) |
 | `delete_gameobject` | POST `/gameobject/delete` | Delete a GameObject |
 | `modify_gameobject` | POST `/gameobject/modify` | Rename, enable/disable, reparent, change tag/layer |
+| `duplicate_game_object` | POST `/gameobject/duplicate` | Duplicate a GameObject (deep copy of children and components) |
 
 #### Component (4)
 

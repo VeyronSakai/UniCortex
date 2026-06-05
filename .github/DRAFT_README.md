@@ -112,6 +112,7 @@ The MCP server exposes the following built-in tools.
 | `create_game_object` | Create a new empty GameObject |
 | `delete_game_object` | Delete a GameObject (supports Undo) |
 | `modify_game_object` | Modify name, active state, tag, layer, or parent |
+| `duplicate_game_object` | Duplicate a GameObject including children and components (supports Undo) |
 
 #### Component
 
@@ -326,6 +327,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `gameobject create` | Create a new empty GameObject with the specified name. |
 | `gameobject delete` | Delete a GameObject by `instanceId`. |
 | `gameobject modify` | Rename, reparent, or change active state, tag, or layer. |
+| `gameobject duplicate` | Duplicate a GameObject (deep copy of children and components). |
 
 #### `component`
 
