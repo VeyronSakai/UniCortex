@@ -21,7 +21,7 @@ namespace UniCortex.Editor.Tests.Presentations
                 new List<GameObjectNode>
                 {
                     new GameObjectNode("Main Camera", 100, true, "Untagged", 0, false, 0,
-                        new List<string> { "Transform", "Camera" }, new List<GameObjectNode>())
+                        new List<GameObjectNode>())
                 });
             var useCase = new GetHierarchyUseCase(dispatcher, sceneManager);
             var handler = new HierarchyHandler(useCase);
