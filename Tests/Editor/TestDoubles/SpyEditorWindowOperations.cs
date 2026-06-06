@@ -10,9 +10,15 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int GetGameViewSizeCallCount { get; private set; }
         public int GetGameViewSizeListCallCount { get; private set; }
         public int SetGameViewSizeCallCount { get; private set; }
+        public int GetGameViewScaleCallCount { get; private set; }
+        public int SetGameViewScaleCallCount { get; private set; }
         public int GameViewWidth { get; set; } = 800;
         public int GameViewHeight { get; set; } = 600;
         public int LastSetIndex { get; private set; } = -1;
+        public float Scale { get; set; } = 1.0f;
+        public float MinScale { get; set; } = 0.5f;
+        public float MaxScale { get; set; } = 5.0f;
+        public float LastSetScale { get; private set; } = -1f;
 
         public GameViewSizeEntry[] SizeListEntries { get; set; } = new[]
         {
@@ -52,6 +58,21 @@ namespace UniCortex.Editor.Tests.TestDoubles
         {
             SetGameViewSizeCallCount++;
             LastSetIndex = index;
+        }
+
+        public (float scale, float minScale, float maxScale) GetGameViewScale()
+        {
+            GetGameViewScaleCallCount++;
+            return (Scale, MinScale, MaxScale);
+        }
+
+        public float SetGameViewScale(float scale)
+        {
+            SetGameViewScaleCallCount++;
+            var clamped = scale < MinScale ? MinScale : scale > MaxScale ? MaxScale : scale;
+            LastSetScale = clamped;
+            Scale = clamped;
+            return clamped;
         }
     }
 }

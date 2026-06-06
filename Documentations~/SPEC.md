@@ -623,6 +623,24 @@ Request body:
 
 Response: `{"success": true}`
 
+#### GET `/game-view/scale`
+Gets the current Game View scale (zoom factor, `1.0` = 100%) together with the valid range. The range is dynamic and depends on the window size and the selected resolution.
+
+Response:
+```json
+{"scale": 1.0, "minScale": 0.5, "maxScale": 10.0}
+```
+
+#### POST `/game-view/scale`
+Sets the Game View scale (zoom factor). The value is clamped to the valid range, and the applied (clamped) scale is returned.
+
+Request body:
+```json
+{"scale": 2.0}
+```
+
+Response: `{"success": true, "scale": 2.0}`
+
 ### Recording
 
 Recording features powered by the Unity Recorder package (`com.unity.recorder`). Lets you list recorders and add, remove, start, and stop Movie Recorders. The recorder list is reset on domain reload.

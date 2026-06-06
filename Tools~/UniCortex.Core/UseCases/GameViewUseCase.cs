@@ -53,4 +53,24 @@ public class GameViewUseCase(IUnityEditorClient client)
             cancellationToken);
         return $"Game View size set to index {index} successfully.";
     }
+
+    public async ValueTask<string> GetScaleAsync(CancellationToken cancellationToken)
+    {
+        var response = await GetScaleResponseAsync(cancellationToken);
+        return $"Game View scale: {response.scale} (min: {response.minScale}, max: {response.maxScale})";
+    }
+
+    public async ValueTask<GetGameViewScaleResponse> GetScaleResponseAsync(CancellationToken cancellationToken)
+    {
+        return await client.GetAsync<GetGameViewScaleRequest, GetGameViewScaleResponse>(
+            ApiRoutes.GameViewScale, cancellationToken: cancellationToken);
+    }
+
+    public async ValueTask<string> SetScaleAsync(float scale, CancellationToken cancellationToken)
+    {
+        var response = await client.PostAsync<SetGameViewScaleRequest, SetGameViewScaleResponse>(
+            ApiRoutes.GameViewScale, new SetGameViewScaleRequest { scale = scale },
+            cancellationToken);
+        return $"Game View scale set to {response.scale} successfully.";
+    }
 }

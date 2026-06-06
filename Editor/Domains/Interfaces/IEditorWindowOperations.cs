@@ -9,5 +9,7 @@ namespace UniCortex.Editor.Domains.Interfaces
         (int width, int height) GetGameViewSize();
         GetGameViewSizeListResponse GetGameViewSizeList();
         void SetGameViewSize(int index);
+        (float scale, float minScale, float maxScale) GetGameViewScale();
+        float SetGameViewScale(float scale);
     }
 }
