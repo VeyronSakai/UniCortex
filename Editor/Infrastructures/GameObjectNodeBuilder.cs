@@ -16,8 +16,7 @@ namespace UniCortex.Editor.Infrastructures
                 children.Add(BuildNode(transform.GetChild(i)));
             }
 
-            return new GameObjectNode(go.name, go.GetInstanceID(), go.activeSelf, go.tag, go.layer, go.isStatic,
-                (int)go.hideFlags, children);
+            return new GameObjectNode(go.name, go.GetInstanceID(), children);
         }
     }
 }
