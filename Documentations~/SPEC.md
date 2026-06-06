@@ -211,7 +211,6 @@ Response:
       "layer": 0,
       "isStatic": false,
       "hideFlags": 0,
-      "components": ["UnityEngine.Transform", "UnityEngine.Camera", "UnityEngine.AudioListener"],
       "children": []
     },
     {
@@ -222,7 +221,6 @@ Response:
       "layer": 5,
       "isStatic": false,
       "hideFlags": 0,
-      "components": ["UnityEngine.RectTransform", "UnityEngine.Canvas"],
       "children": [
         {
           "name": "Button",
@@ -232,7 +230,6 @@ Response:
           "layer": 5,
           "isStatic": false,
           "hideFlags": 0,
-          "components": ["UnityEngine.RectTransform", "UnityEngine.UI.Image", "UnityEngine.UI.Button"],
           "children": []
         }
       ]

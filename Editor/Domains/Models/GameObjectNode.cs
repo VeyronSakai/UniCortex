@@ -13,11 +13,10 @@ namespace UniCortex.Editor.Domains.Models
         public int layer;
         public bool isStatic;
         public int hideFlags;
-        public List<string> components;
         public List<GameObjectNode> children;
 
         public GameObjectNode(string name, int instanceId, bool activeSelf, string tag, int layer, bool isStatic,
-            int hideFlags, List<string> components, List<GameObjectNode> children)
+            int hideFlags, List<GameObjectNode> children)
         {
             this.name = name;
             this.instanceId = instanceId;
@@ -26,7 +25,6 @@ namespace UniCortex.Editor.Domains.Models
             this.layer = layer;
             this.isStatic = isStatic;
             this.hideFlags = hideFlags;
-            this.components = components;
             this.children = children;
         }
     }
