@@ -206,30 +206,15 @@ Response:
     {
       "name": "Main Camera",
       "instanceId": 10200,
-      "activeSelf": true,
-      "tag": "MainCamera",
-      "layer": 0,
-      "isStatic": false,
-      "hideFlags": 0,
       "children": []
     },
     {
       "name": "Canvas",
       "instanceId": 10300,
-      "activeSelf": true,
-      "tag": "Untagged",
-      "layer": 5,
-      "isStatic": false,
-      "hideFlags": 0,
       "children": [
         {
           "name": "Button",
           "instanceId": 10400,
-          "activeSelf": true,
-          "tag": "Untagged",
-          "layer": 5,
-          "isStatic": false,
-          "hideFlags": 0,
           "children": []
         }
       ]

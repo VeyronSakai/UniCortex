@@ -20,8 +20,7 @@ namespace UniCortex.Editor.Tests.Presentations
             sceneManager.HierarchyResult = new GetHierarchyResponse("SampleScene", "Assets/Scenes/SampleScene.unity",
                 new List<GameObjectNode>
                 {
-                    new GameObjectNode("Main Camera", 100, true, "Untagged", 0, false, 0,
-                        new List<GameObjectNode>())
+                    new GameObjectNode("Main Camera", 100, new List<GameObjectNode>())
                 });
             var useCase = new GetHierarchyUseCase(dispatcher, sceneManager);
             var handler = new HierarchyHandler(useCase);

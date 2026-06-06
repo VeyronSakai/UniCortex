@@ -8,23 +8,12 @@ namespace UniCortex.Editor.Domains.Models
     {
         public string name;
         public int instanceId;
-        public bool activeSelf;
-        public string tag;
-        public int layer;
-        public bool isStatic;
-        public int hideFlags;
         public List<GameObjectNode> children;
 
-        public GameObjectNode(string name, int instanceId, bool activeSelf, string tag, int layer, bool isStatic,
-            int hideFlags, List<GameObjectNode> children)
+        public GameObjectNode(string name, int instanceId, List<GameObjectNode> children)
         {
             this.name = name;
             this.instanceId = instanceId;
-            this.activeSelf = activeSelf;
-            this.tag = tag;
-            this.layer = layer;
-            this.isStatic = isStatic;
-            this.hideFlags = hideFlags;
             this.children = children;
         }
     }
