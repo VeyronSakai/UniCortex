@@ -41,3 +41,23 @@ public class GameViewSizeCommands(GameViewUseCase gameViewUseCase)
         Console.WriteLine(message);
     }
 }
+
+public class GameViewScaleCommands(GameViewUseCase gameViewUseCase)
+{
+    /// <summary>Get the current Game View scale (zoom factor) and its valid range.</summary>
+    [Command("get")]
+    public async Task Get(CancellationToken cancellationToken = default)
+    {
+        var message = await gameViewUseCase.GetScaleAsync(cancellationToken);
+        Console.WriteLine(message);
+    }
+
+    /// <summary>Set the Game View scale (zoom factor). The value is clamped to the valid range.</summary>
+    /// <param name="scale">Scale (zoom) factor. 1.0 = 100%.</param>
+    [Command("set")]
+    public async Task Set([Argument] float scale, CancellationToken cancellationToken = default)
+    {
+        var message = await gameViewUseCase.SetScaleAsync(scale, cancellationToken);
+        Console.WriteLine(message);
+    }
+}

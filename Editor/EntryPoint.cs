@@ -241,6 +241,12 @@ namespace UniCortex.Editor
             var setGameViewSizeUseCase = new SetGameViewSizeUseCase(s_dispatcher, editorWindowOps);
             var setGameViewSizeHandler = new SetGameViewSizeHandler(setGameViewSizeUseCase);
 
+            var getGameViewScaleUseCase = new GetGameViewScaleUseCase(s_dispatcher, editorWindowOps);
+            var getGameViewScaleHandler = new GetGameViewScaleHandler(getGameViewScaleUseCase);
+
+            var setGameViewScaleUseCase = new SetGameViewScaleUseCase(s_dispatcher, editorWindowOps);
+            var setGameViewScaleHandler = new SetGameViewScaleHandler(setGameViewScaleUseCase);
+
 #if UNICORTEX_RECORDER
             var allRecorderOps = new AllRecorderOperationsAdapter();
             var movieRecordingOps = new MovieRecordingOperationsAdapter();
@@ -345,6 +351,8 @@ namespace UniCortex.Editor
             getGameViewSizeHandler.Register(router);
             getGameViewSizeListHandler.Register(router);
             setGameViewSizeHandler.Register(router);
+            getGameViewScaleHandler.Register(router);
+            setGameViewScaleHandler.Register(router);
             addMovieRecorderHandler.Register(router);
             getRecorderListHandler.Register(router);
             removeMovieRecorderHandler.Register(router);

@@ -44,4 +44,25 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
         CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => gameViewUseCase.SetSizeAsync(index, ct), cancellationToken);
+
+    [McpServerTool(Name = "get_game_view_scale", ReadOnly = true),
+     Description(
+         "Get the current Game View scale (zoom factor) in the Unity Editor, " +
+         "along with the valid minimum and maximum scale. 1.0 means 100%."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> GetGameViewScaleAsync(CancellationToken cancellationToken)
+        => McpToolExecution.ExecuteTextAsync(sequencer, gameViewUseCase.GetScaleAsync, cancellationToken);
+
+    [McpServerTool(Name = "set_game_view_scale", ReadOnly = false),
+     Description(
+         "Set the Game View scale (zoom factor) in the Unity Editor. 1.0 means 100%. " +
+         "The value is clamped to the Game View's valid range and the applied value is returned. " +
+         "Use get_game_view_scale to see the current value and valid range."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> SetGameViewScaleAsync(
+        [Description("Scale (zoom) factor. 1.0 = 100%. Clamped to the Game View's valid range.")]
+        float scale,
+        CancellationToken cancellationToken)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => gameViewUseCase.SetScaleAsync(scale, ct), cancellationToken);
 }

@@ -51,4 +51,38 @@ public class GameViewUseCaseTest
 
         Assert.That(result, Does.Contain("successfully"));
     }
+
+    [Test]
+    public async ValueTask GetScale_ReturnsScaleWithRange()
+    {
+        var response = await _fixture.GameViewUseCase.GetScaleResponseAsync(CancellationToken.None);
+
+        Assert.That(response.minScale, Is.GreaterThan(0f));
+        Assert.That(response.maxScale, Is.GreaterThanOrEqualTo(response.minScale));
+
+        var message = await _fixture.GameViewUseCase.GetScaleAsync(CancellationToken.None);
+        Assert.That(message, Does.Contain("Game View scale:"));
+    }
+
+    [Test]
+    public async ValueTask SetScale_Succeeds_And_ClampsToRange()
+    {
+        var original = await _fixture.GameViewUseCase.GetScaleResponseAsync(CancellationToken.None);
+
+        try
+        {
+            var result = await _fixture.GameViewUseCase.SetScaleAsync(2.0f, CancellationToken.None);
+            Assert.That(result, Does.Contain("successfully"));
+
+            // A value far above the valid range must be clamped to maxScale.
+            await _fixture.GameViewUseCase.SetScaleAsync(1000f, CancellationToken.None);
+            var clamped = await _fixture.GameViewUseCase.GetScaleResponseAsync(CancellationToken.None);
+            Assert.That(clamped.scale, Is.LessThanOrEqualTo(clamped.maxScale + 0.001f));
+        }
+        finally
+        {
+            // Restore the original scale.
+            await _fixture.GameViewUseCase.SetScaleAsync(original.scale, CancellationToken.None);
+        }
+    }
 }

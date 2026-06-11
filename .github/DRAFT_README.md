@@ -190,6 +190,8 @@ Component type arguments are supplied as a fully-qualified type name plus the de
 | `get_game_view_size` | Get the current Game View size (width and height in pixels) |
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
+| `get_game_view_scale` | Get the current Game View scale (zoom factor) and its valid range |
+| `set_game_view_scale` | Set the Game View scale (zoom factor); clamped to the valid range |
 
 #### Recorder
 
@@ -381,7 +383,7 @@ Component commands accept the fully-qualified component type name plus the defin
 | `menu execute` | Execute a Unity menu item by path. |
 | `screenshot capture` | Capture a PNG screenshot. Play Mode only. |
 
-#### `scene-view`, `game-view`, `game-view size`
+#### `scene-view`, `game-view`, `game-view size`, `game-view scale`
 
 | Command | Description |
 | --- | --- |
@@ -390,6 +392,8 @@ Component commands accept the fully-qualified component type name plus the defin
 | `game-view size get` | Show the current Game View size. |
 | `game-view size list` | List available Game View sizes. |
 | `game-view size set` | Set the Game View size by index. |
+| `game-view scale get` | Show the current Game View scale and its valid range. |
+| `game-view scale set` | Set the Game View scale (zoom factor). |
 
 #### `input`
 
