@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Infrastructures;
+using UniCortex.Core.Infrastructures.CodeGraph;
 using UniCortex.Core.UseCases;
 
 namespace UniCortex.Core.Extensions;
@@ -42,6 +43,11 @@ public static class ServiceCollectionExtensions
         services.AddTransient<InputUseCase>();
         services.AddTransient<TimelineUseCase>();
         services.AddTransient<ExtensionUseCase>();
+
+        // Code graph: local Roslyn analysis, no Unity Editor connection required.
+        services.AddTransient<IUnityProjectPathProvider, UnityProjectPathProvider>();
+        services.AddSingleton<ICodeGraphStore, CodeGraphStore>();
+        services.AddTransient<CodeGraphUseCase>();
 
         return services;
     }

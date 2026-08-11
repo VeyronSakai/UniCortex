@@ -223,6 +223,18 @@ Component type arguments are supplied as a fully-qualified type name plus the de
 | `play_timeline` | Start playback of a Timeline on a PlayableDirector (requires com.unity.timeline) |
 | `stop_timeline` | Stop playback of a Timeline on a PlayableDirector and reset to the beginning (requires com.unity.timeline) |
 
+#### Code Graph
+
+Roslyn-based structural queries over your project's C# code. These tools read the sources under `UNICORTEX_PROJECT_PATH` directly, so they work even while the Unity Editor is closed. The index is built lazily on first use and refreshed automatically when source files change.
+
+| Tool | Description |
+|------|-------------|
+| `get_code_map` | Get an overview of the C# code: assemblies, namespaces, Unity type counts (MonoBehaviour, ScriptableObject, ...), most referenced symbols |
+| `search_symbols` | Search C# types and members by name pattern, kind, file pattern, or base type (e.g. all MonoBehaviours) |
+| `get_code_snippet` | Get the source code of a single type or member by its symbol id |
+| `find_symbol_references` | Find references to a symbol, grouped by relation (calls, uses, inheritedBy, implementedBy, overriddenBy) |
+| `trace_call_graph` | Trace a method's call graph up (callers, including interface-dispatched calls) or down (callees) |
+
 #### Extensions
 
 User-defined extensions in your Unity project are automatically discovered and exposed alongside the built-in tools. See [Extension](#extension) for details.
@@ -431,6 +443,18 @@ Component commands accept the fully-qualified component type name plus the defin
 | --- | --- |
 | `extension list` | List registered extensions from the Unity project. |
 | `extension execute` | Execute an extension by name, optionally passing JSON through `--arguments`. |
+
+#### `code`
+
+Structural queries over the project's C# code (Roslyn-based). These commands read source files directly and do not require the Unity Editor to be running.
+
+| Command | Description |
+| --- | --- |
+| `code map` | Print an overview of the C# code (assemblies, namespaces, Unity types, hotspots). |
+| `code search` | Search C# symbols by name pattern; filter with `--kinds`, `--file-pattern`, `--base-type`, `--limit`. |
+| `code snippet` | Print the source code of a symbol by its id. |
+| `code refs` | Find references to a symbol, grouped by relation. |
+| `code trace` | Trace a method's call graph with `--direction callers\|callees` and `--max-depth`. |
 
 ### Representative workflows
 
