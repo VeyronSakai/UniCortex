@@ -36,7 +36,36 @@ Use this mode when you want an MCP client to call Unity operations as tools. The
 
 ### MCP Server Setup
 
-Add the following MCP server configuration to your MCP client's settings file (e.g., `.mcp.json`, `claude_desktop_config.json`, etc.). Refer to your client's documentation for the exact configuration location.
+The MCP server reads the port number from `Library/UniCortex/config.json` (written automatically when Unity Editor starts) and connects to the HTTP server.
+
+No pre-build or tool installation is required. The MCP server is built and started automatically via `dotnet run`.
+
+#### Claude Code
+
+Add the following `.mcp.json` to the root of your repository:
+
+```json
+{
+  "mcpServers": {
+    "Unity": {
+      "type": "stdio",
+      "command": "bash",
+      "args": ["-c", "export UNICORTEX_PROJECT_PATH=\"$CLAUDE_PROJECT_DIR\" && exec dotnet run --project \"$UNICORTEX_PROJECT_PATH\"/Library/PackageCache/com.veyron-sakai.uni-cortex@*/Tools~/UniCortex.Mcp/"]
+    }
+  }
+}
+```
+
+Claude Code sets the `CLAUDE_PROJECT_DIR` environment variable to the project root when it starts an MCP server, so this configuration contains no absolute path and can be committed to version control. If your Unity project is in a subdirectory of the repository, append it to the path (e.g., `$CLAUDE_PROJECT_DIR/client`).
+
+> [!NOTE]
+> Write `$CLAUDE_PROJECT_DIR` without braces. Claude Code expands `${VAR}` in `.mcp.json` using its own environment, where `CLAUDE_PROJECT_DIR` is not set. Without braces, `bash` expands it in the MCP server's environment instead.
+
+The first time you start Claude Code in the repository, it asks you to approve the server.
+
+#### Other MCP clients
+
+Add the following MCP server configuration to your MCP client's settings file (e.g., `claude_desktop_config.json`). Refer to your client's documentation for the exact configuration location.
 
 ```json
 {
@@ -55,9 +84,7 @@ Add the following MCP server configuration to your MCP client's settings file (e
 
 Replace `/path/to/your/unity/project` with the absolute path of your Unity project. After saving the configuration, restart the client to apply the changes.
 
-The MCP server reads the port number from `Library/UniCortex/config.json` (written automatically when Unity Editor starts) and connects to the HTTP server.
-
-No pre-build or tool installation is required. The MCP server is built and started automatically via `dotnet run`.
+#### Specifying the server URL directly
 
 Alternatively, you can specify the URL directly via the `UNICORTEX_URL` environment variable (takes priority over `UNICORTEX_PROJECT_PATH`):
 
