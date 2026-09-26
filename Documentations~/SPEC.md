@@ -509,7 +509,7 @@ Request body:
 
 - `keys`: required, at least one. Sorted by `time`; duplicate times are rejected
 - `keys[].inTangent` / `keys[].outTangent`: optional slopes, used when `tangentMode` is `Free`
-- `keys[].tangentMode`: optional, applied to both sides of the key. `Free` (default), `Auto`, `ClampedAuto`, `Linear`, `Constant`, or `EaseInOut` (`Free` with both tangents set to 0)
+- `keys[].tangentMode`: optional, applied to both sides of the key. `Free` (default), `Auto`, `ClampedAuto`, `Linear`, or `Constant`. `Free` with the tangents omitted (0) gives flat tangents, i.e. a smooth ease in / ease out
 
 Response: `{"success": true}`
 

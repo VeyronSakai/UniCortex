@@ -108,7 +108,8 @@ public sealed class AnimationKeyParameter
 
     [JsonPropertyName("tangentMode"),
      Description("Tangent mode applied to both sides of the key: Free (default, uses inTangent/outTangent), " +
-                 "Auto, ClampedAuto, Linear, Constant, or EaseInOut (flat tangents).")]
+                 "Auto, ClampedAuto, Linear, or Constant. " +
+                 "Free with tangents omitted (0) gives flat tangents, i.e. a smooth ease in / ease out.")]
     public string? TangentMode { get; init; }
 
     internal AnimationCurveKeyInput ToInput() => new()

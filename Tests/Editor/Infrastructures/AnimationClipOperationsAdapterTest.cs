@@ -204,16 +204,17 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void BuildCurve_EaseInOut_FlattensTangents()
+        public void BuildCurve_DefaultsToFreeWithFlatTangents_WhenOmitted()
         {
             var curve = AnimationClipOperationsAdapter.BuildCurve(new List<AnimationCurveKeyInput>
             {
-                new AnimationCurveKeyInput { time = 0f, value = 0f, outTangent = 5f, tangentMode = "EaseInOut" },
-                new AnimationCurveKeyInput { time = 1f, value = 1f, inTangent = 5f, tangentMode = "EaseInOut" }
+                new AnimationCurveKeyInput { time = 0f, value = 0f },
+                new AnimationCurveKeyInput { time = 1f, value = 1f }
             });
 
             Assert.AreEqual(0f, curve[0].outTangent);
             Assert.AreEqual(0f, curve[1].inTangent);
+            Assert.AreEqual(AnimationUtility.TangentMode.Free, AnimationUtility.GetKeyRightTangentMode(curve, 0));
         }
 
         [Test]

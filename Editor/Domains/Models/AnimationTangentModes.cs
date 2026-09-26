@@ -4,6 +4,7 @@ namespace UniCortex.Editor.Domains.Models
     {
         /// <summary>
         /// Uses the given inTangent / outTangent as-is. Different values produce a "broken" key with a corner.
+        /// Leaving both tangents at 0 flattens the curve at the key (smooth ease in / ease out).
         /// </summary>
         public const string Free = "Free";
 
@@ -28,11 +29,5 @@ namespace UniCortex.Editor.Domains.Models
         /// No interpolation: the value is held until the next key and then jumps (step curve).
         /// </summary>
         public const string Constant = "Constant";
-
-        /// <summary>
-        /// Free with both tangents set to 0, so the curve flattens at the key (smooth ease in / ease out).
-        /// Not an AnimationUtility.TangentMode; keys set with this mode are reported back as Free.
-        /// </summary>
-        public const string EaseInOut = "EaseInOut";
     }
 }

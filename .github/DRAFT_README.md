@@ -144,7 +144,7 @@ Component type arguments are supplied as a fully-qualified type name plus the de
 | `set_animation_curve` | Replace one float curve of an AnimationClip with the given keys (supports Undo) |
 | `remove_animation_curve` | Remove one float curve from an AnimationClip (supports Undo) |
 
-A curve is identified by `path` (relative to the Animator root, e.g. `Root/Child`), the component type plus its assembly name (e.g. `UnityEngine.UI.Image` + `UnityEngine.UI`), and `propertyName` (e.g. `m_Color.a`). Each key takes `time` / `value` and an optional `tangentMode` (`Free`, `Auto`, `ClampedAuto`, `Linear`, `Constant`, `EaseInOut`).
+A curve is identified by `path` (relative to the Animator root, e.g. `Root/Child`), the component type plus its assembly name (e.g. `UnityEngine.UI.Image` + `UnityEngine.UI`), and `propertyName` (e.g. `m_Color.a`). Each key takes `time` / `value` and an optional `tangentMode` (`Free`, `Auto`, `ClampedAuto`, `Linear`, `Constant`).
 
 #### Prefab
 

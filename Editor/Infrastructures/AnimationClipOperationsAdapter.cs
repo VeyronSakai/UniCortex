@@ -107,17 +107,9 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var modes = sortedKeys.Select(k => ParseTangentMode(k.tangentMode)).ToArray();
-            var keyframes = new Keyframe[sortedKeys.Count];
-            for (var i = 0; i < sortedKeys.Count; i++)
-            {
-                var key = sortedKeys[i];
-                var isEaseInOut = modes[i] == AnimationTangentModes.EaseInOut;
-                keyframes[i] = new Keyframe(key.time, key.value,
-                    isEaseInOut ? 0f : key.inTangent,
-                    isEaseInOut ? 0f : key.outTangent);
-            }
-
-            var curve = new AnimationCurve(keyframes);
+            var curve = new AnimationCurve(sortedKeys
+                .Select(k => new Keyframe(k.time, k.value, k.inTangent, k.outTangent))
+                .ToArray());
 
             // Tangent modes must be applied after all keys exist, because Auto / Linear
             // tangents are computed from neighbouring keys.
@@ -147,7 +139,7 @@ namespace UniCortex.Editor.Infrastructures
             var supported = new[]
             {
                 AnimationTangentModes.Free, AnimationTangentModes.Auto, AnimationTangentModes.ClampedAuto,
-                AnimationTangentModes.Linear, AnimationTangentModes.Constant, AnimationTangentModes.EaseInOut
+                AnimationTangentModes.Linear, AnimationTangentModes.Constant
             };
             var match = supported.FirstOrDefault(m => string.Equals(m, tangentMode, StringComparison.OrdinalIgnoreCase));
             if (match == null)
