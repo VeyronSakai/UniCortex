@@ -135,6 +135,17 @@ Component type arguments are supplied as a fully-qualified type name plus the de
 
 `create_scriptable_object` takes the ScriptableObject subclass name plus the defining assembly name (e.g. `MyNamespace.MyData` + `Assembly-CSharp`). Property paths and value formats match `set_component_property`.
 
+#### AnimationClip
+
+| Tool | Description |
+|------|-------------|
+| `create_animation_clip` | Create a new empty AnimationClip `.anim` file (Loop Time and frame rate configurable) |
+| `get_animation_curves` | Get the settings and all float curves (with keys) of an AnimationClip |
+| `set_animation_curve` | Replace one float curve of an AnimationClip with the given keys (supports Undo) |
+| `remove_animation_curve` | Remove one float curve from an AnimationClip (supports Undo) |
+
+A curve is identified by `animatorRelativePath` (path relative to the Animator root, e.g. `Root/Child`), the component type plus its assembly name (e.g. `UnityEngine.UI.Image` + `UnityEngine.UI`), and `propertyName` (e.g. `m_Color.a`). Each key takes `time` / `value` and an optional `tangentMode` (`Free`, `Auto`, `ClampedAuto`, `Linear`, `Constant`).
+
 #### Prefab
 
 | Tool | Description |
@@ -352,6 +363,15 @@ Component commands accept the fully-qualified component type name plus the defin
 
 `scriptable-object create` accepts the fully-qualified ScriptableObject subclass name plus the defining assembly name (e.g. `MyNamespace.MyData Assembly-CSharp`).
 
+#### `animation-clip`
+
+| Command | Description |
+| --- | --- |
+| `animation-clip create` | Create a new empty AnimationClip `.anim` file. Supports `--loop` and `--frame-rate`. |
+| `animation-clip curve list` | Print the settings and all float curves of an AnimationClip as JSON. |
+| `animation-clip curve set` | Replace one float curve with keys given as a JSON array. Use `--animator-relative-path` for the path relative to the Animator root. |
+| `animation-clip curve remove` | Remove one float curve. |
+
 #### `prefab`
 
 | Command | Description |
@@ -448,6 +468,10 @@ dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property set 1234 Uni
 # Create and edit a ScriptableObject .asset
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scriptable-object create MyNamespace.MyData Assembly-CSharp Assets/Data/MyData.asset
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scriptable-object property set Assets/Data/MyData.asset m_Speed 1.5
+
+# Create an AnimationClip and key an Image fade-in
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- animation-clip create Assets/Animations/FadeIn.anim
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- animation-clip curve set Assets/Animations/FadeIn.anim UnityEngine.UI.Image UnityEngine.UI m_Color.a '[{"time":0,"value":0},{"time":0.5,"value":1}]' --animator-relative-path Root/Child
 
 # Capture a screenshot
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- screenshot capture ./Artifacts/gameview.png

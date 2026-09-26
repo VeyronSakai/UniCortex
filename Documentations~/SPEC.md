@@ -438,6 +438,92 @@ Request body:
 
 Response: `{"success": true}`
 
+### AnimationClip
+
+Create `.anim` files (AnimationClip) and edit their float curves, e.g. to author clips for Timeline Animation tracks. Implemented with `AnimationUtility.SetEditorCurve` / `GetCurveBindings` / `GetEditorCurve` and `AnimationClipSettings`. Only float curves are supported (object reference curves such as sprite swaps are not).
+
+A curve is identified by the binding triple `animatorRelativePath` + component type + `propertyName`:
+- `animatorRelativePath`: path of the animated object relative to the Animator root (`EditorCurveBinding.path`) (e.g. `Root/Child`). Empty string (default) targets the Animator's own GameObject
+- `componentType` + `assemblyName`: resolved the same way as components (e.g. `UnityEngine.UI.Image` + `UnityEngine.UI`, `UnityEngine.Transform` + `UnityEngine.CoreModule`). `UnityEngine.GameObject` is also accepted (e.g. `m_IsActive`)
+- `propertyName`: serialized property name (e.g. `m_Color.a`, `m_AnchoredPosition.y`, `m_LocalScale.x`)
+
+Curve writes are Undo-supported (`Undo.RegisterCompleteObjectUndo`), followed by `EditorUtility.SetDirty` + `AssetDatabase.SaveAssets`.
+
+#### POST `/animation-clip/create`
+Creates an empty AnimationClip. `AssetDatabase.CreateAsset` + `Undo.RegisterCreatedObjectUndo`.
+
+Request body:
+```json
+{"assetPath": "Assets/Animations/FadeIn.anim", "loop": false, "frameRate": 60}
+```
+
+- `assetPath`: required. Must end with `.anim`
+- `loop`: optional. Loop Time setting. Default: false
+- `frameRate`: optional. Sample rate. `0` or omitted uses 60
+
+Response: `{"success": true, "assetPath": "Assets/Animations/FadeIn.anim"}`
+
+#### GET `/animation-clip/curves?assetPath=Assets/Animations/FadeIn.anim`
+Returns the clip settings and all float curves with their keys.
+
+Response:
+```json
+{
+  "frameRate": 60,
+  "loop": false,
+  "length": 0.5,
+  "curves": [
+    {
+      "animatorRelativePath": "Root/Child",
+      "componentType": "UnityEngine.UI.Image",
+      "assemblyName": "UnityEngine.UI",
+      "propertyName": "m_Color.a",
+      "keys": [
+        {"time": 0, "value": 0, "inTangent": 0, "outTangent": 2, "leftTangentMode": "Linear", "rightTangentMode": "Linear"},
+        {"time": 0.5, "value": 1, "inTangent": 2, "outTangent": 0, "leftTangentMode": "Linear", "rightTangentMode": "Linear"}
+      ]
+    }
+  ]
+}
+```
+
+- `leftTangentMode` / `rightTangentMode`: `AnimationUtility.TangentMode` names (`Free`, `Auto`, `ClampedAuto`, `Linear`, `Constant`)
+- Infinite tangents (stepped keys, e.g. `Constant`) are returned as `±3.4028235E+38` (`float.MaxValue`), since JSON has no literal for infinity
+
+#### POST `/animation-clip/curve/set`
+Replaces one curve entirely with the given keys (creates it if missing).
+
+Request body:
+```json
+{
+  "assetPath": "Assets/Animations/FadeIn.anim",
+  "animatorRelativePath": "Root/Child",
+  "componentType": "UnityEngine.UI.Image",
+  "assemblyName": "UnityEngine.UI",
+  "propertyName": "m_Color.a",
+  "keys": [
+    {"time": 0, "value": 0, "tangentMode": "Linear"},
+    {"time": 0.5, "value": 1, "tangentMode": "Linear"}
+  ]
+}
+```
+
+- `keys`: required, at least one. Sorted by `time`; duplicate times are rejected
+- `keys[].inTangent` / `keys[].outTangent`: optional slopes, used when `tangentMode` is `Free`. `±3.4028235E+38` (`float.MaxValue`) is converted to an infinite slope, so values read by `GET /animation-clip/curves` can be passed back as-is
+- `keys[].tangentMode`: optional, applied to both sides of the key. `Free` (default), `Auto`, `ClampedAuto`, `Linear`, or `Constant`. `Free` with the tangents omitted (0) gives flat tangents, i.e. a smooth ease in / ease out
+
+Response: `{"success": true}`
+
+#### POST `/animation-clip/curve/remove`
+Removes one curve. Returns 400 when the curve does not exist.
+
+Request body:
+```json
+{"assetPath": "Assets/Animations/FadeIn.anim", "animatorRelativePath": "Root/Child", "componentType": "UnityEngine.UI.Image", "assemblyName": "UnityEngine.UI", "propertyName": "m_Color.a"}
+```
+
+Response: `{"success": true}`
+
 ### Prefab
 
 #### POST `/prefab/create`

@@ -36,6 +36,10 @@ namespace UniCortex.Editor.Domains.Models
         public const string ScriptableObjectCreate = "/scriptable-object/create";
         public const string ScriptableObjectProperties = "/scriptable-object/properties";
         public const string ScriptableObjectProperty = "/scriptable-object/property";
+        public const string AnimationClipCreate = "/animation-clip/create";
+        public const string AnimationClipCurves = "/animation-clip/curves";
+        public const string AnimationClipSetCurve = "/animation-clip/curve/set";
+        public const string AnimationClipRemoveCurve = "/animation-clip/curve/remove";
         public const string AssetDatabaseRefresh = "/asset-database/refresh";
         public const string ProjectWindowSelect = "/project-window/select";
         public const string MenuItemExecute = "/menu-item/execute";
