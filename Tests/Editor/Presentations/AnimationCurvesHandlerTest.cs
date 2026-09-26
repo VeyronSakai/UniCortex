@@ -28,6 +28,7 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns200WithCurves_WhenValid()
         {
+            // Arrange
             _ops.GetCurvesResult = new GetAnimationCurvesResponse(60f, false, 1f, new List<AnimationCurveEntry>
             {
                 new AnimationCurveEntry("Root", "UnityEngine.Transform", "UnityEngine.CoreModule",
@@ -39,8 +40,10 @@ namespace UniCortex.Editor.Tests.Presentations
             var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.AnimationClipCurves);
             context.SetQueryParameter(nameof(GetAnimationCurvesRequest.assetPath), "Assets/Animations/FadeIn.anim");
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("m_LocalScale.x", context.ResponseBody);
             Assert.AreEqual("Assets/Animations/FadeIn.anim", _ops.LastGetCurvesAssetPath);
@@ -49,10 +52,13 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns400_WhenAssetPathMissing()
         {
+            // Arrange
             var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.AnimationClipCurves);
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             Assert.AreEqual(0, _ops.GetCurvesCallCount);
         }

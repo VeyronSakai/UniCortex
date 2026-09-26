@@ -46,11 +46,14 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns200_WhenValid()
         {
+            // Arrange
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.AnimationClipSetCurve,
                 JsonUtility.ToJson(CreateValidRequest()));
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(1, _ops.SetCurveCallCount);
@@ -64,10 +67,13 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns400_WhenBodyEmpty()
         {
+            // Arrange
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.AnimationClipSetCurve, "");
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             Assert.AreEqual(0, _ops.SetCurveCallCount);
         }
@@ -75,13 +81,16 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns400_WhenPropertyNameMissing()
         {
+            // Arrange
             var request = CreateValidRequest();
             request.propertyName = "";
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.AnimationClipSetCurve,
                 JsonUtility.ToJson(request));
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("propertyName", context.ResponseBody);
             Assert.AreEqual(0, _ops.SetCurveCallCount);
@@ -90,13 +99,16 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns400_WhenKeysEmpty()
         {
+            // Arrange
             var request = CreateValidRequest();
             request.keys = new List<AnimationCurveKeyInput>();
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.AnimationClipSetCurve,
                 JsonUtility.ToJson(request));
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("keys", context.ResponseBody);
             Assert.AreEqual(0, _ops.SetCurveCallCount);

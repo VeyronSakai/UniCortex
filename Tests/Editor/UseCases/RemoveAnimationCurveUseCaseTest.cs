@@ -11,13 +11,16 @@ namespace UniCortex.Editor.Tests.UseCases
         [Test]
         public void ExecuteAsync_CallsRemoveCurve_And_DispatchesToMainThread()
         {
+            // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyAnimationClipOperations();
             var useCase = new RemoveAnimationCurveUseCase(dispatcher, ops);
 
+            // Act
             useCase.ExecuteAsync("Assets/Animations/FadeIn.anim", "Root", "UnityEngine.Transform",
                 "UnityEngine.CoreModule", "m_LocalScale.x", CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(1, ops.RemoveCurveCallCount);
             Assert.AreEqual("Assets/Animations/FadeIn.anim", ops.LastRemoveCurveAssetPath);
             Assert.AreEqual("Root", ops.LastRemoveCurveAnimatorRelativePath);

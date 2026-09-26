@@ -13,6 +13,7 @@ namespace UniCortex.Editor.Tests.UseCases
         [Test]
         public void ExecuteAsync_CallsSetCurve_And_DispatchesToMainThread()
         {
+            // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyAnimationClipOperations();
             var useCase = new SetAnimationCurveUseCase(dispatcher, ops);
@@ -22,9 +23,11 @@ namespace UniCortex.Editor.Tests.UseCases
                 new AnimationCurveKeyInput { time = 1f, value = 1f, tangentMode = "Linear" }
             };
 
+            // Act
             useCase.ExecuteAsync("Assets/Animations/FadeIn.anim", "Root/Child", "UnityEngine.UI.Image",
                 "UnityEngine.UI", "m_Color.a", keys, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(1, ops.SetCurveCallCount);
             Assert.AreEqual("Assets/Animations/FadeIn.anim", ops.LastSetCurveAssetPath);
             Assert.AreEqual("Root/Child", ops.LastSetCurveAnimatorRelativePath);

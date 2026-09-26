@@ -13,6 +13,7 @@ namespace UniCortex.Editor.Tests.UseCases
         [Test]
         public void ExecuteAsync_CallsGetCurves_And_DispatchesToMainThread()
         {
+            // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyAnimationClipOperations
             {
@@ -20,9 +21,11 @@ namespace UniCortex.Editor.Tests.UseCases
             };
             var useCase = new GetAnimationCurvesUseCase(dispatcher, ops);
 
+            // Act
             var result = useCase.ExecuteAsync("Assets/Animations/FadeIn.anim", CancellationToken.None)
                 .GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(1, ops.GetCurvesCallCount);
             Assert.AreEqual("Assets/Animations/FadeIn.anim", ops.LastGetCurvesAssetPath);
             Assert.AreEqual(1, dispatcher.CallCount);

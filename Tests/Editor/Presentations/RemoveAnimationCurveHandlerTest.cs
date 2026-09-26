@@ -28,6 +28,7 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns200_WhenValid()
         {
+            // Arrange
             var request = new RemoveAnimationCurveRequest
             {
                 assetPath = "Assets/Animations/FadeIn.anim",
@@ -39,8 +40,10 @@ namespace UniCortex.Editor.Tests.Presentations
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.AnimationClipRemoveCurve,
                 JsonUtility.ToJson(request));
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual(1, _ops.RemoveCurveCallCount);
             Assert.AreEqual("m_LocalScale.x", _ops.LastRemoveCurvePropertyName);
@@ -49,11 +52,14 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns400_WhenComponentTypeMissing()
         {
+            // Arrange
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.AnimationClipRemoveCurve,
                 "{\"assetPath\":\"Assets/A.anim\",\"assemblyName\":\"UnityEngine.CoreModule\",\"propertyName\":\"m_LocalScale.x\"}");
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("componentType", context.ResponseBody);
             Assert.AreEqual(0, _ops.RemoveCurveCallCount);

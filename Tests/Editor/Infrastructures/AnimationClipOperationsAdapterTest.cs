@@ -32,8 +32,10 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void Create_CreatesClipWithLoopAndFrameRate()
         {
+            // Act
             var response = _adapter.Create(TestAssetPath, true, 30f);
 
+            // Assert
             Assert.IsTrue(response.success);
             var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(TestAssetPath);
             Assert.IsNotNull(clip);
@@ -44,8 +46,10 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void Create_UsesDefaultFrameRate_WhenZero()
         {
+            // Act
             _adapter.Create(TestAssetPath, false, 0f);
 
+            // Assert
             var result = _adapter.GetCurves(TestAssetPath);
             Assert.AreEqual(60f, result.frameRate);
             Assert.IsFalse(result.loop);
@@ -54,24 +58,29 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void Create_Throws_WhenExtensionIsNotAnim()
         {
-            Assert.Throws<ArgumentException>(() =>
-                _adapter.Create("Assets/AnimationClipOperationsAdapterTest.asset", false, 60f));
+            // Arrange
+            const string assetPath = "Assets/AnimationClipOperationsAdapterTest.asset";
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => _adapter.Create(assetPath, false, 60f));
         }
 
         [Test]
         public void SetCurve_ThenGetCurves_ReturnsKeys()
         {
+            // Arrange
             _adapter.Create(TestAssetPath, false, 60f);
+            var keys = new List<AnimationCurveKeyInput>
+            {
+                new AnimationCurveKeyInput { time = 0f, value = 0f },
+                new AnimationCurveKeyInput { time = 0.5f, value = 1f }
+            };
 
-            _adapter.SetCurve(TestAssetPath, "Root/Child", TransformType, CoreModule, "m_LocalScale.x",
-                new List<AnimationCurveKeyInput>
-                {
-                    new AnimationCurveKeyInput { time = 0f, value = 0f },
-                    new AnimationCurveKeyInput { time = 0.5f, value = 1f }
-                });
-
+            // Act
+            _adapter.SetCurve(TestAssetPath, "Root/Child", TransformType, CoreModule, "m_LocalScale.x", keys);
             var result = _adapter.GetCurves(TestAssetPath);
 
+            // Assert
             Assert.AreEqual(1, result.curves.Count);
             var curve = result.curves[0];
             Assert.AreEqual("Root/Child", curve.animatorRelativePath);
@@ -87,6 +96,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void SetCurve_ReplacesExistingKeys()
         {
+            // Arrange
             _adapter.Create(TestAssetPath, false, 60f);
             _adapter.SetCurve(TestAssetPath, "", TransformType, CoreModule, "m_LocalPosition.y",
                 new List<AnimationCurveKeyInput>
@@ -96,9 +106,11 @@ namespace UniCortex.Editor.Tests.Infrastructures
                     new AnimationCurveKeyInput { time = 2f, value = 0f }
                 });
 
+            // Act
             _adapter.SetCurve(TestAssetPath, "", TransformType, CoreModule, "m_LocalPosition.y",
                 new List<AnimationCurveKeyInput> { new AnimationCurveKeyInput { time = 0f, value = 5f } });
 
+            // Assert
             var result = _adapter.GetCurves(TestAssetPath);
             Assert.AreEqual(1, result.curves.Count);
             Assert.AreEqual(1, result.curves[0].keys.Count);
@@ -108,32 +120,40 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void SetCurve_Throws_WhenTypeNotFound()
         {
+            // Arrange
             _adapter.Create(TestAssetPath, false, 60f);
+            var keys = new List<AnimationCurveKeyInput> { new AnimationCurveKeyInput { time = 0f, value = 1f } };
 
-            Assert.Throws<ArgumentException>(() => _adapter.SetCurve(TestAssetPath, "", "UnityEngine.Transform",
-                "Assembly-CSharp", "m_LocalScale.x",
-                new List<AnimationCurveKeyInput> { new AnimationCurveKeyInput { time = 0f, value = 1f } }));
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => _adapter.SetCurve(TestAssetPath, "", TransformType,
+                "Assembly-CSharp", "m_LocalScale.x", keys));
         }
 
         [Test]
         public void SetCurve_Throws_WhenClipNotFound()
         {
+            // Arrange
+            var keys = new List<AnimationCurveKeyInput> { new AnimationCurveKeyInput { time = 0f, value = 1f } };
+
+            // Act & Assert
             Assert.Throws<ArgumentException>(() => _adapter.SetCurve("Assets/NotExisting.anim", "",
-                TransformType, CoreModule, "m_LocalScale.x",
-                new List<AnimationCurveKeyInput> { new AnimationCurveKeyInput { time = 0f, value = 1f } }));
+                TransformType, CoreModule, "m_LocalScale.x", keys));
         }
 
         [Test]
         public void RemoveCurve_RemovesCurve()
         {
+            // Arrange
             _adapter.Create(TestAssetPath, false, 60f);
             _adapter.SetCurve(TestAssetPath, "", TransformType, CoreModule, "m_LocalScale.x",
                 new List<AnimationCurveKeyInput> { new AnimationCurveKeyInput { time = 0f, value = 1f } });
             _adapter.SetCurve(TestAssetPath, "", TransformType, CoreModule, "m_LocalScale.y",
                 new List<AnimationCurveKeyInput> { new AnimationCurveKeyInput { time = 0f, value = 1f } });
 
+            // Act
             _adapter.RemoveCurve(TestAssetPath, "", TransformType, CoreModule, "m_LocalScale.x");
 
+            // Assert
             var result = _adapter.GetCurves(TestAssetPath);
             Assert.AreEqual(1, result.curves.Count);
             Assert.AreEqual("m_LocalScale.y", result.curves[0].propertyName);
@@ -142,8 +162,10 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void RemoveCurve_Throws_WhenCurveNotFound()
         {
+            // Arrange
             _adapter.Create(TestAssetPath, false, 60f);
 
+            // Act & Assert
             Assert.Throws<ArgumentException>(() =>
                 _adapter.RemoveCurve(TestAssetPath, "", TransformType, CoreModule, "m_LocalScale.x"));
         }
@@ -151,6 +173,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void GetCurves_ConstantKeys_HaveInfiniteTangentsWrittenAsBareTokens()
         {
+            // Arrange
             _adapter.Create(TestAssetPath, false, 60f);
             _adapter.SetCurve(TestAssetPath, "", "UnityEngine.GameObject", CoreModule, "m_IsActive",
                 new List<AnimationCurveKeyInput>
@@ -159,8 +182,10 @@ namespace UniCortex.Editor.Tests.Infrastructures
                     new AnimationCurveKeyInput { time = 0.5f, value = 0f, tangentMode = "Constant" }
                 });
 
+            // Act
             var key = _adapter.GetCurves(TestAssetPath).curves[0].keys[0];
 
+            // Assert
             Assert.IsTrue(float.IsPositiveInfinity(key.outTangent));
             // The Core relies on JsonUtility writing infinity as a bare token.
             StringAssert.Contains("\"outTangent\":Infinity", JsonUtility.ToJson(key));
@@ -169,10 +194,14 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void JsonUtility_ReadsBareInfinityTokens()
         {
+            // Arrange
             // The Core sends infinite tangents as bare tokens; JsonUtility must read them back.
-            var key = JsonUtility.FromJson<AnimationCurveKeyInput>(
-                "{\"time\":0,\"value\":1,\"inTangent\":-Infinity,\"outTangent\":Infinity}");
+            const string json = "{\"time\":0,\"value\":1,\"inTangent\":-Infinity,\"outTangent\":Infinity}";
 
+            // Act
+            var key = JsonUtility.FromJson<AnimationCurveKeyInput>(json);
+
+            // Assert
             Assert.IsTrue(float.IsNegativeInfinity(key.inTangent));
             Assert.IsTrue(float.IsPositiveInfinity(key.outTangent));
         }
@@ -180,24 +209,34 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void BuildCurve_InfiniteTangent_HoldsValueUntilNextKey()
         {
-            var curve = AnimationClipOperationsAdapter.BuildCurve(new List<AnimationCurveKeyInput>
+            // Arrange
+            var keys = new List<AnimationCurveKeyInput>
             {
                 new AnimationCurveKeyInput { time = 0f, value = 1f, outTangent = float.PositiveInfinity },
                 new AnimationCurveKeyInput { time = 1f, value = 0f, inTangent = float.PositiveInfinity }
-            });
+            };
 
+            // Act
+            var curve = AnimationClipOperationsAdapter.BuildCurve(keys);
+
+            // Assert
             Assert.AreEqual(1f, curve.Evaluate(0.5f));
         }
 
         [Test]
         public void BuildCurve_SortsKeysByTime()
         {
-            var curve = AnimationClipOperationsAdapter.BuildCurve(new List<AnimationCurveKeyInput>
+            // Arrange
+            var keys = new List<AnimationCurveKeyInput>
             {
                 new AnimationCurveKeyInput { time = 1f, value = 1f },
                 new AnimationCurveKeyInput { time = 0f, value = 0f }
-            });
+            };
 
+            // Act
+            var curve = AnimationClipOperationsAdapter.BuildCurve(keys);
+
+            // Assert
             Assert.AreEqual(0f, curve[0].time);
             Assert.AreEqual(1f, curve[1].time);
         }
@@ -205,12 +244,17 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void BuildCurve_Linear_ComputesSlopeAndSetsMode()
         {
-            var curve = AnimationClipOperationsAdapter.BuildCurve(new List<AnimationCurveKeyInput>
+            // Arrange
+            var keys = new List<AnimationCurveKeyInput>
             {
                 new AnimationCurveKeyInput { time = 0f, value = 0f, tangentMode = "Linear" },
                 new AnimationCurveKeyInput { time = 2f, value = 1f, tangentMode = "linear" }
-            });
+            };
 
+            // Act
+            var curve = AnimationClipOperationsAdapter.BuildCurve(keys);
+
+            // Assert
             Assert.AreEqual(0.5f, curve[0].outTangent, 1e-4f);
             Assert.AreEqual(0.5f, curve[1].inTangent, 1e-4f);
             Assert.AreEqual(AnimationUtility.TangentMode.Linear, AnimationUtility.GetKeyRightTangentMode(curve, 0));
@@ -220,12 +264,17 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void BuildCurve_Constant_SetsConstantMode()
         {
-            var curve = AnimationClipOperationsAdapter.BuildCurve(new List<AnimationCurveKeyInput>
+            // Arrange
+            var keys = new List<AnimationCurveKeyInput>
             {
                 new AnimationCurveKeyInput { time = 0f, value = 0f, tangentMode = "Constant" },
                 new AnimationCurveKeyInput { time = 1f, value = 1f, tangentMode = "Constant" }
-            });
+            };
 
+            // Act
+            var curve = AnimationClipOperationsAdapter.BuildCurve(keys);
+
+            // Assert
             Assert.AreEqual(0f, curve.Evaluate(0.5f));
             Assert.AreEqual(AnimationUtility.TangentMode.Constant, AnimationUtility.GetKeyRightTangentMode(curve, 0));
         }
@@ -233,12 +282,17 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void BuildCurve_Free_KeepsGivenTangents()
         {
-            var curve = AnimationClipOperationsAdapter.BuildCurve(new List<AnimationCurveKeyInput>
+            // Arrange
+            var keys = new List<AnimationCurveKeyInput>
             {
                 new AnimationCurveKeyInput { time = 0f, value = 0f, inTangent = 0f, outTangent = 3f },
                 new AnimationCurveKeyInput { time = 1f, value = 1f, inTangent = -2f, outTangent = 0f }
-            });
+            };
 
+            // Act
+            var curve = AnimationClipOperationsAdapter.BuildCurve(keys);
+
+            // Assert
             Assert.AreEqual(3f, curve[0].outTangent);
             Assert.AreEqual(-2f, curve[1].inTangent);
             Assert.AreEqual(AnimationUtility.TangentMode.Free, AnimationUtility.GetKeyRightTangentMode(curve, 0));
@@ -247,12 +301,17 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void BuildCurve_DefaultsToFreeWithFlatTangents_WhenOmitted()
         {
-            var curve = AnimationClipOperationsAdapter.BuildCurve(new List<AnimationCurveKeyInput>
+            // Arrange
+            var keys = new List<AnimationCurveKeyInput>
             {
                 new AnimationCurveKeyInput { time = 0f, value = 0f },
                 new AnimationCurveKeyInput { time = 1f, value = 1f }
-            });
+            };
 
+            // Act
+            var curve = AnimationClipOperationsAdapter.BuildCurve(keys);
+
+            // Assert
             Assert.AreEqual(0f, curve[0].outTangent);
             Assert.AreEqual(0f, curve[1].inTangent);
             Assert.AreEqual(AnimationUtility.TangentMode.Free, AnimationUtility.GetKeyRightTangentMode(curve, 0));
@@ -261,29 +320,38 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [Test]
         public void BuildCurve_Throws_WhenTangentModeUnsupported()
         {
-            Assert.Throws<ArgumentException>(() => AnimationClipOperationsAdapter.BuildCurve(
-                new List<AnimationCurveKeyInput>
-                {
-                    new AnimationCurveKeyInput { time = 0f, value = 0f, tangentMode = "Bouncy" }
-                }));
+            // Arrange
+            var keys = new List<AnimationCurveKeyInput>
+            {
+                new AnimationCurveKeyInput { time = 0f, value = 0f, tangentMode = "Bouncy" }
+            };
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => AnimationClipOperationsAdapter.BuildCurve(keys));
         }
 
         [Test]
         public void BuildCurve_Throws_WhenDuplicateTimes()
         {
-            Assert.Throws<ArgumentException>(() => AnimationClipOperationsAdapter.BuildCurve(
-                new List<AnimationCurveKeyInput>
-                {
-                    new AnimationCurveKeyInput { time = 0.5f, value = 0f },
-                    new AnimationCurveKeyInput { time = 0.5f, value = 1f }
-                }));
+            // Arrange
+            var keys = new List<AnimationCurveKeyInput>
+            {
+                new AnimationCurveKeyInput { time = 0.5f, value = 0f },
+                new AnimationCurveKeyInput { time = 0.5f, value = 1f }
+            };
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => AnimationClipOperationsAdapter.BuildCurve(keys));
         }
 
         [Test]
         public void BuildCurve_Throws_WhenKeysEmpty()
         {
-            Assert.Throws<ArgumentException>(() =>
-                AnimationClipOperationsAdapter.BuildCurve(new List<AnimationCurveKeyInput>()));
+            // Arrange
+            var keys = new List<AnimationCurveKeyInput>();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => AnimationClipOperationsAdapter.BuildCurve(keys));
         }
     }
 }

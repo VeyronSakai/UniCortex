@@ -28,13 +28,16 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns200_WhenValid()
         {
+            // Arrange
             var request = new CreateAnimationClipRequest
                 { assetPath = "Assets/Animations/FadeIn.anim", loop = true, frameRate = 30f };
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.AnimationClipCreate,
                 JsonUtility.ToJson(request));
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("Assets/Animations/FadeIn.anim", context.ResponseBody);
             Assert.AreEqual("Assets/Animations/FadeIn.anim", _ops.LastCreateAssetPath);
@@ -45,10 +48,13 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns400_WhenBodyEmpty()
         {
+            // Arrange
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.AnimationClipCreate, "");
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             Assert.AreEqual(0, _ops.CreateCallCount);
         }
@@ -56,11 +62,14 @@ namespace UniCortex.Editor.Tests.Presentations
         [Test]
         public void Handle_Returns400_WhenAssetPathMissing()
         {
+            // Arrange
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.AnimationClipCreate,
                 "{\"loop\":true}");
 
+            // Act
             _router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
+            // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("assetPath", context.ResponseBody);
             Assert.AreEqual(0, _ops.CreateCallCount);
