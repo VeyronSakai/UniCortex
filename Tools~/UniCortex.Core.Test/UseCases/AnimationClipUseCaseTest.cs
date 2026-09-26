@@ -72,6 +72,39 @@ public class AnimationClipUseCaseTest
     }
 
     [Test]
+    public async ValueTask ConstantKeys_CanBeReadBackAndReappliedAsIs()
+    {
+        var ct = CancellationToken.None;
+        await _fixture.AnimationClipUseCase.CreateAsync(TestAssetPath, false, 60f, ct);
+        var constantKeys = AnimationClipUseCase.ParseKeys(
+            """[{"time":0,"value":1,"tangentMode":"Constant"},{"time":0.5,"value":0,"tangentMode":"Constant"}]""");
+        await _fixture.AnimationClipUseCase.SetCurveAsync(TestAssetPath, "", "UnityEngine.GameObject", CoreModule,
+            "m_IsActive", constantKeys, ct);
+
+        // Infinite tangents must not break JSON parsing on the Core side.
+        var first = (await GetCurvesAsync(ct)).curves[0].keys;
+        Assert.That(first[0].outTangent, Is.EqualTo(float.MaxValue));
+
+        // Feed the read values back as Free keys; the stepped shape must be preserved.
+        var reapplied = first.Select(k => new AnimationCurveKeyInput
+        {
+            time = k.time, value = k.value, inTangent = k.inTangent, outTangent = k.outTangent
+        }).ToList();
+        await _fixture.AnimationClipUseCase.SetCurveAsync(TestAssetPath, "", "UnityEngine.GameObject", CoreModule,
+            "m_IsActive", reapplied, ct);
+
+        var second = (await GetCurvesAsync(ct)).curves[0].keys;
+        Assert.That(second, Has.Count.EqualTo(first.Count));
+        for (var i = 0; i < first.Count; i++)
+        {
+            Assert.That(second[i].time, Is.EqualTo(first[i].time));
+            Assert.That(second[i].value, Is.EqualTo(first[i].value));
+            Assert.That(second[i].inTangent, Is.EqualTo(first[i].inTangent));
+            Assert.That(second[i].outTangent, Is.EqualTo(first[i].outTangent));
+        }
+    }
+
+    [Test]
     public async ValueTask RemoveCurve_RemovesCurve()
     {
         var ct = CancellationToken.None;

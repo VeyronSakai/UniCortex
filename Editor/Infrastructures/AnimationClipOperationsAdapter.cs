@@ -44,7 +44,8 @@ namespace UniCortex.Editor.Infrastructures
                     for (var i = 0; i < curve.length; i++)
                     {
                         var key = curve[i];
-                        keys.Add(new AnimationCurveKeyEntry(key.time, key.value, key.inTangent, key.outTangent,
+                        keys.Add(new AnimationCurveKeyEntry(key.time, key.value,
+                            ToSerializableTangent(key.inTangent), ToSerializableTangent(key.outTangent),
                             AnimationUtility.GetKeyLeftTangentMode(curve, i).ToString(),
                             AnimationUtility.GetKeyRightTangentMode(curve, i).ToString()));
                     }
@@ -108,7 +109,8 @@ namespace UniCortex.Editor.Infrastructures
 
             var modes = sortedKeys.Select(k => ParseTangentMode(k.tangentMode)).ToArray();
             var curve = new AnimationCurve(sortedKeys
-                .Select(k => new Keyframe(k.time, k.value, k.inTangent, k.outTangent))
+                .Select(k => new Keyframe(k.time, k.value,
+                    FromSerializableTangent(k.inTangent), FromSerializableTangent(k.outTangent)))
                 .ToArray());
 
             // Tangent modes must be applied after all keys exist, because Auto / Linear
@@ -142,6 +144,31 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             return curve;
+        }
+
+        // Unity represents stepped (Constant) tangents as ±Infinity, but JSON has no literal for infinity and
+        // JsonUtility would emit a bare "Infinity" token that standard JSON parsers reject. Infinite tangents
+        // are therefore exchanged as ±float.MaxValue and converted back on input. The reverse conversion is
+        // required: a finite float.MaxValue tangent is not treated as a step by Unity and makes
+        // AnimationCurve.Evaluate return NaN.
+        internal static float ToSerializableTangent(float tangent)
+        {
+            if (float.IsPositiveInfinity(tangent))
+            {
+                return float.MaxValue;
+            }
+
+            return float.IsNegativeInfinity(tangent) ? float.MinValue : tangent;
+        }
+
+        internal static float FromSerializableTangent(float tangent)
+        {
+            if (tangent >= float.MaxValue)
+            {
+                return float.PositiveInfinity;
+            }
+
+            return tangent <= float.MinValue ? float.NegativeInfinity : tangent;
         }
 
         private static string ParseTangentMode(string tangentMode)

@@ -488,6 +488,7 @@ Response:
 ```
 
 - `leftTangentMode` / `rightTangentMode`: `AnimationUtility.TangentMode` names (`Free`, `Auto`, `ClampedAuto`, `Linear`, `Constant`)
+- Infinite tangents (stepped keys, e.g. `Constant`) are returned as `±3.4028235E+38` (`float.MaxValue`), since JSON has no literal for infinity
 
 #### POST `/animation-clip/curve/set`
 Replaces one curve entirely with the given keys (creates it if missing).
@@ -508,7 +509,7 @@ Request body:
 ```
 
 - `keys`: required, at least one. Sorted by `time`; duplicate times are rejected
-- `keys[].inTangent` / `keys[].outTangent`: optional slopes, used when `tangentMode` is `Free`
+- `keys[].inTangent` / `keys[].outTangent`: optional slopes, used when `tangentMode` is `Free`. `±3.4028235E+38` (`float.MaxValue`) is converted to an infinite slope, so values read by `GET /animation-clip/curves` can be passed back as-is
 - `keys[].tangentMode`: optional, applied to both sides of the key. `Free` (default), `Auto`, `ClampedAuto`, `Linear`, or `Constant`. `Free` with the tangents omitted (0) gives flat tangents, i.e. a smooth ease in / ease out
 
 Response: `{"success": true}`

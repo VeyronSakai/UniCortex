@@ -149,6 +149,55 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
+        public void GetCurves_ReportsInfiniteTangentsAsMaxValue()
+        {
+            _adapter.Create(TestAssetPath, false, 60f);
+            _adapter.SetCurve(TestAssetPath, "", "UnityEngine.GameObject", CoreModule, "m_IsActive",
+                new List<AnimationCurveKeyInput>
+                {
+                    new AnimationCurveKeyInput { time = 0f, value = 1f, tangentMode = "Constant" },
+                    new AnimationCurveKeyInput { time = 0.5f, value = 0f, tangentMode = "Constant" }
+                });
+
+            var key = _adapter.GetCurves(TestAssetPath).curves[0].keys[0];
+
+            Assert.AreEqual(float.MaxValue, key.outTangent);
+            Assert.AreEqual("Constant", key.rightTangentMode);
+            // Must survive JsonUtility, which would otherwise emit a bare "Infinity" token.
+            StringAssert.DoesNotContain("Infinity", JsonUtility.ToJson(key));
+        }
+
+        [Test]
+        public void BuildCurve_MaxValueTangent_BecomesInfiniteAndHoldsValue()
+        {
+            var curve = AnimationClipOperationsAdapter.BuildCurve(new List<AnimationCurveKeyInput>
+            {
+                new AnimationCurveKeyInput { time = 0f, value = 1f, outTangent = float.MaxValue },
+                new AnimationCurveKeyInput { time = 1f, value = 0f, inTangent = float.MaxValue }
+            });
+
+            Assert.IsTrue(float.IsPositiveInfinity(curve[0].outTangent));
+            Assert.IsTrue(float.IsPositiveInfinity(curve[1].inTangent));
+            Assert.AreEqual(1f, curve.Evaluate(0.5f));
+        }
+
+        [Test]
+        public void SerializableTangent_ConvertsInfinityBothWays()
+        {
+            Assert.AreEqual(float.MaxValue,
+                AnimationClipOperationsAdapter.ToSerializableTangent(float.PositiveInfinity));
+            Assert.AreEqual(float.MinValue,
+                AnimationClipOperationsAdapter.ToSerializableTangent(float.NegativeInfinity));
+            Assert.AreEqual(2.5f, AnimationClipOperationsAdapter.ToSerializableTangent(2.5f));
+
+            Assert.IsTrue(float.IsPositiveInfinity(
+                AnimationClipOperationsAdapter.FromSerializableTangent(float.MaxValue)));
+            Assert.IsTrue(float.IsNegativeInfinity(
+                AnimationClipOperationsAdapter.FromSerializableTangent(float.MinValue)));
+            Assert.AreEqual(-2.5f, AnimationClipOperationsAdapter.FromSerializableTangent(-2.5f));
+        }
+
+        [Test]
         public void BuildCurve_SortsKeysByTime()
         {
             var curve = AnimationClipOperationsAdapter.BuildCurve(new List<AnimationCurveKeyInput>
