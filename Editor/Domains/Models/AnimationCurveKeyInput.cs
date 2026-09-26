@@ -9,7 +9,7 @@ namespace UniCortex.Editor.Domains.Models
         public float value;
         // Slope (value change per second) on the incoming (left) and outgoing (right) side of the key.
         // Only used when tangentMode is Free; other modes compute the tangents automatically.
-        // ±float.MaxValue means an infinite slope (the value is held until the next key).
+        // Infinity means an infinite slope (the value is held until the next key).
         public float inTangent;
         public float outTangent;
 

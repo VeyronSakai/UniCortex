@@ -49,7 +49,7 @@ public class AnimationClipTools(AnimationClipUseCase animationClipUseCase, IAsyn
     [McpServerTool(Name = "get_animation_curves", ReadOnly = true),
      Description(
          "Get the settings (frameRate, loop, length) and all float curves with their keys of an AnimationClip. " +
-         "Infinite tangents (stepped keys) are reported as ±3.4028235E+38 (float max)."),
+         "Infinite tangents (stepped keys) are reported as the string \"Infinity\" / \"-Infinity\"."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetAnimationCurvesAsync(
         [Description(AssetPathDescription)] string assetPath,
@@ -102,13 +102,15 @@ public sealed class AnimationKeyParameter
     public float Value { get; init; }
 
     [JsonPropertyName("inTangent"),
+     JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals),
      Description("Incoming tangent (slope). Used only when tangentMode is Free. " +
-                 "±3.4028235E+38 (float max) means an infinite slope (value held until the next key).")]
+                 "Use \"Infinity\" / \"-Infinity\" for an infinite slope (value held until the next key).")]
     public float InTangent { get; init; }
 
     [JsonPropertyName("outTangent"),
+     JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals),
      Description("Outgoing tangent (slope). Used only when tangentMode is Free. " +
-                 "±3.4028235E+38 (float max) means an infinite slope (value held until the next key).")]
+                 "Use \"Infinity\" / \"-Infinity\" for an infinite slope (value held until the next key).")]
     public float OutTangent { get; init; }
 
     [JsonPropertyName("tangentMode"),

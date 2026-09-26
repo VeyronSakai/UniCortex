@@ -1,5 +1,6 @@
 using System.Text.Json;
 using NUnit.Framework;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Test.Fixtures;
 using UniCortex.Core.UseCases;
 using UniCortex.Editor.Domains.Models;
@@ -13,7 +14,7 @@ public class AnimationClipUseCaseTest
     private const string TransformType = "UnityEngine.Transform";
     private const string CoreModule = "UnityEngine.CoreModule";
 
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
+    private static readonly JsonSerializerOptions s_jsonOptions = JsonOptions.Default;
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
@@ -81,17 +82,19 @@ public class AnimationClipUseCaseTest
         await _fixture.AnimationClipUseCase.SetCurveAsync(TestAssetPath, "", "UnityEngine.GameObject", CoreModule,
             "m_IsActive", constantKeys, ct);
 
-        // Infinite tangents must not break JSON parsing on the Core side.
-        var first = (await GetCurvesAsync(ct)).curves[0].keys;
-        Assert.That(first[0].outTangent, Is.EqualTo(float.MaxValue));
+        // Unity writes infinite tangents as bare tokens; the Core must parse them and output named literals.
+        var json = await _fixture.AnimationClipUseCase.GetCurvesAsync(TestAssetPath, ct);
+        Assert.That(json, Does.Contain("\"outTangent\":\"Infinity\""));
+        var first = JsonSerializer.Deserialize<GetAnimationCurvesResponse>(json, s_jsonOptions)!.curves[0].keys;
+        Assert.That(float.IsPositiveInfinity(first[0].outTangent), Is.True);
 
-        // Feed the read values back as Free keys; the stepped shape must be preserved.
-        var reapplied = first.Select(k => new AnimationCurveKeyInput
+        // Feed the read values back as Free keys (as an agent would, via JSON); the stepped shape must stay.
+        var keysJson = JsonSerializer.Serialize(first.Select(k => new AnimationCurveKeyInput
         {
             time = k.time, value = k.value, inTangent = k.inTangent, outTangent = k.outTangent
-        }).ToList();
+        }).ToList(), JsonOptions.Default);
         await _fixture.AnimationClipUseCase.SetCurveAsync(TestAssetPath, "", "UnityEngine.GameObject", CoreModule,
-            "m_IsActive", reapplied, ct);
+            "m_IsActive", AnimationClipUseCase.ParseKeys(keysJson), ct);
 
         var second = (await GetCurvesAsync(ct)).curves[0].keys;
         Assert.That(second, Has.Count.EqualTo(first.Count));

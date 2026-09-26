@@ -11,8 +11,8 @@ namespace UniCortex.Editor.Domains.Models
         // Slope (value change per second) of the curve at this key.
         // inTangent is the incoming (left) side, outTangent is the outgoing (right) side.
         // Different values produce a "broken" key with a corner.
-        // An infinite slope (stepped / Constant) is reported as ±float.MaxValue, because JSON cannot
-        // represent infinity. Passing the value back to set_animation_curve restores the infinite slope.
+        // Stepped (Constant) keys have infinite slopes. JsonUtility writes them as bare Infinity tokens,
+        // which the Core converts to the strings "Infinity" / "-Infinity".
         public float inTangent;
         public float outTangent;
 
