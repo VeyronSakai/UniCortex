@@ -62,7 +62,7 @@ namespace UniCortex.Editor.Infrastructures
             string propertyName, List<AnimationCurveKeyInput> keys)
         {
             var clip = LoadClip(assetPath);
-            var binding = CreateBinding(path, componentType, assemblyName, propertyName);
+            var binding = CreateCurveBinding(path, componentType, assemblyName, propertyName);
             var curve = BuildCurve(keys);
 
             Undo.RegisterCompleteObjectUndo(clip, "Set Animation Curve");
@@ -75,7 +75,7 @@ namespace UniCortex.Editor.Infrastructures
             string propertyName)
         {
             var clip = LoadClip(assetPath);
-            var binding = CreateBinding(path, componentType, assemblyName, propertyName);
+            var binding = CreateCurveBinding(path, componentType, assemblyName, propertyName);
 
             if (AnimationUtility.GetEditorCurve(clip, binding) == null)
             {
@@ -176,7 +176,7 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        private static EditorCurveBinding CreateBinding(string path, string componentType, string assemblyName,
+        private static EditorCurveBinding CreateCurveBinding(string path, string componentType, string assemblyName,
             string propertyName)
         {
             if (string.IsNullOrEmpty(propertyName))
