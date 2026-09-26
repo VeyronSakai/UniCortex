@@ -18,7 +18,7 @@ public class ScriptableObjectPropertyCommands(ScriptableObjectUseCase scriptable
     /// <summary>Set a serialized property on a ScriptableObject .asset file.</summary>
     /// <param name="assetPath">Asset path of the ScriptableObject.</param>
     /// <param name="propertyPath">Serialized property path (e.g. "m_Speed").</param>
-    /// <param name="value">Value to set as a string. Type is auto-detected from the property.</param>
+    /// <param name="value">Value to set as a string. Type is auto-detected from the property. Object references accept an asset path, an asset GUID, an instanceId, or "null".</param>
     [Command("set")]
     public async Task Set([Argument] string assetPath, [Argument] string propertyPath,
         [Argument] string value, CancellationToken cancellationToken = default)

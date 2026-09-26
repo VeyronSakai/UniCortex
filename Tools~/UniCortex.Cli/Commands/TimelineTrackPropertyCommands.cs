@@ -21,7 +21,7 @@ public class TimelineTrackPropertyCommands(TimelineUseCase timelineUseCase)
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
     /// <param name="trackIndex">The index of the track (0-based).</param>
     /// <param name="propertyPath">The serialized property path (e.g. "m_Muted", "m_TrackOffset").</param>
-    /// <param name="value">The new value as a string.</param>
+    /// <param name="value">The new value as a string. Object references accept an asset path, an asset GUID, an instanceId, or "null".</param>
     [Command("set")]
     public async Task Set([Argument] int instanceId, [Argument] int trackIndex, [Argument] string propertyPath,
         [Argument] string value, CancellationToken cancellationToken = default)

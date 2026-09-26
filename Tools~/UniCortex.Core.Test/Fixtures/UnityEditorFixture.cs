@@ -81,6 +81,19 @@ public sealed class UnityEditorFixture
         }
     }
 
+    /// <summary>
+    /// Reads the GUID of an asset from its .meta file using UNICORTEX_PROJECT_PATH.
+    /// </summary>
+    public static string ReadAssetGuid(string assetPath)
+    {
+        var projectPath = Environment.GetEnvironmentVariable("UNICORTEX_PROJECT_PATH")
+                          ?? throw new InvalidOperationException("UNICORTEX_PROJECT_PATH is not set.");
+        const string prefix = "guid: ";
+        var guidLine = File.ReadLines(Path.Combine(projectPath, assetPath + ".meta"))
+            .First(line => line.StartsWith(prefix, StringComparison.Ordinal));
+        return guidLine.Substring(prefix.Length).Trim();
+    }
+
     public static async ValueTask<UnityEditorFixture> CreateAsync()
     {
         var services = new ServiceCollection();

@@ -125,6 +125,8 @@ The MCP server exposes the following built-in tools.
 
 Component type arguments are supplied as a fully-qualified type name plus the defining assembly name (e.g. `UnityEngine.Rigidbody` + `UnityEngine.PhysicsModule`).
 
+Object reference properties (e.g. `PlayableDirector.m_PlayableAsset` or a `[SerializeField]` component field) accept an asset path (`Assets/Timelines/Intro.playable`), an asset GUID, an instanceId, or `null`. If the object does not match the field type, a matching component on the GameObject or a matching sub-asset in the same file is assigned instead, and an error is returned when nothing matches.
+
 #### ScriptableObject
 
 | Tool | Description |

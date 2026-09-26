@@ -64,6 +64,39 @@ public class TimelineUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
+    public async ValueTask SetComponentProperty_AssignsTimelineByGuid(CancellationToken cancellationToken)
+    {
+        // Arrange
+        await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, cancellationToken);
+        var guid = UnityEditorFixture.ReadAssetGuid(TimelineAssetPath);
+        var goJson = await _fixture.GameObjectUseCase.CreateAsync("TimelineGuidObj", cancellationToken);
+        var go = JsonSerializer.Deserialize<CreateGameObjectResponse>(goJson, s_jsonOptions)!;
+
+        try
+        {
+            await _fixture.ComponentUseCase.AddAsync(go.instanceId,
+                "UnityEngine.Playables.PlayableDirector", "UnityEngine.DirectorModule", cancellationToken);
+
+            // Act
+            await _fixture.ComponentUseCase.SetPropertyAsync(go.instanceId,
+                "UnityEngine.Playables.PlayableDirector", "UnityEngine.DirectorModule",
+                "m_PlayableAsset", guid, cancellationToken);
+
+            // Assert
+            var json = await _fixture.ComponentUseCase.GetPropertiesAsync(go.instanceId,
+                "UnityEngine.Playables.PlayableDirector", "UnityEngine.DirectorModule",
+                cancellationToken: cancellationToken);
+            var response = JsonSerializer.Deserialize<GetComponentPropertiesResponse>(json, s_jsonOptions)!;
+            Assert.That(response.properties.Single(p => p.path == "m_PlayableAsset").value,
+                Is.EqualTo(TimelineAssetPath));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(go.instanceId, cancellationToken);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
     public async ValueTask Create_CreatesTimelineAsset(CancellationToken cancellationToken)
     {
         var json = await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, cancellationToken);

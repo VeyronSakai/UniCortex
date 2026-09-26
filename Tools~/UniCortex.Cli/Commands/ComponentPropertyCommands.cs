@@ -24,7 +24,7 @@ public class ComponentPropertyCommands(ComponentUseCase componentUseCase)
     /// <param name="componentType">Fully-qualified component type name (e.g. "UnityEngine.Transform").</param>
     /// <param name="assemblyName">Name of the assembly that defines the type (e.g. "UnityEngine.CoreModule").</param>
     /// <param name="propertyPath">Serialized property path (e.g. "m_LocalPosition.x").</param>
-    /// <param name="value">Value to set as a string. Type is auto-detected from the property.</param>
+    /// <param name="value">Value to set as a string. Type is auto-detected from the property. Object references accept an asset path, an asset GUID, an instanceId, or "null".</param>
     [Command("set")]
     public async Task Set([Argument] int instanceId, [Argument] string componentType,
         [Argument] string assemblyName, [Argument] string propertyPath, [Argument] string value,

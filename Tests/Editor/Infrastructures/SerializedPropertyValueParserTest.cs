@@ -10,6 +10,9 @@ namespace UniCortex.Editor.Tests.Infrastructures
     [TestFixture]
     internal sealed class SerializedPropertyValueParserTest
     {
+        private const string AnimationClipAssetPath = "Assets/SerializedPropertyValueParserTest.anim";
+        private const string ContainerAssetPath = "Assets/SerializedPropertyValueParserTest.asset";
+
         private AllPropertyTypesScriptableObject _so;
         private SerializedObject _serializedObject;
 
@@ -24,6 +27,8 @@ namespace UniCortex.Editor.Tests.Infrastructures
         public void TearDown()
         {
             UnityEngine.Object.DestroyImmediate(_so);
+            AssetDatabase.DeleteAsset(AnimationClipAssetPath);
+            AssetDatabase.DeleteAsset(ContainerAssetPath);
         }
 
         // --- Integer ---
@@ -432,7 +437,123 @@ namespace UniCortex.Editor.Tests.Infrastructures
                 SerializedPropertyValueParser.ApplyValue(prop, "nonexistent/path/to/nothing"));
         }
 
+        [Test]
+        public void ObjectReference_SetByAssetPath()
+        {
+            // Arrange
+            var clip = CreateAnimationClipAsset();
+            var prop = FindProperty("animationClipReferenceField");
+
+            // Act
+            SerializedPropertyValueParser.ApplyValue(prop, AnimationClipAssetPath);
+            _serializedObject.ApplyModifiedProperties();
+
+            // Assert
+            Assert.AreEqual(clip, _so.animationClipReferenceField);
+        }
+
+        [Test]
+        public void ObjectReference_SetByGuid()
+        {
+            // Arrange
+            var clip = CreateAnimationClipAsset();
+            var guid = AssetDatabase.AssetPathToGUID(AnimationClipAssetPath);
+            var prop = FindProperty("animationClipReferenceField");
+
+            // Act
+            SerializedPropertyValueParser.ApplyValue(prop, guid);
+            _serializedObject.ApplyModifiedProperties();
+
+            // Assert
+            Assert.AreEqual(clip, _so.animationClipReferenceField);
+        }
+
+        [Test]
+        public void ObjectReference_UnknownGuid_ThrowsArgumentException()
+        {
+            // Arrange
+            var prop = FindProperty("animationClipReferenceField");
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() =>
+                SerializedPropertyValueParser.ApplyValue(prop, "0123456789abcdef0123456789abcdef"));
+        }
+
+        [Test]
+        public void ObjectReference_GameObjectInstanceIdForComponentField_AssignsMatchingComponent()
+        {
+            // Arrange
+            var tempGo = new GameObject("RefTarget");
+            try
+            {
+                var prop = FindProperty("componentReferenceField");
+
+                // Act
+                SerializedPropertyValueParser.ApplyValue(prop, tempGo.GetInstanceID().ToString());
+                _serializedObject.ApplyModifiedProperties();
+
+                // Assert
+                Assert.AreEqual(tempGo.transform, _so.componentReferenceField);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(tempGo);
+            }
+        }
+
+        [Test]
+        public void ObjectReference_AssetPathWithSubAsset_AssignsMatchingSubAsset()
+        {
+            // Arrange
+            var mainAsset = ScriptableObject.CreateInstance<AllPropertyTypesScriptableObject>();
+            AssetDatabase.CreateAsset(mainAsset, ContainerAssetPath);
+            var subClip = new AnimationClip { name = "SubClip" };
+            AssetDatabase.AddObjectToAsset(subClip, mainAsset);
+            AssetDatabase.SaveAssets();
+            var prop = FindProperty("animationClipReferenceField");
+
+            // Act
+            SerializedPropertyValueParser.ApplyValue(prop, ContainerAssetPath);
+            _serializedObject.ApplyModifiedProperties();
+
+            // Assert
+            Assert.AreEqual(subClip, _so.animationClipReferenceField);
+        }
+
+        [Test]
+        public void ObjectReference_TypeMismatch_ThrowsArgumentExceptionAndKeepsValue()
+        {
+            // Arrange
+            CreateAnimationClipAsset();
+            var tempGo = new GameObject("RefTarget");
+            try
+            {
+                _so.componentReferenceField = tempGo.transform;
+                var prop = FindProperty("componentReferenceField");
+
+                // Act
+                var ex = Assert.Throws<ArgumentException>(() =>
+                    SerializedPropertyValueParser.ApplyValue(prop, AnimationClipAssetPath));
+
+                // Assert
+                StringAssert.Contains("Transform", ex.Message);
+                _serializedObject.Update();
+                Assert.AreEqual(tempGo.transform, _so.componentReferenceField);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(tempGo);
+            }
+        }
+
         // --- Helpers ---
+
+        private static AnimationClip CreateAnimationClipAsset()
+        {
+            var clip = new AnimationClip();
+            AssetDatabase.CreateAsset(clip, AnimationClipAssetPath);
+            return clip;
+        }
 
         private SerializedProperty FindProperty(string name)
         {

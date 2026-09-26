@@ -25,6 +25,8 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public Bounds boundsField;
         public Quaternion quaternionField;
         public GameObject objectReferenceField;
+        public Transform componentReferenceField;
+        public AnimationClip animationClipReferenceField;
         public LayerMask layerMaskField;
         public AnimationCurve animationCurveField;
         public Gradient gradientField;
