@@ -116,11 +116,26 @@ namespace UniCortex.Editor.Infrastructures
             for (var i = 0; i < curve.length; i++)
             {
                 var mode = ToUnityTangentMode(modes[i]);
+
+                // "Broken" decides whether the left and right tangents of a key are edited independently
+                // (broken: a corner is allowed) or kept linked (not broken: the key stays smooth).
+                // It only affects editing in the Animation window; runtime evaluation uses inTangent /
+                // outTangent alone. It is set the same way the Animation window would, so that later
+                // manual edits keep the intended shape (e.g. an intended corner is not re-joined when
+                // a tangent handle is dragged).
+                //   - Linear:   broken. Left points at the previous key and right at the next key, so the
+                //               slopes usually differ ("Both Tangents > Linear" also breaks the key).
+                //   - Constant: broken. Both sides are stepped and do not join smoothly.
+                //   - Free:     broken only when inTangent != outTangent, i.e. the caller asked for a corner.
+                //               Equal tangents (including omitted = 0) stay linked and smooth.
+                //   - Auto / ClampedAuto: not broken; these modes compute smooth, linked tangents.
                 var broken = mode == AnimationUtility.TangentMode.Linear ||
                              mode == AnimationUtility.TangentMode.Constant ||
                              (mode == AnimationUtility.TangentMode.Free &&
                               !Mathf.Approximately(curve[i].inTangent, curve[i].outTangent));
 
+                // Set broken before the modes: setting a mode makes Unity recompute the tangents for
+                // that mode, so the left / right relationship has to be fixed first.
                 AnimationUtility.SetKeyBroken(curve, i, broken);
                 AnimationUtility.SetKeyLeftTangentMode(curve, i, mode);
                 AnimationUtility.SetKeyRightTangentMode(curve, i, mode);
