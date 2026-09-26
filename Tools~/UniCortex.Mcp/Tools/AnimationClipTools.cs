@@ -15,7 +15,7 @@ public class AnimationClipTools(AnimationClipUseCase animationClipUseCase, IAsyn
     private const string AssetPathDescription =
         "The asset path of the AnimationClip (e.g. \"Assets/Animations/FadeIn.anim\").";
 
-    private const string PathDescription =
+    private const string AnimatorRelativePathDescription =
         "Path of the animated object relative to the Animator root (e.g. \"Root/Child\"). " +
         "Use an empty string for the Animator's own GameObject.";
 
@@ -69,11 +69,11 @@ public class AnimationClipTools(AnimationClipUseCase animationClipUseCase, IAsyn
         [Description(PropertyNameDescription)] string propertyName,
         [Description("Keys of the curve. Must contain at least one key; times must be unique.")]
         AnimationKeyParameter[] keys,
-        [Description(PathDescription)] string path = "",
+        [Description(AnimatorRelativePathDescription)] string animatorRelativePath = "",
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => animationClipUseCase.SetCurveAsync(assetPath, path, componentType, assemblyName, propertyName,
-                keys.Select(k => k.ToInput()).ToList(), ct),
+            ct => animationClipUseCase.SetCurveAsync(assetPath, animatorRelativePath, componentType, assemblyName,
+                propertyName, keys.Select(k => k.ToInput()).ToList(), ct),
             cancellationToken);
 
     [McpServerTool(Name = "remove_animation_curve", ReadOnly = false),
@@ -84,11 +84,11 @@ public class AnimationClipTools(AnimationClipUseCase animationClipUseCase, IAsyn
         [Description(ComponentTypeDescription)] string componentType,
         [Description(AssemblyNameDescription)] string assemblyName,
         [Description(PropertyNameDescription)] string propertyName,
-        [Description(PathDescription)] string path = "",
+        [Description(AnimatorRelativePathDescription)] string animatorRelativePath = "",
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => animationClipUseCase.RemoveCurveAsync(assetPath, path, componentType, assemblyName, propertyName,
-                ct),
+            ct => animationClipUseCase.RemoveCurveAsync(assetPath, animatorRelativePath, componentType,
+                assemblyName, propertyName, ct),
             cancellationToken);
 }
 

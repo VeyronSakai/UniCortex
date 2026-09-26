@@ -144,7 +144,7 @@ Component type arguments are supplied as a fully-qualified type name plus the de
 | `set_animation_curve` | Replace one float curve of an AnimationClip with the given keys (supports Undo) |
 | `remove_animation_curve` | Remove one float curve from an AnimationClip (supports Undo) |
 
-A curve is identified by `path` (relative to the Animator root, e.g. `Root/Child`), the component type plus its assembly name (e.g. `UnityEngine.UI.Image` + `UnityEngine.UI`), and `propertyName` (e.g. `m_Color.a`). Each key takes `time` / `value` and an optional `tangentMode` (`Free`, `Auto`, `ClampedAuto`, `Linear`, `Constant`).
+A curve is identified by `animatorRelativePath` (path relative to the Animator root, e.g. `Root/Child`), the component type plus its assembly name (e.g. `UnityEngine.UI.Image` + `UnityEngine.UI`), and `propertyName` (e.g. `m_Color.a`). Each key takes `time` / `value` and an optional `tangentMode` (`Free`, `Auto`, `ClampedAuto`, `Linear`, `Constant`).
 
 #### Prefab
 
@@ -369,7 +369,7 @@ Component commands accept the fully-qualified component type name plus the defin
 | --- | --- |
 | `animation-clip create` | Create a new empty AnimationClip `.anim` file. Supports `--loop` and `--frame-rate`. |
 | `animation-clip curve list` | Print the settings and all float curves of an AnimationClip as JSON. |
-| `animation-clip curve set` | Replace one float curve with keys given as a JSON array. Use `--path` for the Animator-relative path. |
+| `animation-clip curve set` | Replace one float curve with keys given as a JSON array. Use `--animator-relative-path` for the path relative to the Animator root. |
 | `animation-clip curve remove` | Remove one float curve. |
 
 #### `prefab`
@@ -471,7 +471,7 @@ dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scriptable-object property set 
 
 # Create an AnimationClip and key an Image fade-in
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- animation-clip create Assets/Animations/FadeIn.anim
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- animation-clip curve set Assets/Animations/FadeIn.anim UnityEngine.UI.Image UnityEngine.UI m_Color.a '[{"time":0,"value":0},{"time":0.5,"value":1}]' --path Root/Child
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- animation-clip curve set Assets/Animations/FadeIn.anim UnityEngine.UI.Image UnityEngine.UI m_Color.a '[{"time":0,"value":0},{"time":0.5,"value":1}]' --animator-relative-path Root/Child
 
 # Capture a screenshot
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- screenshot capture ./Artifacts/gameview.png

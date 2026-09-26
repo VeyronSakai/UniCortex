@@ -35,14 +35,15 @@ public class AnimationCurveCommands(AnimationClipUseCase animationClipUseCase)
     /// <param name="assemblyName">Assembly that defines the type (e.g. "UnityEngine.UI").</param>
     /// <param name="propertyName">Property name to animate (e.g. "m_Color.a").</param>
     /// <param name="keys">JSON array of keys, e.g. '[{"time":0,"value":0},{"time":1,"value":1,"tangentMode":"Linear"}]'.</param>
-    /// <param name="path">Path relative to the Animator root (e.g. "Root/Child"). Empty for the root.</param>
+    /// <param name="animatorRelativePath">Path relative to the Animator root (e.g. "Root/Child"). Empty for the root.
+    /// </param>
     [Command("set")]
     public async Task Set([Argument] string assetPath, [Argument] string componentType,
         [Argument] string assemblyName, [Argument] string propertyName, [Argument] string keys,
-        string path = "", CancellationToken cancellationToken = default)
+        string animatorRelativePath = "", CancellationToken cancellationToken = default)
     {
-        var message = await animationClipUseCase.SetCurveAsync(assetPath, path, componentType, assemblyName,
-            propertyName, AnimationClipUseCase.ParseKeys(keys), cancellationToken);
+        var message = await animationClipUseCase.SetCurveAsync(assetPath, animatorRelativePath, componentType,
+            assemblyName, propertyName, AnimationClipUseCase.ParseKeys(keys), cancellationToken);
         Console.WriteLine(message);
     }
 
@@ -51,14 +52,14 @@ public class AnimationCurveCommands(AnimationClipUseCase animationClipUseCase)
     /// <param name="componentType">Fully-qualified component type name.</param>
     /// <param name="assemblyName">Assembly that defines the type.</param>
     /// <param name="propertyName">Animated property name.</param>
-    /// <param name="path">Path relative to the Animator root. Empty for the root.</param>
+    /// <param name="animatorRelativePath">Path relative to the Animator root. Empty for the root.</param>
     [Command("remove")]
     public async Task Remove([Argument] string assetPath, [Argument] string componentType,
-        [Argument] string assemblyName, [Argument] string propertyName, string path = "",
+        [Argument] string assemblyName, [Argument] string propertyName, string animatorRelativePath = "",
         CancellationToken cancellationToken = default)
     {
-        var message = await animationClipUseCase.RemoveCurveAsync(assetPath, path, componentType, assemblyName,
-            propertyName, cancellationToken);
+        var message = await animationClipUseCase.RemoveCurveAsync(assetPath, animatorRelativePath, componentType,
+            assemblyName, propertyName, cancellationToken);
         Console.WriteLine(message);
     }
 }

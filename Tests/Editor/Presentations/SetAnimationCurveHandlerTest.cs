@@ -31,7 +31,7 @@ namespace UniCortex.Editor.Tests.Presentations
             return new SetAnimationCurveRequest
             {
                 assetPath = "Assets/Animations/FadeIn.anim",
-                path = "Root/Child",
+                animatorRelativePath = "Root/Child",
                 componentType = "UnityEngine.UI.Image",
                 assemblyName = "UnityEngine.UI",
                 propertyName = "m_Color.a",
@@ -54,7 +54,7 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(1, _ops.SetCurveCallCount);
-            Assert.AreEqual("Root/Child", _ops.LastSetCurvePath);
+            Assert.AreEqual("Root/Child", _ops.LastSetCurveAnimatorRelativePath);
             Assert.AreEqual("m_Color.a", _ops.LastSetCurvePropertyName);
             Assert.AreEqual(2, _ops.LastSetCurveKeys.Count);
             Assert.AreEqual(0.5f, _ops.LastSetCurveKeys[1].time);

@@ -63,7 +63,7 @@ public class AnimationClipUseCaseTest
         var curves = await GetCurvesAsync(ct);
         Assert.That(curves.curves, Has.Count.EqualTo(1));
         var curve = curves.curves[0];
-        Assert.That(curve.path, Is.EqualTo("Root/Child"));
+        Assert.That(curve.animatorRelativePath, Is.EqualTo("Root/Child"));
         Assert.That(curve.componentType, Is.EqualTo(TransformType));
         Assert.That(curve.assemblyName, Is.EqualTo(CoreModule));
         Assert.That(curve.propertyName, Is.EqualTo("m_LocalScale.x"));

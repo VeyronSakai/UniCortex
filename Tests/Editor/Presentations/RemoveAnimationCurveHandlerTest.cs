@@ -31,7 +31,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var request = new RemoveAnimationCurveRequest
             {
                 assetPath = "Assets/Animations/FadeIn.anim",
-                path = "",
+                animatorRelativePath = "",
                 componentType = "UnityEngine.Transform",
                 assemblyName = "UnityEngine.CoreModule",
                 propertyName = "m_LocalScale.x"

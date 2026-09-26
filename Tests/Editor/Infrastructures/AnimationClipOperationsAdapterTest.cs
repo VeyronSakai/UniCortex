@@ -74,7 +74,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
 
             Assert.AreEqual(1, result.curves.Count);
             var curve = result.curves[0];
-            Assert.AreEqual("Root/Child", curve.path);
+            Assert.AreEqual("Root/Child", curve.animatorRelativePath);
             Assert.AreEqual(TransformType, curve.componentType);
             Assert.AreEqual(CoreModule, curve.assemblyName);
             Assert.AreEqual("m_LocalScale.x", curve.propertyName);

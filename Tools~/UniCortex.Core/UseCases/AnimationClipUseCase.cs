@@ -24,14 +24,14 @@ public class AnimationClipUseCase(IUnityEditorClient client)
         return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 
-    public async ValueTask<string> SetCurveAsync(string assetPath, string path, string componentType,
+    public async ValueTask<string> SetCurveAsync(string assetPath, string animatorRelativePath, string componentType,
         string assemblyName, string propertyName, List<AnimationCurveKeyInput> keys,
         CancellationToken cancellationToken = default)
     {
         var request = new SetAnimationCurveRequest
         {
             assetPath = assetPath,
-            path = path,
+            animatorRelativePath = animatorRelativePath,
             componentType = componentType,
             assemblyName = assemblyName,
             propertyName = propertyName,
@@ -39,23 +39,23 @@ public class AnimationClipUseCase(IUnityEditorClient client)
         };
         await client.PostAsync<SetAnimationCurveRequest, SetAnimationCurveResponse>(
             ApiRoutes.AnimationClipSetCurve, request, cancellationToken);
-        return $"Curve '{path}:{componentType}.{propertyName}' set with {keys.Count} key(s).";
+        return $"Curve '{animatorRelativePath}:{componentType}.{propertyName}' set with {keys.Count} key(s).";
     }
 
-    public async ValueTask<string> RemoveCurveAsync(string assetPath, string path, string componentType,
+    public async ValueTask<string> RemoveCurveAsync(string assetPath, string animatorRelativePath, string componentType,
         string assemblyName, string propertyName, CancellationToken cancellationToken = default)
     {
         var request = new RemoveAnimationCurveRequest
         {
             assetPath = assetPath,
-            path = path,
+            animatorRelativePath = animatorRelativePath,
             componentType = componentType,
             assemblyName = assemblyName,
             propertyName = propertyName
         };
         await client.PostAsync<RemoveAnimationCurveRequest, RemoveAnimationCurveResponse>(
             ApiRoutes.AnimationClipRemoveCurve, request, cancellationToken);
-        return $"Curve '{path}:{componentType}.{propertyName}' removed.";
+        return $"Curve '{animatorRelativePath}:{componentType}.{propertyName}' removed.";
     }
 
     /// <summary>

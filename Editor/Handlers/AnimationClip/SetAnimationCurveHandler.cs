@@ -52,7 +52,7 @@ namespace UniCortex.Editor.Handlers.AnimationClip
                 return;
             }
 
-            await _useCase.ExecuteAsync(request.assetPath, request.path, request.componentType,
+            await _useCase.ExecuteAsync(request.assetPath, request.animatorRelativePath, request.componentType,
                 request.assemblyName, request.propertyName, request.keys, cancellationToken);
             var json = JsonUtility.ToJson(new SetAnimationCurveResponse(true));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);

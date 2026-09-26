@@ -8,10 +8,10 @@ namespace UniCortex.Editor.Domains.Interfaces
         CreateAnimationClipResponse Create(string assetPath, bool loop, float frameRate);
         GetAnimationCurvesResponse GetCurves(string assetPath);
 
-        void SetCurve(string assetPath, string path, string componentType, string assemblyName,
+        void SetCurve(string assetPath, string animatorRelativePath, string componentType, string assemblyName,
             string propertyName, List<AnimationCurveKeyInput> keys);
 
-        void RemoveCurve(string assetPath, string path, string componentType, string assemblyName,
+        void RemoveCurve(string assetPath, string animatorRelativePath, string componentType, string assemblyName,
             string propertyName);
     }
 }

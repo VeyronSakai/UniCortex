@@ -7,7 +7,7 @@ namespace UniCortex.Editor.Domains.Models
     public class SetAnimationCurveRequest
     {
         public string assetPath;
-        public string path;
+        public string animatorRelativePath;
         public string componentType;
         public string assemblyName;
         public string propertyName;

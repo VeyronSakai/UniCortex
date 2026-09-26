@@ -17,7 +17,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
 
         public int SetCurveCallCount { get; private set; }
         public string LastSetCurveAssetPath { get; private set; }
-        public string LastSetCurvePath { get; private set; }
+        public string LastSetCurveAnimatorRelativePath { get; private set; }
         public string LastSetCurveComponentType { get; private set; }
         public string LastSetCurveAssemblyName { get; private set; }
         public string LastSetCurvePropertyName { get; private set; }
@@ -25,7 +25,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
 
         public int RemoveCurveCallCount { get; private set; }
         public string LastRemoveCurveAssetPath { get; private set; }
-        public string LastRemoveCurvePath { get; private set; }
+        public string LastRemoveCurveAnimatorRelativePath { get; private set; }
         public string LastRemoveCurveComponentType { get; private set; }
         public string LastRemoveCurveAssemblyName { get; private set; }
         public string LastRemoveCurvePropertyName { get; private set; }
@@ -46,24 +46,24 @@ namespace UniCortex.Editor.Tests.TestDoubles
             return GetCurvesResult;
         }
 
-        public void SetCurve(string assetPath, string path, string componentType, string assemblyName,
+        public void SetCurve(string assetPath, string animatorRelativePath, string componentType, string assemblyName,
             string propertyName, List<AnimationCurveKeyInput> keys)
         {
             SetCurveCallCount++;
             LastSetCurveAssetPath = assetPath;
-            LastSetCurvePath = path;
+            LastSetCurveAnimatorRelativePath = animatorRelativePath;
             LastSetCurveComponentType = componentType;
             LastSetCurveAssemblyName = assemblyName;
             LastSetCurvePropertyName = propertyName;
             LastSetCurveKeys = keys;
         }
 
-        public void RemoveCurve(string assetPath, string path, string componentType, string assemblyName,
-            string propertyName)
+        public void RemoveCurve(string assetPath, string animatorRelativePath, string componentType,
+            string assemblyName, string propertyName)
         {
             RemoveCurveCallCount++;
             LastRemoveCurveAssetPath = assetPath;
-            LastRemoveCurvePath = path;
+            LastRemoveCurveAnimatorRelativePath = animatorRelativePath;
             LastRemoveCurveComponentType = componentType;
             LastRemoveCurveAssemblyName = assemblyName;
             LastRemoveCurvePropertyName = propertyName;

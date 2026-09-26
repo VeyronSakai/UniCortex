@@ -58,11 +58,11 @@ namespace UniCortex.Editor.Infrastructures
             return new GetAnimationCurvesResponse(clip.frameRate, settings.loopTime, clip.length, curves);
         }
 
-        public void SetCurve(string assetPath, string path, string componentType, string assemblyName,
+        public void SetCurve(string assetPath, string animatorRelativePath, string componentType, string assemblyName,
             string propertyName, List<AnimationCurveKeyInput> keys)
         {
             var clip = LoadClip(assetPath);
-            var binding = CreateCurveBinding(path, componentType, assemblyName, propertyName);
+            var binding = CreateCurveBinding(animatorRelativePath, componentType, assemblyName, propertyName);
             var curve = BuildCurve(keys);
 
             Undo.RegisterCompleteObjectUndo(clip, "Set Animation Curve");
@@ -71,11 +71,11 @@ namespace UniCortex.Editor.Infrastructures
             AssetDatabase.SaveAssets();
         }
 
-        public void RemoveCurve(string assetPath, string path, string componentType, string assemblyName,
-            string propertyName)
+        public void RemoveCurve(string assetPath, string animatorRelativePath, string componentType,
+            string assemblyName, string propertyName)
         {
             var clip = LoadClip(assetPath);
-            var binding = CreateCurveBinding(path, componentType, assemblyName, propertyName);
+            var binding = CreateCurveBinding(animatorRelativePath, componentType, assemblyName, propertyName);
 
             if (AnimationUtility.GetEditorCurve(clip, binding) == null)
             {
@@ -183,8 +183,8 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        private static EditorCurveBinding CreateCurveBinding(string path, string componentType, string assemblyName,
-            string propertyName)
+        private static EditorCurveBinding CreateCurveBinding(string animatorRelativePath, string componentType,
+            string assemblyName, string propertyName)
         {
             if (string.IsNullOrEmpty(propertyName))
             {
@@ -198,7 +198,7 @@ namespace UniCortex.Editor.Infrastructures
                     $"Type '{componentType}' not found in assembly '{assemblyName}'.");
             }
 
-            return EditorCurveBinding.FloatCurve(path ?? string.Empty, type, propertyName);
+            return EditorCurveBinding.FloatCurve(animatorRelativePath ?? string.Empty, type, propertyName);
         }
 
         private static AnimationClip LoadClip(string assetPath)

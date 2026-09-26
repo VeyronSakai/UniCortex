@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Tests.UseCases
 
             Assert.AreEqual(1, ops.SetCurveCallCount);
             Assert.AreEqual("Assets/Animations/FadeIn.anim", ops.LastSetCurveAssetPath);
-            Assert.AreEqual("Root/Child", ops.LastSetCurvePath);
+            Assert.AreEqual("Root/Child", ops.LastSetCurveAnimatorRelativePath);
             Assert.AreEqual("UnityEngine.UI.Image", ops.LastSetCurveComponentType);
             Assert.AreEqual("UnityEngine.UI", ops.LastSetCurveAssemblyName);
             Assert.AreEqual("m_Color.a", ops.LastSetCurvePropertyName);

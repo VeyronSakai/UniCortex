@@ -20,7 +20,7 @@ namespace UniCortex.Editor.Tests.UseCases
 
             Assert.AreEqual(1, ops.RemoveCurveCallCount);
             Assert.AreEqual("Assets/Animations/FadeIn.anim", ops.LastRemoveCurveAssetPath);
-            Assert.AreEqual("Root", ops.LastRemoveCurvePath);
+            Assert.AreEqual("Root", ops.LastRemoveCurveAnimatorRelativePath);
             Assert.AreEqual("UnityEngine.Transform", ops.LastRemoveCurveComponentType);
             Assert.AreEqual("UnityEngine.CoreModule", ops.LastRemoveCurveAssemblyName);
             Assert.AreEqual("m_LocalScale.x", ops.LastRemoveCurvePropertyName);

@@ -17,11 +17,13 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task ExecuteAsync(string assetPath, string path, string componentType, string assemblyName,
-            string propertyName, List<AnimationCurveKeyInput> keys, CancellationToken cancellationToken = default)
+        public async Task ExecuteAsync(string assetPath, string animatorRelativePath, string componentType,
+            string assemblyName, string propertyName, List<AnimationCurveKeyInput> keys,
+            CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.SetCurve(assetPath, path, componentType, assemblyName, propertyName, keys),
+                () => _operations.SetCurve(assetPath, animatorRelativePath, componentType, assemblyName,
+                    propertyName, keys),
                 cancellationToken);
         }
     }

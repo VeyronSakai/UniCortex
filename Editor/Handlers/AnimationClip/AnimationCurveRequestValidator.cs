@@ -5,7 +5,7 @@ namespace UniCortex.Editor.Handlers.AnimationClip
     internal static class AnimationCurveRequestValidator
     {
         // Returns the name of the first missing required field, or null when all are present.
-        // "path" is intentionally not validated: an empty path targets the Animator's own GameObject.
+        // "animatorRelativePath" is intentionally not validated: an empty value targets the Animator's own GameObject.
         public static string FindMissingField(string assetPath, string componentType, string assemblyName,
             string propertyName)
         {

@@ -443,8 +443,8 @@ Response: `{"success": true}`
 
 Create `.anim` files (AnimationClip) and edit their float curves, e.g. to author clips for Timeline Animation tracks. Implemented with `AnimationUtility.SetEditorCurve` / `GetCurveBindings` / `GetEditorCurve` and `AnimationClipSettings`. Only float curves are supported (object reference curves such as sprite swaps are not).
 
-A curve is identified by the binding triple `path` + component type + `propertyName`:
-- `path`: path of the animated object relative to the Animator root (e.g. `Root/Child`). Empty string (default) targets the Animator's own GameObject
+A curve is identified by the binding triple `animatorRelativePath` + component type + `propertyName`:
+- `animatorRelativePath`: path of the animated object relative to the Animator root (`EditorCurveBinding.path`) (e.g. `Root/Child`). Empty string (default) targets the Animator's own GameObject
 - `componentType` + `assemblyName`: resolved the same way as components (e.g. `UnityEngine.UI.Image` + `UnityEngine.UI`, `UnityEngine.Transform` + `UnityEngine.CoreModule`). `UnityEngine.GameObject` is also accepted (e.g. `m_IsActive`)
 - `propertyName`: serialized property name (e.g. `m_Color.a`, `m_AnchoredPosition.y`, `m_LocalScale.x`)
 
@@ -475,7 +475,7 @@ Response:
   "length": 0.5,
   "curves": [
     {
-      "path": "Root/Child",
+      "animatorRelativePath": "Root/Child",
       "componentType": "UnityEngine.UI.Image",
       "assemblyName": "UnityEngine.UI",
       "propertyName": "m_Color.a",
@@ -498,7 +498,7 @@ Request body:
 ```json
 {
   "assetPath": "Assets/Animations/FadeIn.anim",
-  "path": "Root/Child",
+  "animatorRelativePath": "Root/Child",
   "componentType": "UnityEngine.UI.Image",
   "assemblyName": "UnityEngine.UI",
   "propertyName": "m_Color.a",
@@ -520,7 +520,7 @@ Removes one curve. Returns 400 when the curve does not exist.
 
 Request body:
 ```json
-{"assetPath": "Assets/Animations/FadeIn.anim", "path": "Root/Child", "componentType": "UnityEngine.UI.Image", "assemblyName": "UnityEngine.UI", "propertyName": "m_Color.a"}
+{"assetPath": "Assets/Animations/FadeIn.anim", "animatorRelativePath": "Root/Child", "componentType": "UnityEngine.UI.Image", "assemblyName": "UnityEngine.UI", "propertyName": "m_Color.a"}
 ```
 
 Response: `{"success": true}`
