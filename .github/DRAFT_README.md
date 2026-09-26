@@ -226,11 +226,17 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | Tool | Description |
 |------|-------------|
 | `create_timeline` | Create a new TimelineAsset (.playable file) at the specified asset path (requires com.unity.timeline) |
+| `get_timeline_tracks` | Get an overview of the tracks and clips of a Timeline (types, timing, extrapolation, bindings, AnimationClips) by PlayableDirector or asset path (requires com.unity.timeline) |
+| `get_timeline_track_properties` | Get the serialized properties of a Timeline track (requires com.unity.timeline) |
+| `get_timeline_clip_properties` | Get the serialized properties of a clip's PlayableAsset (requires com.unity.timeline) |
 | `add_timeline_track` | Add a track to a TimelineAsset (requires com.unity.timeline) |
 | `remove_timeline_track` | Remove a track from a TimelineAsset by index (requires com.unity.timeline) |
 | `bind_timeline_track` | Set the binding of a Timeline track on a PlayableDirector (requires com.unity.timeline) |
 | `add_timeline_clip` | Add a default clip to a Timeline track (requires com.unity.timeline) |
 | `remove_timeline_clip` | Remove a clip from a Timeline track by index (requires com.unity.timeline) |
+| `modify_timeline_clip` | Change a clip's start, duration, timeScale, clipIn, ease in/out, and pre/post extrapolation (requires com.unity.timeline) |
+| `set_timeline_clip_property` | Set a serialized property on a clip's PlayableAsset, e.g. its AnimationClip (`m_Clip`) or the settings of a custom clip (requires com.unity.timeline) |
+| `set_timeline_track_property` | Set a serialized property on a track, e.g. Track Offsets or mute (requires com.unity.timeline) |
 | `play_timeline` | Start playback of a Timeline on a PlayableDirector (requires com.unity.timeline) |
 | `stop_timeline` | Stop playback of a Timeline on a PlayableDirector and reset to the beginning (requires com.unity.timeline) |
 
@@ -432,18 +438,24 @@ Component commands accept the fully-qualified component type name plus the defin
 | `recorder movie start` | Start movie recording. Play Mode only; requires `com.unity.recorder`. |
 | `recorder movie stop` | Stop movie recording and save the output file. |
 
-#### `timeline`, `timeline track`, `timeline clip`
+#### `timeline`, `timeline track`, `timeline track property`, `timeline clip`, `timeline clip property`
 
 | Command | Description |
 | --- | --- |
 | `timeline create` | Create a Timeline asset. Requires `com.unity.timeline`. |
 | `timeline play` | Start Timeline playback on a PlayableDirector. Requires `com.unity.timeline`. |
 | `timeline stop` | Stop Timeline playback and reset to the beginning. Requires `com.unity.timeline`. |
+| `timeline track list` | Print the tracks and clips of a Timeline as JSON. Requires `com.unity.timeline`. |
 | `timeline track add` | Add a Timeline track. Requires `com.unity.timeline`. |
 | `timeline track remove` | Remove a Timeline track by index. Requires `com.unity.timeline`. |
 | `timeline track bind` | Bind a Timeline track to a target object. Requires `com.unity.timeline`. |
+| `timeline track property list` | Print the serialized properties of a Timeline track as JSON. Requires `com.unity.timeline`. |
+| `timeline track property set` | Set a serialized property on a Timeline track. Requires `com.unity.timeline`. |
 | `timeline clip add` | Add a clip to a Timeline track. Requires `com.unity.timeline`. |
 | `timeline clip remove` | Remove a clip from a Timeline track. Requires `com.unity.timeline`. |
+| `timeline clip modify` | Change the timing, ease, and extrapolation of a Timeline clip. Requires `com.unity.timeline`. |
+| `timeline clip property list` | Print the serialized properties of a clip's PlayableAsset as JSON. Requires `com.unity.timeline`. |
+| `timeline clip property set` | Set a serialized property on a clip's PlayableAsset. Requires `com.unity.timeline`. |
 
 #### `extension`
 

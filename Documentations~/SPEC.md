@@ -924,6 +924,130 @@ Request body:
 
 Response: `{"success": true}`
 
+#### GET `/timeline/tracks?instanceId=12345`
+Returns the tracks and clips of a Timeline. Specify either `instanceId` (a GameObject with a PlayableDirector) or `assetPath` (e.g. `?assetPath=Assets/Timelines/MyTimeline.playable`).
+
+Query parameters:
+- `instanceId`: instanceId of the GameObject that has the PlayableDirector. Takes precedence over `assetPath`
+- `assetPath`: asset path of the TimelineAsset. Used when `instanceId` is omitted or 0
+
+Response:
+```json
+{
+  "assetPath": "Assets/Timelines/MyTimeline.playable",
+  "duration": 3.0,
+  "frameRate": 60,
+  "tracks": [
+    {
+      "index": 0,
+      "name": "Anim",
+      "type": "UnityEngine.Timeline.AnimationTrack",
+      "groupName": "",
+      "muted": false,
+      "locked": false,
+      "bindingInstanceId": 12345,
+      "bindingName": "Panel",
+      "bindingType": "UnityEngine.Animator",
+      "clips": [
+        {
+          "index": 0,
+          "displayName": "FadeIn",
+          "assetType": "UnityEngine.Timeline.AnimationPlayableAsset",
+          "start": 1.0,
+          "duration": 2.0,
+          "timeScale": 1.0,
+          "clipIn": 0.0,
+          "easeInDuration": 0.0,
+          "easeOutDuration": 0.0,
+          "preExtrapolation": "Hold",
+          "postExtrapolation": "Hold",
+          "animationClipPath": "Assets/Animations/FadeIn.anim"
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `tracks[].index` / `clips[].index`: the `trackIndex` / `clipIndex` used by the other Timeline endpoints. Tracks are the output tracks (tracks inside groups included, group tracks themselves excluded)
+- `groupName`: name of the parent group track; empty at the root
+- `bindingInstanceId` / `bindingName` / `bindingType`: the bound object. `0` / empty when unbound or when read by `assetPath`
+- `animationClipPath`: AnimationClip used by the clip; empty when none
+- Serialized properties are not included; read them with `/timeline/track/properties` and `/timeline/clip/properties`
+
+#### GET `/timeline/track/properties?instanceId=12345&trackIndex=0`
+Returns the top-level visible serialized properties of a track (`m_Script` excluded), in the same format as `get_component_properties`. The paths and values can be passed to `/timeline/track/property/set`.
+
+Query parameters:
+- `instanceId` / `assetPath`: the target timeline, same as `/timeline/tracks`
+- `trackIndex`: required
+
+Response:
+```json
+{
+  "typeName": "UnityEngine.Timeline.AnimationTrack",
+  "properties": [{"path": "m_TrackOffset", "type": "Enum", "value": "Apply Transform Offsets"}]
+}
+```
+
+- Hidden properties (e.g. `m_Muted`) are not listed but can still be set
+
+#### GET `/timeline/clip/properties?instanceId=12345&trackIndex=0&clipIndex=0`
+Returns the top-level visible serialized properties of the clip's content (its PlayableAsset), in the same format as `/timeline/track/properties`. The paths and values can be passed to `/timeline/clip/property/set`.
+
+Query parameters:
+- `instanceId` / `assetPath`: the target timeline, same as `/timeline/tracks`
+- `trackIndex`, `clipIndex`: required
+
+Response:
+```json
+{
+  "typeName": "UnityEngine.Timeline.AnimationPlayableAsset",
+  "properties": [{"path": "m_Clip", "type": "ObjectReference", "value": "Assets/Animations/FadeIn.anim"}]
+}
+```
+
+- ExposedReference values are resolved through the PlayableDirector, so they are `null` when read by `assetPath`
+- Returns 400 when the clip has no PlayableAsset
+
+#### POST `/timeline/clip/modify`
+Changes the timing and settings of a clip. Only the fields present in the body are changed. Undo-supported.
+
+Request body:
+```json
+{"instanceId": 12345, "trackIndex": 0, "clipIndex": 0, "start": 0.5, "duration": 1.5, "easeInDuration": 0.25, "postExtrapolation": "Loop"}
+```
+
+- `start` (>= 0), `duration` (> 0), `timeScale` (> 0), `clipIn` (>= 0), `easeInDuration` / `easeOutDuration` (>= 0): seconds (timeScale is a multiplier)
+- `preExtrapolation` / `postExtrapolation`: `None`, `Hold`, `Loop`, `PingPong`, or `Continue` (case-insensitive)
+- `displayName`: display name of the clip
+- Returns 400 when a value is out of range, or when the clip type does not support the change (`timeScale`, `clipIn`, ease, and extrapolation depend on the clip's `ClipCaps`; e.g. Activation / Control clips have no extrapolation). Ease durations are clamped to the clip duration by Timeline
+- Extrapolation modes have internal setters in the Timeline package, so they are set through reflection
+
+Response: `{"success": true}`
+
+#### POST `/timeline/clip/property/set`
+Sets a serialized property on the clip's content (its PlayableAsset), e.g. the AnimationClip of an Animation clip (`m_Clip`) or the settings of a custom clip. Timing and settings of the TimelineClip itself (start, duration, ease, extrapolation) are changed with `/timeline/clip/modify` instead. Uses `SerializedObject(asset, director)` so ExposedReference properties are resolved through the PlayableDirector. Values use the same format as `set_component_property`. Undo-supported.
+
+Request body:
+```json
+{"instanceId": 12345, "trackIndex": 0, "clipIndex": 0, "propertyPath": "m_Clip", "value": "Assets/Animations/FadeIn.anim"}
+```
+
+- Assigning `m_Clip` does not change the clip duration; use `/timeline/clip/modify` to adjust it
+
+Response: `{"success": true}`
+
+#### POST `/timeline/track/property/set`
+Sets a serialized property on a track (e.g. `m_TrackOffset`, `m_Position`, `m_EulerAngles` of an Animation track, or `m_Muted`). Values use the same format as `set_component_property`. Undo-supported.
+
+Request body:
+```json
+{"instanceId": 12345, "trackIndex": 0, "propertyPath": "m_Muted", "value": "true"}
+```
+
+Response: `{"success": true}`
+
 #### POST `/timeline/play`
 Starts Timeline playback on a PlayableDirector.
 
@@ -1164,16 +1288,22 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `send_key_event` | POST `/input/key` | Send a key event through the Input System (requires com.unity.inputsystem) |
 | `send_mouse_event` | POST `/input/mouse` | Send a mouse event through the Input System (requires com.unity.inputsystem) |
 
-#### Timeline (8)
+#### Timeline (14)
 
 | Tool | API | Description |
 |------|-----|-------------|
 | `create_timeline` | POST `/timeline/create` | Create a TimelineAsset (requires com.unity.timeline) |
+| `get_timeline_tracks` | GET `/timeline/tracks` | Get an overview of the tracks and clips of a Timeline (requires com.unity.timeline) |
+| `get_timeline_track_properties` | GET `/timeline/track/properties` | Get the serialized properties of a track (requires com.unity.timeline) |
+| `get_timeline_clip_properties` | GET `/timeline/clip/properties` | Get the serialized properties of a clip's PlayableAsset (requires com.unity.timeline) |
 | `add_timeline_track` | POST `/timeline/track/add` | Add a track to a TimelineAsset (requires com.unity.timeline) |
 | `remove_timeline_track` | POST `/timeline/track/remove` | Remove a track from a TimelineAsset (requires com.unity.timeline) |
 | `bind_timeline_track` | POST `/timeline/track/bind` | Set a track binding (requires com.unity.timeline) |
 | `add_timeline_clip` | POST `/timeline/clip/add` | Add a clip to a track (requires com.unity.timeline) |
 | `remove_timeline_clip` | POST `/timeline/clip/remove` | Remove a clip from a track (requires com.unity.timeline) |
+| `modify_timeline_clip` | POST `/timeline/clip/modify` | Change a clip's timing, ease, and extrapolation (requires com.unity.timeline) |
+| `set_timeline_clip_property` | POST `/timeline/clip/property/set` | Set a serialized property on a clip's PlayableAsset, e.g. its AnimationClip (requires com.unity.timeline) |
+| `set_timeline_track_property` | POST `/timeline/track/property/set` | Set a serialized property on a track (requires com.unity.timeline) |
 | `play_timeline` | POST `/timeline/play` | Start Timeline playback (requires com.unity.timeline) |
 | `stop_timeline` | POST `/timeline/stop` | Stop Timeline playback (requires com.unity.timeline) |
 
@@ -1269,8 +1399,10 @@ game-view focus
 game-view size get|list|set
 input send-key|send-mouse
 timeline create|play|stop
-timeline track add|remove|bind
-timeline clip add|remove
+timeline track list|add|remove|bind
+timeline track property list|set
+timeline clip add|remove|modify
+timeline clip property list|set
 extension list|execute
 ```
 

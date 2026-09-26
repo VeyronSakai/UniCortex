@@ -18,6 +18,16 @@ public class TimelineTrackCommands(TimelineUseCase timelineUseCase)
         Console.WriteLine(message);
     }
 
+    /// <summary>Get the tracks and clips of a Timeline. Specify either instanceId or assetPath. Requires com.unity.timeline.</summary>
+    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component. 0 to use assetPath instead.</param>
+    /// <param name="assetPath">Asset path of the TimelineAsset (e.g. "Assets/Timelines/MyTimeline.playable"). Used when instanceId is 0.</param>
+    [Command("list")]
+    public async Task List(int instanceId = 0, string? assetPath = null, CancellationToken cancellationToken = default)
+    {
+        var json = await timelineUseCase.GetTracksAsync(instanceId, assetPath, cancellationToken);
+        Console.WriteLine(json);
+    }
+
     /// <summary>Remove a track from a TimelineAsset by index. Undo supported. Requires com.unity.timeline.</summary>
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
     /// <param name="trackIndex">The index of the track to remove (0-based).</param>
