@@ -25,7 +25,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
 
         HttpContent? content = request != null
             ? new StringContent(
-                JsonSerializer.Serialize(request, UnityJson.RequestOptions),
+                JsonSerializer.Serialize(request, JsonOptions.Default),
                 Encoding.UTF8,
                 MediaTypeNames.Application.Json)
             : null;
@@ -33,7 +33,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        return UnityJson.Deserialize<TRes>(json)!;
+        return JsonSerializer.Deserialize<TRes>(json, JsonOptions.Default)!;
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        return UnityJson.Deserialize<TRes>(json)!;
+        return JsonSerializer.Deserialize<TRes>(json, JsonOptions.Default)!;
     }
 
     /// <summary>

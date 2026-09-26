@@ -171,7 +171,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void GetCurves_ConstantKeys_HaveInfiniteTangentsWrittenAsBareTokens()
+        public void GetCurves_ReportsInfiniteTangentsAsMaxValue()
         {
             // Arrange
             _adapter.Create(TestAssetPath, false, 60f);
@@ -186,24 +186,57 @@ namespace UniCortex.Editor.Tests.Infrastructures
             var key = _adapter.GetCurves(TestAssetPath).curves[0].keys[0];
 
             // Assert
-            Assert.IsTrue(float.IsPositiveInfinity(key.outTangent));
-            // The Core relies on JsonUtility writing infinity as a bare token.
-            StringAssert.Contains("\"outTangent\":Infinity", JsonUtility.ToJson(key));
+            Assert.AreEqual(float.MaxValue, key.outTangent);
+            Assert.AreEqual("Constant", key.rightTangentMode);
+            // JsonUtility would otherwise emit a bare "Infinity" token, which is not valid JSON.
+            StringAssert.DoesNotContain("Infinity", JsonUtility.ToJson(key));
         }
 
         [Test]
-        public void JsonUtility_ReadsBareInfinityTokens()
+        public void BuildCurve_MaxValueTangent_BecomesInfiniteAndHoldsValue()
         {
             // Arrange
-            // The Core sends infinite tangents as bare tokens; JsonUtility must read them back.
-            const string json = "{\"time\":0,\"value\":1,\"inTangent\":-Infinity,\"outTangent\":Infinity}";
+            var keys = new List<AnimationCurveKeyInput>
+            {
+                new AnimationCurveKeyInput { time = 0f, value = 1f, outTangent = float.MaxValue },
+                new AnimationCurveKeyInput { time = 1f, value = 0f, inTangent = float.MaxValue }
+            };
 
             // Act
-            var key = JsonUtility.FromJson<AnimationCurveKeyInput>(json);
+            var curve = AnimationClipOperationsAdapter.BuildCurve(keys);
 
             // Assert
-            Assert.IsTrue(float.IsNegativeInfinity(key.inTangent));
-            Assert.IsTrue(float.IsPositiveInfinity(key.outTangent));
+            Assert.IsTrue(float.IsPositiveInfinity(curve[0].outTangent));
+            Assert.IsTrue(float.IsPositiveInfinity(curve[1].inTangent));
+            Assert.AreEqual(1f, curve.Evaluate(0.5f));
+        }
+
+        [Test]
+        public void ToSerializableTangent_ConvertsInfinityToMaxValue()
+        {
+            // Act
+            var positive = AnimationClipOperationsAdapter.ToSerializableTangent(float.PositiveInfinity);
+            var negative = AnimationClipOperationsAdapter.ToSerializableTangent(float.NegativeInfinity);
+            var finite = AnimationClipOperationsAdapter.ToSerializableTangent(2.5f);
+
+            // Assert
+            Assert.AreEqual(float.MaxValue, positive);
+            Assert.AreEqual(float.MinValue, negative);
+            Assert.AreEqual(2.5f, finite);
+        }
+
+        [Test]
+        public void FromSerializableTangent_ConvertsMaxValueToInfinity()
+        {
+            // Act
+            var positive = AnimationClipOperationsAdapter.FromSerializableTangent(float.MaxValue);
+            var negative = AnimationClipOperationsAdapter.FromSerializableTangent(float.MinValue);
+            var finite = AnimationClipOperationsAdapter.FromSerializableTangent(-2.5f);
+
+            // Assert
+            Assert.IsTrue(float.IsPositiveInfinity(positive));
+            Assert.IsTrue(float.IsNegativeInfinity(negative));
+            Assert.AreEqual(-2.5f, finite);
         }
 
         [Test]

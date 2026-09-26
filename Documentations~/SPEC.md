@@ -107,7 +107,6 @@ Request/response JSON serialization uses DTO classes.
 - Unity side: `JsonUtility.ToJson()` / `JsonUtility.FromJson<T>()`
 - MCP server / CLI side: `System.Text.Json` + `JsonSerializerOptions { IncludeFields = true }`
 - The UniCortex.Core .csproj shares source via `<Compile Include="../../Editor/Domains/Models/**/*.cs" LinkBase="Models" />`
-- Non-finite floats (infinity / NaN): JsonUtility reads and writes them as bare tokens (`Infinity`, `-Infinity`, `NaN`), which are not valid JSON. The Core bridges this in `UnityJson`: responses have those tokens quoted (outside of string values) before parsing, requests write them back as bare tokens, and `JsonOptions.Default` enables `AllowNamedFloatingPointLiterals` so they appear as `"Infinity"` etc. in MCP / CLI output
 
 ---
 
@@ -489,7 +488,7 @@ Response:
 ```
 
 - `leftTangentMode` / `rightTangentMode`: `AnimationUtility.TangentMode` names (`Free`, `Auto`, `ClampedAuto`, `Linear`, `Constant`)
-- Infinite tangents (stepped keys, e.g. `Constant`): the Unity Editor (JsonUtility) writes them as bare `Infinity` / `-Infinity` tokens, which are not valid JSON. The Core converts them and the MCP / CLI output shows them as the strings `"Infinity"` / `"-Infinity"`
+- Infinite tangents (stepped keys, e.g. `Constant`) are returned as `±3.4028235E+38` (`float.MaxValue`), since JSON has no literal for infinity
 
 #### POST `/animation-clip/curve/set`
 Replaces one curve entirely with the given keys (creates it if missing).
@@ -510,7 +509,7 @@ Request body:
 ```
 
 - `keys`: required, at least one. Sorted by `time`; duplicate times are rejected
-- `keys[].inTangent` / `keys[].outTangent`: optional slopes, used when `tangentMode` is `Free`. The MCP / CLI accept `"Infinity"` / `"-Infinity"` for an infinite slope, so values read by `get_animation_curves` can be passed back as-is
+- `keys[].inTangent` / `keys[].outTangent`: optional slopes, used when `tangentMode` is `Free`. `±3.4028235E+38` (`float.MaxValue`) is converted to an infinite slope, so values read by `GET /animation-clip/curves` can be passed back as-is
 - `keys[].tangentMode`: optional, applied to both sides of the key. `Free` (default), `Auto`, `ClampedAuto`, `Linear`, or `Constant`. `Free` with the tangents omitted (0) gives flat tangents, i.e. a smooth ease in / ease out
 
 Response: `{"success": true}`

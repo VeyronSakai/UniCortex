@@ -88,9 +88,8 @@ public class AnimationClipUseCaseTest
             """[{"time":0,"value":1,"tangentMode":"Constant"},{"time":0.5,"value":0,"tangentMode":"Constant"}]""");
         await _fixture.AnimationClipUseCase.SetCurveAsync(TestAssetPath, "", "UnityEngine.GameObject", CoreModule,
             "m_IsActive", constantKeys, ct);
-        // Unity writes infinite tangents as bare tokens; the Core must parse them and output named literals.
-        var firstJson = await _fixture.AnimationClipUseCase.GetCurvesAsync(TestAssetPath, ct);
-        var first = JsonSerializer.Deserialize<GetAnimationCurvesResponse>(firstJson, s_jsonOptions)!.curves[0].keys;
+        // Infinite tangents are reported as float.MaxValue, which must survive JSON parsing on the Core side.
+        var first = (await GetCurvesAsync(ct)).curves[0].keys;
         // Feed the read values back as Free keys, as an agent would via JSON.
         var keysJson = JsonSerializer.Serialize(first.Select(k => new AnimationCurveKeyInput
         {
@@ -102,8 +101,7 @@ public class AnimationClipUseCaseTest
             "m_IsActive", AnimationClipUseCase.ParseKeys(keysJson), ct);
 
         // Assert
-        Assert.That(firstJson, Does.Contain("\"outTangent\":\"Infinity\""));
-        Assert.That(float.IsPositiveInfinity(first[0].outTangent), Is.True);
+        Assert.That(first[0].outTangent, Is.EqualTo(float.MaxValue));
         // The stepped shape must survive the round trip.
         var second = (await GetCurvesAsync(ct)).curves[0].keys;
         Assert.That(second, Has.Count.EqualTo(first.Count));
