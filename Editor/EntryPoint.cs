@@ -1,3 +1,4 @@
+using UniCortex.Editor.Handlers.AnimationClip;
 using UniCortex.Editor.Handlers.Asset;
 using UniCortex.Editor.Handlers.Component;
 using UniCortex.Editor.Handlers.Console;
@@ -203,6 +204,20 @@ namespace UniCortex.Editor
             var setScriptableObjectPropertyHandler =
                 new SetScriptableObjectPropertyHandler(setScriptableObjectPropertyUseCase);
 
+            var animationClipOps = new AnimationClipOperationsAdapter();
+
+            var createAnimationClipUseCase = new CreateAnimationClipUseCase(s_dispatcher, animationClipOps);
+            var createAnimationClipHandler = new CreateAnimationClipHandler(createAnimationClipUseCase);
+
+            var getAnimationCurvesUseCase = new GetAnimationCurvesUseCase(s_dispatcher, animationClipOps);
+            var animationCurvesHandler = new AnimationCurvesHandler(getAnimationCurvesUseCase);
+
+            var setAnimationCurveUseCase = new SetAnimationCurveUseCase(s_dispatcher, animationClipOps);
+            var setAnimationCurveHandler = new SetAnimationCurveHandler(setAnimationCurveUseCase);
+
+            var removeAnimationCurveUseCase = new RemoveAnimationCurveUseCase(s_dispatcher, animationClipOps);
+            var removeAnimationCurveHandler = new RemoveAnimationCurveHandler(removeAnimationCurveUseCase);
+
 
             var assetDbOps = new AssetDatabaseOperationsAdapter();
             var projectWindowOps = new ProjectWindowOperationsAdapter();
@@ -342,6 +357,10 @@ namespace UniCortex.Editor
             createScriptableObjectHandler.Register(router);
             scriptableObjectPropertiesHandler.Register(router);
             setScriptableObjectPropertyHandler.Register(router);
+            createAnimationClipHandler.Register(router);
+            animationCurvesHandler.Register(router);
+            setAnimationCurveHandler.Register(router);
+            removeAnimationCurveHandler.Register(router);
             assetRefreshHandler.Register(router);
             selectProjectWindowAssetHandler.Register(router);
             executeMenuItemHandler.Register(router);

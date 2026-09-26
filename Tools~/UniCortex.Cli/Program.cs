@@ -22,6 +22,8 @@ app.Add<ComponentPropertyCommands>("component property");
 app.Add<PrefabCommands>("prefab");
 app.Add<ScriptableObjectCommands>("scriptable-object");
 app.Add<ScriptableObjectPropertyCommands>("scriptable-object property");
+app.Add<AnimationClipCommands>("animation-clip");
+app.Add<AnimationCurveCommands>("animation-clip curve");
 app.Add<TestCommands>("test");
 app.Add<ConsoleCommands>("console");
 app.Add<AssetCommands>("asset");
