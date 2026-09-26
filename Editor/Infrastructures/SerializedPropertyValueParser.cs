@@ -176,8 +176,12 @@ namespace UniCortex.Editor.Infrastructures
                     break;
 
                 case SerializedPropertyType.ObjectReference:
+                    property.objectReferenceValue = ResolveObjectReference(property, value);
+                    break;
+
                 case SerializedPropertyType.ExposedReference:
-                    ApplyObjectReference(property, value);
+                    // Resolved through the SerializedObject's context (e.g. a PlayableDirector).
+                    property.exposedReferenceValue = ResolveObjectReference(property, value);
                     break;
 
                 default:
@@ -296,15 +300,14 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         /// <summary>
-        /// Resolves an object reference from a string value and writes it into the property.
+        /// Resolves an object reference from a string value.
         /// Accepts: "null" to clear, an integer instanceId, or an asset path (e.g. "Assets/...").
         /// </summary>
-        private static void ApplyObjectReference(SerializedProperty property, string value)
+        private static UnityEngine.Object ResolveObjectReference(SerializedProperty property, string value)
         {
             if (string.Equals(value, "null", StringComparison.OrdinalIgnoreCase))
             {
-                property.objectReferenceValue = null;
-                return;
+                return null;
             }
 
             if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var instanceId))
@@ -316,15 +319,13 @@ namespace UniCortex.Editor.Infrastructures
                         $"No object found with instanceId {instanceId} for property '{property.propertyPath}'.");
                 }
 
-                property.objectReferenceValue = obj;
-                return;
+                return obj;
             }
 
             var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(value);
             if (asset != null)
             {
-                property.objectReferenceValue = asset;
-                return;
+                return asset;
             }
 
             throw new ArgumentException(

@@ -64,6 +64,64 @@ public class TimelineUseCase(IUnityEditorClient client)
         return $"Clip removed: track {trackIndex}, clip {clipIndex}";
     }
 
+    public async ValueTask<string> GetTracksAsync(int instanceId, string? assetPath, CancellationToken cancellationToken)
+    {
+        var request = new GetTimelineTracksRequest { instanceId = instanceId, assetPath = assetPath };
+        var response = await client.GetAsync<GetTimelineTracksRequest, GetTimelineTracksResponse>(
+            ApiRoutes.TimelineTracks, request, cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
+    }
+
+    public async ValueTask<string> GetTrackPropertiesAsync(int instanceId, string? assetPath, int trackIndex,
+        CancellationToken cancellationToken)
+    {
+        var request = new GetTimelineTrackPropertiesRequest
+            { instanceId = instanceId, assetPath = assetPath, trackIndex = trackIndex };
+        var response = await client.GetAsync<GetTimelineTrackPropertiesRequest, GetTimelineTrackPropertiesResponse>(
+            ApiRoutes.TimelineTrackProperties, request, cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
+    }
+
+    public async ValueTask<string> GetClipPropertiesAsync(int instanceId, string? assetPath, int trackIndex,
+        int clipIndex, CancellationToken cancellationToken)
+    {
+        var request = new GetTimelineClipPropertiesRequest
+            { instanceId = instanceId, assetPath = assetPath, trackIndex = trackIndex, clipIndex = clipIndex };
+        var response = await client.GetAsync<GetTimelineClipPropertiesRequest, GetTimelineClipPropertiesResponse>(
+            ApiRoutes.TimelineClipProperties, request, cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
+    }
+
+    public async ValueTask<string> ModifyClipAsync(ModifyTimelineClipRequest request, CancellationToken cancellationToken)
+    {
+        await client.PostAsync<ModifyTimelineClipRequest, ModifyTimelineClipResponse>(ApiRoutes.TimelineModifyClip, request,
+            cancellationToken);
+        return $"Clip updated: track {request.trackIndex}, clip {request.clipIndex}";
+    }
+
+    public async ValueTask<string> SetClipPropertyAsync(int instanceId, int trackIndex, int clipIndex,
+        string propertyPath, string value, CancellationToken cancellationToken)
+    {
+        var request = new SetTimelineClipPropertyRequest
+        {
+            instanceId = instanceId, trackIndex = trackIndex, clipIndex = clipIndex, propertyPath = propertyPath,
+            value = value
+        };
+        await client.PostAsync<SetTimelineClipPropertyRequest, SetTimelineClipPropertyResponse>(
+            ApiRoutes.TimelineSetClipProperty, request, cancellationToken);
+        return $"Clip property '{propertyPath}' set to '{value}' on track {trackIndex}, clip {clipIndex}";
+    }
+
+    public async ValueTask<string> SetTrackPropertyAsync(int instanceId, int trackIndex, string propertyPath,
+        string value, CancellationToken cancellationToken)
+    {
+        var request = new SetTimelineTrackPropertyRequest
+            { instanceId = instanceId, trackIndex = trackIndex, propertyPath = propertyPath, value = value };
+        await client.PostAsync<SetTimelineTrackPropertyRequest, SetTimelineTrackPropertyResponse>(
+            ApiRoutes.TimelineSetTrackProperty, request, cancellationToken);
+        return $"Track property '{propertyPath}' set to '{value}' on track {trackIndex}";
+    }
+
     public async ValueTask<string> PlayAsync(int instanceId, CancellationToken cancellationToken)
     {
         var request = new PlayTimelineRequest { instanceId = instanceId };

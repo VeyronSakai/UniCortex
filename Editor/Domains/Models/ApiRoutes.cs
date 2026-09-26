@@ -48,11 +48,17 @@ namespace UniCortex.Editor.Domains.Models
         public const string InputKey = "/input/key";
         public const string InputMouse = "/input/mouse";
         public const string TimelineCreate = "/timeline/create";
+        public const string TimelineTracks = "/timeline/tracks";
         public const string TimelineAddTrack = "/timeline/track/add";
         public const string TimelineRemoveTrack = "/timeline/track/remove";
         public const string TimelineBindTrack = "/timeline/track/bind";
+        public const string TimelineTrackProperties = "/timeline/track/properties";
+        public const string TimelineSetTrackProperty = "/timeline/track/property/set";
         public const string TimelineAddClip = "/timeline/clip/add";
         public const string TimelineRemoveClip = "/timeline/clip/remove";
+        public const string TimelineModifyClip = "/timeline/clip/modify";
+        public const string TimelineClipProperties = "/timeline/clip/properties";
+        public const string TimelineSetClipProperty = "/timeline/clip/property/set";
         public const string TimelinePlay = "/timeline/play";
         public const string TimelineStop = "/timeline/stop";
         public const string FocusSceneView = "/scene-view/focus";

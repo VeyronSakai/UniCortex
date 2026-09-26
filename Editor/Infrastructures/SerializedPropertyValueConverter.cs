@@ -45,7 +45,7 @@ namespace UniCortex.Editor.Infrastructures
                     var q = property.quaternionValue;
                     return $"({q.x}, {q.y}, {q.z}, {q.w})";
                 case SerializedPropertyType.ObjectReference:
-                    return ObjectReferenceToValueString(property);
+                    return ObjectReferenceToValueString(property.objectReferenceValue);
                 case SerializedPropertyType.LayerMask:
                 case SerializedPropertyType.ArraySize:
                     return property.intValue.ToString();
@@ -71,7 +71,7 @@ namespace UniCortex.Editor.Infrastructures
                 case SerializedPropertyType.Hash128:
                     return property.hash128Value.ToString();
                 case SerializedPropertyType.ExposedReference:
-                    return ObjectReferenceToValueString(property);
+                    return ObjectReferenceToValueString(property.exposedReferenceValue);
                 case SerializedPropertyType.ManagedReference:
                     return property.managedReferenceFullTypename;
                 case SerializedPropertyType.FixedBufferSize:
@@ -86,14 +86,14 @@ namespace UniCortex.Editor.Infrastructures
         /// fed back into <see cref="SerializedPropertyValueParser.ApplyValue"/> for round-tripping.
         /// Asset references are returned as their asset path; scene objects as their instanceId.
         /// </summary>
-        private static string ObjectReferenceToValueString(SerializedProperty property)
+        private static string ObjectReferenceToValueString(UnityEngine.Object value)
         {
-            if (property.objectReferenceValue == null)
+            if (value == null)
                 return "null";
 
-            var assetPath = AssetDatabase.GetAssetPath(property.objectReferenceValue);
+            var assetPath = AssetDatabase.GetAssetPath(value);
             return string.IsNullOrEmpty(assetPath)
-                ? property.objectReferenceValue.GetInstanceID().ToString()
+                ? value.GetInstanceID().ToString()
                 : assetPath;
         }
     }

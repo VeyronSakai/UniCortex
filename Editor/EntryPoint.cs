@@ -317,6 +317,26 @@ namespace UniCortex.Editor
             var removeTimelineClipUseCase = new RemoveTimelineClipUseCase(s_dispatcher, timelineOps);
             var removeTimelineClipHandler = new RemoveTimelineClipHandler(removeTimelineClipUseCase);
 
+            var getTimelineTracksUseCase = new GetTimelineTracksUseCase(s_dispatcher, timelineOps);
+            var getTimelineTracksHandler = new GetTimelineTracksHandler(getTimelineTracksUseCase);
+
+            var getTimelineTrackPropertiesUseCase = new GetTimelineTrackPropertiesUseCase(s_dispatcher, timelineOps);
+            var getTimelineTrackPropertiesHandler = new GetTimelineTrackPropertiesHandler(getTimelineTrackPropertiesUseCase);
+
+            var getTimelineClipPropertiesUseCase = new GetTimelineClipPropertiesUseCase(s_dispatcher, timelineOps);
+            var getTimelineClipPropertiesHandler = new GetTimelineClipPropertiesHandler(getTimelineClipPropertiesUseCase);
+
+            var modifyTimelineClipUseCase = new ModifyTimelineClipUseCase(s_dispatcher, timelineOps);
+            var modifyTimelineClipHandler = new ModifyTimelineClipHandler(modifyTimelineClipUseCase);
+
+            var setTimelineClipPropertyUseCase =
+                new SetTimelineClipPropertyUseCase(s_dispatcher, timelineOps);
+            var setTimelineClipPropertyHandler =
+                new SetTimelineClipPropertyHandler(setTimelineClipPropertyUseCase);
+
+            var setTimelineTrackPropertyUseCase = new SetTimelineTrackPropertyUseCase(s_dispatcher, timelineOps);
+            var setTimelineTrackPropertyHandler = new SetTimelineTrackPropertyHandler(setTimelineTrackPropertyUseCase);
+
             var playTimelineUseCase = new PlayTimelineUseCase(s_dispatcher, timelineOps);
             var playTimelineHandler = new PlayTimelineHandler(playTimelineUseCase);
 
@@ -386,6 +406,12 @@ namespace UniCortex.Editor
             bindTimelineTrackHandler.Register(router);
             addTimelineClipHandler.Register(router);
             removeTimelineClipHandler.Register(router);
+            getTimelineTracksHandler.Register(router);
+            getTimelineTrackPropertiesHandler.Register(router);
+            getTimelineClipPropertiesHandler.Register(router);
+            modifyTimelineClipHandler.Register(router);
+            setTimelineClipPropertyHandler.Register(router);
+            setTimelineTrackPropertyHandler.Register(router);
             playTimelineHandler.Register(router);
             stopTimelineHandler.Register(router);
 
