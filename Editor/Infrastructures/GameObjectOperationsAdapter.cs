@@ -11,6 +11,8 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class GameObjectOperationsAdapter : IGameObjectOperations
     {
+        private const string ModifyParentUndoName = "Modify GameObject Parent";
+
         public List<GameObjectSearchResult> Get(string query)
         {
             using var context = SearchService.CreateContext("scene", query);
@@ -136,7 +138,7 @@ namespace UniCortex.Editor.Infrastructures
             {
                 if (parentInstanceId.Value == 0)
                 {
-                    Undo.SetTransformParent(go.transform, null, worldPositionStays, "Modify GameObject Parent");
+                    Undo.SetTransformParent(go.transform, null, worldPositionStays, ModifyParentUndoName);
                 }
                 else
                 {
@@ -144,7 +146,7 @@ namespace UniCortex.Editor.Infrastructures
                     if (parent != null)
                     {
                         Undo.SetTransformParent(go.transform, parent.transform, worldPositionStays,
-                            "Modify GameObject Parent");
+                            ModifyParentUndoName);
                     }
                 }
             }
