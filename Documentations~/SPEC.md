@@ -281,7 +281,7 @@ Request body:
 
 - `name`: name of the GameObject to create (required)
 - `parentInstanceId`: instanceId of the parent GameObject (optional). The object is placed with `GameObjectUtility.SetParentAndAlign`, so its local transform is reset and it inherits the parent's layer. If omitted, the object is created at the root of the active scene. An unknown instanceId returns an error
-- `siblingIndex`: position among siblings, `0` = first (optional). Values beyond the last sibling place the object last; negative values are rejected. If omitted or `null`, the object is placed last
+- `siblingIndex`: position among siblings, `0` = first (optional). Values beyond the last sibling place the object last; negative values are rejected. If omitted, the object is placed last
 - `useRectTransform`: create the object with a `RectTransform` (optional). A `RectTransform` is also used automatically when the parent has one, mirroring the Editor's "Create Empty Child"
 
 Response:
@@ -313,7 +313,7 @@ Request body:
 }
 ```
 
-All fields other than `instanceId` are optional, and a field set to `null` is treated as not specified. Setting `parentInstanceId` to `0` moves the object to the root.
+All fields other than `instanceId` are optional. Setting `parentInstanceId` to `0` moves the object to the root.
 
 - `siblingIndex`: position among siblings, `0` = first. Without `parentInstanceId` it reorders the object within its current parent; with it, the index is applied after reparenting. Values beyond the last sibling place the object last; negative values are rejected. Undo-supported via `Undo.SetSiblingIndex`
 - `worldPositionStays`: when changing the parent, keep the world transform (`true`, default) or keep the local transform (`false`). `false` is useful when moving between parents with different scales (e.g. another Canvas) or when the local values should be kept as-is. Passed to `Undo.SetTransformParent`

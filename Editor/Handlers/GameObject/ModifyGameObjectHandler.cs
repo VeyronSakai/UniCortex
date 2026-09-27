@@ -57,20 +57,15 @@ namespace UniCortex.Editor.Handlers.GameObject
                 return;
             }
 
-            // Determine which fields were provided in the JSON body; explicit nulls count as not provided
-            var modifyName = JsonFieldPresence.HasValue(body, "name") ? raw.name : null;
-            var modifyActiveSelf =
-                JsonFieldPresence.HasValue(body, "activeSelf") ? (bool?)raw.activeSelf : null;
-            var modifyTag = JsonFieldPresence.HasValue(body, "tag") ? raw.tag : null;
-            var modifyLayer = JsonFieldPresence.HasValue(body, "layer") ? (int?)raw.layer : null;
-            var modifyParent = JsonFieldPresence.HasValue(body, "parentInstanceId")
-                ? (int?)raw.parentInstanceId
-                : null;
-            var modifySiblingIndex = JsonFieldPresence.HasValue(body, "siblingIndex")
-                ? (int?)raw.siblingIndex
-                : null;
+            // Determine which fields were provided in the JSON body
+            var modifyName = body.Contains("\"name\"") ? raw.name : null;
+            var modifyActiveSelf = body.Contains("\"activeSelf\"") ? (bool?)raw.activeSelf : null;
+            var modifyTag = body.Contains("\"tag\"") ? raw.tag : null;
+            var modifyLayer = body.Contains("\"layer\"") ? (int?)raw.layer : null;
+            var modifyParent = body.Contains("\"parentInstanceId\"") ? (int?)raw.parentInstanceId : null;
+            var modifySiblingIndex = body.Contains("\"siblingIndex\"") ? (int?)raw.siblingIndex : null;
             // Keep the world transform by default, matching Unity's reparenting behavior in the Hierarchy window.
-            var worldPositionStays = !JsonFieldPresence.HasValue(body, "worldPositionStays") || raw.worldPositionStays;
+            var worldPositionStays = !body.Contains("\"worldPositionStays\"") || raw.worldPositionStays;
 
             if (modifySiblingIndex < 0)
             {

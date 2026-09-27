@@ -53,9 +53,7 @@ namespace UniCortex.Editor.Handlers.GameObject
                 return;
             }
 
-            var siblingIndex = JsonFieldPresence.HasValue(body, "siblingIndex")
-                ? (int?)request.siblingIndex
-                : null;
+            var siblingIndex = body.Contains("\"siblingIndex\"") ? (int?)request.siblingIndex : null;
             if (siblingIndex < 0)
             {
                 var errorJson = JsonUtility.ToJson(new ErrorResponse("siblingIndex must be 0 or greater."));
