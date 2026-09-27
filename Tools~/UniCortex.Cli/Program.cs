@@ -29,7 +29,6 @@ app.Add<ConsoleCommands>("console");
 app.Add<AssetCommands>("asset");
 app.Add<ProjectWindowCommands>("project-window");
 app.Add<MenuItemCommands>("menu");
-app.Add<ScreenshotCommands>("screenshot");
 
 app.Add<SceneViewCommands>("scene-view");
 app.Add<GameViewCommands>("game-view");

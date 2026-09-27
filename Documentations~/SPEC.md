@@ -694,17 +694,6 @@ Response:
 }
 ```
 
-### Screenshot
-
-#### GET `/screenshot/capture`
-Captures a screenshot of the current Unity rendering output. Play Mode only.
-Normally captures the Game View, but the Scene View is captured instead if the Game View is unfocused or closed.
-
-- Uses `ScreenCapture.CaptureScreenshotAsTexture()` to capture the current rendering output (including UI overlays)
-- Returns 400 in Edit Mode
-
-Response: `{ "pngDataBase64": "<base64>" }` (`Content-Type: application/json`)
-
 ### View
 
 #### POST `/scene-view/focus`
@@ -712,10 +701,31 @@ Switches focus to the Scene View.
 
 Response: `{"success": true}`
 
+#### GET `/scene-view/capture`
+Captures the Scene View as a PNG image. Available in both Edit Mode and Play Mode.
+
+- Renders `SceneView.lastActiveSceneView.camera` into an offscreen RenderTexture at the Scene View's pixel size
+- In Prefab Mode, the Prefab contents are captured, because the Scene View camera renders the Prefab stage's preview scene
+- Gizmos, the grid and Screen Space - Overlay UI are not included
+- Returns 400 if no Scene View is open
+
+Response: `{ "pngDataBase64": "<base64>" }` (`Content-Type: application/json`)
+
 #### POST `/game-view/focus`
 Switches focus to the Game View.
 
 Response: `{"success": true}`
+
+#### GET `/game-view/capture`
+Captures the Game View as a PNG image. Play Mode only.
+
+- Returns 400 in Edit Mode (use `GET /scene-view/capture` instead). The Game View is not focused in that case
+- Captures only the game image at the Game View resolution (e.g. 1920x1080), including Screen Space - Overlay UI and without the editor chrome
+- Focuses the Game View first (it only renders while visible), then on a later main thread tick reads the Game View's render target (`PlayModeView.m_TargetTexture`, accessed via reflection)
+- On graphics APIs whose UV origin is at the top (`SystemInfo.graphicsUVStartsAtTop`, e.g. Metal / Direct3D / Vulkan), the render target is stored upside down, so it is flipped vertically before encoding
+- Returns 400 if the Game View is not open or has not been rendered yet
+
+Response: `{ "pngDataBase64": "<base64>" }` (`Content-Type: application/json`)
 
 #### GET `/game-view/size`
 Gets the current Game View size (width and height in pixels).
@@ -880,7 +890,7 @@ Request body:
 {"x": 100.0, "y": 200.0, "button": "left", "eventType": "press"}
 ```
 
-- `x`, `y`: screen coordinates in pixels. The origin (0, 0) is the bottom-left of the screen. X increases to the right, Y increases upward. The value range depends on the Game View resolution (e.g. for 800x600: x: 0–800, y: 0–600). Same coordinate system as `Mouse.current.position.ReadValue()`. Note: screenshots from `capture_screenshot` use top-left origin with Y increasing downward, so a coordinate transform is required.
+- `x`, `y`: screen coordinates in pixels. The origin (0, 0) is the bottom-left of the screen. X increases to the right, Y increases upward. The value range depends on the Game View resolution (e.g. for 800x600: x: 0–800, y: 0–600). Same coordinate system as `Mouse.current.position.ReadValue()`. Note: images from `capture_game_view` are at the Game View resolution with a top-left origin and Y increasing downward, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py.
 - `button`: optional. `"left"` (default), `"right"`, `"middle"`
 - `eventType`: optional. `"click"` (default: press, wait one frame, then release), `"press"`, `"release"`, or `"move"` (only update position, no button action)
 
@@ -1191,11 +1201,11 @@ The MCP server and CLI share their common HTTP communication logic and service l
 
 The use case layer and HTTP infrastructure shared between the MCP server and CLI.
 
-- **Use case layer**: `EditorUseCase`, `GameObjectUseCase`, `ComponentUseCase`, `SceneUseCase`, `PrefabUseCase`, `TestUseCase`, `ConsoleUseCase`, `AssetUseCase`, `MenuItemUseCase`, `ScreenshotUseCase`, `SceneViewUseCase`, `GameViewUseCase`, `InputUseCase`, `TimelineUseCase`
+- **Use case layer**: `EditorUseCase`, `GameObjectUseCase`, `ComponentUseCase`, `SceneUseCase`, `PrefabUseCase`, `TestUseCase`, `ConsoleUseCase`, `AssetUseCase`, `MenuItemUseCase`, `SceneViewUseCase`, `GameViewUseCase`, `InputUseCase`, `TimelineUseCase`
 - **Infrastructure**: `HttpRequestHandler`, `UnityServerUrlProvider`, `HttpResponseMessageExtensions`
 - **DI extension**: `ServiceCollectionExtensions.AddUniCortexCore()` registers all use cases and infrastructure in one call
 
-Each use case receives `IHttpClientFactory` and `IUnityServerUrlProvider` via constructor DI and communicates with the Unity Editor HTTP server. Return values are `string` (JSON or message) or `byte[]` (screenshots). Exceptions propagate to the caller as-is.
+Each use case receives `IHttpClientFactory` and `IUnityServerUrlProvider` via constructor DI and communicates with the Unity Editor HTTP server. Return values are `string` (JSON or message) or `byte[]` (captured images). Exceptions propagate to the caller as-is.
 
 ### MCP Server (UniCortex.Mcp)
 
@@ -1222,7 +1232,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
   3. Exits with an error if neither is set
 - Logs go to stderr (stdout is reserved for the MCP protocol)
 
-### MCP Tools (44 tools total)
+### MCP Tools (45 tools total)
 
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
@@ -1321,18 +1331,14 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 |------|-----|-------------|
 | `execute_menu_item` | POST `/menu-item/execute` | Execute a Unity menu item by path |
 
-#### Screenshot (1)
-
-| Tool | API | Description |
-|------|-----|-------------|
-| `capture_screenshot` | GET `/screenshot/capture` | Capture a screenshot of the current rendering output |
-
-#### View (5)
+#### View (7)
 
 | Tool | API | Description |
 |------|-----|-------------|
 | `focus_scene_view` | POST `/scene-view/focus` | Switch focus to the Scene View |
+| `capture_scene_view` | GET `/scene-view/capture` | Capture the Scene View (Edit Mode and Play Mode, including Prefab Mode) |
 | `focus_game_view` | POST `/game-view/focus` | Switch focus to the Game View |
+| `capture_game_view` | GET `/game-view/capture` | Capture the Game View (Play Mode only) |
 | `get_game_view_size` | GET `/game-view/size` | Get the current Game View size |
 | `get_game_view_size_list` | GET `/game-view/size/list` | Get the list of available Game View sizes |
 | `set_game_view_size` | POST `/game-view/size` | Set the Game View resolution by index |
@@ -1376,8 +1382,8 @@ Users implement an `ExtensionHandler`-derived class on the Unity Editor side and
 - `remove_component` — Symmetric with `add_component`. Undo-supported, so it's safe to remove
 - Separation of `find_game_objects` and `get_component_properties` — The former returns GameObject summaries (type list only); the latter returns details for a specific component. This avoids returning a flood of properties at once
 - `execute_menu_item` — A general escape hatch for edge cases that dedicated tools don't cover
-- `capture_screenshot` — Required for multimodal AI agents to inspect state visually
-- `focus_scene_view` / `focus_game_view` — Required to reliably capture the intended view together with `capture_screenshot`
+- `capture_game_view` / `capture_scene_view` — Required for multimodal AI agents to inspect state visually. Split by view so that the captured view is explicit: the Game View only in Play Mode, and the Scene View (including Prefab Mode) in any mode
+- `focus_scene_view` / `focus_game_view` — Switch the view the user sees in the Editor
 - Dedicated ScriptableObject tools — Edits `.asset` files with the same `SerializedProperty`-based vocabulary as components, providing a consistent API for agents. Editing files directly on the filesystem easily breaks format and loses Undo / Inspector reflection
 
 **Excluded:**
@@ -1450,9 +1456,8 @@ console logs|clear
 asset refresh
 project-window select
 menu execute
-screenshot capture
-scene-view focus
-game-view focus
+scene-view focus|capture
+game-view focus|capture
 game-view size get|list|set
 input send-key|send-mouse
 timeline create|play|stop
@@ -1483,7 +1488,7 @@ export UNICORTEX_PROJECT_PATH=/path/to/your/unity/project
 dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- editor ping
 dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- scene hierarchy
 dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- gameobject find --query "t:Camera"
-dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- screenshot capture ./screenshot.png
+dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- scene-view capture ./sceneview.png
 ```
 
 ---

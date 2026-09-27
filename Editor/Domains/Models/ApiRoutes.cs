@@ -43,7 +43,6 @@ namespace UniCortex.Editor.Domains.Models
         public const string AssetDatabaseRefresh = "/asset-database/refresh";
         public const string ProjectWindowSelect = "/project-window/select";
         public const string MenuItemExecute = "/menu-item/execute";
-        public const string ScreenshotCapture = "/screenshot/capture";
 
         public const string InputKey = "/input/key";
         public const string InputMouse = "/input/mouse";
@@ -63,7 +62,9 @@ namespace UniCortex.Editor.Domains.Models
         public const string TimelineStop = "/timeline/stop";
         public const string TimelineEvaluate = "/timeline/evaluate";
         public const string FocusSceneView = "/scene-view/focus";
+        public const string SceneViewCapture = "/scene-view/capture";
         public const string FocusGameView = "/game-view/focus";
+        public const string GameViewCapture = "/game-view/capture";
         public const string GameViewSize = "/game-view/size";
         public const string GameViewSizeList = "/game-view/size/list";
         public const string GameViewScale = "/game-view/scale";

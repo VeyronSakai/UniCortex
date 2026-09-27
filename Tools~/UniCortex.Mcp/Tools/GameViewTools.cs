@@ -12,11 +12,26 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
 {
     [McpServerTool(Name = "focus_game_view", ReadOnly = false),
      Description(
-         "Switch focus to the Game View window in the Unity Editor. " +
-         "Useful before capture_screenshot to ensure the Game View is captured."),
+         "Switch focus to the Game View window in the Unity Editor."),
      UsedImplicitly]
     public ValueTask<CallToolResult> FocusGameViewAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, gameViewUseCase.FocusAsync, cancellationToken);
+
+    [McpServerTool(Name = "capture_game_view", ReadOnly = true),
+     Description(
+         "Capture only the game image of the Game View as a PNG, at the Game View resolution and including " +
+         "Screen Space - Overlay UI (no editor chrome). Only available in Play Mode; use capture_scene_view in Edit Mode. " +
+         "The Game View is focused before capturing."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> CaptureGameViewAsync(CancellationToken cancellationToken)
+        => McpToolExecution.ExecuteAsync(sequencer, async ct =>
+        {
+            var pngData = await gameViewUseCase.CaptureAsync(ct);
+            return new CallToolResult
+            {
+                Content = [ImageContentBlock.FromBytes(pngData, "image/png")]
+            };
+        }, cancellationToken);
 
     [McpServerTool(Name = "get_game_view_size", ReadOnly = true),
      Description("Get the current Game View size (width and height in pixels) in the Unity Editor."),

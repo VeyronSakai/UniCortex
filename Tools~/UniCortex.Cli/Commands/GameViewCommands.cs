@@ -12,6 +12,16 @@ public class GameViewCommands(GameViewUseCase gameViewUseCase)
         var message = await gameViewUseCase.FocusAsync(cancellationToken);
         Console.WriteLine(message);
     }
+
+    /// <summary>Capture the Game View as a PNG file. Only available in Play Mode.</summary>
+    /// <param name="outputPath">File path to save the PNG image.</param>
+    [Command("capture")]
+    public async Task Capture([Argument] string outputPath, CancellationToken cancellationToken = default)
+    {
+        var pngData = await gameViewUseCase.CaptureAsync(cancellationToken);
+        await File.WriteAllBytesAsync(outputPath, pngData, cancellationToken);
+        Console.WriteLine($"Game View captured to: {outputPath}");
+    }
 }
 
 public class GameViewSizeCommands(GameViewUseCase gameViewUseCase)

@@ -13,6 +13,13 @@ public class GameViewUseCase(IUnityEditorClient client)
         return "Game View focused successfully.";
     }
 
+    public async ValueTask<byte[]> CaptureAsync(CancellationToken cancellationToken)
+    {
+        var response = await client.GetAsync<CaptureGameViewRequest, CaptureGameViewResponse>(
+            ApiRoutes.GameViewCapture, cancellationToken: cancellationToken);
+        return Convert.FromBase64String(response.pngDataBase64);
+    }
+
     public async ValueTask<string> GetSizeAsync(CancellationToken cancellationToken)
     {
         var response = await GetSizeResponseAsync(cancellationToken);

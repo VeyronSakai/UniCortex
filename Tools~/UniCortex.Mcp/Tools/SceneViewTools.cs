@@ -15,4 +15,20 @@ public class SceneViewTools(SceneViewUseCase sceneViewUseCase, IAsyncOperationSe
      UsedImplicitly]
     public ValueTask<CallToolResult> FocusSceneViewAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, sceneViewUseCase.FocusAsync, cancellationToken);
+
+    [McpServerTool(Name = "capture_scene_view", ReadOnly = true),
+     Description(
+         "Capture the Scene View as a PNG image, rendered from the Scene View camera. " +
+         "Available in both Edit Mode and Play Mode, and captures the Prefab contents in Prefab Mode. " +
+         "Gizmos, grid and Screen Space - Overlay UI are not included."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> CaptureSceneViewAsync(CancellationToken cancellationToken)
+        => McpToolExecution.ExecuteAsync(sequencer, async ct =>
+        {
+            var pngData = await sceneViewUseCase.CaptureAsync(ct);
+            return new CallToolResult
+            {
+                Content = [ImageContentBlock.FromBytes(pngData, "image/png")]
+            };
+        }, cancellationToken);
 }
