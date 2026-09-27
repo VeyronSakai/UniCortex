@@ -19,8 +19,8 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
 
     [McpServerTool(Name = "capture_game_view", ReadOnly = true),
      Description(
-         "Capture only the game image of the Game View as a PNG, at the Game View resolution and including " +
-         "Screen Space - Overlay UI (no editor chrome). Only available in Play Mode; use capture_scene_view in Edit Mode. " +
+         "Capture the Game View as a PNG image at the Game View resolution. " +
+         "Only available in Play Mode; use capture_scene_view in Edit Mode. " +
          "The Game View is focused before capturing."),
      UsedImplicitly]
     public ValueTask<CallToolResult> CaptureGameViewAsync(CancellationToken cancellationToken)

@@ -195,7 +195,7 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | `focus_scene_view` | Switch focus to the Scene View window |
 | `capture_scene_view` | Capture the Scene View as a PNG image. Works in both Edit Mode and Play Mode, and captures the Prefab contents in Prefab Mode (gizmos and Screen Space - Overlay UI are not included) |
 | `focus_game_view` | Switch focus to the Game View window |
-| `capture_game_view` | Capture only the game image of the Game View as a PNG at the Game View resolution, including Screen Space - Overlay UI and without editor chrome (Play Mode only) |
+| `capture_game_view` | Capture the Game View as a PNG at the Game View resolution (Play Mode only) |
 | `get_game_view_size` | Get the current Game View size (width and height in pixels) |
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
@@ -415,7 +415,7 @@ Component commands accept the fully-qualified component type name plus the defin
 | `scene-view focus` | Focus the Scene View window. |
 | `scene-view capture` | Capture the Scene View as a PNG file. Works in Edit Mode and Play Mode, including Prefab Mode. |
 | `game-view focus` | Focus the Game View window. |
-| `game-view capture` | Capture only the game image of the Game View as a PNG file at the Game View resolution. Play Mode only. |
+| `game-view capture` | Capture the Game View as a PNG file at the Game View resolution. Play Mode only. |
 | `game-view size get` | Show the current Game View size. |
 | `game-view size list` | List available Game View sizes. |
 | `game-view size set` | Set the Game View size by index. |
