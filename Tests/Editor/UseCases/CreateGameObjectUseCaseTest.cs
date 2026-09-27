@@ -35,13 +35,12 @@ namespace UniCortex.Editor.Tests.UseCases
             var useCase = new CreateGameObjectUseCase(dispatcher, ops);
 
             // Act
-            useCase.ExecuteAsync("Panel", 42, 2, true, true, CancellationToken.None).GetAwaiter().GetResult();
+            useCase.ExecuteAsync("Panel", 42, 2, true, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
             Assert.AreEqual(42, ops.LastCreateParentInstanceId);
             Assert.AreEqual(2, ops.LastCreateSiblingIndex);
             Assert.IsTrue(ops.LastCreateRectTransform);
-            Assert.IsTrue(ops.LastCreateStretchToParent);
         }
     }
 }

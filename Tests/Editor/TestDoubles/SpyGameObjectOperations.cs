@@ -15,7 +15,6 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int LastCreateParentInstanceId { get; private set; }
         public int? LastCreateSiblingIndex { get; private set; }
         public bool LastCreateRectTransform { get; private set; }
-        public bool LastCreateStretchToParent { get; private set; }
         public CreateGameObjectResponse CreateResult { get; set; } = new CreateGameObjectResponse("New", 1);
 
         public int DeleteCallCount { get; private set; }
@@ -44,14 +43,13 @@ namespace UniCortex.Editor.Tests.TestDoubles
         }
 
         public CreateGameObjectResponse Create(string name, int parentInstanceId, int? siblingIndex,
-            bool rectTransform, bool stretchToParent)
+            bool rectTransform)
         {
             CreateCallCount++;
             LastCreateName = name;
             LastCreateParentInstanceId = parentInstanceId;
             LastCreateSiblingIndex = siblingIndex;
             LastCreateRectTransform = rectTransform;
-            LastCreateStretchToParent = stretchToParent;
             return CreateResult;
         }
 

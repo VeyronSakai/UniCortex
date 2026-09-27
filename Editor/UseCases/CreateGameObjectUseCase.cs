@@ -17,11 +17,10 @@ namespace UniCortex.Editor.UseCases
         }
 
         public async Task<CreateGameObjectResponse> ExecuteAsync(string name, int parentInstanceId = 0,
-            int? siblingIndex = null, bool rectTransform = false, bool stretchToParent = false,
-            CancellationToken cancellationToken = default)
+            int? siblingIndex = null, bool rectTransform = false, CancellationToken cancellationToken = default)
         {
             return await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.Create(name, parentInstanceId, siblingIndex, rectTransform, stretchToParent),
+                () => _operations.Create(name, parentInstanceId, siblingIndex, rectTransform),
                 cancellationToken);
         }
     }

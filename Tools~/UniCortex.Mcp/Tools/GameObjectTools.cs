@@ -37,7 +37,7 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
     [McpServerTool(Name = "create_game_object", ReadOnly = false),
      Description(
          "Create a new empty GameObject in the current scene, optionally under a parent at a specific sibling " +
-         "position. For UI, the object can be created with a RectTransform stretched to fill its parent. Supports Undo."),
+         "position. For UI, the object can be created with a RectTransform. Supports Undo."),
      UsedImplicitly]
     public ValueTask<CallToolResult> CreateGameObjectAsync(
         [Description("Name of the GameObject to create.")] string name,
@@ -50,15 +50,12 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
             "Values beyond the last sibling place it last. If omitted, the object is placed last.")]
         int? siblingIndex = null,
         [Description(
-            "Create the object with a RectTransform for UI. Automatically applied when the parent has a RectTransform.")]
+            "Create the object with a RectTransform for UI. Automatically applied when the parent has a RectTransform. " +
+            "To adjust anchors (e.g. stretch to fill the parent), use set_component_property on the RectTransform.")]
         bool? rectTransform = null,
-        [Description(
-            "Stretch the RectTransform anchors to fill the parent with zero offsets. Implies rectTransform.")]
-        bool? stretchToParent = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, rectTransform,
-                stretchToParent, ct), cancellationToken);
+            ct => gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, rectTransform, ct), cancellationToken);
 
     [McpServerTool(Name = "delete_game_object", ReadOnly = false), Description("Remove a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
     public ValueTask<CallToolResult> DeleteGameObjectAsync(

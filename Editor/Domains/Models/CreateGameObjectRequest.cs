@@ -9,6 +9,5 @@ namespace UniCortex.Editor.Domains.Models
         public int? parentInstanceId;
         public int? siblingIndex;
         public bool? rectTransform;
-        public bool? stretchToParent;
     }
 }

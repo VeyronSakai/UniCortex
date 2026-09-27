@@ -46,7 +46,7 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         public CreateGameObjectResponse Create(string name, int parentInstanceId, int? siblingIndex,
-            bool rectTransform, bool stretchToParent)
+            bool rectTransform)
         {
             GameObject parent = null;
             if (parentInstanceId != 0)
@@ -59,24 +59,13 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             // Mirror "Create Empty Child": children of UI objects get a RectTransform automatically.
-            var useRectTransform = rectTransform || stretchToParent ||
-                                   (parent != null && parent.transform is RectTransform);
+            var useRectTransform = rectTransform || (parent != null && parent.transform is RectTransform);
             var go = useRectTransform ? new GameObject(name, typeof(RectTransform)) : new GameObject(name);
 
             if (parent != null)
             {
                 // Resets the local transform and inherits the parent's layer, like the Editor's create commands.
                 GameObjectUtility.SetParentAndAlign(go, parent);
-            }
-
-            if (stretchToParent)
-            {
-                var rect = (RectTransform)go.transform;
-                rect.anchorMin = Vector2.zero;
-                rect.anchorMax = Vector2.one;
-                rect.pivot = new Vector2(0.5f, 0.5f);
-                rect.offsetMin = Vector2.zero;
-                rect.offsetMax = Vector2.zero;
             }
 
             if (siblingIndex.HasValue)

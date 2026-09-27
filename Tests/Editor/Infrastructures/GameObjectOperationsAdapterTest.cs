@@ -47,7 +47,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
         public void Create_WithParentAndSiblingIndex_PlacesObjectAtIndex()
         {
             // Act
-            var response = _adapter.Create("New", _root.GetInstanceID(), 1, false, false);
+            var response = _adapter.Create("New", _root.GetInstanceID(), 1, false);
 
             // Assert
             var go = Find(response.instanceId);
@@ -62,7 +62,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
         public void Create_WithParentOnly_AppendsAsLastChild()
         {
             // Act
-            var response = _adapter.Create("New", _root.GetInstanceID(), null, false, false);
+            var response = _adapter.Create("New", _root.GetInstanceID(), null, false);
 
             // Assert
             Assert.AreEqual(3, Find(response.instanceId).transform.GetSiblingIndex());
@@ -72,7 +72,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
         public void Create_WithSiblingIndexBeyondCount_AppendsAsLastChild()
         {
             // Act
-            var response = _adapter.Create("New", _root.GetInstanceID(), 100, false, false);
+            var response = _adapter.Create("New", _root.GetInstanceID(), 100, false);
 
             // Assert
             Assert.AreEqual(3, Find(response.instanceId).transform.GetSiblingIndex());
@@ -82,14 +82,14 @@ namespace UniCortex.Editor.Tests.Infrastructures
         public void Create_WithMissingParent_ThrowsArgumentException()
         {
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => _adapter.Create("New", -999999, null, false, false));
+            Assert.Throws<ArgumentException>(() => _adapter.Create("New", -999999, null, false));
         }
 
         [Test]
         public void Create_WithRectTransform_UsesRectTransform()
         {
             // Act
-            var response = _adapter.Create("New", _root.GetInstanceID(), null, true, false);
+            var response = _adapter.Create("New", _root.GetInstanceID(), null, true);
 
             // Assert
             Assert.IsInstanceOf<RectTransform>(Find(response.instanceId).transform);
@@ -103,7 +103,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             canvas.transform.SetParent(_root.transform, false);
 
             // Act
-            var response = _adapter.Create("New", canvas.GetInstanceID(), null, false, false);
+            var response = _adapter.Create("New", canvas.GetInstanceID(), null, false);
 
             // Assert
             var go = Find(response.instanceId);
@@ -111,23 +111,6 @@ namespace UniCortex.Editor.Tests.Infrastructures
             Assert.AreEqual(5, go.layer);
         }
 
-        [Test]
-        public void Create_WithStretchToParent_StretchesAnchorsToParent()
-        {
-            // Arrange
-            var canvas = new GameObject("Canvas", typeof(RectTransform));
-            canvas.transform.SetParent(_root.transform, false);
-
-            // Act
-            var response = _adapter.Create("New", canvas.GetInstanceID(), null, false, true);
-
-            // Assert
-            var rect = (RectTransform)Find(response.instanceId).transform;
-            Assert.AreEqual(Vector2.zero, rect.anchorMin);
-            Assert.AreEqual(Vector2.one, rect.anchorMax);
-            Assert.AreEqual(Vector2.zero, rect.offsetMin);
-            Assert.AreEqual(Vector2.zero, rect.offsetMax);
-        }
 
         [Test]
         public void Modify_WithSiblingIndexOnly_ReordersWithinSameParent()
