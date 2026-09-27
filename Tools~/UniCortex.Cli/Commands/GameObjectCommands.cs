@@ -21,7 +21,7 @@ public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
     /// <param name="useRectTransform">Create with a RectTransform for UI. Automatic when the parent has a RectTransform.</param>
     [Command("create")]
     public async Task Create([Argument] string name, int? parentInstanceId = null, int? siblingIndex = null,
-        bool? useRectTransform = null, CancellationToken cancellationToken = default)
+        bool useRectTransform = false, CancellationToken cancellationToken = default)
     {
         var json = await gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, useRectTransform,
             cancellationToken);
