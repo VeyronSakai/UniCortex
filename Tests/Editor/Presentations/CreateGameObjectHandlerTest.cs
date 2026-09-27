@@ -49,5 +49,73 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("name is required", context.ResponseBody);
         }
+
+        [Test]
+        public void HandleCreate_PassesParentSiblingIndexAndRectTransformOptions()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var ops = new SpyGameObjectOperations();
+            var useCase = new CreateGameObjectUseCase(dispatcher, ops);
+            var handler = new CreateGameObjectHandler(useCase);
+            var router = new RequestRouter();
+            handler.Register(router);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameObjectCreate,
+                "{\"name\":\"Panel\",\"parentInstanceId\":42,\"siblingIndex\":0,\"rectTransform\":true,\"stretchToParent\":true}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(42, ops.LastCreateParentInstanceId);
+            Assert.AreEqual(0, ops.LastCreateSiblingIndex);
+            Assert.IsTrue(ops.LastCreateRectTransform);
+            Assert.IsTrue(ops.LastCreateStretchToParent);
+        }
+
+        [Test]
+        public void HandleCreate_PassesNullSiblingIndex_WhenOmitted()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var ops = new SpyGameObjectOperations();
+            var useCase = new CreateGameObjectUseCase(dispatcher, ops);
+            var handler = new CreateGameObjectHandler(useCase);
+            var router = new RequestRouter();
+            handler.Register(router);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameObjectCreate,
+                "{\"name\":\"Obj\"}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(0, ops.LastCreateParentInstanceId);
+            Assert.IsNull(ops.LastCreateSiblingIndex);
+            Assert.IsFalse(ops.LastCreateRectTransform);
+        }
+
+        [Test]
+        public void HandleCreate_Returns400_WhenSiblingIndexNegative()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var ops = new SpyGameObjectOperations();
+            var useCase = new CreateGameObjectUseCase(dispatcher, ops);
+            var handler = new CreateGameObjectHandler(useCase);
+            var router = new RequestRouter();
+            handler.Register(router);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameObjectCreate,
+                "{\"name\":\"Obj\",\"siblingIndex\":-1}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            Assert.AreEqual(0, ops.CreateCallCount);
+        }
     }
 }

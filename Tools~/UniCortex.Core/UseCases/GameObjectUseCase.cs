@@ -15,9 +15,17 @@ public class GameObjectUseCase(IUnityEditorClient client)
         return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 
-    public async ValueTask<string> CreateAsync(string name, CancellationToken cancellationToken)
+    public async ValueTask<string> CreateAsync(string name, int? parentInstanceId = null, int? siblingIndex = null,
+        bool? rectTransform = null, bool? stretchToParent = null, CancellationToken cancellationToken = default)
     {
-        var request = new CreateGameObjectRequest { name = name };
+        var request = new CreateGameObjectRequest
+        {
+            name = name,
+            parentInstanceId = parentInstanceId,
+            siblingIndex = siblingIndex,
+            rectTransform = rectTransform,
+            stretchToParent = stretchToParent
+        };
         var response = await client.PostAsync<CreateGameObjectRequest, CreateGameObjectResponse>(
             ApiRoutes.GameObjectCreate, request, cancellationToken);
         return JsonSerializer.Serialize(response, JsonOptions.Default);
@@ -32,8 +40,8 @@ public class GameObjectUseCase(IUnityEditorClient client)
     }
 
     public async ValueTask<string> ModifyAsync(int instanceId, string? name = null, bool? activeSelf = null,
-        string? tag = null, int? layer = null, int? parentInstanceId = null,
-        CancellationToken cancellationToken = default)
+        string? tag = null, int? layer = null, int? parentInstanceId = null, int? siblingIndex = null,
+        bool? worldPositionStays = null, CancellationToken cancellationToken = default)
     {
         var request = new ModifyGameObjectRequest
         {
@@ -42,7 +50,9 @@ public class GameObjectUseCase(IUnityEditorClient client)
             activeSelf = activeSelf,
             tag = tag,
             layer = layer,
-            parentInstanceId = parentInstanceId
+            parentInstanceId = parentInstanceId,
+            siblingIndex = siblingIndex,
+            worldPositionStays = worldPositionStays
         };
         await client.PostAsync<ModifyGameObjectRequest, ModifyGameObjectResponse>(ApiRoutes.GameObjectModify, request,
             cancellationToken);

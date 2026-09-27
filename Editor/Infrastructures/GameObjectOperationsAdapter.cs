@@ -45,11 +45,60 @@ namespace UniCortex.Editor.Infrastructures
                 components);
         }
 
-        public CreateGameObjectResponse Create(string name)
+        public CreateGameObjectResponse Create(string name, int parentInstanceId, int? siblingIndex,
+            bool rectTransform, bool stretchToParent)
         {
-            var go = new GameObject(name);
+            GameObject parent = null;
+            if (parentInstanceId != 0)
+            {
+                parent = EditorUtility.InstanceIDToObject(parentInstanceId) as GameObject;
+                if (parent == null)
+                {
+                    throw new ArgumentException($"Parent GameObject with instanceId {parentInstanceId} not found.");
+                }
+            }
+
+            // Mirror "Create Empty Child": children of UI objects get a RectTransform automatically.
+            var useRectTransform = rectTransform || stretchToParent ||
+                                   (parent != null && parent.transform is RectTransform);
+            var go = useRectTransform ? new GameObject(name, typeof(RectTransform)) : new GameObject(name);
+
+            if (parent != null)
+            {
+                // Resets the local transform and inherits the parent's layer, like the Editor's create commands.
+                GameObjectUtility.SetParentAndAlign(go, parent);
+            }
+
+            if (stretchToParent)
+            {
+                var rect = (RectTransform)go.transform;
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+            }
+
+            if (siblingIndex.HasValue)
+            {
+                go.transform.SetSiblingIndex(ClampSiblingIndex(go.transform, siblingIndex.Value));
+            }
+
             Undo.RegisterCreatedObjectUndo(go, "Create GameObject");
             return new CreateGameObjectResponse(go.name, go.GetInstanceID());
+        }
+
+        private static int ClampSiblingIndex(Transform transform, int siblingIndex)
+        {
+            if (siblingIndex < 0)
+            {
+                throw new ArgumentException("siblingIndex must be 0 or greater.");
+            }
+
+            var siblingCount = transform.parent != null
+                ? transform.parent.childCount
+                : transform.gameObject.scene.rootCount;
+            return Math.Min(siblingIndex, siblingCount - 1);
         }
 
         public void Delete(int instanceId)
@@ -64,7 +113,7 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         public void Modify(int instanceId, string name, bool? activeSelf, string tag, int? layer,
-            int? parentInstanceId)
+            int? parentInstanceId, int? siblingIndex, bool worldPositionStays)
         {
             var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
             if (go == null)
@@ -98,16 +147,23 @@ namespace UniCortex.Editor.Infrastructures
             {
                 if (parentInstanceId.Value == 0)
                 {
-                    Undo.SetTransformParent(go.transform, null, "Modify GameObject Parent");
+                    Undo.SetTransformParent(go.transform, null, worldPositionStays, "Modify GameObject Parent");
                 }
                 else
                 {
                     var parent = EditorUtility.InstanceIDToObject(parentInstanceId.Value) as GameObject;
                     if (parent != null)
                     {
-                        Undo.SetTransformParent(go.transform, parent.transform, "Modify GameObject Parent");
+                        Undo.SetTransformParent(go.transform, parent.transform, worldPositionStays,
+                            "Modify GameObject Parent");
                     }
                 }
+            }
+
+            if (siblingIndex.HasValue)
+            {
+                Undo.SetSiblingIndex(go.transform, ClampSiblingIndex(go.transform, siblingIndex.Value),
+                    "Modify GameObject Sibling Index");
             }
         }
 

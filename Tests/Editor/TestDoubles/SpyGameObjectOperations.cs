@@ -12,6 +12,10 @@ namespace UniCortex.Editor.Tests.TestDoubles
 
         public int CreateCallCount { get; private set; }
         public string LastCreateName { get; private set; }
+        public int LastCreateParentInstanceId { get; private set; }
+        public int? LastCreateSiblingIndex { get; private set; }
+        public bool LastCreateRectTransform { get; private set; }
+        public bool LastCreateStretchToParent { get; private set; }
         public CreateGameObjectResponse CreateResult { get; set; } = new CreateGameObjectResponse("New", 1);
 
         public int DeleteCallCount { get; private set; }
@@ -24,6 +28,8 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string LastModifyTag { get; private set; }
         public int? LastModifyLayer { get; private set; }
         public int? LastModifyParentInstanceId { get; private set; }
+        public int? LastModifySiblingIndex { get; private set; }
+        public bool LastModifyWorldPositionStays { get; private set; }
 
         public int DuplicateCallCount { get; private set; }
         public int LastDuplicateInstanceId { get; private set; }
@@ -37,10 +43,15 @@ namespace UniCortex.Editor.Tests.TestDoubles
             return GetResult;
         }
 
-        public CreateGameObjectResponse Create(string name)
+        public CreateGameObjectResponse Create(string name, int parentInstanceId, int? siblingIndex,
+            bool rectTransform, bool stretchToParent)
         {
             CreateCallCount++;
             LastCreateName = name;
+            LastCreateParentInstanceId = parentInstanceId;
+            LastCreateSiblingIndex = siblingIndex;
+            LastCreateRectTransform = rectTransform;
+            LastCreateStretchToParent = stretchToParent;
             return CreateResult;
         }
 
@@ -51,7 +62,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
         }
 
         public void Modify(int instanceId, string name, bool? activeSelf, string tag, int? layer,
-            int? parentInstanceId)
+            int? parentInstanceId, int? siblingIndex, bool worldPositionStays)
         {
             ModifyCallCount++;
             LastModifyInstanceId = instanceId;
@@ -60,6 +71,8 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastModifyTag = tag;
             LastModifyLayer = layer;
             LastModifyParentInstanceId = parentInstanceId;
+            LastModifySiblingIndex = siblingIndex;
+            LastModifyWorldPositionStays = worldPositionStays;
         }
 
         public DuplicateGameObjectResponse Duplicate(int instanceId, string name)

@@ -39,7 +39,7 @@ public class PrefabUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("CreatePrefabTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("CreatePrefabTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -61,7 +61,7 @@ public class PrefabUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("InstantiatePrefabTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("InstantiatePrefabTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         await _fixture.PrefabUseCase.CreateAsync(
@@ -97,7 +97,7 @@ public class PrefabUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("OpenPrefabTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("OpenPrefabTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -110,7 +110,7 @@ public class PrefabUseCaseTest
             Assert.That(message, Does.Contain("Prefab opened: Assets/OpenPrefabTest.prefab"));
 
             // Create a child GameObject inside the prefab to make it dirty
-            var childJson = await _fixture.GameObjectUseCase.CreateAsync("DirtyChild", ct);
+            var childJson = await _fixture.GameObjectUseCase.CreateAsync("DirtyChild", cancellationToken: ct);
             var childResponse =
                 JsonSerializer.Deserialize<CreateGameObjectResponse>(childJson, s_jsonOptions)!;
             Assert.That(childResponse.instanceId, Is.Not.EqualTo(0));
@@ -140,7 +140,7 @@ public class PrefabUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("HierarchyPrefabTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("HierarchyPrefabTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -169,7 +169,7 @@ public class PrefabUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("FindPrefabTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("FindPrefabTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -197,7 +197,7 @@ public class PrefabUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("FindQueryPrefabTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("FindQueryPrefabTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -225,7 +225,7 @@ public class PrefabUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("SavePrefabTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("SavePrefabTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try

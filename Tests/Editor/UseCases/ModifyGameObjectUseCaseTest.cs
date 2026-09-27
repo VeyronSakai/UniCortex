@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var ops = new SpyGameObjectOperations();
             var useCase = new ModifyGameObjectUseCase(dispatcher, ops);
 
-            useCase.ExecuteAsync(123, "NewName", true, "Player", 5, null, CancellationToken.None)
+            useCase.ExecuteAsync(123, "NewName", true, "Player", 5, null, 3, false, CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(1, ops.ModifyCallCount);
@@ -25,6 +25,8 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual("Player", ops.LastModifyTag);
             Assert.AreEqual(5, ops.LastModifyLayer);
             Assert.IsNull(ops.LastModifyParentInstanceId);
+            Assert.AreEqual(3, ops.LastModifySiblingIndex);
+            Assert.IsFalse(ops.LastModifyWorldPositionStays);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
     }

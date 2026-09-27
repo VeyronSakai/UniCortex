@@ -16,10 +16,16 @@ public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
 
     /// <summary>Create a new empty GameObject in the current scene.</summary>
     /// <param name="name">Name of the GameObject to create.</param>
+    /// <param name="parentInstanceId">Instance ID of the parent GameObject. If omitted, created at the scene root.</param>
+    /// <param name="siblingIndex">Position among siblings (0 = first). If omitted, placed last.</param>
+    /// <param name="rectTransform">Create with a RectTransform for UI. Automatic when the parent has a RectTransform.</param>
+    /// <param name="stretchToParent">Stretch the RectTransform anchors to fill the parent. Implies --rect-transform.</param>
     [Command("create")]
-    public async Task Create([Argument] string name, CancellationToken cancellationToken = default)
+    public async Task Create([Argument] string name, int? parentInstanceId = null, int? siblingIndex = null,
+        bool? rectTransform = null, bool? stretchToParent = null, CancellationToken cancellationToken = default)
     {
-        var json = await gameObjectUseCase.CreateAsync(name, cancellationToken);
+        var json = await gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, rectTransform,
+            stretchToParent, cancellationToken);
         Console.WriteLine(json);
     }
 
@@ -39,13 +45,15 @@ public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
     /// <param name="tag">Tag to assign to the GameObject.</param>
     /// <param name="layer">Layer number to assign to the GameObject.</param>
     /// <param name="parentInstanceId">Instance ID of the new parent GameObject. Use 0 to move to root.</param>
+    /// <param name="siblingIndex">New position among siblings (0 = first).</param>
+    /// <param name="worldPositionStays">When changing the parent, keep the world transform (default: true).</param>
     [Command("modify")]
     public async Task Modify([Argument] int instanceId, string? name = null, bool? activeSelf = null,
-        string? tag = null, int? layer = null, int? parentInstanceId = null,
-        CancellationToken cancellationToken = default)
+        string? tag = null, int? layer = null, int? parentInstanceId = null, int? siblingIndex = null,
+        bool? worldPositionStays = null, CancellationToken cancellationToken = default)
     {
         var message = await gameObjectUseCase.ModifyAsync(instanceId, name, activeSelf, tag, layer,
-            parentInstanceId, cancellationToken);
+            parentInstanceId, siblingIndex, worldPositionStays, cancellationToken);
         Console.WriteLine(message);
     }
 

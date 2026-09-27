@@ -33,6 +33,8 @@ namespace UniCortex.Editor.Handlers.GameObject
             public string tag;
             public int layer;
             public int parentInstanceId;
+            public int siblingIndex;
+            public bool worldPositionStays;
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -61,9 +63,19 @@ namespace UniCortex.Editor.Handlers.GameObject
             var modifyTag = body.Contains("\"tag\"") ? raw.tag : null;
             var modifyLayer = body.Contains("\"layer\"") ? (int?)raw.layer : null;
             var modifyParent = body.Contains("\"parentInstanceId\"") ? (int?)raw.parentInstanceId : null;
+            var modifySiblingIndex = body.Contains("\"siblingIndex\"") ? (int?)raw.siblingIndex : null;
+            // Keep the world transform by default, matching Unity's reparenting behavior in the Hierarchy window.
+            var worldPositionStays = !body.Contains("\"worldPositionStays\"") || raw.worldPositionStays;
+
+            if (modifySiblingIndex < 0)
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("siblingIndex must be 0 or greater."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
 
             await _useCase.ExecuteAsync(raw.instanceId, modifyName, modifyActiveSelf, modifyTag, modifyLayer,
-                modifyParent, cancellationToken);
+                modifyParent, modifySiblingIndex, worldPositionStays, cancellationToken);
             var json = JsonUtility.ToJson(new ModifyGameObjectResponse(true));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
