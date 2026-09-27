@@ -292,4 +292,19 @@ public class TimelineTools(TimelineUseCase timelineUseCase, IAsyncOperationSeque
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => timelineUseCase.StopAsync(instanceId, ct), cancellationToken);
+
+    [McpServerTool(Name = "evaluate_timeline", ReadOnly = false),
+     Description(
+         "Evaluate a Timeline at the specified time without playing it, so the scene reflects the state at that moment. " +
+         "In Edit Mode (including Prefab Mode), the Timeline window preview is used, so animated values are reverted when the preview ends. " +
+         "In Play Mode, PlayableDirector.time is set and Evaluate() is called."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> EvaluateTimelineAsync(
+        [Description("The instanceId of a GameObject with a PlayableDirector component.")]
+        int instanceId,
+        [Description("The time in seconds to evaluate the Timeline at. Must be non-negative.")]
+        double time,
+        CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => timelineUseCase.EvaluateAsync(instanceId, time, ct), cancellationToken);
 }

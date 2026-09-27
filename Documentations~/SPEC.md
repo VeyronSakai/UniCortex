@@ -1112,6 +1112,22 @@ Request body:
 
 Response: `{"success": true}`
 
+#### POST `/timeline/evaluate`
+Evaluates a Timeline at the specified time without playing it, so the scene reflects the state at that moment. Useful for inspecting (or capturing) an intermediate state of a Timeline.
+
+Request body:
+```json
+{"instanceId": 12345, "time": 1.5}
+```
+
+- `instanceId`: required. instanceId of the GameObject that has the PlayableDirector
+- `time`: required. Time in seconds to evaluate at. Must be a non-negative finite number (400 otherwise)
+- Edit Mode (including Prefab Mode): opens the Timeline window (`TimelineEditor.GetOrCreateWindow()`), sets the director to it, and moves the playhead with `TimelinePlaybackControls.SetCurrentTime()`. Animated values are applied via the Timeline preview (AnimationMode), so they are reverted when the preview ends and are not written into the scene
+- Play Mode: sets `PlayableDirector.time` and calls `PlayableDirector.Evaluate()`
+- Returns 400 if the PlayableDirector has no PlayableAsset assigned
+
+Response: `{"success": true}`
+
 ### Extension
 
 List and execute user-defined Extensions. Implementing a class derived from `ExtensionHandler` on the Unity Editor side automatically registers it for discovery.
@@ -1206,7 +1222,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
   3. Exits with an error if neither is set
 - Logs go to stderr (stdout is reserved for the MCP protocol)
 
-### MCP Tools (43 tools total)
+### MCP Tools (44 tools total)
 
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
@@ -1328,7 +1344,7 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `send_key_event` | POST `/input/key` | Send a key event through the Input System (requires com.unity.inputsystem) |
 | `send_mouse_event` | POST `/input/mouse` | Send a mouse event through the Input System (requires com.unity.inputsystem) |
 
-#### Timeline (14)
+#### Timeline (15)
 
 | Tool | API | Description |
 |------|-----|-------------|
@@ -1346,6 +1362,7 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `set_timeline_track_property` | POST `/timeline/track/property/set` | Set a serialized property on a track (requires com.unity.timeline) |
 | `play_timeline` | POST `/timeline/play` | Start Timeline playback (requires com.unity.timeline) |
 | `stop_timeline` | POST `/timeline/stop` | Stop Timeline playback (requires com.unity.timeline) |
+| `evaluate_timeline` | POST `/timeline/evaluate` | Evaluate a Timeline at the specified time without playing it (requires com.unity.timeline) |
 
 #### Extension (dynamic)
 

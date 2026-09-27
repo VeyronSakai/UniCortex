@@ -137,4 +137,12 @@ public class TimelineUseCase(IUnityEditorClient client)
             ApiRoutes.TimelineStop, request, cancellationToken);
         return "Timeline playback stopped";
     }
+
+    public async ValueTask<string> EvaluateAsync(int instanceId, double time, CancellationToken cancellationToken)
+    {
+        var request = new EvaluateTimelineRequest { instanceId = instanceId, time = time };
+        await client.PostAsync<EvaluateTimelineRequest, EvaluateTimelineResponse>(
+            ApiRoutes.TimelineEvaluate, request, cancellationToken);
+        return $"Timeline evaluated at {time}s";
+    }
 }

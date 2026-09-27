@@ -5,6 +5,7 @@ using System.Reflection;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor;
+using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
@@ -239,6 +240,34 @@ namespace UniCortex.Editor.Infrastructures
         {
             var director = GetPlayableDirector(instanceId);
             director.Stop();
+        }
+
+        public void Evaluate(int instanceId, double time)
+        {
+            var director = GetPlayableDirector(instanceId);
+            if (director.playableAsset == null)
+            {
+                throw new InvalidOperationException(
+                    $"PlayableDirector (instanceId={instanceId}) has no PlayableAsset assigned.");
+            }
+
+            if (EditorApplication.isPlaying)
+            {
+                director.time = time;
+                director.Evaluate();
+                return;
+            }
+
+            // In Edit Mode, drive the Timeline window preview so that animated values are applied via
+            // AnimationMode and reverted when the preview ends, instead of being written into the scene.
+            var window = TimelineEditor.GetOrCreateWindow();
+            if (TimelineEditor.masterDirector != director)
+            {
+                window.SetTimeline(director);
+            }
+
+            window.playbackControls.SetCurrentTime(time, TimelinePlaybackControls.Context.Global);
+            TimelineEditor.Refresh(RefreshReason.SceneNeedsUpdate);
         }
 
         private static TimelineTrackEntry CreateTrackEntry(TrackAsset track, int index, PlayableDirector director)

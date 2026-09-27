@@ -32,4 +32,15 @@ public class TimelineCommands(TimelineUseCase timelineUseCase)
         var message = await timelineUseCase.StopAsync(instanceId, cancellationToken);
         Console.WriteLine(message);
     }
+
+    /// <summary>Evaluate a Timeline at the specified time without playing it. Requires com.unity.timeline.</summary>
+    /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
+    /// <param name="time">The time in seconds to evaluate the Timeline at.</param>
+    [Command("evaluate")]
+    public async Task Evaluate([Argument] int instanceId, [Argument] double time,
+        CancellationToken cancellationToken = default)
+    {
+        var message = await timelineUseCase.EvaluateAsync(instanceId, time, cancellationToken);
+        Console.WriteLine(message);
+    }
 }

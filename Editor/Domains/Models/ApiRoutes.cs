@@ -61,6 +61,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string TimelineSetClipProperty = "/timeline/clip/property/set";
         public const string TimelinePlay = "/timeline/play";
         public const string TimelineStop = "/timeline/stop";
+        public const string TimelineEvaluate = "/timeline/evaluate";
         public const string FocusSceneView = "/scene-view/focus";
         public const string FocusGameView = "/game-view/focus";
         public const string GameViewSize = "/game-view/size";

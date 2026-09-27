@@ -19,5 +19,6 @@ namespace UniCortex.Editor.Domains.Interfaces
         void SetTrackProperty(int instanceId, int trackIndex, string propertyPath, string value);
         void Play(int instanceId);
         void Stop(int instanceId);
+        void Evaluate(int instanceId, double time);
     }
 }

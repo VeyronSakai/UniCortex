@@ -343,6 +343,9 @@ namespace UniCortex.Editor
             var stopTimelineUseCase = new StopTimelineUseCase(s_dispatcher, timelineOps);
             var stopTimelineHandler = new StopTimelineHandler(stopTimelineUseCase);
 
+            var evaluateTimelineUseCase = new EvaluateTimelineUseCase(s_dispatcher, timelineOps);
+            var evaluateTimelineHandler = new EvaluateTimelineHandler(evaluateTimelineUseCase);
+
             pingHandler.Register(router);
             playHandler.Register(router);
             stopHandler.Register(router);
@@ -414,6 +417,7 @@ namespace UniCortex.Editor
             setTimelineTrackPropertyHandler.Register(router);
             playTimelineHandler.Register(router);
             stopTimelineHandler.Register(router);
+            evaluateTimelineHandler.Register(router);
 
             var extensionRegistry = new ExtensionRegistry();
             var extensionListHandler = new ExtensionListHandler(extensionRegistry);

@@ -241,6 +241,7 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | `set_timeline_track_property` | Set a serialized property on a track, e.g. Track Offsets or mute (requires com.unity.timeline) |
 | `play_timeline` | Start playback of a Timeline on a PlayableDirector (requires com.unity.timeline) |
 | `stop_timeline` | Stop playback of a Timeline on a PlayableDirector and reset to the beginning (requires com.unity.timeline) |
+| `evaluate_timeline` | Evaluate a Timeline at the specified time without playing it, e.g. to inspect an intermediate state. Works in Edit Mode (including Prefab Mode) via the Timeline window preview (requires com.unity.timeline) |
 
 #### Extensions
 
@@ -448,6 +449,7 @@ Component commands accept the fully-qualified component type name plus the defin
 | `timeline create` | Create a Timeline asset. Requires `com.unity.timeline`. |
 | `timeline play` | Start Timeline playback on a PlayableDirector. Requires `com.unity.timeline`. |
 | `timeline stop` | Stop Timeline playback and reset to the beginning. Requires `com.unity.timeline`. |
+| `timeline evaluate` | Evaluate a Timeline at the specified time without playing it. Requires `com.unity.timeline`. |
 | `timeline track list` | Print the tracks and clips of a Timeline as JSON. Requires `com.unity.timeline`. |
 | `timeline track add` | Add a Timeline track. Requires `com.unity.timeline`. |
 | `timeline track remove` | Remove a Timeline track by index. Requires `com.unity.timeline`. |
