@@ -1195,7 +1195,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
   3. Exits with an error if neither is set
 - Logs go to stderr (stdout is reserved for the MCP protocol)
 
-### MCP Tools (43 tools total)
+### MCP Tools
 
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
@@ -1336,6 +1336,19 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `play_timeline` | POST `/timeline/play` | Start Timeline playback (requires com.unity.timeline) |
 | `stop_timeline` | POST `/timeline/stop` | Stop Timeline playback (requires com.unity.timeline) |
 
+#### Code Graph (5)
+
+Roslyn-based structural queries over the project's C# sources. Unlike every other tool these do not
+talk to the Unity Editor HTTP server — see [Code Graph](#code-graph-c-code-intelligence) for details.
+
+| Tool | Description |
+|------|-------------|
+| `get_code_map` | Overview of the C# code: assemblies, namespaces, Unity type counts, hotspots |
+| `search_symbols` | Search types/members by name pattern, kind, file pattern and base type |
+| `get_code_snippet` | Get the source of one symbol's declaration by its id |
+| `find_symbol_references` | Incoming references grouped by relation (calls, uses, inheritedBy, ...) |
+| `trace_call_graph` | Call-path tree from a method (callers or callees, depth 1-5) |
+
 #### Extension (dynamic)
 
 Extensions are discovered dynamically from the Unity Editor's `GET /extensions/list` when the MCP server starts. They are integrated with the existing static tools via `WithListToolsHandler` / `WithCallToolHandler`.
@@ -1409,6 +1422,7 @@ A CLI tool for operating the Unity Editor from a terminal. Uses Core services di
 ### Command Structure
 
 ```
+code map|search|snippet|refs|trace
 editor ping|play|stop|status|pause|unpause|step|undo|redo|reload-domain
 scene create|open|save|hierarchy
 gameobject find|create|delete|modify
@@ -1457,6 +1471,66 @@ dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- scene hierarchy
 dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- gameobject find --query "t:Camera"
 dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- screenshot capture ./screenshot.png
 ```
+
+---
+
+## Code Graph (C# Code Intelligence)
+
+Structural queries over the Unity project's C# code, backed by a Roslyn-built symbol graph.
+Inspired by graph-based code exploration tools (e.g. codebase-memory-mcp): instead of grep and
+whole-file reads, agents query the code's structure (types, members, calls, inheritance), which
+answers "who calls this / what derives from that" style questions with far fewer tokens.
+
+### Architecture
+
+- Implemented entirely in `UniCortex.Core` (`Domains/CodeGraph/`, `Infrastructures/CodeGraph/`,
+  `CodeGraphUseCase`); exposed by both the MCP server (`CodeGraphTools`) and the CLI (`code` commands)
+- Does **not** use the Unity Editor HTTP server. Sources are read from `UNICORTEX_PROJECT_PATH`,
+  so the tools work even while the Unity Editor is closed (`UNICORTEX_URL` alone is not sufficient)
+- MCP tool calls bypass the tool-call sequencer since they never contend with Editor operations
+
+### Indexing
+
+- **Scope**: `Assets/`, embedded packages under `Packages/`, and local packages referenced with
+  `file:` in `Packages/manifest.json`. Unity's hidden-folder rules are honored (leading `.`,
+  trailing `~`). Symlinked subdirectories are skipped for cycle safety (roots themselves may be
+  symlinks); unreadable directories are skipped instead of failing the index
+- **Assembly mapping**: nearest `.asmdef` ancestor; otherwise `Assembly-CSharp-Editor` for files
+  under an `Editor/` folder, else `Assembly-CSharp`
+- **Semantic references** (best effort): host .NET runtime assemblies, `Library/ScriptAssemblies`
+  DLLs (minus the assemblies compiled from the indexed sources), and the Unity Editor's
+  `Managed/UnityEngine/` module assemblies located via `ProjectSettings/ProjectVersion.txt` and
+  the Unity Hub install layout. Missing references only degrade call resolution, never fail indexing
+- **Graph**: nodes are types and members (id = fully qualified display string, e.g.
+  `Ns.Type.Method(int)`); edges are `Inherits`, `Implements`, `ImplementsMember`, `Overrides`,
+  `Calls` (semantically resolved), `CallsUnresolved` (name-matched fallback) and `Uses`
+- **Unity awareness**: MonoBehaviour / ScriptableObject / EditorWindow / Editor classification
+  (semantic base-chain walk with a name-based fallback), Unity message methods (`Awake`,
+  `Update`, ...) and serialized fields (`[SerializeField]` or public fields on Unity types)
+- **Caching**: the graph is built lazily on first query and cached in memory (singleton store);
+  any change in the discovered file set (paths, timestamps, sizes) or in `Library/ScriptAssemblies`
+  triggers a re-index. Files that fail to read are excluded from the snapshot and retried on the
+  next query. The shared build is not tied to any single caller's cancellation. The CLI re-indexes
+  per invocation since each run is a new process
+
+### Query behavior
+
+- Symbol arguments accept an exact id, a parameterless form (`Ns.Type.Method`) or a unique
+  suffix (`Type.Method`); ambiguity is reported with candidate ids
+- `trace_call_graph` in `callers` direction also follows calls to base/interface members that the
+  method overrides or implements (`viaBase`), so interface-dispatched call chains are visible
+
+### Design Decisions
+
+**Included because:**
+- Token-efficient code exploration for AI agents — structural questions ("who calls this?",
+  "which MonoBehaviours exist?") are answered from the graph instead of repeated Grep/Read
+- Roslyn (not tree-sitter) — the stack is C#-only and Roslyn's semantic model resolves calls,
+  overloads and inheritance precisely instead of by text matching
+
+**Excluded:**
+- Cypher-like query language, ADR management, runtime trace ingestion — not essential for the
+  C#/Unity scope; dedicated tools cover the common questions with a simpler surface
 
 ---
 

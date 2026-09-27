@@ -44,4 +44,5 @@ app.Add<TimelineTrackPropertyCommands>("timeline track property");
 app.Add<TimelineClipCommands>("timeline clip");
 app.Add<TimelineClipPropertyCommands>("timeline clip property");
 app.Add<ExtensionCommands>("extension");
+app.Add<CodeCommands>("code");
 app.Run(args);
