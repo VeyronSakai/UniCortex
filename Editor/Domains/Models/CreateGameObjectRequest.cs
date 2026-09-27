@@ -8,6 +8,6 @@ namespace UniCortex.Editor.Domains.Models
         public string name;
         public int? parentInstanceId;
         public int? siblingIndex;
-        public bool? rectTransform;
+        public bool? useRectTransform;
     }
 }

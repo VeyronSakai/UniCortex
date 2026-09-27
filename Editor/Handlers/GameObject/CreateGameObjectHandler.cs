@@ -30,7 +30,7 @@ namespace UniCortex.Editor.Handlers.GameObject
             public string name;
             public int parentInstanceId;
             public int siblingIndex;
-            public bool rectTransform;
+            public bool useRectTransform;
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -62,7 +62,7 @@ namespace UniCortex.Editor.Handlers.GameObject
             }
 
             var result = await _useCase.ExecuteAsync(request.name, request.parentInstanceId, siblingIndex,
-                request.rectTransform, cancellationToken);
+                request.useRectTransform, cancellationToken);
             var json = JsonUtility.ToJson(result);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }

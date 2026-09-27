@@ -289,7 +289,7 @@ public class GameObjectUseCaseTest
     }
 
     [Test]
-    public async ValueTask Create_WithRectTransform_UsesRectTransform()
+    public async ValueTask Create_WithUseRectTransform_UsesRectTransform()
     {
         // Arrange
         var ct = CancellationToken.None;
@@ -297,7 +297,7 @@ public class GameObjectUseCaseTest
         try
         {
             // Act
-            var child = await CreateAsync("RectChild", ct, parent.instanceId, rectTransform: true);
+            var child = await CreateAsync("RectChild", ct, parent.instanceId, useRectTransform: true);
 
             // Assert
             var json = await _fixture.GameObjectUseCase.FindAsync($"id:{child.instanceId}", ct);
@@ -362,10 +362,10 @@ public class GameObjectUseCaseTest
     }
 
     private async ValueTask<CreateGameObjectResponse> CreateAsync(string name, CancellationToken ct,
-        int? parentInstanceId = null, int? siblingIndex = null, bool? rectTransform = null)
+        int? parentInstanceId = null, int? siblingIndex = null, bool? useRectTransform = null)
     {
         var json = await _fixture.GameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex,
-            rectTransform, cancellationToken: ct);
+            useRectTransform, cancellationToken: ct);
         return JsonSerializer.Deserialize<CreateGameObjectResponse>(json, s_jsonOptions)!;
     }
 

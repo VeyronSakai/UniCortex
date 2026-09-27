@@ -16,14 +16,14 @@ public class GameObjectUseCase(IUnityEditorClient client)
     }
 
     public async ValueTask<string> CreateAsync(string name, int? parentInstanceId = null, int? siblingIndex = null,
-        bool? rectTransform = null, CancellationToken cancellationToken = default)
+        bool? useRectTransform = null, CancellationToken cancellationToken = default)
     {
         var request = new CreateGameObjectRequest
         {
             name = name,
             parentInstanceId = parentInstanceId,
             siblingIndex = siblingIndex,
-            rectTransform = rectTransform
+            useRectTransform = useRectTransform
         };
         var response = await client.PostAsync<CreateGameObjectRequest, CreateGameObjectResponse>(
             ApiRoutes.GameObjectCreate, request, cancellationToken);

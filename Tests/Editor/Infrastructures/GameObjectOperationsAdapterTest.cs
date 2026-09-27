@@ -86,7 +86,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void Create_WithRectTransform_UsesRectTransform()
+        public void Create_WithUseRectTransform_UsesRectTransform()
         {
             // Act
             var response = _adapter.Create("New", _root.GetInstanceID(), null, true);

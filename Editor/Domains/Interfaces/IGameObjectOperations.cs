@@ -6,7 +6,7 @@ namespace UniCortex.Editor.Domains.Interfaces
     internal interface IGameObjectOperations
     {
         List<GameObjectSearchResult> Get(string query);
-        CreateGameObjectResponse Create(string name, int parentInstanceId, int? siblingIndex, bool rectTransform);
+        CreateGameObjectResponse Create(string name, int parentInstanceId, int? siblingIndex, bool useRectTransform);
         void Delete(int instanceId);
         void Modify(int instanceId, string name, bool? activeSelf, string tag, int? layer, int? parentInstanceId,
             int? siblingIndex, bool worldPositionStays);

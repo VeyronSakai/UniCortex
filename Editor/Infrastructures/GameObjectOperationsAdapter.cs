@@ -46,7 +46,7 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         public CreateGameObjectResponse Create(string name, int parentInstanceId, int? siblingIndex,
-            bool rectTransform)
+            bool useRectTransform)
         {
             GameObject parent = null;
             if (parentInstanceId != 0)
@@ -59,8 +59,8 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             // Mirror "Create Empty Child": children of UI objects get a RectTransform automatically.
-            var useRectTransform = rectTransform || (parent != null && parent.transform is RectTransform);
-            var go = useRectTransform ? new GameObject(name, typeof(RectTransform)) : new GameObject(name);
+            var needsRectTransform = useRectTransform || (parent != null && parent.transform is RectTransform);
+            var go = needsRectTransform ? new GameObject(name, typeof(RectTransform)) : new GameObject(name);
 
             if (parent != null)
             {

@@ -40,7 +40,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Assert
             Assert.AreEqual(42, ops.LastCreateParentInstanceId);
             Assert.AreEqual(2, ops.LastCreateSiblingIndex);
-            Assert.IsTrue(ops.LastCreateRectTransform);
+            Assert.IsTrue(ops.LastCreateUseRectTransform);
         }
     }
 }

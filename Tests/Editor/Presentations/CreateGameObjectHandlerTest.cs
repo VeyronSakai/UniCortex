@@ -61,7 +61,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var router = new RequestRouter();
             handler.Register(router);
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameObjectCreate,
-                "{\"name\":\"Panel\",\"parentInstanceId\":42,\"siblingIndex\":0,\"rectTransform\":true}");
+                "{\"name\":\"Panel\",\"parentInstanceId\":42,\"siblingIndex\":0,\"useRectTransform\":true}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -70,7 +70,7 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual(42, ops.LastCreateParentInstanceId);
             Assert.AreEqual(0, ops.LastCreateSiblingIndex);
-            Assert.IsTrue(ops.LastCreateRectTransform);
+            Assert.IsTrue(ops.LastCreateUseRectTransform);
         }
 
         [Test]
@@ -93,7 +93,7 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual(0, ops.LastCreateParentInstanceId);
             Assert.IsNull(ops.LastCreateSiblingIndex);
-            Assert.IsFalse(ops.LastCreateRectTransform);
+            Assert.IsFalse(ops.LastCreateUseRectTransform);
         }
 
         [Test]

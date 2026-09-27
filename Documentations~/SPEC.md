@@ -275,14 +275,14 @@ Request body:
   "name": "MyObject",
   "parentInstanceId": 67890,
   "siblingIndex": 0,
-  "rectTransform": true
+  "useRectTransform": true
 }
 ```
 
 - `name`: name of the GameObject to create (required)
 - `parentInstanceId`: instanceId of the parent GameObject (optional). The object is placed with `GameObjectUtility.SetParentAndAlign`, so its local transform is reset and it inherits the parent's layer. If omitted, the object is created at the root of the active scene. An unknown instanceId returns an error
 - `siblingIndex`: position among siblings, `0` = first (optional). Values beyond the last sibling place the object last; negative values are rejected. If omitted, the object is placed last
-- `rectTransform`: create the object with a `RectTransform` (optional). A `RectTransform` is also used automatically when the parent has one, mirroring the Editor's "Create Empty Child"
+- `useRectTransform`: create the object with a `RectTransform` (optional). A `RectTransform` is also used automatically when the parent has one, mirroring the Editor's "Create Empty Child"
 
 Response:
 ```json

@@ -18,12 +18,12 @@ public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
     /// <param name="name">Name of the GameObject to create.</param>
     /// <param name="parentInstanceId">Instance ID of the parent GameObject. If omitted, created at the scene root.</param>
     /// <param name="siblingIndex">Position among siblings (0 = first). If omitted, placed last.</param>
-    /// <param name="rectTransform">Create with a RectTransform for UI. Automatic when the parent has a RectTransform.</param>
+    /// <param name="useRectTransform">Create with a RectTransform for UI. Automatic when the parent has a RectTransform.</param>
     [Command("create")]
     public async Task Create([Argument] string name, int? parentInstanceId = null, int? siblingIndex = null,
-        bool? rectTransform = null, CancellationToken cancellationToken = default)
+        bool? useRectTransform = null, CancellationToken cancellationToken = default)
     {
-        var json = await gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, rectTransform,
+        var json = await gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, useRectTransform,
             cancellationToken);
         Console.WriteLine(json);
     }

@@ -52,10 +52,10 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
         [Description(
             "Create the object with a RectTransform for UI. Automatically applied when the parent has a RectTransform. " +
             "To adjust anchors (e.g. stretch to fill the parent), use set_component_property on the RectTransform.")]
-        bool? rectTransform = null,
+        bool? useRectTransform = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, rectTransform, ct), cancellationToken);
+            ct => gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, useRectTransform, ct), cancellationToken);
 
     [McpServerTool(Name = "delete_game_object", ReadOnly = false), Description("Remove a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
     public ValueTask<CallToolResult> DeleteGameObjectAsync(
