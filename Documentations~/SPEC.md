@@ -272,11 +272,17 @@ Creates a GameObject. Undo-supported via `Undo.RegisterCreatedObjectUndo`.
 Request body:
 ```json
 {
-  "name": "MyObject"
+  "name": "MyObject",
+  "parentInstanceId": 67890,
+  "siblingIndex": 0,
+  "useRectTransform": true
 }
 ```
 
 - `name`: name of the GameObject to create (required)
+- `parentInstanceId`: instanceId of the parent GameObject (optional). The object is placed with `GameObjectUtility.SetParentAndAlign`, so its local transform is reset and it inherits the parent's layer. If omitted, the object is created at the root of the active scene. An unknown instanceId returns an error
+- `siblingIndex`: position among siblings, `0` = first (optional). Values beyond the last sibling place the object last; negative values are rejected. If omitted, the object is placed last
+- `useRectTransform`: create the object with a `RectTransform` (optional). A `RectTransform` is also used automatically when the parent has one, mirroring the Editor's "Create Empty Child"
 
 Response:
 ```json
@@ -301,11 +307,16 @@ Request body:
   "activeSelf": false,
   "tag": "Player",
   "layer": 8,
-  "parentInstanceId": 67890
+  "parentInstanceId": 67890,
+  "siblingIndex": 0,
+  "worldPositionStays": false
 }
 ```
 
 All fields other than `instanceId` are optional. Setting `parentInstanceId` to `0` moves the object to the root.
+
+- `siblingIndex`: position among siblings, `0` = first. Without `parentInstanceId` it reorders the object within its current parent; with it, the index is applied after reparenting. Values beyond the last sibling place the object last; negative values are rejected. Undo-supported via `Undo.SetSiblingIndex`
+- `worldPositionStays`: when changing the parent, keep the world transform (`true`, default) or keep the local transform (`false`). `false` is useful when moving between parents with different scales (e.g. another Canvas) or when the local values should be kept as-is. Passed to `Undo.SetTransformParent`
 
 Response: `{"success": true}`
 
@@ -1230,9 +1241,9 @@ The tool receives the corresponding Core service via constructor DI and wraps th
 | Tool | API | Description |
 |------|-----|-------------|
 | `find_game_objects` | GET `/gameobjects` | Search the scene with query syntax (name, tag, component type, instanceId, layer, path, state) |
-| `create_gameobject` | POST `/gameobject/create` | Create a GameObject (primitive specification supported) |
+| `create_gameobject` | POST `/gameobject/create` | Create a GameObject (parent, sibling index, and RectTransform specification supported) |
 | `delete_gameobject` | POST `/gameobject/delete` | Delete a GameObject |
-| `modify_gameobject` | POST `/gameobject/modify` | Rename, enable/disable, reparent, change tag/layer |
+| `modify_gameobject` | POST `/gameobject/modify` | Rename, enable/disable, reparent, reorder siblings, change tag/layer |
 | `duplicate_game_object` | POST `/gameobject/duplicate` | Duplicate a GameObject (deep copy of children and components) |
 
 #### Component (4)

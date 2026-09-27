@@ -41,7 +41,7 @@ public class ComponentUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("AddComponentTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("AddComponentTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -62,7 +62,7 @@ public class ComponentUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("RemoveComponentTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("RemoveComponentTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -87,7 +87,7 @@ public class ComponentUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("GetPropertiesTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("GetPropertiesTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -110,7 +110,7 @@ public class ComponentUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("SetPropertyTestObj", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("SetPropertyTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -133,9 +133,9 @@ public class ComponentUseCaseTest
         var ct = CancellationToken.None;
 
         // Arrange
-        var canvasJson = await _fixture.GameObjectUseCase.CreateAsync("CanvasObj", ct);
+        var canvasJson = await _fixture.GameObjectUseCase.CreateAsync("CanvasObj", cancellationToken: ct);
         var canvas = JsonSerializer.Deserialize<CreateGameObjectResponse>(canvasJson, s_jsonOptions)!;
-        var cameraJson = await _fixture.GameObjectUseCase.CreateAsync("CameraObj", ct);
+        var cameraJson = await _fixture.GameObjectUseCase.CreateAsync("CameraObj", cancellationToken: ct);
         var camera = JsonSerializer.Deserialize<CreateGameObjectResponse>(cameraJson, s_jsonOptions)!;
 
         try
@@ -171,7 +171,7 @@ public class ComponentUseCaseTest
         var ct = CancellationToken.None;
 
         // Arrange
-        var canvasJson = await _fixture.GameObjectUseCase.CreateAsync("MismatchCanvasObj", ct);
+        var canvasJson = await _fixture.GameObjectUseCase.CreateAsync("MismatchCanvasObj", cancellationToken: ct);
         var canvas = JsonSerializer.Deserialize<CreateGameObjectResponse>(canvasJson, s_jsonOptions)!;
 
         try

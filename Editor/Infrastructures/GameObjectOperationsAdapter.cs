@@ -11,6 +11,8 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class GameObjectOperationsAdapter : IGameObjectOperations
     {
+        private const string ModifyParentUndoName = "Modify GameObject Parent";
+
         public List<GameObjectSearchResult> Get(string query)
         {
             using var context = SearchService.CreateContext("scene", query);
@@ -45,9 +47,35 @@ namespace UniCortex.Editor.Infrastructures
                 components);
         }
 
-        public CreateGameObjectResponse Create(string name)
+        public CreateGameObjectResponse Create(string name, int parentInstanceId, int? siblingIndex,
+            bool useRectTransform)
         {
-            var go = new GameObject(name);
+            GameObject parent = null;
+            if (parentInstanceId != 0)
+            {
+                parent = EditorUtility.InstanceIDToObject(parentInstanceId) as GameObject;
+                if (parent == null)
+                {
+                    throw new ArgumentException($"Parent GameObject with instanceId {parentInstanceId} not found.");
+                }
+            }
+
+            // Mirror "Create Empty Child": children of UI objects get a RectTransform automatically.
+            var needsRectTransform = useRectTransform || (parent != null && parent.transform is RectTransform);
+            var go = needsRectTransform ? new GameObject(name, typeof(RectTransform)) : new GameObject(name);
+
+            if (parent != null)
+            {
+                // Resets the local transform and inherits the parent's layer, like the Editor's create commands.
+                GameObjectUtility.SetParentAndAlign(go, parent);
+            }
+
+            if (siblingIndex.HasValue)
+            {
+                // Unity places the object last when the index exceeds the sibling count.
+                go.transform.SetSiblingIndex(siblingIndex.Value);
+            }
+
             Undo.RegisterCreatedObjectUndo(go, "Create GameObject");
             return new CreateGameObjectResponse(go.name, go.GetInstanceID());
         }
@@ -64,7 +92,7 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         public void Modify(int instanceId, string name, bool? activeSelf, string tag, int? layer,
-            int? parentInstanceId)
+            int? parentInstanceId, int? siblingIndex, bool worldPositionStays)
         {
             var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
             if (go == null)
@@ -98,16 +126,22 @@ namespace UniCortex.Editor.Infrastructures
             {
                 if (parentInstanceId.Value == 0)
                 {
-                    Undo.SetTransformParent(go.transform, null, "Modify GameObject Parent");
+                    Undo.SetTransformParent(go.transform, null, worldPositionStays, ModifyParentUndoName);
                 }
                 else
                 {
                     var parent = EditorUtility.InstanceIDToObject(parentInstanceId.Value) as GameObject;
                     if (parent != null)
                     {
-                        Undo.SetTransformParent(go.transform, parent.transform, "Modify GameObject Parent");
+                        Undo.SetTransformParent(go.transform, parent.transform, worldPositionStays,
+                            ModifyParentUndoName);
                     }
                 }
+            }
+
+            if (siblingIndex.HasValue)
+            {
+                Undo.SetSiblingIndex(go.transform, siblingIndex.Value, "Modify GameObject Sibling Index");
             }
         }
 

@@ -109,9 +109,9 @@ The MCP server exposes the following built-in tools.
 | Tool | Description |
 |------|-------------|
 | `find_game_objects` | Search GameObjects by name, tag, component type, instanceId, layer, path, or state |
-| `create_game_object` | Create a new empty GameObject |
+| `create_game_object` | Create a new empty GameObject, optionally under a parent at a given sibling index (with RectTransform support for UI) |
 | `delete_game_object` | Delete a GameObject (supports Undo) |
-| `modify_game_object` | Modify name, active state, tag, layer, or parent |
+| `modify_game_object` | Modify name, active state, tag, layer, parent, or sibling order |
 | `duplicate_game_object` | Duplicate a GameObject including children and components (supports Undo) |
 
 #### Component
@@ -309,7 +309,8 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 ### Argument and output conventions
 
 - Required parameters are positional arguments, for example `scene open Assets/Scenes/Main.unity`.
-- Optional parameters with defaults become named options, for example `gameobject modify 1234 --name CameraRig --active-self true`.
+- Optional parameters with defaults become named options, for example `gameobject modify 1234 --name CameraRig --tag Player`.
+- Boolean options are flags that take no value, for example `gameobject modify 1234 --deactivate`.
 - Read/query commands usually print JSON, such as `scene hierarchy`, `gameobject find`, `component property list`, and `recorder all list`.
 - State-changing commands usually print a short status message, such as `editor play`, `scene open`, `component add`, and `timeline track bind`.
 - `screenshot capture` writes a file to the path you pass, and recorder commands create media files in the configured output path.
@@ -345,9 +346,9 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | Command | Description |
 | --- | --- |
 | `gameobject find` | Search GameObjects by Unity Search query. |
-| `gameobject create` | Create a new empty GameObject with the specified name. |
+| `gameobject create` | Create a new empty GameObject, optionally under a parent at a given sibling index. |
 | `gameobject delete` | Delete a GameObject by `instanceId`. |
-| `gameobject modify` | Rename, reparent, or change active state, tag, or layer. |
+| `gameobject modify` | Rename, reparent, reorder, or change active state, tag, or layer. |
 | `gameobject duplicate` | Duplicate a GameObject (deep copy of children and components). |
 
 #### `component`

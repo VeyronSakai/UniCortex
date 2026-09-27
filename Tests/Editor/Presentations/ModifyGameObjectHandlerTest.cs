@@ -31,6 +31,52 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual("NewName", ops.LastModifyName);
             Assert.IsNull(ops.LastModifyActiveSelf);
             Assert.IsNull(ops.LastModifyTag);
+            Assert.IsNull(ops.LastModifySiblingIndex);
+            Assert.IsTrue(ops.LastModifyWorldPositionStays);
+        }
+
+        [Test]
+        public void HandleModify_PassesSiblingIndexAndWorldPositionStays()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var ops = new SpyGameObjectOperations();
+            var useCase = new ModifyGameObjectUseCase(dispatcher, ops);
+            var handler = new ModifyGameObjectHandler(useCase);
+            var router = new RequestRouter();
+            handler.Register(router);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameObjectModify,
+                "{\"instanceId\":123,\"siblingIndex\":0,\"worldPositionStays\":false}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(0, ops.LastModifySiblingIndex);
+            Assert.IsFalse(ops.LastModifyWorldPositionStays);
+            Assert.IsNull(ops.LastModifyParentInstanceId);
+        }
+
+        [Test]
+        public void HandleModify_Returns400_WhenSiblingIndexNegative()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var ops = new SpyGameObjectOperations();
+            var useCase = new ModifyGameObjectUseCase(dispatcher, ops);
+            var handler = new ModifyGameObjectHandler(useCase);
+            var router = new RequestRouter();
+            handler.Register(router);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameObjectModify,
+                "{\"instanceId\":123,\"siblingIndex\":-2}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            Assert.AreEqual(0, ops.ModifyCallCount);
         }
 
         [Test]

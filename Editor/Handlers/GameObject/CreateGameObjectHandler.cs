@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -21,6 +22,17 @@ namespace UniCortex.Editor.Handlers.GameObject
             router.Register(HttpMethodType.Post, ApiRoutes.GameObjectCreate, HandleAsync);
         }
 
+        // JsonUtility does not support Nullable<T>, so use a non-nullable helper for deserialization.
+        // Field presence is detected via string matching where the default value is meaningful.
+        [Serializable]
+        private class RawCreateRequest
+        {
+            public string name;
+            public int parentInstanceId;
+            public int siblingIndex;
+            public bool useRectTransform;
+        }
+
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var body = await context.ReadBodyAsync();
@@ -32,7 +44,7 @@ namespace UniCortex.Editor.Handlers.GameObject
                 return;
             }
 
-            var request = JsonUtility.FromJson<CreateGameObjectRequest>(body);
+            var request = JsonUtility.FromJson<RawCreateRequest>(body);
 
             if (string.IsNullOrEmpty(request.name))
             {
@@ -41,7 +53,16 @@ namespace UniCortex.Editor.Handlers.GameObject
                 return;
             }
 
-            var result = await _useCase.ExecuteAsync(request.name, cancellationToken);
+            var siblingIndex = body.Contains("\"siblingIndex\"") ? (int?)request.siblingIndex : null;
+            if (siblingIndex < 0)
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse("siblingIndex must be 0 or greater."));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                return;
+            }
+
+            var result = await _useCase.ExecuteAsync(request.name, request.parentInstanceId, siblingIndex,
+                request.useRectTransform, cancellationToken);
             var json = JsonUtility.ToJson(result);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }

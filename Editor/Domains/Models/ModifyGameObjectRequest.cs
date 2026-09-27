@@ -11,5 +11,7 @@ namespace UniCortex.Editor.Domains.Models
         public string? tag;
         public int? layer;
         public int? parentInstanceId;
+        public int? siblingIndex;
+        public bool? worldPositionStays;
     }
 }

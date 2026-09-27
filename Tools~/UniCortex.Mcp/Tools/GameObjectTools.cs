@@ -35,13 +35,27 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
         }, cancellationToken);
 
     [McpServerTool(Name = "create_game_object", ReadOnly = false),
-     Description("Create a new empty GameObject in the current scene."),
+     Description(
+         "Create a new empty GameObject in the current scene, optionally under a parent at a specific sibling " +
+         "position. For UI, the object can be created with a RectTransform. Supports Undo."),
      UsedImplicitly]
     public ValueTask<CallToolResult> CreateGameObjectAsync(
         [Description("Name of the GameObject to create.")] string name,
+        [Description(
+            "Instance ID of the parent GameObject. The new object's local transform is reset and it inherits the " +
+            "parent's layer. If omitted, the object is created at the scene root.")]
+        int? parentInstanceId = null,
+        [Description(
+            "Position among siblings (0 = first). For UI, sibling order determines draw order. " +
+            "Values beyond the last sibling place it last. If omitted, the object is placed last.")]
+        int? siblingIndex = null,
+        [Description(
+            "Create the object with a RectTransform for UI. Automatically applied when the parent has a RectTransform. " +
+            "To adjust anchors (e.g. stretch to fill the parent), use set_component_property on the RectTransform.")]
+        bool? useRectTransform = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => gameObjectUseCase.CreateAsync(name, ct), cancellationToken);
+            ct => gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, useRectTransform, ct), cancellationToken);
 
     [McpServerTool(Name = "delete_game_object", ReadOnly = false), Description("Remove a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
     public ValueTask<CallToolResult> DeleteGameObjectAsync(
@@ -53,7 +67,8 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
 
     [McpServerTool(Name = "modify_game_object", ReadOnly = false),
      Description(
-         "Modify a GameObject's properties (name, active state, tag, layer, parent). Only specified fields are changed."),
+         "Modify a GameObject's properties (name, active state, tag, layer, parent, sibling order). " +
+         "Only specified fields are changed. Supports Undo."),
      UsedImplicitly]
     public ValueTask<CallToolResult> ModifyGameObjectAsync(
         [Description("The instance ID of the GameObject to modify.")]
@@ -64,9 +79,20 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
         [Description("New layer index.")] int? layer = null,
         [Description("Instance ID of the new parent. Use 0 to move to root.")]
         int? parentInstanceId = null,
+        [Description(
+            "New position among siblings (0 = first). Can be used without parentInstanceId to reorder within the " +
+            "current parent, or together with it to place the object at a specific position under the new parent. " +
+            "Values beyond the last sibling place it last.")]
+        int? siblingIndex = null,
+        [Description(
+            "When changing the parent, keep the world position/rotation/scale (true, default) or keep the local " +
+            "values (false). Use false when moving between parents with different scales (e.g. another Canvas) " +
+            "or when the local values should be kept as-is.")]
+        bool? worldPositionStays = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => gameObjectUseCase.ModifyAsync(instanceId, name, activeSelf, tag, layer, parentInstanceId, ct),
+            ct => gameObjectUseCase.ModifyAsync(instanceId, name, activeSelf, tag, layer, parentInstanceId,
+                siblingIndex, worldPositionStays, ct),
             cancellationToken);
 
     [McpServerTool(Name = "duplicate_game_object", ReadOnly = false),

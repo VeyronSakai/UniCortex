@@ -48,7 +48,7 @@ public class TimelineUseCaseTest
         await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, cancellationToken);
 
         // Create a GameObject
-        var goJson = await _fixture.GameObjectUseCase.CreateAsync("TimelineTestObj", cancellationToken);
+        var goJson = await _fixture.GameObjectUseCase.CreateAsync("TimelineTestObj", cancellationToken: cancellationToken);
         var goResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(goJson, s_jsonOptions)!;
 
         // Add PlayableDirector component
@@ -69,7 +69,7 @@ public class TimelineUseCaseTest
         // Arrange
         await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, cancellationToken);
         var guid = UnityEditorFixture.ReadAssetGuid(TimelineAssetPath);
-        var goJson = await _fixture.GameObjectUseCase.CreateAsync("TimelineGuidObj", cancellationToken);
+        var goJson = await _fixture.GameObjectUseCase.CreateAsync("TimelineGuidObj", cancellationToken: cancellationToken);
         var go = JsonSerializer.Deserialize<CreateGameObjectResponse>(goJson, s_jsonOptions)!;
 
         try

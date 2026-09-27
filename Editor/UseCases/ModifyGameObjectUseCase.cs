@@ -16,10 +16,12 @@ namespace UniCortex.Editor.UseCases
         }
 
         public async Task ExecuteAsync(int instanceId, string name, bool? activeSelf, string tag, int? layer,
-            int? parentInstanceId, CancellationToken cancellationToken = default)
+            int? parentInstanceId, int? siblingIndex = null, bool worldPositionStays = true,
+            CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.Modify(instanceId, name, activeSelf, tag, layer, parentInstanceId),
+                () => _operations.Modify(instanceId, name, activeSelf, tag, layer, parentInstanceId, siblingIndex,
+                    worldPositionStays),
                 cancellationToken);
         }
     }

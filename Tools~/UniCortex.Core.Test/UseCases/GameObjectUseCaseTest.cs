@@ -60,7 +60,7 @@ public class GameObjectUseCaseTest
     [Test]
     public async ValueTask CreateAndDelete_WorksEndToEnd()
     {
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("TestObj", CancellationToken.None);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("TestObj", cancellationToken: CancellationToken.None);
 
         Assert.That(createJson, Does.Contain("TestObj"));
 
@@ -78,7 +78,7 @@ public class GameObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyNameTest", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyNameTest", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -99,7 +99,7 @@ public class GameObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyActiveTest", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyActiveTest", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -120,7 +120,7 @@ public class GameObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyTagTest", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyTagTest", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -141,7 +141,7 @@ public class GameObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyLayerTest", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyLayerTest", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -162,10 +162,10 @@ public class GameObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var parentJson = await _fixture.GameObjectUseCase.CreateAsync("ParentObj", ct);
+        var parentJson = await _fixture.GameObjectUseCase.CreateAsync("ParentObj", cancellationToken: ct);
         var parentResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(parentJson, s_jsonOptions)!;
 
-        var childJson = await _fixture.GameObjectUseCase.CreateAsync("ChildObj", ct);
+        var childJson = await _fixture.GameObjectUseCase.CreateAsync("ChildObj", cancellationToken: ct);
         var childResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(childJson, s_jsonOptions)!;
 
         try
@@ -187,7 +187,7 @@ public class GameObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyMultiTest", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("ModifyMultiTest", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         try
@@ -209,7 +209,7 @@ public class GameObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("DuplicateSrc", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("DuplicateSrc", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         DuplicateGameObjectResponse? duplicateResponse = null;
@@ -240,7 +240,7 @@ public class GameObjectUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var createJson = await _fixture.GameObjectUseCase.CreateAsync("DuplicateNamedSrc", ct);
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("DuplicateNamedSrc", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         DuplicateGameObjectResponse? duplicateResponse = null;
@@ -261,5 +261,119 @@ public class GameObjectUseCaseTest
 
             await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
+    }
+
+    [Test]
+    public async ValueTask Create_WithParentAndSiblingIndex_PlacesObjectAtIndex()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        var parent = await CreateAsync("SiblingParent", ct);
+        try
+        {
+            await CreateAsync("ChildA", ct, parent.instanceId);
+            await CreateAsync("ChildB", ct, parent.instanceId);
+
+            // Act
+            var inserted = await CreateAsync("Inserted", ct, parent.instanceId, siblingIndex: 1);
+
+            // Assert
+            var children = await GetChildNamesAsync(parent.instanceId, ct);
+            Assert.That(children, Is.EqualTo(new[] { "ChildA", "Inserted", "ChildB" }));
+            Assert.That(inserted.name, Is.EqualTo("Inserted"));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(parent.instanceId, ct);
+        }
+    }
+
+    [Test]
+    public async ValueTask Create_WithUseRectTransform_UsesRectTransform()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        var parent = await CreateAsync("RectParent", ct);
+        try
+        {
+            // Act
+            var child = await CreateAsync("RectChild", ct, parent.instanceId, useRectTransform: true);
+
+            // Assert
+            var json = await _fixture.GameObjectUseCase.FindAsync($"id:{child.instanceId}", ct);
+            var response = JsonSerializer.Deserialize<FindGameObjectsResponse>(json, s_jsonOptions)!;
+            Assert.That(response.gameObjects[0].components, Does.Contain("UnityEngine.RectTransform"));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(parent.instanceId, ct);
+        }
+    }
+
+    [Test]
+    public async ValueTask Modify_WithSiblingIndexOnly_ReordersWithinSameParent()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        var parent = await CreateAsync("ReorderParent", ct);
+        try
+        {
+            await CreateAsync("ChildA", ct, parent.instanceId);
+            await CreateAsync("ChildB", ct, parent.instanceId);
+            var childC = await CreateAsync("ChildC", ct, parent.instanceId);
+
+            // Act
+            await _fixture.GameObjectUseCase.ModifyAsync(childC.instanceId, siblingIndex: 0, cancellationToken: ct);
+
+            // Assert
+            var children = await GetChildNamesAsync(parent.instanceId, ct);
+            Assert.That(children, Is.EqualTo(new[] { "ChildC", "ChildA", "ChildB" }));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(parent.instanceId, ct);
+        }
+    }
+
+    [Test]
+    public async ValueTask Modify_WithParentAndSiblingIndex_ReparentsAtIndex()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        var parent = await CreateAsync("ReparentTarget", ct);
+        var mover = await CreateAsync("Mover", ct);
+        try
+        {
+            await CreateAsync("ChildA", ct, parent.instanceId);
+            await CreateAsync("ChildB", ct, parent.instanceId);
+
+            // Act
+            await _fixture.GameObjectUseCase.ModifyAsync(mover.instanceId, parentInstanceId: parent.instanceId,
+                siblingIndex: 1, worldPositionStays: false, cancellationToken: ct);
+
+            // Assert
+            var children = await GetChildNamesAsync(parent.instanceId, ct);
+            Assert.That(children, Is.EqualTo(new[] { "ChildA", "Mover", "ChildB" }));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(parent.instanceId, ct);
+        }
+    }
+
+    private async ValueTask<CreateGameObjectResponse> CreateAsync(string name, CancellationToken ct,
+        int? parentInstanceId = null, int? siblingIndex = null, bool? useRectTransform = null)
+    {
+        var json = await _fixture.GameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex,
+            useRectTransform, cancellationToken: ct);
+        return JsonSerializer.Deserialize<CreateGameObjectResponse>(json, s_jsonOptions)!;
+    }
+
+    private async ValueTask<string[]> GetChildNamesAsync(int parentInstanceId, CancellationToken ct)
+    {
+        var json = await _fixture.SceneUseCase.GetHierarchyAsync(ct);
+        var hierarchy = JsonSerializer.Deserialize<GetHierarchyResponse>(json, s_jsonOptions)!;
+        var parent = hierarchy.gameObjects.First(node => node.instanceId == parentInstanceId);
+        return parent.children.Select(node => node.name).ToArray();
     }
 }

@@ -17,13 +17,30 @@ namespace UniCortex.Editor.Tests.UseCases
             ops.CreateResult = new CreateGameObjectResponse("Cube", 123);
             var useCase = new CreateGameObjectUseCase(dispatcher, ops);
 
-            var result = useCase.ExecuteAsync("NewObj", CancellationToken.None)
+            var result = useCase.ExecuteAsync("NewObj", cancellationToken: CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual("Cube", result.name);
             Assert.AreEqual(123, result.instanceId);
             Assert.AreEqual("NewObj", ops.LastCreateName);
             Assert.AreEqual(1, dispatcher.CallCount);
+        }
+
+        [Test]
+        public void ExecuteAsync_PassesParentSiblingIndexAndRectTransformOptions()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var ops = new SpyGameObjectOperations();
+            var useCase = new CreateGameObjectUseCase(dispatcher, ops);
+
+            // Act
+            useCase.ExecuteAsync("Panel", 42, 2, true, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(42, ops.LastCreateParentInstanceId);
+            Assert.AreEqual(2, ops.LastCreateSiblingIndex);
+            Assert.IsTrue(ops.LastCreateUseRectTransform);
         }
     }
 }
