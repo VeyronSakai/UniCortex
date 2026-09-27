@@ -80,6 +80,10 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int StopCallCount { get; private set; }
         public int LastStopInstanceId { get; private set; }
 
+        public int EvaluateCallCount { get; private set; }
+        public int LastEvaluateInstanceId { get; private set; }
+        public double LastEvaluateTime { get; private set; }
+
         public CreateTimelineResponse CreateTimeline(string assetPath)
         {
             CreateTimelineCallCount++;
@@ -192,6 +196,13 @@ namespace UniCortex.Editor.Tests.TestDoubles
         {
             StopCallCount++;
             LastStopInstanceId = instanceId;
+        }
+
+        public void Evaluate(int instanceId, double time)
+        {
+            EvaluateCallCount++;
+            LastEvaluateInstanceId = instanceId;
+            LastEvaluateTime = time;
         }
     }
 }

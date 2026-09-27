@@ -222,6 +222,34 @@ public class TimelineUseCaseTest
         }
     }
 
+    [Test, CancelAfter(120_000)]
+    public async ValueTask Evaluate_EvaluatesTimelineAtTime(CancellationToken cancellationToken)
+    {
+        // Arrange
+        var goId = await CreateTimelineSetupAsync(cancellationToken);
+
+        try
+        {
+            // Act
+            var message = await _fixture.TimelineUseCase.EvaluateAsync(goId, 0.5, cancellationToken);
+
+            // Assert
+            Assert.That(message, Does.Contain("evaluated at 0.5"));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(goId, cancellationToken);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public void Evaluate_Throws_WhenTimeIsNegative(CancellationToken cancellationToken)
+    {
+        // Arrange & Act & Assert
+        Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.TimelineUseCase.EvaluateAsync(1, -1.0, cancellationToken));
+    }
+
     /// <summary>
     /// Creates the timeline setup with one Animation track (bound to the director's GameObject)
     /// and one clip on it. Returns the GameObject's instanceId.
