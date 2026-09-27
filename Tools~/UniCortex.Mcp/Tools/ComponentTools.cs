@@ -53,7 +53,9 @@ public class ComponentTools(ComponentUseCase componentUseCase, IAsyncOperationSe
             cancellationToken);
 
     [McpServerTool(Name = "set_component_property", ReadOnly = false),
-     Description("Set a serialized property on a component. Uses SerializedProperty API with automatic Undo."),
+     Description("Set a serialized property on a component. Uses SerializedProperty API with automatic Undo. " +
+                 "Object references such as PlayableDirector.m_PlayableAsset or a [SerializeField] component " +
+                 "can be assigned by asset path, GUID, or instanceId."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetComponentPropertyAsync(
         [Description("The instance ID of the GameObject.")] int instanceId,
@@ -61,7 +63,7 @@ public class ComponentTools(ComponentUseCase componentUseCase, IAsyncOperationSe
         [Description(AssemblyNameDescription)] string assemblyName,
         [Description("The property path (e.g. m_LocalPosition.x).")]
         string propertyPath,
-        [Description("The value as a string. Type is auto-detected from the property.")]
+        [Description(PropertyValueDescriptions.Value)]
         string value,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,

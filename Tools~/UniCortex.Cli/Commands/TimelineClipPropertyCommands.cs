@@ -24,7 +24,7 @@ public class TimelineClipPropertyCommands(TimelineUseCase timelineUseCase)
     /// <param name="trackIndex">The index of the track containing the clip (0-based).</param>
     /// <param name="clipIndex">The index of the clip within the track (0-based).</param>
     /// <param name="propertyPath">The serialized property path (e.g. "m_Clip", "postPlayback").</param>
-    /// <param name="value">The new value as a string.</param>
+    /// <param name="value">The new value as a string. Object references accept an asset path, an asset GUID, an instanceId, or "null".</param>
     [Command("set")]
     public async Task Set([Argument] int instanceId, [Argument] int trackIndex, [Argument] int clipIndex,
         [Argument] string propertyPath, [Argument] string value, CancellationToken cancellationToken = default)

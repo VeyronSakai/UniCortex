@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using UnityEditor;
 using UnityEngine;
@@ -176,12 +177,8 @@ namespace UniCortex.Editor.Infrastructures
                     break;
 
                 case SerializedPropertyType.ObjectReference:
-                    property.objectReferenceValue = ResolveObjectReference(property, value);
-                    break;
-
                 case SerializedPropertyType.ExposedReference:
-                    // Resolved through the SerializedObject's context (e.g. a PlayableDirector).
-                    property.exposedReferenceValue = ResolveObjectReference(property, value);
+                    ApplyObjectReference(property, value);
                     break;
 
                 default:
@@ -300,15 +297,39 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         /// <summary>
-        /// Resolves an object reference from a string value.
-        /// Accepts: "null" to clear, an integer instanceId, or an asset path (e.g. "Assets/...").
+        /// Writes an object reference (ObjectReference or ExposedReference) resolved from a string value.
+        /// Accepts: "null" to clear, an integer instanceId, an asset path (e.g. "Assets/..."), or an asset GUID.
+        /// When the resolved object does not match the field type, a matching candidate is picked instead:
+        /// a component on the GameObject (or on the prefab root), or a sub-asset stored in the same asset file.
+        /// Throws when no candidate is accepted by the field, instead of silently leaving it unchanged.
         /// </summary>
-        private static UnityEngine.Object ResolveObjectReference(SerializedProperty property, string value)
+        private static void ApplyObjectReference(SerializedProperty property, string value)
         {
             if (string.Equals(value, "null", StringComparison.OrdinalIgnoreCase))
             {
-                return null;
+                SetReference(property, null);
+                return;
             }
+
+            var candidates = ResolveCandidates(property, value);
+            foreach (var candidate in candidates)
+            {
+                SetReference(property, candidate);
+
+                // Unity silently rejects objects whose type does not match the field, leaving null.
+                if (GetReference(property) == candidate)
+                {
+                    return;
+                }
+            }
+
+            throw new ArgumentException(
+                $"Cannot assign '{value}' to property '{property.propertyPath}': the object does not match the field type.");
+        }
+
+        private static List<UnityEngine.Object> ResolveCandidates(SerializedProperty property, string value)
+        {
+            var candidates = new List<UnityEngine.Object>();
 
             if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var instanceId))
             {
@@ -319,18 +340,88 @@ namespace UniCortex.Editor.Infrastructures
                         $"No object found with instanceId {instanceId} for property '{property.propertyPath}'.");
                 }
 
-                return obj;
+                AddCandidate(candidates, obj);
+                return candidates;
             }
 
-            var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(value);
-            if (asset != null)
+            var assetPath = IsGuid(value) ? AssetDatabase.GUIDToAssetPath(value) : value;
+            var mainAsset = string.IsNullOrEmpty(assetPath)
+                ? null
+                : AssetDatabase.LoadMainAssetAtPath(assetPath);
+            if (mainAsset == null)
             {
-                return asset;
+                throw new ArgumentException(
+                    $"Cannot resolve '{value}' as an object reference for property '{property.propertyPath}'. " +
+                    "Use an instanceId (integer), an asset path (e.g. 'Assets/...'), an asset GUID, or 'null'.");
             }
 
-            throw new ArgumentException(
-                $"Cannot resolve '{value}' as an object reference for property '{property.propertyPath}'. " +
-                "Use an instanceId (integer), an asset path (e.g. 'Assets/...'), or 'null'.");
+            AddCandidate(candidates, mainAsset);
+            foreach (var subAsset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
+            {
+                if (subAsset != null && !candidates.Contains(subAsset))
+                {
+                    candidates.Add(subAsset);
+                }
+            }
+
+            return candidates;
+        }
+
+        /// <summary>
+        /// Adds <paramref name="obj"/> and, when it is a GameObject, its components in order.
+        /// </summary>
+        private static void AddCandidate(List<UnityEngine.Object> candidates, UnityEngine.Object obj)
+        {
+            candidates.Add(obj);
+            if (obj is GameObject gameObject)
+            {
+                foreach (var component in gameObject.GetComponents<Component>())
+                {
+                    // Missing scripts are returned as null.
+                    if (component != null)
+                    {
+                        candidates.Add(component);
+                    }
+                }
+            }
+        }
+
+        private static bool IsGuid(string value)
+        {
+            if (value.Length != 32)
+            {
+                return false;
+            }
+
+            foreach (var c in value)
+            {
+                if (!Uri.IsHexDigit(c))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static void SetReference(SerializedProperty property, UnityEngine.Object obj)
+        {
+            if (property.propertyType == SerializedPropertyType.ExposedReference)
+            {
+                // Resolved through the SerializedObject's context (e.g. a PlayableDirector).
+                property.exposedReferenceValue = obj;
+            }
+            else
+            {
+                property.objectReferenceValue = obj;
+            }
+        }
+
+        private static UnityEngine.Object GetReference(SerializedProperty property)
+        {
+            return property.propertyType == SerializedPropertyType.ExposedReference
+                ? property.exposedReferenceValue
+                : property.objectReferenceValue;
         }
 
         /// <summary>

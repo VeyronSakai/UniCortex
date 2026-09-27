@@ -388,6 +388,35 @@ Request body:
 
 Response: `{"success": true}`
 
+##### Object reference values
+
+`ObjectReference` / `ExposedReference` properties accept the following `value` formats. The same rules apply to every tool that writes serialized properties (`/scriptable-object/property`, `/timeline/track/property`, `/timeline/clip/property`).
+
+| Format | Example | Resolution |
+|--------|---------|------------|
+| Asset path | `Assets/Timelines/Intro.playable` | `AssetDatabase.LoadMainAssetAtPath` |
+| Asset GUID (32 hex characters) | `0123456789abcdef0123456789abcdef` | `AssetDatabase.GUIDToAssetPath` |
+| instanceId | `12345` | `EditorUtility.InstanceIDToObject` (scene / Prefab Mode objects, components, assets) |
+| `null` | `null` | Clears the reference |
+
+The resolved object is assigned as-is when it matches the field type. Otherwise the following candidates are tried in order, and the first one Unity accepts is assigned:
+
+1. Components of the GameObject (for an instanceId of a GameObject, or a Prefab asset's root GameObject), in `GetComponents` order
+2. Sub-assets stored in the same asset file (`AssetDatabase.LoadAllAssetsAtPath`, e.g. a Sprite inside a Texture)
+
+If no candidate is accepted (type mismatch, or a scene object assigned to an asset), the property is left unchanged and 400 is returned.
+
+Example: assign a Timeline to a PlayableDirector:
+```json
+{
+  "instanceId": 12345,
+  "componentType": "UnityEngine.Playables.PlayableDirector",
+  "assemblyName": "UnityEngine.DirectorModule",
+  "propertyPath": "m_PlayableAsset",
+  "value": "Assets/Timelines/Intro.playable"
+}
+```
+
 ### ScriptableObject
 
 Create, read, and write `.asset` files (ScriptableObjects). Type resolution uses the `typeName` + `assemblyName` pair, the same as components. Property read/write reuses `SerializedPropertyValueConverter` / `SerializedPropertyValueParser` and shares the same string-based format as `get_component_properties` / `set_component_property`.

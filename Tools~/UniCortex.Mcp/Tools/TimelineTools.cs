@@ -23,7 +23,7 @@ public class TimelineTools(TimelineUseCase timelineUseCase, IAsyncOperationSeque
     private const string PropertyValueDescription =
         "The new value as a string, in the same format as the get_timeline_*_properties tools return " +
         "(e.g. \"true\", \"1.5\", \"(1, 2, 3)\", an enum display name such as \"Apply Scene Offsets\", " +
-        "an asset path or instanceId for object references, or \"null\").";
+        "or \"null\"). " + PropertyValueDescriptions.ObjectReference;
 
     [McpServerTool(Name = "create_timeline", ReadOnly = false),
      Description(

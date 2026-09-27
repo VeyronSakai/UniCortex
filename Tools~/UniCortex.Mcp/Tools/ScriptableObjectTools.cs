@@ -46,7 +46,7 @@ public class ScriptableObjectTools(
         string assetPath,
         [Description("The property path to set (e.g. \"m_Speed\" or \"items.Array.data[0].name\").")]
         string propertyPath,
-        [Description("The new value as a string (e.g. \"42\", \"true\", \"(1, 0, 0)\").")]
+        [Description(PropertyValueDescriptions.Value)]
         string value,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,

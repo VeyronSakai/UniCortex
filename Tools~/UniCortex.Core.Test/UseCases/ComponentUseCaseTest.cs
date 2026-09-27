@@ -126,4 +126,68 @@ public class ComponentUseCaseTest
             await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
         }
     }
+
+    [Test]
+    public async ValueTask SetProperty_GameObjectInstanceIdForComponentReference_AssignsMatchingComponent()
+    {
+        var ct = CancellationToken.None;
+
+        // Arrange
+        var canvasJson = await _fixture.GameObjectUseCase.CreateAsync("CanvasObj", ct);
+        var canvas = JsonSerializer.Deserialize<CreateGameObjectResponse>(canvasJson, s_jsonOptions)!;
+        var cameraJson = await _fixture.GameObjectUseCase.CreateAsync("CameraObj", ct);
+        var camera = JsonSerializer.Deserialize<CreateGameObjectResponse>(cameraJson, s_jsonOptions)!;
+
+        try
+        {
+            await _fixture.ComponentUseCase.AddAsync(canvas.instanceId,
+                "UnityEngine.Canvas", "UnityEngine.UIModule", ct);
+            await _fixture.ComponentUseCase.AddAsync(camera.instanceId,
+                "UnityEngine.Camera", "UnityEngine.CoreModule", ct);
+
+            // Act
+            await _fixture.ComponentUseCase.SetPropertyAsync(canvas.instanceId,
+                "UnityEngine.Canvas", "UnityEngine.UIModule",
+                "m_Camera", camera.instanceId.ToString(), ct);
+
+            // Assert
+            var json = await _fixture.ComponentUseCase.GetPropertiesAsync(canvas.instanceId,
+                "UnityEngine.Canvas", "UnityEngine.UIModule", cancellationToken: ct);
+            var response = JsonSerializer.Deserialize<GetComponentPropertiesResponse>(json, s_jsonOptions)!;
+            var cameraReference = response.properties.Single(p => p.path == "m_Camera").value;
+            Assert.That(cameraReference, Is.Not.EqualTo("null"));
+            Assert.That(cameraReference, Is.Not.EqualTo(camera.instanceId.ToString()));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(canvas.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(camera.instanceId, ct);
+        }
+    }
+
+    [Test]
+    public async ValueTask SetProperty_ObjectReferenceTypeMismatch_Throws()
+    {
+        var ct = CancellationToken.None;
+
+        // Arrange
+        var canvasJson = await _fixture.GameObjectUseCase.CreateAsync("MismatchCanvasObj", ct);
+        var canvas = JsonSerializer.Deserialize<CreateGameObjectResponse>(canvasJson, s_jsonOptions)!;
+
+        try
+        {
+            await _fixture.ComponentUseCase.AddAsync(canvas.instanceId,
+                "UnityEngine.Canvas", "UnityEngine.UIModule", ct);
+
+            // Act & Assert
+            Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _fixture.ComponentUseCase.SetPropertyAsync(canvas.instanceId,
+                    "UnityEngine.Canvas", "UnityEngine.UIModule",
+                    "m_Camera", TestScenePath, ct));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(canvas.instanceId, ct);
+        }
+    }
 }
