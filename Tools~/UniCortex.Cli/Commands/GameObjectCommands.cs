@@ -45,7 +45,7 @@ public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
     /// <param name="layer">Layer number to assign to the GameObject.</param>
     /// <param name="parentInstanceId">Instance ID of the new parent GameObject. Use 0 to move to root.</param>
     /// <param name="siblingIndex">New position among siblings (0 = first).</param>
-    /// <param name="worldPositionStays">When changing the parent, keep the world transform (default: true).</param>
+    /// <param name="worldPositionStays">When changing the parent, keep the world transform (true, default) or the local transform (false).</param>
     [Command("modify")]
     public async Task Modify([Argument] int instanceId, string? name = null, bool? activeSelf = null,
         string? tag = null, int? layer = null, int? parentInstanceId = null, int? siblingIndex = null,

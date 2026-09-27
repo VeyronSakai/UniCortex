@@ -316,7 +316,7 @@ Request body:
 All fields other than `instanceId` are optional. Setting `parentInstanceId` to `0` moves the object to the root.
 
 - `siblingIndex`: position among siblings, `0` = first. Without `parentInstanceId` it reorders the object within its current parent; with it, the index is applied after reparenting. Values beyond the last sibling place the object last; negative values are rejected. Undo-supported via `Undo.SetSiblingIndex`
-- `worldPositionStays`: when changing the parent, keep the world transform (`true`, default) or keep the local transform (`false`). Passed to `Undo.SetTransformParent`
+- `worldPositionStays`: when changing the parent, keep the world transform (`true`, default) or keep the local transform (`false`). `false` is useful when moving between parents with different scales (e.g. another Canvas) or when the local values should be kept as-is. Passed to `Undo.SetTransformParent`
 
 Response: `{"success": true}`
 

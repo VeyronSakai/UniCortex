@@ -86,7 +86,8 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
         int? siblingIndex = null,
         [Description(
             "When changing the parent, keep the world position/rotation/scale (true, default) or keep the local " +
-            "values (false). For UI objects, false is usually what you want.")]
+            "values (false). Use false when moving between parents with different scales (e.g. another Canvas) " +
+            "or when the local values should be kept as-is.")]
         bool? worldPositionStays = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
