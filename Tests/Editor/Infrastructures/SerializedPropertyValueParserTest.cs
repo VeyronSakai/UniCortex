@@ -536,7 +536,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
                     SerializedPropertyValueParser.ApplyValue(prop, AnimationClipAssetPath));
 
                 // Assert
-                StringAssert.Contains("Transform", ex.Message);
+                StringAssert.Contains("componentReferenceField", ex.Message);
                 _serializedObject.Update();
                 Assert.AreEqual(tempGo.transform, _so.componentReferenceField);
             }

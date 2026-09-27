@@ -312,7 +312,6 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var candidates = ResolveCandidates(property, value);
-            var previous = GetReference(property);
             foreach (var candidate in candidates)
             {
                 SetReference(property, candidate);
@@ -324,12 +323,11 @@ namespace UniCortex.Editor.Infrastructures
                 }
             }
 
-            SetReference(property, previous);
             var original = candidates[0];
             throw new ArgumentException(
-                $"Cannot assign '{original.name}' ({original.GetType().Name}) to property '{property.propertyPath}' " +
-                $"of type '{GetReferenceTypeName(property)}'. The object (and its components / sub-assets) " +
-                "does not match the field type, or a scene object was assigned to an asset.");
+                $"Cannot assign '{original.name}' ({original.GetType().Name}) to property '{property.propertyPath}'. " +
+                "The object (and its components / sub-assets) does not match the field type, " +
+                "or a scene object was assigned to an asset.");
         }
 
         private static List<UnityEngine.Object> ResolveCandidates(SerializedProperty property, string value)
@@ -345,7 +343,7 @@ namespace UniCortex.Editor.Infrastructures
                         $"No object found with instanceId {instanceId} for property '{property.propertyPath}'.");
                 }
 
-                AddWithComponents(candidates, obj);
+                AddCandidate(candidates, obj);
                 return candidates;
             }
 
@@ -360,7 +358,7 @@ namespace UniCortex.Editor.Infrastructures
                     "Use an instanceId (integer), an asset path (e.g. 'Assets/...'), an asset GUID, or 'null'.");
             }
 
-            AddWithComponents(candidates, mainAsset);
+            AddCandidate(candidates, mainAsset);
             foreach (var subAsset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
                 if (subAsset != null && !candidates.Contains(subAsset))
@@ -375,7 +373,7 @@ namespace UniCortex.Editor.Infrastructures
         /// <summary>
         /// Adds <paramref name="obj"/> and, when it is a GameObject, its components in order.
         /// </summary>
-        private static void AddWithComponents(List<UnityEngine.Object> candidates, UnityEngine.Object obj)
+        private static void AddCandidate(List<UnityEngine.Object> candidates, UnityEngine.Object obj)
         {
             candidates.Add(obj);
             if (obj is GameObject gameObject)
@@ -427,20 +425,6 @@ namespace UniCortex.Editor.Infrastructures
             return property.propertyType == SerializedPropertyType.ExposedReference
                 ? property.exposedReferenceValue
                 : property.objectReferenceValue;
-        }
-
-        /// <summary>
-        /// Extracts the field type name from SerializedProperty.type (e.g. "PPtr&lt;$Camera&gt;" becomes "Camera").
-        /// </summary>
-        private static string GetReferenceTypeName(SerializedProperty property)
-        {
-            var typeName = property.type;
-            if (typeName.StartsWith("PPtr<", StringComparison.Ordinal) && typeName.EndsWith(">", StringComparison.Ordinal))
-            {
-                typeName = typeName.Substring(5, typeName.Length - 6).TrimStart('$');
-            }
-
-            return typeName;
         }
 
         /// <summary>
