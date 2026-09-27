@@ -400,7 +400,7 @@ Component commands accept the fully-qualified component type name plus the defin
 
 | Command | Description |
 | --- | --- |
-| `console logs` | Read Unity Editor console logs. Use `--no-log`, `--no-warning`, or `--no-error` to exclude a level, and `--stack-trace` to include stack traces. |
+| `console logs` | Read Unity Editor console logs. Fetches every level by default; pass `--info`, `--warning`, and/or `--error` to fetch only those levels (e.g. `console logs --error`). Add `--stack-trace` to include stack traces. |
 | `console clear` | Clear Unity Editor console logs. |
 
 #### `asset`, `project-window`, `menu`, `screenshot`
