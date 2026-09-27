@@ -33,7 +33,7 @@ public class TimelineCommands(TimelineUseCase timelineUseCase)
         Console.WriteLine(message);
     }
 
-    /// <summary>Evaluate a Timeline at the specified time without playing it. Requires com.unity.timeline.</summary>
+    /// <summary>Evaluate a Timeline at the specified time without playing it. In Edit Mode (including Prefab Mode), the Timeline window preview is used, so animated values are reverted when the preview ends. Requires com.unity.timeline.</summary>
     /// <param name="instanceId">The instanceId of a GameObject with a PlayableDirector component.</param>
     /// <param name="time">The time in seconds to evaluate the Timeline at.</param>
     [Command("evaluate")]

@@ -449,7 +449,7 @@ Component commands accept the fully-qualified component type name plus the defin
 | `timeline create` | Create a Timeline asset. Requires `com.unity.timeline`. |
 | `timeline play` | Start Timeline playback on a PlayableDirector. Requires `com.unity.timeline`. |
 | `timeline stop` | Stop Timeline playback and reset to the beginning. Requires `com.unity.timeline`. |
-| `timeline evaluate` | Evaluate a Timeline at the specified time without playing it. Requires `com.unity.timeline`. |
+| `timeline evaluate` | Evaluate a Timeline at the specified time without playing it, e.g. to inspect an intermediate state. Works in Edit Mode (including Prefab Mode) via the Timeline window preview, so animated values are reverted when the preview ends. Requires `com.unity.timeline`. |
 | `timeline track list` | Print the tracks and clips of a Timeline as JSON. Requires `com.unity.timeline`. |
 | `timeline track add` | Add a Timeline track. Requires `com.unity.timeline`. |
 | `timeline track remove` | Remove a Timeline track by index. Requires `com.unity.timeline`. |
