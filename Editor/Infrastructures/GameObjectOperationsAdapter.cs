@@ -72,24 +72,12 @@ namespace UniCortex.Editor.Infrastructures
 
             if (siblingIndex.HasValue)
             {
-                go.transform.SetSiblingIndex(ClampSiblingIndex(go.transform, siblingIndex.Value));
+                // Unity places the object last when the index exceeds the sibling count.
+                go.transform.SetSiblingIndex(siblingIndex.Value);
             }
 
             Undo.RegisterCreatedObjectUndo(go, "Create GameObject");
             return new CreateGameObjectResponse(go.name, go.GetInstanceID());
-        }
-
-        private static int ClampSiblingIndex(Transform transform, int siblingIndex)
-        {
-            if (siblingIndex < 0)
-            {
-                throw new ArgumentException("siblingIndex must be 0 or greater.");
-            }
-
-            var siblingCount = transform.parent != null
-                ? transform.parent.childCount
-                : transform.gameObject.scene.rootCount;
-            return Math.Min(siblingIndex, siblingCount - 1);
         }
 
         public void Delete(int instanceId)
@@ -153,8 +141,7 @@ namespace UniCortex.Editor.Infrastructures
 
             if (siblingIndex.HasValue)
             {
-                Undo.SetSiblingIndex(go.transform, ClampSiblingIndex(go.transform, siblingIndex.Value),
-                    "Modify GameObject Sibling Index");
+                Undo.SetSiblingIndex(go.transform, siblingIndex.Value, "Modify GameObject Sibling Index");
             }
         }
 

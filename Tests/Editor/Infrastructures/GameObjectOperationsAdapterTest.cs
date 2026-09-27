@@ -126,6 +126,16 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
+        public void Modify_WithSiblingIndexBeyondCount_MovesToLast()
+        {
+            // Act
+            _adapter.Modify(_childA.GetInstanceID(), null, null, null, null, null, 100, true);
+
+            // Assert
+            Assert.AreEqual(2, _childA.transform.GetSiblingIndex());
+        }
+
+        [Test]
         public void Modify_WithParentAndSiblingIndex_ReparentsAtIndex()
         {
             // Arrange
