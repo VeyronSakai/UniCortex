@@ -400,7 +400,7 @@ Component commands accept the fully-qualified component type name plus the defin
 
 | Command | Description |
 | --- | --- |
-| `console logs` | Read Unity Editor console logs. |
+| `console logs` | Read Unity Editor console logs. Use `--no-log`, `--no-warning`, or `--no-error` to exclude a level, and `--stack-trace` to include stack traces. |
 | `console clear` | Clear Unity Editor console logs. |
 
 #### `asset`, `project-window`, `menu`, `screenshot`
