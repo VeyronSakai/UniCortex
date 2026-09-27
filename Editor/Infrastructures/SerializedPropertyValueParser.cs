@@ -323,11 +323,8 @@ namespace UniCortex.Editor.Infrastructures
                 }
             }
 
-            var original = candidates[0];
             throw new ArgumentException(
-                $"Cannot assign '{original.name}' ({original.GetType().Name}) to property '{property.propertyPath}'. " +
-                "The object (and its components / sub-assets) does not match the field type, " +
-                "or a scene object was assigned to an asset.");
+                $"Cannot assign '{value}' to property '{property.propertyPath}': the object does not match the field type.");
         }
 
         private static List<UnityEngine.Object> ResolveCandidates(SerializedProperty property, string value)
