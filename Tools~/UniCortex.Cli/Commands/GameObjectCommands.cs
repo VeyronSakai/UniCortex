@@ -40,38 +40,28 @@ public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
     /// <summary>Modify a GameObject's properties.</summary>
     /// <param name="instanceId">Instance ID of the GameObject to modify.</param>
     /// <param name="name">New name for the GameObject.</param>
-    /// <param name="activeSelf">Set active state of the GameObject ("true" or "false").</param>
+    /// <param name="activate">Set the GameObject active. Cannot be combined with --deactivate.</param>
+    /// <param name="deactivate">Set the GameObject inactive. Cannot be combined with --activate.</param>
     /// <param name="tag">Tag to assign to the GameObject.</param>
     /// <param name="layer">Layer number to assign to the GameObject.</param>
     /// <param name="parentInstanceId">Instance ID of the new parent GameObject. Use 0 to move to root.</param>
     /// <param name="siblingIndex">New position among siblings (0 = first).</param>
     /// <param name="keepLocalTransform">When changing the parent, keep the local transform instead of the world transform.</param>
     [Command("modify")]
-    public async Task Modify([Argument] int instanceId, string? name = null, string? activeSelf = null,
-        string? tag = null, int? layer = null, int? parentInstanceId = null, int? siblingIndex = null,
-        bool keepLocalTransform = false, CancellationToken cancellationToken = default)
+    public async Task Modify([Argument] int instanceId, string? name = null, bool activate = false,
+        bool deactivate = false, string? tag = null, int? layer = null, int? parentInstanceId = null,
+        int? siblingIndex = null, bool keepLocalTransform = false, CancellationToken cancellationToken = default)
     {
-        var message = await gameObjectUseCase.ModifyAsync(instanceId, name,
-            ParseOptionalBool(activeSelf, "active-self"), tag, layer, parentInstanceId, siblingIndex,
-            keepLocalTransform ? false : null, cancellationToken);
+        if (activate && deactivate)
+        {
+            throw new ArgumentException("--activate and --deactivate cannot be used together.");
+        }
+
+        // Neither flag leaves the active state unchanged.
+        bool? activeSelf = activate ? true : deactivate ? false : null;
+        var message = await gameObjectUseCase.ModifyAsync(instanceId, name, activeSelf, tag, layer,
+            parentInstanceId, siblingIndex, keepLocalTransform ? false : null, cancellationToken);
         Console.WriteLine(message);
-    }
-
-    // ConsoleAppFramework treats bool options as value-less flags, so options that must accept
-    // "false" are declared as strings and parsed here.
-    private static bool? ParseOptionalBool(string? value, string optionName)
-    {
-        if (value == null)
-        {
-            return null;
-        }
-
-        if (bool.TryParse(value, out var result))
-        {
-            return result;
-        }
-
-        throw new ArgumentException($"--{optionName} must be 'true' or 'false', but was '{value}'.");
     }
 
     /// <summary>Duplicate a GameObject, deep-copying its children and components.</summary>
