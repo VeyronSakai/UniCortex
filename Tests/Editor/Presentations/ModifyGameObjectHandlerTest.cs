@@ -96,5 +96,28 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
         }
-    }
+    
+        [Test]
+        public void HandleModify_TreatsExplicitNullAsNotSpecified()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var ops = new SpyGameObjectOperations();
+            var useCase = new ModifyGameObjectUseCase(dispatcher, ops);
+            var handler = new ModifyGameObjectHandler(useCase);
+            var router = new RequestRouter();
+            handler.Register(router);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameObjectModify,
+                "{\"instanceId\":123,\"parentInstanceId\":null,\"siblingIndex\":null,\"worldPositionStays\":null}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.IsNull(ops.LastModifyParentInstanceId);
+            Assert.IsNull(ops.LastModifySiblingIndex);
+            Assert.IsTrue(ops.LastModifyWorldPositionStays);
+        }
+}
 }

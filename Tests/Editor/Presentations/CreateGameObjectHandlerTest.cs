@@ -116,5 +116,26 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             Assert.AreEqual(0, ops.CreateCallCount);
         }
-    }
+    
+        [Test]
+        public void HandleCreate_PassesNullSiblingIndex_WhenExplicitNull()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var ops = new SpyGameObjectOperations();
+            var useCase = new CreateGameObjectUseCase(dispatcher, ops);
+            var handler = new CreateGameObjectHandler(useCase);
+            var router = new RequestRouter();
+            handler.Register(router);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.GameObjectCreate,
+                "{\"name\":\"Obj\",\"siblingIndex\":null}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.IsNull(ops.LastCreateSiblingIndex);
+        }
+}
 }
