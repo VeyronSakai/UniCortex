@@ -50,6 +50,9 @@ namespace UniCortex.Editor.Infrastructures
 
             // Render the Scene View camera into an offscreen texture. This also works in Prefab Mode,
             // because the Scene View camera is bound to the preview scene of the Prefab stage.
+            // camera.targetTexture only specifies where to render and is null outside the Scene View's own
+            // drawing (a null target renders to whatever is active, which cannot be read back), so render
+            // into a temporary texture that can be read back.
             var renderTexture = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.ARGB32);
             var previousTarget = camera.targetTexture;
             try
@@ -60,6 +63,8 @@ namespace UniCortex.Editor.Infrastructures
             }
             finally
             {
+                // Restore the original target so the camera does not keep pointing at the released texture.
+                // Restore the saved value rather than null, to leave the camera exactly as it was.
                 camera.targetTexture = previousTarget;
                 RenderTexture.ReleaseTemporary(renderTexture);
             }
