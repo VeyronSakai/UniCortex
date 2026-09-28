@@ -704,8 +704,9 @@ Response: `{"success": true}`
 #### GET `/scene-view/capture`
 Captures the Scene View as a PNG image. Available in both Edit Mode and Play Mode.
 
-- Renders `SceneView.lastActiveSceneView.camera` into an offscreen RenderTexture at the Scene View's pixel size
-- In Prefab Mode, the Prefab contents are captured, because the Scene View camera renders the Prefab stage's preview scene
+- Renders with a temporary camera built from the Scene View's view state (`pivot`, `rotation`, `cameraDistance`, `size`, `orthographic`, `cameraSettings`) into an offscreen RenderTexture at the Scene View's pixel size (`cameraViewport`, or the window size if the Scene View has not been drawn yet)
+- `SceneView.camera` itself is not used, because it is only set up while the Scene View draws itself and keeps default values (e.g. at the origin) after a domain reload, such as entering Play Mode, until the Scene View is shown. This lets the Scene View be captured even while it is hidden behind the Game View tab
+- In Prefab Mode, the Prefab contents are captured by rendering only the Prefab stage's preview scene (`Camera.scene`)
 - Gizmos, the grid and Screen Space - Overlay UI are not included
 - Returns 400 if no Scene View is open
 

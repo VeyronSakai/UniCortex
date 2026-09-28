@@ -40,8 +40,11 @@ public class GameViewUseCaseTest
             // Assert
             Assert.That(pngData.Take(s_pngSignature.Length), Is.EqualTo(s_pngSignature));
             // The IHDR chunk stores the width and height as big-endian integers at offsets 16 and 20.
-            Assert.That(BinaryPrimitives.ReadInt32BigEndian(pngData.AsSpan(16, 4)), Is.EqualTo(size.screenWidth));
-            Assert.That(BinaryPrimitives.ReadInt32BigEndian(pngData.AsSpan(20, 4)), Is.EqualTo(size.screenHeight));
+            // get_game_view_size truncates fractional sizes (e.g. Free Aspect), so allow a difference of 1 pixel.
+            Assert.That(BinaryPrimitives.ReadInt32BigEndian(pngData.AsSpan(16, 4)),
+                Is.EqualTo(size.screenWidth).Within(1));
+            Assert.That(BinaryPrimitives.ReadInt32BigEndian(pngData.AsSpan(20, 4)),
+                Is.EqualTo(size.screenHeight).Within(1));
         }
         finally
         {
