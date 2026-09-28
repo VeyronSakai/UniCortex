@@ -241,7 +241,7 @@ namespace UniCortex.Editor
                 new CaptureGameViewUseCase(s_dispatcher, editorApplication, editorWindowOps, captureOps);
             var captureGameViewHandler = new CaptureGameViewHandler(captureGameViewUseCase);
 
-            var captureSceneViewUseCase = new CaptureSceneViewUseCase(s_dispatcher, captureOps);
+            var captureSceneViewUseCase = new CaptureSceneViewUseCase(s_dispatcher, editorWindowOps, captureOps);
             var captureSceneViewHandler = new CaptureSceneViewHandler(captureSceneViewUseCase);
 
             var focusSceneViewUseCase = new FocusSceneViewUseCase(s_dispatcher, editorWindowOps);

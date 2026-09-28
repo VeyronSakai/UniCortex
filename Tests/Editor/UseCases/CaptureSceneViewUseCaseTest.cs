@@ -9,7 +9,7 @@ namespace UniCortex.Editor.Tests.UseCases
     internal sealed class CaptureSceneViewUseCaseTest
     {
         [Test]
-        public void ExecuteAsync_ReturnsData_And_DispatchesToMainThread()
+        public void ExecuteAsync_FocusesSceneView_ThenReturnsData()
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
@@ -17,16 +17,18 @@ namespace UniCortex.Editor.Tests.UseCases
             {
                 SceneViewResult = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
             };
-            var useCase = new CaptureSceneViewUseCase(dispatcher, operations);
+            var windowOperations = new SpyEditorWindowOperations();
+            var useCase = new CaptureSceneViewUseCase(dispatcher, windowOperations, operations);
 
             // Act
             var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
+            Assert.AreEqual(1, windowOperations.FocusSceneViewCallCount);
             Assert.AreEqual(1, operations.CaptureSceneViewCallCount);
             Assert.AreEqual(4, result.Length);
             Assert.AreEqual(0x89, result[0]);
-            Assert.AreEqual(1, dispatcher.CallCount);
+            Assert.AreEqual(2, dispatcher.CallCount);
         }
     }
 }

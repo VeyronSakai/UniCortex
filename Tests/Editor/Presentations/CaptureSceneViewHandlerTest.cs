@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Tests.Presentations
             {
                 SceneViewResult = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
             };
-            var useCase = new CaptureSceneViewUseCase(dispatcher, _operations);
+            var useCase = new CaptureSceneViewUseCase(dispatcher, new SpyEditorWindowOperations(), _operations);
             var handler = new CaptureSceneViewHandler(useCase);
             _router = new RequestRouter();
             handler.Register(_router);

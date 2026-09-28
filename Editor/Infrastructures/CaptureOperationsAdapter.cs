@@ -2,7 +2,6 @@ using System;
 using System.Reflection;
 using UniCortex.Editor.Domains.Interfaces;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
@@ -36,90 +35,33 @@ namespace UniCortex.Editor.Infrastructures
         public byte[] CaptureSceneView()
         {
             var sceneView = SceneView.lastActiveSceneView;
-            if (sceneView == null)
+            if (sceneView == null || sceneView.camera == null)
             {
                 throw new InvalidOperationException("Scene View is not open. Open a Scene View first.");
             }
 
-            var (width, height) = GetSceneViewPixelSize(sceneView);
+            var camera = sceneView.camera;
+            var width = camera.pixelWidth;
+            var height = camera.pixelHeight;
             if (width <= 0 || height <= 0)
             {
                 throw new InvalidOperationException("Scene View has no visible area to capture.");
             }
 
-            // The Scene View camera is only set up while the Scene View draws itself, so it keeps default values
-            // (e.g. at the origin) until the Scene View is shown after a domain reload such as entering Play Mode.
-            // Build a temporary camera from the Scene View's own view state instead.
-            var cameraObject = new GameObject("UniCortexSceneViewCapture") { hideFlags = HideFlags.HideAndDontSave };
+            // Render the Scene View camera into an offscreen texture. This also works in Prefab Mode,
+            // because the Scene View camera is bound to the preview scene of the Prefab stage.
             var renderTexture = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.ARGB32);
+            var previousTarget = camera.targetTexture;
             try
             {
-                var camera = cameraObject.AddComponent<Camera>();
-                camera.enabled = false;
-                SetupSceneViewCamera(camera, sceneView, (float)width / height);
-
-                // In Prefab Mode, render the Prefab stage's preview scene instead of the main scenes.
-                var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
-                if (prefabStage != null)
-                {
-                    camera.scene = prefabStage.scene;
-                }
-
                 camera.targetTexture = renderTexture;
                 camera.Render();
-                camera.targetTexture = null;
                 return EncodeToPng(renderTexture, false);
             }
             finally
             {
+                camera.targetTexture = previousTarget;
                 RenderTexture.ReleaseTemporary(renderTexture);
-                UnityEngine.Object.DestroyImmediate(cameraObject);
-            }
-        }
-
-        private static (int width, int height) GetSceneViewPixelSize(SceneView sceneView)
-        {
-            // cameraViewport is NaN until the Scene View has been drawn, so fall back to the window size.
-            var viewport = sceneView.cameraViewport;
-            var size = float.IsNaN(viewport.width) || float.IsNaN(viewport.height)
-                ? sceneView.position.size
-                : viewport.size;
-            var pixelsPerPoint = EditorGUIUtility.pixelsPerPoint;
-            return (Mathf.RoundToInt(size.x * pixelsPerPoint), Mathf.RoundToInt(size.y * pixelsPerPoint));
-        }
-
-        private static void SetupSceneViewCamera(Camera camera, SceneView sceneView, float aspect)
-        {
-            // Mirrors how the Scene View sets up its camera from pivot, rotation and size.
-            var rotation = sceneView.rotation;
-            camera.transform.SetPositionAndRotation(
-                sceneView.pivot - rotation * Vector3.forward * sceneView.cameraDistance, rotation);
-            camera.aspect = aspect;
-
-            var settings = sceneView.cameraSettings;
-            camera.orthographic = sceneView.orthographic;
-            camera.orthographicSize = sceneView.size;
-            camera.fieldOfView = settings.fieldOfView;
-
-            if (settings.dynamicClip)
-            {
-                camera.nearClipPlane = sceneView.size * 0.01f;
-                camera.farClipPlane = sceneView.size * 2000f;
-            }
-            else
-            {
-                camera.nearClipPlane = settings.nearClip;
-                camera.farClipPlane = settings.farClip;
-            }
-
-            if (sceneView.sceneViewState.showSkybox)
-            {
-                camera.clearFlags = CameraClearFlags.Skybox;
-            }
-            else
-            {
-                camera.clearFlags = CameraClearFlags.SolidColor;
-                camera.backgroundColor = sceneView.camera != null ? sceneView.camera.backgroundColor : Color.gray;
             }
         }
 
