@@ -51,6 +51,18 @@ namespace UniCortex.Editor.Infrastructures
             EditorWindow.FocusWindowIfItsOpen(s_gameViewType);
         }
 
+        public void OpenGameView()
+        {
+            if (s_gameViewType == null)
+            {
+                throw new InvalidOperationException(
+                    "GameView type not found. This Unity version may not be supported.");
+            }
+
+            // Unlike FocusGameView, this opens a new Game View when none is open.
+            EditorWindow.GetWindow(s_gameViewType).Focus();
+        }
+
         public (int width, int height) GetGameViewSize()
         {
             var size = Handles.GetMainGameViewSize();

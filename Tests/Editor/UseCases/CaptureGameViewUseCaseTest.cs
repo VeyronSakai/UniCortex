@@ -10,7 +10,7 @@ namespace UniCortex.Editor.Tests.UseCases
     internal sealed class CaptureGameViewUseCaseTest
     {
         [Test]
-        public void ExecuteAsync_FocusesGameView_ThenReturnsData_WhenPlaying()
+        public void ExecuteAsync_OpensGameView_ThenReturnsData_WhenPlaying()
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.AreEqual(1, windowOperations.FocusGameViewCallCount);
+            Assert.AreEqual(1, windowOperations.OpenGameViewCallCount);
             Assert.AreEqual(1, captureOperations.CaptureGameViewCallCount);
             Assert.AreEqual(4, result.Length);
             Assert.AreEqual(0x89, result[0]);
@@ -35,7 +35,7 @@ namespace UniCortex.Editor.Tests.UseCases
         }
 
         [Test]
-        public void ExecuteAsync_Throws_WithoutFocusingOrCapturing_WhenNotPlaying()
+        public void ExecuteAsync_Throws_WithoutOpeningOrCapturing_WhenNotPlaying()
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
@@ -48,7 +48,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() =>
                 useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult());
-            Assert.AreEqual(0, windowOperations.FocusGameViewCallCount);
+            Assert.AreEqual(0, windowOperations.OpenGameViewCallCount);
             Assert.AreEqual(0, captureOperations.CaptureGameViewCallCount);
         }
     }

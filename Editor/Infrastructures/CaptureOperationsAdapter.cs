@@ -78,6 +78,14 @@ namespace UniCortex.Editor.Infrastructures
                     "GameView internals not found. This Unity version may not be supported.");
             }
 
+            // Prefer the focused Game View, which the capture use case has just opened or focused.
+            var focusedWindow = EditorWindow.focusedWindow;
+            if (focusedWindow != null && s_gameViewType.IsInstanceOfType(focusedWindow))
+            {
+                return s_targetTextureField.GetValue(focusedWindow) as RenderTexture;
+            }
+
+            // Editor windows are UnityEngine.Objects, so every open Game View can be found this way.
             var gameViews = Resources.FindObjectsOfTypeAll(s_gameViewType);
             if (gameViews.Length == 0)
             {

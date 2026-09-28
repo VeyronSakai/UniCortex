@@ -719,9 +719,9 @@ Response: `{"success": true}`
 #### GET `/game-view/capture`
 Captures the Game View as a PNG image. Play Mode only.
 
-- Returns 400 in Edit Mode (use `GET /scene-view/capture` instead). The Game View is not focused in that case
+- Returns 400 in Edit Mode (use `GET /scene-view/capture` instead). The Game View is not opened or focused in that case
 - Captures only the game image at the Game View resolution (e.g. 1920x1080), including Screen Space - Overlay UI and without the editor chrome
-- Focuses the Game View first (it only renders while visible), then on a later main thread tick reads the Game View's render target (`PlayModeView.m_TargetTexture`, accessed via reflection)
+- Opens the Game View if none is open (`EditorWindow.GetWindow`) and focuses it first (it only renders while visible), then on a later main thread tick reads the focused Game View's render target (`PlayModeView.m_TargetTexture`, accessed via reflection)
 - On graphics APIs whose UV origin is at the top (`SystemInfo.graphicsUVStartsAtTop`, e.g. Metal / Direct3D / Vulkan), the render target is stored upside down, so it is flipped vertically before encoding
 - Returns 400 if the Game View is not open or has not been rendered yet
 

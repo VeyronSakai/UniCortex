@@ -7,6 +7,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
     {
         public int FocusSceneViewCallCount { get; private set; }
         public int FocusGameViewCallCount { get; private set; }
+        public int OpenGameViewCallCount { get; private set; }
         public int GetGameViewSizeCallCount { get; private set; }
         public int GetGameViewSizeListCallCount { get; private set; }
         public int SetGameViewSizeCallCount { get; private set; }
@@ -36,6 +37,11 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public void FocusGameView()
         {
             FocusGameViewCallCount++;
+        }
+
+        public void OpenGameView()
+        {
+            OpenGameViewCallCount++;
         }
 
         public (int width, int height) GetGameViewSize()

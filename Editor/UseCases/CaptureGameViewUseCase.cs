@@ -32,8 +32,8 @@ namespace UniCortex.Editor.UseCases
                         "or use Scene View capture in Edit Mode.");
                 }
 
-                // The Game View only renders while it is visible, so bring it to the front first.
-                _windowOperations.FocusGameView();
+                // The Game View only renders while it is visible, so open it if needed and bring it to the front.
+                _windowOperations.OpenGameView();
             }, cancellationToken);
 
             // Capture on a later main thread tick so that the Game View has been drawn after gaining focus.

@@ -21,7 +21,7 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
      Description(
          "Capture the Game View as a PNG image at the Game View resolution. " +
          "Only available in Play Mode; use capture_scene_view in Edit Mode. " +
-         "The Game View is focused before capturing."),
+         "The Game View is opened if needed and focused before capturing."),
      UsedImplicitly]
     public ValueTask<CallToolResult> CaptureGameViewAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>
