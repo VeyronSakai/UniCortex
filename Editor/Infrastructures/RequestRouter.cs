@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEngine;
@@ -42,6 +43,12 @@ namespace UniCortex.Editor.Infrastructures
                 Debug.LogWarning($"[UniCortex] {method} {path} invalid request: {ex.Message}");
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest,
                     JsonUtility.ToJson(new ErrorResponse($"Invalid request: {ex.Message}")));
+            }
+            catch (MainThreadUnresponsiveException ex)
+            {
+                Debug.LogWarning($"[UniCortex] {method} {path} main thread unresponsive: {ex.Message}");
+                await context.WriteResponseAsync(HttpStatusCodes.ServiceUnavailable,
+                    JsonUtility.ToJson(new ErrorResponse(ex.Message)));
             }
             catch (OperationCanceledException)
             {
