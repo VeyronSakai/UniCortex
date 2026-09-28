@@ -11,4 +11,11 @@ public class SceneViewUseCase(IUnityEditorClient client)
             ApiRoutes.FocusSceneView, cancellationToken: cancellationToken);
         return "Scene View focused successfully.";
     }
+
+    public async ValueTask<byte[]> CaptureAsync(CancellationToken cancellationToken)
+    {
+        var response = await client.GetAsync<CaptureSceneViewRequest, CaptureSceneViewResponse>(
+            ApiRoutes.SceneViewCapture, cancellationToken: cancellationToken);
+        return Convert.FromBase64String(response.pngDataBase64);
+    }
 }

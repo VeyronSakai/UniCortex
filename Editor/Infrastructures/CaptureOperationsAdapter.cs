@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using UniCortex.Editor.Domains.Interfaces;
 using UnityEditor;
 using UnityEngine;
@@ -7,23 +8,122 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class CaptureOperationsAdapter : ICaptureOperations
     {
-        public byte[] CaptureScreenshot()
+        private static readonly Type s_gameViewType =
+            typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView");
+
+        // PlayModeView.m_TargetTexture holds the rendered game image at the Game View resolution.
+        private static readonly FieldInfo s_targetTextureField =
+            typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.PlayModeView")
+                ?.GetField("m_TargetTexture", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        public byte[] CaptureGameView()
         {
-            if (!EditorApplication.isPlaying)
+            var targetTexture = GetGameViewTargetTexture();
+            if (targetTexture == null)
             {
                 throw new InvalidOperationException(
-                    "Screenshot capture is only available in Play Mode. Enter Play Mode first.");
+                    "Game View has not been rendered yet. Make sure the Game View is open and visible.");
             }
 
-            // Use ScreenCapture to capture the current rendering output including UI overlays.
-            // Camera.Render() only renders the camera's own view and misses Screen Space - Overlay canvases.
-            var texture = ScreenCapture.CaptureScreenshotAsTexture();
+            // Read the Game View's own render target so that only the game image (including Screen Space -
+            // Overlay UI) is captured at the Game View resolution, without the surrounding editor window.
+            // On graphics APIs whose UV origin is at the top (Metal, Direct3D, Vulkan), the target is stored
+            // upside down, so flip it back.
+            return EncodeToPng(targetTexture, SystemInfo.graphicsUVStartsAtTop);
+        }
+
+        public byte[] CaptureSceneView()
+        {
+            var sceneView = SceneView.lastActiveSceneView;
+            if (sceneView == null || sceneView.camera == null)
+            {
+                throw new InvalidOperationException("Scene View is not open. Open a Scene View first.");
+            }
+
+            var camera = sceneView.camera;
+            var width = camera.pixelWidth;
+            var height = camera.pixelHeight;
+            if (width <= 0 || height <= 0)
+            {
+                throw new InvalidOperationException("Scene View has no visible area to capture.");
+            }
+
+            // Render the Scene View camera into an offscreen texture. This also works in Prefab Mode,
+            // because the Scene View camera is bound to the preview scene of the Prefab stage.
+            // camera.targetTexture only specifies where to render and is null outside the Scene View's own
+            // drawing (a null target renders to whatever is active, which cannot be read back), so render
+            // into a temporary texture that can be read back.
+            var renderTexture = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.ARGB32);
+            var previousTarget = camera.targetTexture;
             try
             {
+                camera.targetTexture = renderTexture;
+                camera.Render();
+                return EncodeToPng(renderTexture, false);
+            }
+            finally
+            {
+                // Restore the original target so the camera does not keep pointing at the released texture.
+                // Restore the saved value rather than null, to leave the camera exactly as it was.
+                camera.targetTexture = previousTarget;
+                RenderTexture.ReleaseTemporary(renderTexture);
+            }
+        }
+
+        private static RenderTexture GetGameViewTargetTexture()
+        {
+            if (s_gameViewType == null || s_targetTextureField == null)
+            {
+                throw new InvalidOperationException(
+                    "GameView internals not found. This Unity version may not be supported.");
+            }
+
+            // Prefer the focused Game View, which the capture use case has just opened or focused.
+            var focusedWindow = EditorWindow.focusedWindow;
+            if (focusedWindow != null && s_gameViewType.IsInstanceOfType(focusedWindow))
+            {
+                return s_targetTextureField.GetValue(focusedWindow) as RenderTexture;
+            }
+
+            // Editor windows are UnityEngine.Objects, so every open Game View can be found this way.
+            var gameViews = Resources.FindObjectsOfTypeAll(s_gameViewType);
+            if (gameViews.Length == 0)
+            {
+                throw new InvalidOperationException("Game View is not open. Open a Game View first.");
+            }
+
+            return s_targetTextureField.GetValue(gameViews[0]) as RenderTexture;
+        }
+
+        private static byte[] EncodeToPng(RenderTexture source, bool flipVertically)
+        {
+            var width = source.width;
+            var height = source.height;
+            var flipped = flipVertically
+                ? RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.ARGB32)
+                : null;
+            var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
+            var previousActive = RenderTexture.active;
+            try
+            {
+                if (flipped != null)
+                {
+                    Graphics.Blit(source, flipped, new Vector2(1f, -1f), new Vector2(0f, 1f));
+                }
+
+                RenderTexture.active = flipped != null ? flipped : source;
+                texture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                texture.Apply();
                 return texture.EncodeToPNG();
             }
             finally
             {
+                RenderTexture.active = previousActive;
+                if (flipped != null)
+                {
+                    RenderTexture.ReleaseTemporary(flipped);
+                }
+
                 UnityEngine.Object.DestroyImmediate(texture);
             }
         }

@@ -11,7 +11,6 @@ using UniCortex.Editor.Handlers.ScriptableObject;
 using UniCortex.Editor.Handlers.Tests;
 using UniCortex.Editor.Handlers.MenuItem;
 using UniCortex.Editor.Handlers.Input;
-using UniCortex.Editor.Handlers.Screenshot;
 using UniCortex.Editor.Handlers.SceneView;
 using UniCortex.Editor.Handlers.GameView;
 using UniCortex.Editor.Handlers.ProjectWindow;
@@ -236,10 +235,14 @@ namespace UniCortex.Editor
             var executeMenuItemUseCase = new ExecuteMenuItemUseCase(s_dispatcher, menuItemOps);
             var executeMenuItemHandler = new ExecuteMenuItemHandler(executeMenuItemUseCase);
 
-            var captureScreenshotUseCase = new CaptureScreenshotUseCase(s_dispatcher, captureOps);
-            var captureScreenshotHandler = new CaptureScreenshotHandler(captureScreenshotUseCase);
-
             var editorWindowOps = new EditorWindowOperationsAdapter();
+
+            var captureGameViewUseCase =
+                new CaptureGameViewUseCase(s_dispatcher, editorApplication, editorWindowOps, captureOps);
+            var captureGameViewHandler = new CaptureGameViewHandler(captureGameViewUseCase);
+
+            var captureSceneViewUseCase = new CaptureSceneViewUseCase(s_dispatcher, editorWindowOps, captureOps);
+            var captureSceneViewHandler = new CaptureSceneViewHandler(captureSceneViewUseCase);
 
             var focusSceneViewUseCase = new FocusSceneViewUseCase(s_dispatcher, editorWindowOps);
             var focusSceneViewHandler = new FocusSceneViewHandler(focusSceneViewUseCase);
@@ -387,7 +390,8 @@ namespace UniCortex.Editor
             assetRefreshHandler.Register(router);
             selectProjectWindowAssetHandler.Register(router);
             executeMenuItemHandler.Register(router);
-            captureScreenshotHandler.Register(router);
+            captureGameViewHandler.Register(router);
+            captureSceneViewHandler.Register(router);
             focusSceneViewHandler.Register(router);
             focusGameViewHandler.Register(router);
             getGameViewSizeHandler.Register(router);

@@ -2,6 +2,7 @@ namespace UniCortex.Editor.Domains.Interfaces
 {
     internal interface ICaptureOperations
     {
-        byte[] CaptureScreenshot();
+        byte[] CaptureGameView();
+        byte[] CaptureSceneView();
     }
 }

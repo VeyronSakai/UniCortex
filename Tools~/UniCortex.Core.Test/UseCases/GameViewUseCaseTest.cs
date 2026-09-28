@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using NUnit.Framework;
 using UniCortex.Core.Test.Fixtures;
 
@@ -6,6 +7,7 @@ namespace UniCortex.Core.Test.UseCases;
 [TestFixture]
 public class GameViewUseCaseTest
 {
+    private static readonly byte[] s_pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
@@ -20,6 +22,42 @@ public class GameViewUseCaseTest
         var result = await _fixture.GameViewUseCase.FocusAsync(CancellationToken.None);
 
         Assert.That(result, Does.Contain("successfully"));
+    }
+
+    [Test]
+    public async ValueTask Capture_InPlayMode_ReturnsPngData()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            var size = await _fixture.GameViewUseCase.GetSizeResponseAsync(CancellationToken.None);
+
+            // Act
+            var pngData = await _fixture.GameViewUseCase.CaptureAsync(CancellationToken.None);
+
+            // Assert
+            Assert.That(pngData.Take(s_pngSignature.Length), Is.EqualTo(s_pngSignature));
+            // The IHDR chunk stores the width and height as big-endian integers at offsets 16 and 20.
+            // get_game_view_size truncates fractional sizes (e.g. Free Aspect), so allow a difference of 1 pixel.
+            Assert.That(BinaryPrimitives.ReadInt32BigEndian(pngData.AsSpan(16, 4)),
+                Is.EqualTo(size.screenWidth).Within(1));
+            Assert.That(BinaryPrimitives.ReadInt32BigEndian(pngData.AsSpan(20, 4)),
+                Is.EqualTo(size.screenHeight).Within(1));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test]
+    public void Capture_InEditMode_Throws()
+    {
+        // Act & Assert
+        Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.GameViewUseCase.CaptureAsync(CancellationToken.None));
     }
 
     [Test]

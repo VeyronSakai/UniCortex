@@ -188,18 +188,14 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 |------|-------------|
 | `execute_menu_item` | Execute a Unity Editor menu item by path |
 
-#### Screenshot
-
-| Tool | Description |
-|------|-------------|
-| `capture_screenshot` | Capture a screenshot of the current Unity rendering output (Play Mode only) |
-
 #### View
 
 | Tool | Description |
 |------|-------------|
 | `focus_scene_view` | Switch focus to the Scene View window |
+| `capture_scene_view` | Capture the Scene View as a PNG image. Works in both Edit Mode and Play Mode, and captures the Prefab contents in Prefab Mode (gizmos and Screen Space - Overlay UI are not included) |
 | `focus_game_view` | Switch focus to the Game View window |
+| `capture_game_view` | Capture the Game View as a PNG at the Game View resolution (Play Mode only) |
 | `get_game_view_size` | Get the current Game View size (width and height in pixels) |
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
@@ -314,7 +310,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 - Boolean options are flags that take no value, for example `gameobject modify 1234 --deactivate`.
 - Read/query commands usually print JSON, such as `scene hierarchy`, `gameobject find`, `component property list`, and `recorder all list`.
 - State-changing commands usually print a short status message, such as `editor play`, `scene open`, `component add`, and `timeline track bind`.
-- `screenshot capture` writes a file to the path you pass, and recorder commands create media files in the configured output path.
+- `game-view capture` and `scene-view capture` write a PNG file to the path you pass, and recorder commands create media files in the configured output path.
 
 ### Available CLI Commands
 
@@ -404,21 +400,22 @@ Component commands accept the fully-qualified component type name plus the defin
 | `console logs` | Read Unity Editor console logs. Fetches every level by default; pass `--info`, `--warning`, and/or `--error` to fetch only those levels (e.g. `console logs --error`). Add `--stack-trace` to include stack traces. |
 | `console clear` | Clear Unity Editor console logs. |
 
-#### `asset`, `project-window`, `menu`, `screenshot`
+#### `asset`, `project-window`, `menu`
 
 | Command | Description |
 | --- | --- |
 | `asset refresh` | Refresh the Unity Asset Database. |
 | `project-window select` | Select and ping an asset in the Project Window. |
 | `menu execute` | Execute a Unity menu item by path. |
-| `screenshot capture` | Capture a PNG screenshot. Play Mode only. |
 
 #### `scene-view`, `game-view`, `game-view size`, `game-view scale`
 
 | Command | Description |
 | --- | --- |
 | `scene-view focus` | Focus the Scene View window. |
+| `scene-view capture` | Capture the Scene View as a PNG file. Works in Edit Mode and Play Mode, including Prefab Mode. |
 | `game-view focus` | Focus the Game View window. |
+| `game-view capture` | Capture the Game View as a PNG file at the Game View resolution. Play Mode only. |
 | `game-view size get` | Show the current Game View size. |
 | `game-view size list` | List available Game View sizes. |
 | `game-view size set` | Set the Game View size by index. |
@@ -490,8 +487,9 @@ dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scriptable-object property set 
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- animation-clip create Assets/Animations/FadeIn.anim
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- animation-clip curve set Assets/Animations/FadeIn.anim UnityEngine.UI.Image UnityEngine.UI m_Color.a '[{"time":0,"value":0},{"time":0.5,"value":1}]' --animator-relative-path Root/Child
 
-# Capture a screenshot
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- screenshot capture ./Artifacts/gameview.png
+# Capture the Scene View (Edit Mode) and the Game View (Play Mode)
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scene-view capture ./Artifacts/sceneview.png
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- game-view capture ./Artifacts/gameview.png
 
 # Discover and run a custom extension
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- extension list
