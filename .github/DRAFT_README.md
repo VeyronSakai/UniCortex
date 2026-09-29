@@ -269,7 +269,7 @@ export UNICORTEX_CLI_PROJECT=$(echo "${UNICORTEX_PROJECT_PATH}"/Library/PackageC
 
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- editor ping
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scene hierarchy
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject find "t:Camera"
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- game-object find "t:Camera"
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property list 1234 UnityEngine.Transform UnityEngine.CoreModule
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- test run --test-mode EditMode
 ```
@@ -306,9 +306,9 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 ### Argument and output conventions
 
 - Required parameters are positional arguments, for example `scene open Assets/Scenes/Main.unity`.
-- Optional parameters with defaults become named options, for example `gameobject modify 1234 --name CameraRig --tag Player`.
-- Boolean options are flags that take no value, for example `gameobject modify 1234 --deactivate`.
-- Read/query commands usually print JSON, such as `scene hierarchy`, `gameobject find`, `component property list`, and `recorder all list`.
+- Optional parameters with defaults become named options, for example `game-object modify 1234 --name CameraRig --tag Player`.
+- Boolean options are flags that take no value, for example `game-object modify 1234 --deactivate`.
+- Read/query commands usually print JSON, such as `scene hierarchy`, `game-object find`, `component property list`, and `recorder all list`.
 - State-changing commands usually print a short status message, such as `editor play`, `scene open`, `component add`, and `timeline track bind`.
 - `game-view capture` and `scene-view capture` write a PNG file to the path you pass, and recorder commands create media files in the configured output path.
 
@@ -338,15 +338,15 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `scene open` | Open a scene by asset path. |
 | `scene hierarchy` | Print the current scene hierarchy as JSON. |
 
-#### `gameobject`
+#### `game-object`
 
 | Command | Description |
 | --- | --- |
-| `gameobject find` | Search GameObjects by Unity Search query. |
-| `gameobject create` | Create a new empty GameObject, optionally under a parent at a given sibling index. |
-| `gameobject delete` | Delete a GameObject by `instanceId`. |
-| `gameobject modify` | Rename, reparent, reorder, or change active state, tag, or layer. |
-| `gameobject duplicate` | Duplicate a GameObject (deep copy of children and components). |
+| `game-object find` | Search GameObjects by Unity Search query. |
+| `game-object create` | Create a new empty GameObject, optionally under a parent at a given sibling index. |
+| `game-object delete` | Delete a GameObject by `instanceId`. |
+| `game-object modify` | Rename, reparent, reorder, or change active state, tag, or layer. |
+| `game-object duplicate` | Duplicate a GameObject (deep copy of children and components). |
 
 #### `component`
 
@@ -470,11 +470,11 @@ Component commands accept the fully-qualified component type name plus the defin
 
 ```bash
 # Find cameras and inspect a component
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject find "t:Camera"
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- game-object find "t:Camera"
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property list 1234 UnityEngine.Transform UnityEngine.CoreModule
 
 # Rename and reparent a GameObject
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject modify 1234 --name CameraRig --parent-instance-id 5678
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- game-object modify 1234 --name CameraRig --parent-instance-id 5678
 
 # Set a serialized property
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property set 1234 UnityEngine.Transform UnityEngine.CoreModule m_LocalPosition.x 1.5
