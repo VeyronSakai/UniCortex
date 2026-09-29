@@ -1460,7 +1460,7 @@ A CLI tool for operating the Unity Editor from a terminal. Uses Core services di
 ```
 editor ping|play|stop|status|pause|unpause|step|undo|redo|reload-domain
 scene create|open|save|hierarchy
-gameobject find|create|delete|modify
+game-object find|create|delete|modify
 component add|remove
 component property list|set
 prefab create|instantiate|open|close|save
@@ -1502,7 +1502,7 @@ export UNICORTEX_PROJECT_PATH=/path/to/your/unity/project
 
 dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- editor ping
 dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- scene hierarchy
-dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- gameobject find --query "t:Camera"
+dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- game-object find --query "t:Camera"
 dotnet run --project /path/to/UniCortex/Tools~/UniCortex.Cli/ -- scene-view capture ./sceneview.png
 ```
 

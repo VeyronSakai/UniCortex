@@ -16,7 +16,7 @@ var app = ConsoleApp.Create()
 
 app.Add<EditorCommands>("editor");
 app.Add<SceneCommands>("scene");
-app.Add<GameObjectCommands>("gameobject");
+app.Add<GameObjectCommands>("game-object");
 app.Add<ComponentCommands>("component");
 app.Add<ComponentPropertyCommands>("component property");
 app.Add<PrefabCommands>("prefab");
