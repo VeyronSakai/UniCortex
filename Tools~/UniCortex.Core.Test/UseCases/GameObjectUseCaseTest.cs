@@ -58,6 +58,22 @@ public class GameObjectUseCaseTest
     }
 
     [Test]
+    public async ValueTask Find_ReturnsSceneNameOfEachResult()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        var created = await CreateAsync("FindSceneNameTarget", ct);
+
+        // Act
+        var json = await _fixture.GameObjectUseCase.FindAsync("FindSceneNameTarget", ct);
+
+        // Assert
+        var response = JsonSerializer.Deserialize<FindGameObjectsResponse>(json, s_jsonOptions)!;
+        Assert.That(response.gameObjects, Has.Count.EqualTo(1));
+        Assert.That(response.gameObjects[0].sceneName, Is.EqualTo("GameObjectToolsTestScene"));
+    }
+
+    [Test]
     public async ValueTask CreateAndDelete_WorksEndToEnd()
     {
         var createJson = await _fixture.GameObjectUseCase.CreateAsync("TestObj", cancellationToken: CancellationToken.None);
@@ -300,9 +316,10 @@ public class GameObjectUseCaseTest
             var child = await CreateAsync("RectChild", ct, parent.instanceId, useRectTransform: true);
 
             // Assert
-            var json = await _fixture.GameObjectUseCase.FindAsync($"id:{child.instanceId}", ct);
+            var json = await _fixture.GameObjectUseCase.FindAsync("RectChild", ct);
             var response = JsonSerializer.Deserialize<FindGameObjectsResponse>(json, s_jsonOptions)!;
-            Assert.That(response.gameObjects[0].components, Does.Contain("UnityEngine.RectTransform"));
+            var found = response.gameObjects.Single(g => g.instanceId == child.instanceId);
+            Assert.That(found.components, Does.Contain("UnityEngine.RectTransform"));
         }
         finally
         {
@@ -373,7 +390,8 @@ public class GameObjectUseCaseTest
     {
         var json = await _fixture.SceneUseCase.GetHierarchyAsync(ct);
         var hierarchy = JsonSerializer.Deserialize<GetHierarchyResponse>(json, s_jsonOptions)!;
-        var parent = hierarchy.gameObjects.First(node => node.instanceId == parentInstanceId);
+        var parent = hierarchy.scenes.SelectMany(scene => scene.gameObjects)
+            .First(node => node.instanceId == parentInstanceId);
         return parent.children.Select(node => node.name).ToArray();
     }
 }

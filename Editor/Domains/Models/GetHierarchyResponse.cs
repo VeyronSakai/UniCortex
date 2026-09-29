@@ -6,15 +6,11 @@ namespace UniCortex.Editor.Domains.Models
     [Serializable]
     public class GetHierarchyResponse
     {
-        public string sceneName;
-        public string scenePath;
-        public List<GameObjectNode> gameObjects;
+        public List<SceneHierarchy> scenes;
 
-        public GetHierarchyResponse(string sceneName, string scenePath, List<GameObjectNode> gameObjects)
+        public GetHierarchyResponse(List<SceneHierarchy> scenes)
         {
-            this.sceneName = sceneName;
-            this.scenePath = scenePath;
-            this.gameObjects = gameObjects;
+            this.scenes = scenes;
         }
     }
 }

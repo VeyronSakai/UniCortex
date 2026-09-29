@@ -209,7 +209,10 @@ public class PrefabUseCaseTest
 
             var findJson = await _fixture.GameObjectUseCase.FindAsync("t:Transform", ct);
 
-            Assert.That(findJson, Does.Contain("FindQueryPrefabTest"));
+            // Only the Prefab contents are searched, so the source object in the scene is excluded.
+            var response = JsonSerializer.Deserialize<FindGameObjectsResponse>(findJson, s_jsonOptions)!;
+            Assert.That(response.gameObjects.Select(g => g.name), Is.EqualTo(new[] { "FindQueryPrefabTest" }));
+            Assert.That(response.gameObjects.Select(g => g.instanceId), Does.Not.Contain(createResponse.instanceId));
 
             await _fixture.PrefabUseCase.CloseAsync(ct);
         }

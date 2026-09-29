@@ -23,7 +23,7 @@ public class SceneCommands(SceneUseCase sceneUseCase)
         Console.WriteLine(message);
     }
 
-    /// <summary>Get the GameObject hierarchy of the current scene.</summary>
+    /// <summary>Get the GameObject hierarchy of every loaded scene (or the Prefab in Prefab Mode).</summary>
     [Command("hierarchy")]
     public async Task Hierarchy(CancellationToken cancellationToken)
     {

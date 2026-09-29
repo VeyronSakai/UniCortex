@@ -195,27 +195,44 @@ Request body:
 Response: `{"success": true}`
 
 #### GET `/scene/hierarchy`
-Returns the GameObject hierarchy of the current scene as a tree. Includes scene information.
+Returns the GameObject hierarchy of every loaded scene as a tree, one entry per scene in Hierarchy window order.
+
+- Scenes are enumerated with `SceneManager.sceneCount` / `GetSceneAt(i)`; scenes with `isLoaded == false` are skipped
+- In Play Mode, the `DontDestroyOnLoad` scene is appended when it has root objects. The scene is obtained by calling the internal `EditorSceneManager.GetDontDestroyOnLoadScene()` through reflection (present in 2022.3 / 6000.2 / 6000.3); if the method is missing, the scene is skipped
+- `isActive` is `true` for the scene returned by `SceneManager.GetActiveScene()`
+- In Prefab Mode, a single entry for the Prefab contents is returned (`sceneName` is the root name, `scenePath` is the Prefab asset path, `isActive` is `true`)
 
 Response:
 ```json
 {
-  "sceneName": "SampleScene",
-  "scenePath": "Assets/Scenes/SampleScene.unity",
-  "gameObjects": [
+  "scenes": [
     {
-      "name": "Main Camera",
-      "instanceId": 10200,
-      "children": []
+      "sceneName": "Boot",
+      "scenePath": "Assets/Scenes/Boot.unity",
+      "isActive": true,
+      "gameObjects": [
+        {
+          "name": "Main Camera",
+          "instanceId": 10200,
+          "children": []
+        }
+      ]
     },
     {
-      "name": "Canvas",
-      "instanceId": 10300,
-      "children": [
+      "sceneName": "Menu",
+      "scenePath": "Assets/Scenes/Menu.unity",
+      "isActive": false,
+      "gameObjects": [
         {
-          "name": "Button",
-          "instanceId": 10400,
-          "children": []
+          "name": "Canvas",
+          "instanceId": 10300,
+          "children": [
+            {
+              "name": "Button",
+              "instanceId": 10400,
+              "children": []
+            }
+          ]
         }
       ]
     }
@@ -226,27 +243,24 @@ Response:
 ### GameObject
 
 #### GET `/gameobjects?query=...`
-Searches GameObjects in the scene. Supports Unity Search-style query syntax.
+Searches GameObjects in every loaded scene (including additively loaded scenes and, in Play Mode, the `DontDestroyOnLoad` scene) with the same query syntax as the Hierarchy window's search field. In Prefab Mode, only the Prefab contents are searched.
 
 Query parameters:
-- `query`: search query string (optional; if omitted, all GameObjects are returned)
+- `query`: search query string (required)
 
-Delegates to Unity Search's (`SearchService` API) `scene` provider. Unity Search subfilter syntax is supported as-is.
+Uses `HierarchyProperty(HierarchyType.GameObjects)` with `SetSearchFilter(query, SearchMode.All)`, the same search that backs the Hierarchy window. It reads the live scene state on every call, so objects created or loaded at runtime are always included. In Prefab Mode, `SetCustomScenes` restricts the search to the Prefab stage's scene. Scene header rows returned by `HierarchyProperty` are skipped. Results are in Hierarchy order and include inactive objects.
 
-Main query tokens:
+Unity Search (`SearchService`) is not used: its `scene` provider caches the object list and stops refreshing it after the domain reload on entering Play Mode, so runtime changes were missed.
+
+Query tokens:
 
 | Token | Example | Description |
 |-------|---------|-------------|
-| Plain text | `Main Camera` | Partial name match |
-| `t:` | `t:Camera` | Component type |
-| `tag:` | `tag:resp` | Tag (partial match) |
-| `tag=` | `tag=Player` | Tag (exact match) |
-| `id:` | `id:12345` | instanceId |
-| `layer:` | `layer:5` | Layer number |
-| `path:` | `path:Canvas/Button` | Hierarchy path |
-| `is:` | `is:root` / `is:child` / `is:leaf` / `is:static` | State filter |
+| Plain text | `Main Camera` | Partial name match, case-insensitive. Multiple words must all match (AND) |
+| `t:` | `t:Camera` / `t:Graphic` | Component type, case-insensitive. Derived types match too. Multiple `t:` tokens match any of them (OR) |
+| `ref:` | `ref:12345:` | GameObjects that reference the object with that instanceId (including the object itself) |
 
-See Unity's official Search documentation for full query syntax.
+Wildcards (`*`) are not supported. To narrow results by tag, layer, active state or scene, use the corresponding fields of each result; use `get_hierarchy` for paths and parent-child structure.
 
 Response:
 ```json
@@ -260,7 +274,8 @@ Response:
       "layer": 0,
       "isStatic": false,
       "hideFlags": 0,
-      "components": ["UnityEngine.Transform", "UnityEngine.CharacterController"]
+      "components": ["UnityEngine.Transform", "UnityEngine.CharacterController"],
+      "sceneName": "Menu"
     }
   ]
 }
@@ -1260,13 +1275,13 @@ The tool receives the corresponding Core service via constructor DI and wraps th
 |------|-----|-------------|
 | `create_scene` | POST `/scene/create` | Create a new empty scene and save it to an asset path |
 | `open_scene` | POST `/scene/open` | Open a scene by path |
-| `get_hierarchy` | GET `/hierarchy` | Get the GameObject hierarchy of the scene or Prefab as a tree |
+| `get_hierarchy` | GET `/hierarchy` | Get the GameObject hierarchy of every loaded scene (or the Prefab) as a tree per scene |
 
 #### GameObject (5)
 
 | Tool | API | Description |
 |------|-----|-------------|
-| `find_game_objects` | GET `/gameobjects` | Search the scene with query syntax (name, tag, component type, instanceId, layer, path, state) |
+| `find_game_objects` | GET `/gameobjects` | Search every loaded scene with the Hierarchy window's query syntax (name, component type, references) |
 | `create_gameobject` | POST `/gameobject/create` | Create a GameObject (parent, sibling index, and RectTransform specification supported) |
 | `delete_gameobject` | POST `/gameobject/delete` | Delete a GameObject |
 | `modify_gameobject` | POST `/gameobject/modify` | Rename, enable/disable, reparent, reorder siblings, change tag/layer |

@@ -4,7 +4,7 @@ using System.Linq;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor;
-using UnityEditor.Search;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
@@ -13,17 +13,31 @@ namespace UniCortex.Editor.Infrastructures
     {
         private const string ModifyParentUndoName = "Modify GameObject Parent";
 
+        // Uses the same search as the Hierarchy window's search field (SearchableEditorWindow.SearchMode.All),
+        // which covers every loaded scene, including the DontDestroyOnLoad scene in Play Mode.
+        private const int HierarchySearchModeAll = 0;
+
         public List<GameObjectSearchResult> Get(string query)
         {
-            using var context = SearchService.CreateContext("scene", query);
-            var items = SearchService.GetItems(context, SearchFlags.Synchronous);
+            var property = new HierarchyProperty(HierarchyType.GameObjects);
 
-            var results = new List<GameObjectSearchResult>(items.Count);
-            foreach (var item in items)
+            // In Prefab Mode, search only the Prefab contents, as the Hierarchy window does.
+            var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (prefabStage != null)
             {
-                var go = item.ToObject<GameObject>();
-                if (go == null) continue;
-                results.Add(BuildSearchResult(go));
+                property.SetCustomScenes(new[] { prefabStage.scene.handle });
+            }
+
+            property.SetSearchFilter(query, HierarchySearchModeAll);
+
+            var results = new List<GameObjectSearchResult>();
+            while (property.Next(null))
+            {
+                // Scene header rows are also returned; they have no GameObject.
+                if (property.pptrValue is GameObject go)
+                {
+                    results.Add(BuildSearchResult(go));
+                }
             }
 
             return results;
@@ -44,7 +58,8 @@ namespace UniCortex.Editor.Infrastructures
                 go.layer,
                 go.isStatic,
                 (int)go.hideFlags,
-                components);
+                components,
+                go.scene.name);
         }
 
         public CreateGameObjectResponse Create(string name, int parentInstanceId, int? siblingIndex,
