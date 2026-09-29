@@ -12,15 +12,18 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
 {
     [McpServerTool(Name = "find_game_objects", ReadOnly = true),
      Description(
-         "Find GameObjects in the current scene by name, tag, or component type. " +
+         "Find GameObjects in every loaded scene (including additively loaded scenes and, in Play Mode, " +
+         "the DontDestroyOnLoad scene) by name, tag, or component type. In Prefab Mode only the Prefab contents are searched. " +
          "Supports Unity Search style query syntax: plain text for name (partial match), " +
          "t:Type for component type, tag:partial or tag=exact for tag, id:N for instance ID, " +
-         "layer:N for layer, path:A/B for hierarchy path, is:root/child/leaf/static for state filters. " +
-         "Multiple tokens can be combined: 'Camera t:Camera layer:0'."),
+         "layer:N for layer, path:A/B for hierarchy path, is:root/child/leaf/static for state filters, " +
+         "scene:Name (or scene:\"Name With Spaces\") to search only that scene. " +
+         "Multiple tokens can be combined: 'Camera t:Camera layer:0'. Each result includes its sceneName."),
      UsedImplicitly]
     public ValueTask<CallToolResult> FindGameObjectsAsync(
         [Description(
-            "Search query. Examples: 'Main Camera', 't:Camera', 'tag=Player', 'id:12345', 'is:root', 'path:Canvas/Button'. " +
+            "Search query. Examples: 'Main Camera', 't:Camera', 'tag=Player', 'id:12345', 'is:root', 'path:Canvas/Button', " +
+            "'t:Button scene:Menu'. " +
             "Multiple tokens can be combined: 'Camera t:Camera layer:0'.")]
         string query,
         CancellationToken cancellationToken = default)

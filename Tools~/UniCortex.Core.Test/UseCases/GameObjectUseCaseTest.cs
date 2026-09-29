@@ -58,6 +58,42 @@ public class GameObjectUseCaseTest
     }
 
     [Test]
+    public async ValueTask Find_ReturnsSceneNameOfEachResult()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        var created = await CreateAsync("FindSceneNameTarget", ct);
+
+        // Act
+        var json = await _fixture.GameObjectUseCase.FindAsync($"id:{created.instanceId}", ct);
+
+        // Assert
+        var response = JsonSerializer.Deserialize<FindGameObjectsResponse>(json, s_jsonOptions)!;
+        Assert.That(response.gameObjects, Has.Count.EqualTo(1));
+        Assert.That(response.gameObjects[0].sceneName, Is.EqualTo("GameObjectToolsTestScene"));
+    }
+
+    [Test]
+    public async ValueTask Find_WithSceneToken_FiltersByScene()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        var created = await CreateAsync("FindSceneTokenTarget", ct);
+
+        // Act
+        var matchJson = await _fixture.GameObjectUseCase.FindAsync(
+            "FindSceneTokenTarget scene:GameObjectToolsTestScene", ct);
+        var mismatchJson = await _fixture.GameObjectUseCase.FindAsync(
+            "FindSceneTokenTarget scene:NoSuchScene", ct);
+
+        // Assert
+        var match = JsonSerializer.Deserialize<FindGameObjectsResponse>(matchJson, s_jsonOptions)!;
+        Assert.That(match.gameObjects.Select(g => g.instanceId), Is.EqualTo(new[] { created.instanceId }));
+        var mismatch = JsonSerializer.Deserialize<FindGameObjectsResponse>(mismatchJson, s_jsonOptions)!;
+        Assert.That(mismatch.gameObjects, Is.Empty);
+    }
+
+    [Test]
     public async ValueTask CreateAndDelete_WorksEndToEnd()
     {
         var createJson = await _fixture.GameObjectUseCase.CreateAsync("TestObj", cancellationToken: CancellationToken.None);
@@ -373,7 +409,8 @@ public class GameObjectUseCaseTest
     {
         var json = await _fixture.SceneUseCase.GetHierarchyAsync(ct);
         var hierarchy = JsonSerializer.Deserialize<GetHierarchyResponse>(json, s_jsonOptions)!;
-        var parent = hierarchy.gameObjects.First(node => node.instanceId == parentInstanceId);
+        var parent = hierarchy.scenes.SelectMany(scene => scene.gameObjects)
+            .First(node => node.instanceId == parentInstanceId);
         return parent.children.Select(node => node.name).ToArray();
     }
 }

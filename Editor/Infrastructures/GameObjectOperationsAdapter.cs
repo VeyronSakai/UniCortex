@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEditor.Search;
 using UnityEngine;
 
@@ -13,20 +15,75 @@ namespace UniCortex.Editor.Infrastructures
     {
         private const string ModifyParentUndoName = "Modify GameObject Parent";
 
+        // The scene provider caches its object list and only refreshes it on hierarchy events.
+        // After the domain reload on entering Play Mode those events are not hooked up, so objects
+        // created or loaded at runtime (e.g. additively loaded scenes) are missed. There is no public
+        // API to invalidate that cache, so call the internal hook the provider listens to.
+        private static readonly MethodInfo s_invalidateSearchScene = typeof(SearchMonitor).GetMethod(
+            "InvalidateCurrentScene", BindingFlags.NonPublic | BindingFlags.Static);
+
         public List<GameObjectSearchResult> Get(string query)
         {
-            using var context = SearchService.CreateContext("scene", query);
-            var items = SearchService.GetItems(context, SearchFlags.Synchronous);
+            var parsed = GameObjectQuery.Parse(query);
+            var gameObjects = string.IsNullOrEmpty(parsed.SearchQuery)
+                ? EnumerateAllGameObjects()
+                : Search(parsed.SearchQuery);
 
-            var results = new List<GameObjectSearchResult>(items.Count);
-            foreach (var item in items)
+            var results = new List<GameObjectSearchResult>();
+            foreach (var go in gameObjects)
             {
-                var go = item.ToObject<GameObject>();
-                if (go == null) continue;
+                if (!parsed.MatchesScene(go.scene.name)) continue;
                 results.Add(BuildSearchResult(go));
             }
 
             return results;
+        }
+
+        private static IEnumerable<GameObject> Search(string query)
+        {
+            s_invalidateSearchScene?.Invoke(null, null);
+
+            using var context = SearchService.CreateContext("scene", query);
+            var items = SearchService.GetItems(context, SearchFlags.Synchronous);
+
+            var gameObjects = new List<GameObject>(items.Count);
+            foreach (var item in items)
+            {
+                var go = item.ToObject<GameObject>();
+                if (go == null) continue;
+                gameObjects.Add(go);
+            }
+
+            return gameObjects;
+        }
+
+        // Used when the query only narrows by scene, since Unity Search returns nothing for an empty query.
+        private static IEnumerable<GameObject> EnumerateAllGameObjects()
+        {
+            var roots = new List<GameObject>();
+            var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (prefabStage != null)
+            {
+                roots.Add(prefabStage.prefabContentsRoot);
+            }
+            else
+            {
+                foreach (var scene in LoadedScenes.Get())
+                {
+                    roots.AddRange(scene.GetRootGameObjects());
+                }
+            }
+
+            var gameObjects = new List<GameObject>();
+            foreach (var root in roots)
+            {
+                foreach (var transform in root.GetComponentsInChildren<Transform>(true))
+                {
+                    gameObjects.Add(transform.gameObject);
+                }
+            }
+
+            return gameObjects;
         }
 
         private static GameObjectSearchResult BuildSearchResult(GameObject go)
@@ -44,7 +101,8 @@ namespace UniCortex.Editor.Infrastructures
                 go.layer,
                 go.isStatic,
                 (int)go.hideFlags,
-                components);
+                components,
+                go.scene.name);
         }
 
         public CreateGameObjectResponse Create(string name, int parentInstanceId, int? siblingIndex,

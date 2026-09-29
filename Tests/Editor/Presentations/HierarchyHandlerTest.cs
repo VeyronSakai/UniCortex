@@ -17,11 +17,14 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var sceneManager = new SpyEditorSceneManager();
-            sceneManager.HierarchyResult = new GetHierarchyResponse("SampleScene", "Assets/Scenes/SampleScene.unity",
-                new List<GameObjectNode>
-                {
-                    new GameObjectNode("Main Camera", 100, new List<GameObjectNode>())
-                });
+            sceneManager.HierarchyResult = new GetHierarchyResponse(new List<SceneHierarchy>
+            {
+                new SceneHierarchy("SampleScene", "Assets/Scenes/SampleScene.unity", true,
+                    new List<GameObjectNode>
+                    {
+                        new GameObjectNode("Main Camera", 100, new List<GameObjectNode>())
+                    })
+            });
             var useCase = new GetHierarchyUseCase(dispatcher, sceneManager);
             var handler = new HierarchyHandler(useCase);
 
@@ -33,7 +36,8 @@ namespace UniCortex.Editor.Tests.Presentations
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            StringAssert.Contains("SampleScene", context.ResponseBody);
+            StringAssert.Contains("\"scenes\":[{\"sceneName\":\"SampleScene\"", context.ResponseBody);
+            StringAssert.Contains("\"isActive\":true", context.ResponseBody);
             StringAssert.Contains("Main Camera", context.ResponseBody);
             Assert.AreEqual(1, sceneManager.GetHierarchyCallCount);
         }

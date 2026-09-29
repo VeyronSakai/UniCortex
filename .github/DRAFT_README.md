@@ -102,13 +102,13 @@ The MCP server exposes the following built-in tools.
 |------|-------------|
 | `create_scene` | Create a new empty scene and save it at the specified asset path |
 | `open_scene` | Open a scene by path |
-| `get_hierarchy` | Get the GameObject hierarchy tree of the current scene or Prefab |
+| `get_hierarchy` | Get the GameObject hierarchy tree of every loaded scene or the Prefab |
 
 #### GameObject
 
 | Tool | Description |
 |------|-------------|
-| `find_game_objects` | Search GameObjects by name, tag, component type, instanceId, layer, path, or state |
+| `find_game_objects` | Search GameObjects in every loaded scene by name, tag, component type, instanceId, layer, path, state, or scene |
 | `create_game_object` | Create a new empty GameObject, optionally under a parent at a given sibling index (with RectTransform support for UI) |
 | `delete_game_object` | Delete a GameObject (supports Undo) |
 | `modify_game_object` | Modify name, active state, tag, layer, parent, or sibling order |

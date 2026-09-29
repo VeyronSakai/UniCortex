@@ -1,5 +1,7 @@
+using System.Text.Json;
 using NUnit.Framework;
 using UniCortex.Core.Test.Fixtures;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.Test.UseCases;
 
@@ -8,6 +10,7 @@ public class SceneUseCaseTest
 {
     private const string TestScenePath = "Assets/Scenes/SceneToolsTestScene.unity";
 
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
@@ -38,6 +41,23 @@ public class SceneUseCaseTest
 
         Assert.That(json, Does.Contain("sceneName"));
         Assert.That(json, Does.Contain("gameObjects"));
+    }
+
+    [Test]
+    public async ValueTask GetHierarchy_ReturnsActiveSceneEntry()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
+
+        // Act
+        var json = await _fixture.SceneUseCase.GetHierarchyAsync(CancellationToken.None);
+
+        // Assert
+        var response = JsonSerializer.Deserialize<GetHierarchyResponse>(json, s_jsonOptions)!;
+        Assert.That(response.scenes, Has.Count.EqualTo(1));
+        Assert.That(response.scenes[0].sceneName, Is.EqualTo("SceneToolsTestScene"));
+        Assert.That(response.scenes[0].scenePath, Is.EqualTo(TestScenePath));
+        Assert.That(response.scenes[0].isActive, Is.True);
     }
 
     [Test]

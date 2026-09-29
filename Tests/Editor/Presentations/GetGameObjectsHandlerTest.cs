@@ -20,7 +20,7 @@ namespace UniCortex.Editor.Tests.Presentations
             ops.GetResult = new List<GameObjectSearchResult>
             {
                 new GameObjectSearchResult("Player", 100, true, "Untagged", 0, false, 0,
-                    new List<string> { "Transform" })
+                    new List<string> { "Transform" }, "SampleScene")
             };
             var useCase = new GetGameObjectsUseCase(dispatcher, ops);
             var handler = new GetGameObjectsHandler(useCase);
@@ -35,6 +35,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("Player", context.ResponseBody);
+            StringAssert.Contains("\"sceneName\":\"SampleScene\"", context.ResponseBody);
             Assert.AreEqual("Player", ops.LastGetQuery);
         }
     }

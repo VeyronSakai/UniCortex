@@ -18,7 +18,7 @@ namespace UniCortex.Editor.Tests.UseCases
             ops.GetResult = new List<GameObjectSearchResult>
             {
                 new GameObjectSearchResult("Player", 100, true, "Untagged", 0, false, 0,
-                    new List<string> { "Transform" })
+                    new List<string> { "Transform" }, "SampleScene")
             };
             var useCase = new GetGameObjectsUseCase(dispatcher, ops);
 

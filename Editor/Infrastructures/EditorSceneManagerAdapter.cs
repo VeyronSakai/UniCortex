@@ -53,19 +53,27 @@ namespace UniCortex.Editor.Infrastructures
                 {
                     GameObjectNodeBuilder.BuildNode(root.transform)
                 };
-                return new GetHierarchyResponse(root.name, prefabStage.assetPath, prefabNodes);
+                return new GetHierarchyResponse(new List<SceneHierarchy>
+                {
+                    new SceneHierarchy(root.name, prefabStage.assetPath, true, prefabNodes)
+                });
             }
 
-            var scene = SceneManager.GetActiveScene();
-            var rootObjects = scene.GetRootGameObjects();
-            var nodes = new List<GameObjectNode>();
+            var activeScene = SceneManager.GetActiveScene();
+            var scenes = new List<SceneHierarchy>();
 
-            foreach (var go in rootObjects)
+            foreach (var scene in LoadedScenes.Get())
             {
-                nodes.Add(GameObjectNodeBuilder.BuildNode(go.transform));
+                var nodes = new List<GameObjectNode>();
+                foreach (var go in scene.GetRootGameObjects())
+                {
+                    nodes.Add(GameObjectNodeBuilder.BuildNode(go.transform));
+                }
+
+                scenes.Add(new SceneHierarchy(scene.name, scene.path, scene == activeScene, nodes));
             }
 
-            return new GetHierarchyResponse(scene.name, scene.path, nodes);
+            return new GetHierarchyResponse(scenes);
         }
     }
 }

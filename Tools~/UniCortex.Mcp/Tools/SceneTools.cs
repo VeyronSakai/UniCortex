@@ -29,7 +29,9 @@ public class SceneTools(SceneUseCase sceneUseCase, IAsyncOperationSequencer sequ
             ct => sceneUseCase.OpenAsync(scenePath, ct), cancellationToken);
 
     [McpServerTool(Name = "get_hierarchy", ReadOnly = true),
-     Description("Get the GameObject hierarchy of the currently open scene or Prefab in the Unity Editor."), UsedImplicitly]
+     Description("Get the GameObject hierarchy of every loaded scene (including additively loaded scenes and, in Play Mode, " +
+                 "the DontDestroyOnLoad scene) or of the Prefab open in Prefab Mode. Returns one entry per scene " +
+                 "with its name, path, whether it is the active scene, and its GameObject tree."), UsedImplicitly]
     public ValueTask<CallToolResult> GetHierarchyAsync(CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer, sceneUseCase.GetHierarchyAsync, cancellationToken);
 }
