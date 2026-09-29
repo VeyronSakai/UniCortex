@@ -23,7 +23,7 @@ namespace UniCortex.Editor.Handlers.Tests
         private async Task HandleGetResultAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var json = await _dispatcher.RunOnMainThreadAsync(
-                () => TestResultStore.GetResult(), cancellationToken);
+                () => TestResultStore.Default.GetResult(), cancellationToken);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }

@@ -447,7 +447,7 @@ namespace UniCortex.Editor
 
         private static void ReregisterTestCallbacksIfNeeded()
         {
-            if (!TestResultStore.IsPending)
+            if (!TestResultStore.Default.IsPending)
             {
                 return;
             }

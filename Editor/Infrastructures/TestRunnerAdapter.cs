@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Infrastructures
             {
                 await _dispatcher.RunOnMainThreadAsync(() =>
                 {
-                    TestResultStore.MarkPending();
+                    TestResultStore.Default.MarkPending();
 
                     var testRunnerApi = ScriptableObject.CreateInstance<TestRunnerApi>();
                     var callbacks = new TestCallbacks(testRunnerApi, tcs);

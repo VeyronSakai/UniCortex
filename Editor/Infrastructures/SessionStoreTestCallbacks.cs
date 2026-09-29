@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
+using UnityEditor;
 using UnityEditor.TestTools.TestRunner.Api;
 using UnityEngine;
 
@@ -9,11 +10,23 @@ namespace UniCortex.Editor.Infrastructures
     internal sealed class SessionStoreTestCallbacks : ICallbacks
     {
         private readonly TestRunnerApi _testRunnerApi;
-        private readonly List<TestResultItem> _results = new();
+        private readonly TestResultStore _store;
+        private readonly List<TestResultItem> _results;
 
-        public SessionStoreTestCallbacks(TestRunnerApi testRunnerApi = null)
+        public SessionStoreTestCallbacks(TestRunnerApi testRunnerApi = null, TestResultStore store = null)
         {
             _testRunnerApi = testRunnerApi;
+            _store = store ?? TestResultStore.Default;
+
+            // A domain reload in the middle of a run (e.g. entering Play Mode) discards these callbacks,
+            // and new ones are registered afterwards. Carry over the results reported before the reload.
+            _results = _store.LoadPartialResults();
+            AssemblyReloadEvents.beforeAssemblyReload += SavePartialResults;
+        }
+
+        internal void SavePartialResults()
+        {
+            _store.SavePartialResults(_results);
         }
 
         internal IReadOnlyList<TestResultItem> Results => _results;
@@ -24,6 +37,8 @@ namespace UniCortex.Editor.Infrastructures
 
         public void RunFinished(ITestResultAdaptor result)
         {
+            AssemblyReloadEvents.beforeAssemblyReload -= SavePartialResults;
+
             var entries = new List<TestResultEntry>(_results.Count);
             int passed = 0, failed = 0, skipped = 0;
             foreach (var item in _results)
@@ -44,7 +59,7 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var response = new RunTestsResponse(passed, failed, skipped, entries);
-            TestResultStore.StoreResult(JsonUtility.ToJson(response));
+            _store.StoreResult(JsonUtility.ToJson(response));
             _testRunnerApi?.UnregisterCallbacks(this);
             Debug.Log("[UniCortex] Test results stored in SessionState");
         }
