@@ -10,10 +10,17 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class HttpListenerServer : IHttpServer
     {
+        // Upper bound for letting an in-flight request write its response (e.g. 408 after cancellation)
+        // before the listener is closed. Keeps a stuck handler from delaying the domain reload for long.
+        private static readonly TimeSpan s_inFlightResponseTimeout = TimeSpan.FromSeconds(1);
+
         private readonly IRequestRouter _router;
         private readonly int _port;
         private HttpListener _listener;
         private CancellationTokenSource _cts;
+
+        // The listen loop handles one request at a time, so this is the only request in flight.
+        private Task _inFlightRequest = Task.CompletedTask;
 
         public HttpListenerServer(IRequestRouter router, int port)
         {
@@ -76,6 +83,12 @@ namespace UniCortex.Editor.Infrastructures
 
             _cts?.Cancel();
 
+            // Closing the listener ends open responses as they are (an empty 200 or a dropped connection).
+            // Wait for the cancelled request to finish writing its error response first.
+            // Handlers resume on thread-pool threads, so they can finish while the main thread waits here;
+            // a handler that still needs the main thread just runs into the timeout.
+            WaitForInFlightRequest();
+
             try
             {
                 _listener.Stop();
@@ -97,7 +110,19 @@ namespace UniCortex.Editor.Infrastructures
                 try
                 {
                     var httpContext = await _listener.GetContextAsync();
-                    await HandleContextAsync(httpContext, token);
+
+                    // Publish the request as in flight before the handler starts, so that Stop() waits for it
+                    // even if it is called while the handler is still running synchronously.
+                    var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    Volatile.Write(ref _inFlightRequest, completion.Task);
+                    try
+                    {
+                        await HandleContextAsync(httpContext, token);
+                    }
+                    finally
+                    {
+                        completion.TrySetResult(true);
+                    }
                 }
                 catch (ObjectDisposedException)
                 {
@@ -107,6 +132,15 @@ namespace UniCortex.Editor.Infrastructures
                 {
                     break;
                 }
+            }
+        }
+
+        private void WaitForInFlightRequest()
+        {
+            var request = Volatile.Read(ref _inFlightRequest);
+            if (!request.Wait(s_inFlightResponseTimeout))
+            {
+                Debug.LogWarning("[UniCortex] Timed out waiting for the in-flight request to respond before stopping.");
             }
         }
 
