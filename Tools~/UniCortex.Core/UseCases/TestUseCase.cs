@@ -24,12 +24,17 @@ public class TestUseCase(IUnityEditorClient client)
         RunTestsResponse? response = null;
         try
         {
+            // Never resend: once the server has received the request, a resent one would arrive after the
+            // domain reload for Play Mode and be rejected with 400 because the Editor is now in Play Mode.
             response = await client.PostAsync<RunTestsRequest, RunTestsResponse>(ApiRoutes.TestsRun, request,
-                cancellationToken);
+                cancellationToken, resendAfterDisconnect: false);
         }
-        catch (HttpRequestException ex) when (ex.StatusCode != HttpStatusCode.RequestTimeout)
+        catch (HttpRequestException ex) when (ex.StatusCode is null or HttpStatusCode.RequestTimeout)
         {
-            // Server disrupted (e.g., domain reload during PlayMode entry)
+            // Server disrupted (e.g., domain reload during PlayMode entry). The server answers 408 when it is
+            // stopped while the request is in flight, or the connection is dropped without a status code.
+            // The test run keeps going across the reload and stores its result, so fall through to polling.
+            // Other status codes (e.g., 400 in Play Mode) are real errors and are rethrown.
         }
         catch (JsonException)
         {
@@ -37,8 +42,7 @@ public class TestUseCase(IUnityEditorClient client)
         }
 
         // Domain reload can disrupt the POST /tests/run response path.
-        // For transport-level failures other than explicit cancellation (408),
-        // poll GET /tests/result until the stored result becomes available.
+        // Poll GET /tests/result until the stored result becomes available.
         response ??= await client.GetAsync<GetTestResultRequest, RunTestsResponse>(ApiRoutes.TestsResult,
             cancellationToken: cancellationToken);
 
