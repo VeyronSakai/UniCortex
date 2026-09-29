@@ -1,12 +1,19 @@
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
-using UnityEngine;
+using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
 namespace UniCortex.Editor.Infrastructures
 {
     internal static class LoadedScenes
     {
+        // EditorSceneManager.GetDontDestroyOnLoadScene() is internal, so call it through reflection.
+        // If it is missing in a future Unity version, the DontDestroyOnLoad scene is simply skipped.
+        private static readonly MethodInfo s_getDontDestroyOnLoadScene = typeof(EditorSceneManager).GetMethod(
+            "GetDontDestroyOnLoadScene", BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
+
         // Returns every loaded scene in Hierarchy window order.
         // In Play Mode the DontDestroyOnLoad scene is appended when it has any root objects.
         public static List<Scene> Get()
@@ -33,20 +40,9 @@ namespace UniCortex.Editor.Infrastructures
             return scenes;
         }
 
-        // EditorSceneManager.GetDontDestroyOnLoadScene() is internal, so reach the scene
-        // through a temporary object moved into it.
         private static Scene GetDontDestroyOnLoadScene()
         {
-            var probe = new GameObject("UniCortexDontDestroyOnLoadProbe") { hideFlags = HideFlags.HideAndDontSave };
-            try
-            {
-                Object.DontDestroyOnLoad(probe);
-                return probe.scene;
-            }
-            finally
-            {
-                Object.DestroyImmediate(probe);
-            }
+            return s_getDontDestroyOnLoadScene?.Invoke(null, null) is Scene scene ? scene : default;
         }
     }
 }

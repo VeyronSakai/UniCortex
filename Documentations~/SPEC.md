@@ -198,7 +198,7 @@ Response: `{"success": true}`
 Returns the GameObject hierarchy of every loaded scene as a tree, one entry per scene in Hierarchy window order.
 
 - Scenes are enumerated with `SceneManager.sceneCount` / `GetSceneAt(i)`; scenes with `isLoaded == false` are skipped
-- In Play Mode, the `DontDestroyOnLoad` scene is appended when it has root objects. `EditorSceneManager.GetDontDestroyOnLoadScene()` is internal, so the scene is reached through the `.scene` of a temporary object passed to `DontDestroyOnLoad`
+- In Play Mode, the `DontDestroyOnLoad` scene is appended when it has root objects. The scene is obtained by calling the internal `EditorSceneManager.GetDontDestroyOnLoadScene()` through reflection (present in 2022.3 / 6000.2 / 6000.3); if the method is missing, the scene is skipped
 - `isActive` is `true` for the scene returned by `SceneManager.GetActiveScene()`
 - In Prefab Mode, a single entry for the Prefab contents is returned (`sceneName` is the root name, `scenePath` is the Prefab asset path, `isActive` is `true`)
 
