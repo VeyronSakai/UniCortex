@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 
@@ -33,6 +34,15 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
                     throw new HttpRequestException();
                 }
 
+                // The server answers 408 when it is stopped (e.g. by a domain reload) while handling the request.
+                // Like an empty response, this means the server may have received the request, so it is retried
+                // only when resending is allowed. Otherwise the 408 is returned to the caller as is.
+                if (response.StatusCode == HttpStatusCode.RequestTimeout && resendAfterDisconnect)
+                {
+                    response.Dispose();
+                    throw new HttpRequestException();
+                }
+
                 if (logged)
                 {
                     logger.LogInformation("Unity Editor is ready.");
@@ -55,7 +65,12 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
         }
     }
 
-    internal static bool IsConnectionRefused(HttpRequestException exception)
+    // A refused connection means the server is not listening (e.g. it is stopped for a domain reload),
+    // so the request never reached it and resending cannot run it twice. Requests that must not be resent
+    // still have to be retried in this case: a caller that gave up and polled for the outcome instead
+    // (e.g. GET /tests/result after POST /tests/run) would wait for a run that never started and get
+    // the result of a previous run.
+    private static bool IsConnectionRefused(HttpRequestException exception)
     {
         return exception.InnerException is SocketException { SocketErrorCode: SocketError.ConnectionRefused };
     }

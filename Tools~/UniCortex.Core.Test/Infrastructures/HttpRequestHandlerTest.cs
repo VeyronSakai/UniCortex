@@ -65,6 +65,36 @@ public class HttpRequestHandlerTest
         Assert.That(inner.CallCount, Is.EqualTo(2));
     }
 
+    [Test]
+    public async ValueTask SendAsync_RetriesRequestCancelledByServerStop_ByDefault()
+    {
+        // Arrange
+        var inner = new ScriptedHandler(RequestTimeout(), Ok());
+        using var client = CreateClient(inner);
+
+        // Act
+        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "http://localhost/"));
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(inner.CallCount, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async ValueTask SendAsync_ReturnsRequestCancelledByServerStop_WhenResendIsDisabled()
+    {
+        // Arrange
+        var inner = new ScriptedHandler(RequestTimeout(), Ok());
+        using var client = CreateClient(inner);
+
+        // Act
+        using var response = await client.SendAsync(CreateNoResendRequest());
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.RequestTimeout));
+        Assert.That(inner.CallCount, Is.EqualTo(1));
+    }
+
     private static HttpClient CreateClient(HttpMessageHandler inner)
     {
         return new HttpClient(new HttpRequestHandler(NullLogger<HttpRequestHandler>.Instance) { InnerHandler = inner });
@@ -80,6 +110,14 @@ public class HttpRequestHandlerTest
     private static HttpResponseMessage Ok()
     {
         return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") };
+    }
+
+    private static HttpResponseMessage RequestTimeout()
+    {
+        return new HttpResponseMessage(HttpStatusCode.RequestTimeout)
+        {
+            Content = new StringContent("{\"error\":\"Request was cancelled.\"}")
+        };
     }
 
     // Returns (or throws) the scripted outcomes in order, one per call.
