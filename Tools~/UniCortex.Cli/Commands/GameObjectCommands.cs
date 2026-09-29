@@ -6,7 +6,7 @@ namespace UniCortex.Cli.Commands;
 public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
 {
     /// <summary>Find GameObjects in every loaded scene.</summary>
-    /// <param name="query">Search query string using Unity Search syntax (e.g. "t:Camera", "tag:Player"). Add "scene:Name" to search only that scene.</param>
+    /// <param name="query">Search query string using the Hierarchy window's search syntax (e.g. "Main Camera", "t:Camera", "Button t:Image").</param>
     [Command("find")]
     public async Task Find([Argument] string query, CancellationToken cancellationToken = default)
     {

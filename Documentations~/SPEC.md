@@ -243,32 +243,24 @@ Response:
 ### GameObject
 
 #### GET `/gameobjects?query=...`
-Searches GameObjects in every loaded scene (including additively loaded scenes and, in Play Mode, the `DontDestroyOnLoad` scene). In Prefab Mode, only the Prefab contents are searched. Supports Unity Search-style query syntax.
+Searches GameObjects in every loaded scene (including additively loaded scenes and, in Play Mode, the `DontDestroyOnLoad` scene) with the same query syntax as the Hierarchy window's search field. In Prefab Mode, only the Prefab contents are searched.
 
 Query parameters:
-- `query`: search query string (optional; if omitted, all GameObjects are returned)
+- `query`: search query string (required)
 
-Delegates to Unity Search's (`SearchService` API) `scene` provider. Unity Search subfilter syntax is supported as-is.
+Uses `HierarchyProperty(HierarchyType.GameObjects)` with `SetSearchFilter(query, SearchMode.All)`, the same search that backs the Hierarchy window. It reads the live scene state on every call, so objects created or loaded at runtime are always included. In Prefab Mode, `SetCustomScenes` restricts the search to the Prefab stage's scene. Scene header rows returned by `HierarchyProperty` are skipped. Results are in Hierarchy order and include inactive objects.
 
-The `scene` provider caches its object list and refreshes it on hierarchy events, but after the domain reload on entering Play Mode it is no longer notified, so objects created or loaded at runtime would be missed. Before each search, the cache is invalidated by calling the internal `SearchMonitor.InvalidateCurrentScene()` through reflection (skipped if the method does not exist).
+Unity Search (`SearchService`) is not used: its `scene` provider caches the object list and stops refreshing it after the domain reload on entering Play Mode, so runtime changes were missed.
 
-`scene:<name>` tokens are handled by UniCortex rather than Unity Search: they are removed from the query before it is passed on, and results are narrowed to GameObjects whose `scene.name` matches one of them (case-insensitive). Use `scene:"Name With Spaces"` for names containing spaces. If the query consists only of `scene:` tokens, every GameObject (including inactive ones and children) in those scenes is returned.
-
-Main query tokens:
+Query tokens:
 
 | Token | Example | Description |
 |-------|---------|-------------|
-| Plain text | `Main Camera` | Partial name match |
-| `t:` | `t:Camera` | Component type |
-| `tag:` | `tag:resp` | Tag (partial match) |
-| `tag=` | `tag=Player` | Tag (exact match) |
-| `id:` | `id:12345` | instanceId |
-| `layer:` | `layer:5` | Layer number |
-| `path:` | `path:Canvas/Button` | Hierarchy path |
-| `is:` | `is:root` / `is:child` / `is:leaf` / `is:static` | State filter |
-| `scene:` | `scene:Menu` / `scene:"Title Screen"` | Scene name (exact, case-insensitive). Handled by UniCortex |
+| Plain text | `Main Camera` | Partial name match, case-insensitive. Multiple words must all match (AND) |
+| `t:` | `t:Camera` / `t:Graphic` | Component type, case-insensitive. Derived types match too. Multiple `t:` tokens match any of them (OR) |
+| `ref:` | `ref:12345:` | GameObjects that reference the object with that instanceId (including the object itself) |
 
-See Unity's official Search documentation for full query syntax.
+Wildcards (`*`) are not supported. To narrow results by tag, layer, active state or scene, use the corresponding fields of each result; use `get_hierarchy` for paths and parent-child structure.
 
 Response:
 ```json
@@ -1289,7 +1281,7 @@ The tool receives the corresponding Core service via constructor DI and wraps th
 
 | Tool | API | Description |
 |------|-----|-------------|
-| `find_game_objects` | GET `/gameobjects` | Search every loaded scene with query syntax (name, tag, component type, instanceId, layer, path, state, scene) |
+| `find_game_objects` | GET `/gameobjects` | Search every loaded scene with the Hierarchy window's query syntax (name, component type, references) |
 | `create_gameobject` | POST `/gameobject/create` | Create a GameObject (parent, sibling index, and RectTransform specification supported) |
 | `delete_gameobject` | POST `/gameobject/delete` | Delete a GameObject |
 | `modify_gameobject` | POST `/gameobject/modify` | Rename, enable/disable, reparent, reorder siblings, change tag/layer |

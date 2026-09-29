@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEditor.Search;
 using UnityEngine;
 
 namespace UniCortex.Editor.Infrastructures
@@ -15,75 +13,34 @@ namespace UniCortex.Editor.Infrastructures
     {
         private const string ModifyParentUndoName = "Modify GameObject Parent";
 
-        // The scene provider caches its object list and only refreshes it on hierarchy events.
-        // After the domain reload on entering Play Mode those events are not hooked up, so objects
-        // created or loaded at runtime (e.g. additively loaded scenes) are missed. There is no public
-        // API to invalidate that cache, so call the internal hook the provider listens to.
-        private static readonly MethodInfo s_invalidateSearchScene = typeof(SearchMonitor).GetMethod(
-            "InvalidateCurrentScene", BindingFlags.NonPublic | BindingFlags.Static);
+        // Uses the same search as the Hierarchy window's search field (SearchableEditorWindow.SearchMode.All),
+        // which covers every loaded scene, including the DontDestroyOnLoad scene in Play Mode.
+        private const int HierarchySearchModeAll = 0;
 
         public List<GameObjectSearchResult> Get(string query)
         {
-            var parsed = GameObjectQuery.Parse(query);
-            var gameObjects = string.IsNullOrEmpty(parsed.SearchQuery)
-                ? EnumerateAllGameObjects()
-                : Search(parsed.SearchQuery);
+            var property = new HierarchyProperty(HierarchyType.GameObjects);
 
-            var results = new List<GameObjectSearchResult>();
-            foreach (var go in gameObjects)
-            {
-                if (!parsed.MatchesScene(go.scene.name)) continue;
-                results.Add(BuildSearchResult(go));
-            }
-
-            return results;
-        }
-
-        private static IEnumerable<GameObject> Search(string query)
-        {
-            s_invalidateSearchScene?.Invoke(null, null);
-
-            using var context = SearchService.CreateContext("scene", query);
-            var items = SearchService.GetItems(context, SearchFlags.Synchronous);
-
-            var gameObjects = new List<GameObject>(items.Count);
-            foreach (var item in items)
-            {
-                var go = item.ToObject<GameObject>();
-                if (go == null) continue;
-                gameObjects.Add(go);
-            }
-
-            return gameObjects;
-        }
-
-        // Used when the query only narrows by scene, since Unity Search returns nothing for an empty query.
-        private static IEnumerable<GameObject> EnumerateAllGameObjects()
-        {
-            var roots = new List<GameObject>();
+            // In Prefab Mode, search only the Prefab contents, as the Hierarchy window does.
             var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
             if (prefabStage != null)
             {
-                roots.Add(prefabStage.prefabContentsRoot);
+                property.SetCustomScenes(new[] { prefabStage.scene.handle });
             }
-            else
+
+            property.SetSearchFilter(query, HierarchySearchModeAll);
+
+            var results = new List<GameObjectSearchResult>();
+            while (property.Next(null))
             {
-                foreach (var scene in LoadedScenes.Get())
+                // Scene header rows are also returned; they have no GameObject.
+                if (property.pptrValue is GameObject go)
                 {
-                    roots.AddRange(scene.GetRootGameObjects());
+                    results.Add(BuildSearchResult(go));
                 }
             }
 
-            var gameObjects = new List<GameObject>();
-            foreach (var root in roots)
-            {
-                foreach (var transform in root.GetComponentsInChildren<Transform>(true))
-                {
-                    gameObjects.Add(transform.gameObject);
-                }
-            }
-
-            return gameObjects;
+            return results;
         }
 
         private static GameObjectSearchResult BuildSearchResult(GameObject go)

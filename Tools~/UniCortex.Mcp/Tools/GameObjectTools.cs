@@ -13,18 +13,15 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
     [McpServerTool(Name = "find_game_objects", ReadOnly = true),
      Description(
          "Find GameObjects in every loaded scene (including additively loaded scenes and, in Play Mode, " +
-         "the DontDestroyOnLoad scene) by name, tag, or component type. In Prefab Mode only the Prefab contents are searched. " +
-         "Supports Unity Search style query syntax: plain text for name (partial match), " +
-         "t:Type for component type, tag:partial or tag=exact for tag, id:N for instance ID, " +
-         "layer:N for layer, path:A/B for hierarchy path, is:root/child/leaf/static for state filters, " +
-         "scene:Name (or scene:\"Name With Spaces\") to search only that scene. " +
-         "Multiple tokens can be combined: 'Camera t:Camera layer:0'. Each result includes its sceneName."),
+         "the DontDestroyOnLoad scene) with the Hierarchy window's search syntax. In Prefab Mode only the Prefab " +
+         "contents are searched. Plain text matches names (partial, case-insensitive; multiple words must all match), " +
+         "t:Type matches component type (derived types included; multiple t: tokens are OR), and " +
+         "ref:<instanceId>: finds objects referencing that object. Wildcards are not supported. " +
+         "Each result includes activeSelf, tag, layer, components and sceneName."),
      UsedImplicitly]
     public ValueTask<CallToolResult> FindGameObjectsAsync(
         [Description(
-            "Search query. Examples: 'Main Camera', 't:Camera', 'tag=Player', 'id:12345', 'is:root', 'path:Canvas/Button', " +
-            "'t:Button scene:Menu'. " +
-            "Multiple tokens can be combined: 'Camera t:Camera layer:0'.")]
+            "Search query. Examples: 'Main Camera', 't:Camera', 'Button t:Image', 't:Camera t:Light', 'ref:12345:'.")]
         string query,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>

@@ -108,7 +108,7 @@ The MCP server exposes the following built-in tools.
 
 | Tool | Description |
 |------|-------------|
-| `find_game_objects` | Search GameObjects in every loaded scene by name, tag, component type, instanceId, layer, path, state, or scene |
+| `find_game_objects` | Search GameObjects in every loaded scene by name or component type, using the Hierarchy window's search syntax |
 | `create_game_object` | Create a new empty GameObject, optionally under a parent at a given sibling index (with RectTransform support for UI) |
 | `delete_game_object` | Delete a GameObject (supports Undo) |
 | `modify_game_object` | Modify name, active state, tag, layer, parent, or sibling order |
@@ -342,7 +342,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 
 | Command | Description |
 | --- | --- |
-| `gameobject find` | Search GameObjects by Unity Search query. |
+| `gameobject find` | Search GameObjects with the Hierarchy window's search syntax. |
 | `gameobject create` | Create a new empty GameObject, optionally under a parent at a given sibling index. |
 | `gameobject delete` | Delete a GameObject by `instanceId`. |
 | `gameobject modify` | Rename, reparent, reorder, or change active state, tag, or layer. |

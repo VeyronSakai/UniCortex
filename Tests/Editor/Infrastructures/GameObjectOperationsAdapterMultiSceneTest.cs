@@ -59,10 +59,21 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void Get_WithSceneToken_ReturnsOnlyObjectsInThatScene()
+        public void Get_ByType_FindsObjectsInAdditiveScene()
         {
             // Act
-            var results = _adapter.Get($"{TargetName} scene:{AdditiveSceneName}");
+            var results = _adapter.Get("t:BoxCollider");
+
+            // Assert
+            CollectionAssert.Contains(results.Select(r => r.instanceId).ToList(), _additiveRoot.GetInstanceID());
+            Assert.IsFalse(results.Any(r => r.instanceId == _activeSceneObject.GetInstanceID()));
+        }
+
+        [Test]
+        public void Get_ByNameAndType_ReturnsObjectsMatchingBoth()
+        {
+            // Act
+            var results = _adapter.Get($"{TargetName} t:BoxCollider");
 
             // Assert
             Assert.AreEqual(1, results.Count);
@@ -70,23 +81,23 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void Get_WithOnlySceneToken_ReturnsEveryObjectInThatScene()
+        public void Get_ByName_FindsInactiveChild()
         {
             // Act
-            var results = _adapter.Get($"scene:{AdditiveSceneName}");
+            var results = _adapter.Get("GameObjectOperationsAdapterMultiSceneTest_Child");
 
             // Assert
-            CollectionAssert.AreEqual(
-                new[] { _additiveRoot.GetInstanceID(), _additiveChild.GetInstanceID() },
-                results.Select(r => r.instanceId).ToArray());
-            Assert.IsTrue(results.All(r => r.sceneName == AdditiveSceneName));
+            Assert.AreEqual(1, results.Count);
+            Assert.AreEqual(_additiveChild.GetInstanceID(), results[0].instanceId);
+            Assert.IsFalse(results[0].activeSelf);
+            Assert.AreEqual(AdditiveSceneName, results[0].sceneName);
         }
 
         [Test]
-        public void Get_WithUnknownSceneToken_ReturnsEmpty()
+        public void Get_WithNoMatch_ReturnsEmpty()
         {
             // Act
-            var results = _adapter.Get($"{TargetName} scene:NoSuchScene");
+            var results = _adapter.Get("GameObjectOperationsAdapterMultiSceneTest_NoSuchObject");
 
             // Assert
             Assert.AreEqual(0, results.Count);

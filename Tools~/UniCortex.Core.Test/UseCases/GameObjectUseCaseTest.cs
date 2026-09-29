@@ -65,32 +65,12 @@ public class GameObjectUseCaseTest
         var created = await CreateAsync("FindSceneNameTarget", ct);
 
         // Act
-        var json = await _fixture.GameObjectUseCase.FindAsync($"id:{created.instanceId}", ct);
+        var json = await _fixture.GameObjectUseCase.FindAsync("FindSceneNameTarget", ct);
 
         // Assert
         var response = JsonSerializer.Deserialize<FindGameObjectsResponse>(json, s_jsonOptions)!;
         Assert.That(response.gameObjects, Has.Count.EqualTo(1));
         Assert.That(response.gameObjects[0].sceneName, Is.EqualTo("GameObjectToolsTestScene"));
-    }
-
-    [Test]
-    public async ValueTask Find_WithSceneToken_FiltersByScene()
-    {
-        // Arrange
-        var ct = CancellationToken.None;
-        var created = await CreateAsync("FindSceneTokenTarget", ct);
-
-        // Act
-        var matchJson = await _fixture.GameObjectUseCase.FindAsync(
-            "FindSceneTokenTarget scene:GameObjectToolsTestScene", ct);
-        var mismatchJson = await _fixture.GameObjectUseCase.FindAsync(
-            "FindSceneTokenTarget scene:NoSuchScene", ct);
-
-        // Assert
-        var match = JsonSerializer.Deserialize<FindGameObjectsResponse>(matchJson, s_jsonOptions)!;
-        Assert.That(match.gameObjects.Select(g => g.instanceId), Is.EqualTo(new[] { created.instanceId }));
-        var mismatch = JsonSerializer.Deserialize<FindGameObjectsResponse>(mismatchJson, s_jsonOptions)!;
-        Assert.That(mismatch.gameObjects, Is.Empty);
     }
 
     [Test]
@@ -336,9 +316,10 @@ public class GameObjectUseCaseTest
             var child = await CreateAsync("RectChild", ct, parent.instanceId, useRectTransform: true);
 
             // Assert
-            var json = await _fixture.GameObjectUseCase.FindAsync($"id:{child.instanceId}", ct);
+            var json = await _fixture.GameObjectUseCase.FindAsync("RectChild", ct);
             var response = JsonSerializer.Deserialize<FindGameObjectsResponse>(json, s_jsonOptions)!;
-            Assert.That(response.gameObjects[0].components, Does.Contain("UnityEngine.RectTransform"));
+            var found = response.gameObjects.Single(g => g.instanceId == child.instanceId);
+            Assert.That(found.components, Does.Contain("UnityEngine.RectTransform"));
         }
         finally
         {
