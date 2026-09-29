@@ -27,7 +27,8 @@ public class TestUseCase(IUnityEditorClient client)
             response = await client.PostAsync<RunTestsRequest, RunTestsResponse>(ApiRoutes.TestsRun, request,
                 cancellationToken);
         }
-        catch (HttpRequestException ex) when (ex.StatusCode != HttpStatusCode.RequestTimeout)
+        catch (HttpRequestException ex)
+            when (ex.StatusCode is not (HttpStatusCode.RequestTimeout or HttpStatusCode.ServiceUnavailable))
         {
             // Server disrupted (e.g., domain reload during PlayMode entry)
         }
@@ -37,7 +38,8 @@ public class TestUseCase(IUnityEditorClient client)
         }
 
         // Domain reload can disrupt the POST /tests/run response path.
-        // For transport-level failures other than explicit cancellation (408),
+        // For transport-level failures other than explicit cancellation (408)
+        // or an unresponsive Editor main thread (503),
         // poll GET /tests/result until the stored result becomes available.
         response ??= await client.GetAsync<GetTestResultRequest, RunTestsResponse>(ApiRoutes.TestsResult,
             cancellationToken: cancellationToken);

@@ -95,6 +95,19 @@ Unity APIs can only be called from the main thread. Since `HttpListener` callbac
 3. On the main thread (`EditorApplication.update`), dequeue → run `func()` → `tcs.SetResult()`
 4. The HTTP thread awaits completion → returns the response
 
+#### Unresponsive main thread detection
+
+`EditorApplication.update` does not run while a modal dialog (e.g. "The open scene(s) have been modified externally") is shown, so queued requests would otherwise never be processed.
+
+- `MainThreadDispatcher` records a heartbeat at the start of every `OnUpdate` and after each dispatched action
+- The main thread is considered unresponsive when the heartbeat is older than the threshold (30 seconds) **and no dispatched action is running**
+  - While a dispatched action is running (e.g. a large asset import inside `AssetDatabase.Refresh()`), the main thread is treated as busy, not unresponsive, so neither the running request nor queued requests time out
+  - The "modified externally" dialog appears on a later frame after `AssetDatabase.Refresh()` returns (verified on Unity 6000.3), so it is detected
+  - A modal dialog opened from inside a dispatched action (e.g. a menu item that shows a dialog) cannot be distinguished from a long-running action and is not detected
+- If the main thread is unresponsive when a request arrives, the request fails immediately without being queued
+- A watchdog fails a queued request once the main thread becomes unresponsive; a failed request is never executed, and a request is never failed after its action has started
+- Such failures throw `MainThreadUnresponsiveException`, which `RequestRouter` returns as `503 Service Unavailable` with a message asking the user to check the Editor for a modal dialog
+
 ---
 
 ### JSON Serialization

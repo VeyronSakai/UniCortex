@@ -29,6 +29,26 @@ public class TestUseCaseUnitTest
         Assert.That(ex.Message, Is.EqualTo(ErrorMessages.RequestWasCancelled));
     }
 
+    [Test]
+    public void RunAsync_RethrowsMainThreadUnresponsiveError()
+    {
+        // Arrange
+        const string message = "The Unity Editor main thread has not responded for 30 seconds.";
+        var client = new FakeUnityEditorClient
+        {
+            PostException = new HttpRequestException(message, null, HttpStatusCode.ServiceUnavailable)
+        };
+        var useCase = new TestUseCase(client);
+
+        // Act
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await useCase.RunAsync(cancellationToken: CancellationToken.None));
+
+        // Assert
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.ServiceUnavailable));
+        Assert.That(ex.Message, Is.EqualTo(message));
+    }
+
     private sealed class FakeUnityEditorClient : IUnityEditorClient
     {
         public Exception? PostException { get; init; }
