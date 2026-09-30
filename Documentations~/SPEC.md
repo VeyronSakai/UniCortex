@@ -683,7 +683,7 @@ Request body: `{"menuPath": "GameObject/3D Object/Cube"}`
 Response: `{"success": true}`
 
 #### POST `/tests/run`
-Runs tests via the Unity Test Runner, waits for completion, and returns the results. `TestRunnerApi`
+Starts a test run via the Unity Test Runner (`TestRunnerApi.Execute`) and returns once it has started. The results are obtained from `GET /tests/result`.
 
 Request body:
 ```json
@@ -695,6 +695,14 @@ Request body:
 - `groupNames`: array of test group names (optional)
 - `categoryNames`: array of test category names (optional)
 - `assemblyNames`: array of test assembly names (optional)
+
+Response: `202 Accepted` with `{"success": true}`. Returns 400 in Play Mode.
+
+#### GET `/tests/result`
+Returns the result of the latest run started by `POST /tests/run`. While the run is in progress, the body is empty; clients retry until the result is stored.
+
+- The results are recorded by callbacks registered with `TestRunnerApi.RegisterCallbacks` once per domain (from the static constructor). They only record while a run started by `POST /tests/run` is pending, so runs started elsewhere (e.g. the Test Runner window) are ignored
+- The run state is kept in `SessionState`, so it survives domain reloads during the run (e.g. entering Play Mode for Play Mode tests): the results reported so far are saved on `AssemblyReloadEvents.beforeAssemblyReload` and restored by the callbacks registered in the next domain
 
 Response:
 ```json
@@ -1338,7 +1346,7 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 
 | Tool | API | Description |
 |------|-----|-------------|
-| `run_tests` | POST `/tests/run` | Run tests via the Test Runner and return the results |
+| `run_tests` | POST `/tests/run` + GET `/tests/result` | Start tests via the Test Runner, then poll for and return the results |
 
 #### Menu Items (1)
 

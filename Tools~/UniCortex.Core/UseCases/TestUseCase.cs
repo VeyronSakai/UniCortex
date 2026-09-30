@@ -21,29 +21,24 @@ public class TestUseCase(IUnityEditorClient client)
             categoryNames != null ? new List<string>(categoryNames) : null,
             assemblyNames != null ? new List<string>(assemblyNames) : null);
 
-        RunTestsResponse? response = null;
         try
         {
-            // Never resend: once the server has received the request, a resent one would arrive after the
-            // domain reload for Play Mode and be rejected with 400 because the Editor is now in Play Mode.
-            response = await client.PostAsync<RunTestsRequest, RunTestsResponse>(ApiRoutes.TestsRun, request,
+            // POST /tests/run only starts the run. Never resend it: once the server has received the request,
+            // a resent one would start the run twice, or be rejected with 400 if the Editor is in Play Mode by then.
+            await client.PostAsync<RunTestsRequest, RunTestsAcceptedResponse>(ApiRoutes.TestsRun, request,
                 cancellationToken, resendAfterDisconnect: false);
         }
         catch (HttpRequestException ex) when (ex.StatusCode is null or HttpStatusCode.RequestTimeout)
         {
-            // Server disrupted (e.g., domain reload during PlayMode entry). The server answers 408 when it is
-            // stopped while the request is in flight, or the connection is dropped without a status code.
-            // The test run keeps going across the reload and stores its result, so fall through to polling.
-            // Other status codes (e.g., 400 in Play Mode) are real errors and are rethrown.
-        }
-        catch (JsonException)
-        {
-            // Empty response body (e.g., PlayMode test triggers domain reload before response is sent)
+            // The server was stopped (e.g. by the domain reload for entering Play Mode) before it could answer.
+            // The server answers 408 in that case, or the connection is dropped without a status code.
+            // The run has started and stores its result, so fall through to polling.
+            // Other status codes (e.g. 400 in Play Mode) are real errors and are rethrown.
         }
 
-        // Domain reload can disrupt the POST /tests/run response path.
-        // Poll GET /tests/result until the stored result becomes available.
-        response ??= await client.GetAsync<GetTestResultRequest, RunTestsResponse>(ApiRoutes.TestsResult,
+        // GET /tests/result answers with an empty body while the run is in progress; the client retries it
+        // (also across domain reloads) until the result is stored.
+        var response = await client.GetAsync<GetTestResultRequest, RunTestsResponse>(ApiRoutes.TestsResult,
             cancellationToken: cancellationToken);
 
         return JsonSerializer.Serialize(response, JsonOptions.Default);
