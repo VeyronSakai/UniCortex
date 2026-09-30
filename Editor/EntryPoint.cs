@@ -36,7 +36,10 @@ namespace UniCortex.Editor
 
         private static MainThreadDispatcher s_dispatcher;
         private static HttpListenerServer s_server;
-        private static ITestResultStore s_testResultStore;
+
+        // Static fields are reset by a domain reload, so this is true once ReregisterTestCallbacksIfNeeded
+        // has run after the latest reload.
+        private static bool s_testCallbacksReregistrationChecked;
 
         static EntryPoint()
         {
@@ -53,9 +56,6 @@ namespace UniCortex.Editor
 
             s_dispatcher = new MainThreadDispatcher();
             EditorApplication.update += s_dispatcher.OnUpdate;
-
-            s_testResultStore = new TestResultStore(TestResultJsonKey, TestPendingResultsJsonKey);
-            ReregisterTestCallbacksIfNeeded();
 
             StartServer();
         }
@@ -87,6 +87,9 @@ namespace UniCortex.Editor
 
         private static void RegisterHandlers(RequestRouter router)
         {
+            var testResultStore = new TestResultStore(TestResultJsonKey, TestPendingResultsJsonKey);
+            ReregisterTestCallbacksIfNeeded(testResultStore);
+
             var editorApplication = new EditorApplicationAdapter();
             var compilationPipeline = new CompilationPipelineAdapter();
 
@@ -124,10 +127,10 @@ namespace UniCortex.Editor
             var redoUseCase = new RedoUseCase(s_dispatcher, undoAdapter);
             var redoHandler = new RedoHandler(redoUseCase);
 
-            var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher, s_testResultStore);
+            var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher, testResultStore);
             var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, s_dispatcher, editorApplication);
             var runTestsHandler = new RunTestsHandler(runTestsUseCase);
-            var testResultHandler = new TestResultHandler(s_dispatcher, s_testResultStore);
+            var testResultHandler = new TestResultHandler(s_dispatcher, testResultStore);
 
             var consoleLogCollector = new ConsoleLogCollector();
 
@@ -451,9 +454,19 @@ namespace UniCortex.Editor
             ServerUrlFile.Delete();
         }
 
-        private static void ReregisterTestCallbacksIfNeeded()
+        private static void ReregisterTestCallbacksIfNeeded(ITestResultStore testResultStore)
         {
-            if (!s_testResultStore.IsPending)
+            // Only the run that was pending when the domain reloaded needs this, so check once per domain.
+            // Checking again (e.g. if the server is restarted) could register a second set of callbacks for a run
+            // that already has them, recording every result twice. Later runs register their own in TestRunnerAdapter.
+            if (s_testCallbacksReregistrationChecked)
+            {
+                return;
+            }
+
+            s_testCallbacksReregistrationChecked = true;
+
+            if (!testResultStore.IsPending)
             {
                 return;
             }
@@ -463,7 +476,7 @@ namespace UniCortex.Editor
             // Register SessionStoreTestCallbacks directly (without the TestCallbacks wrapper)
             // so that test results are still persisted to SessionState via TestResultStore.
             var api = ScriptableObject.CreateInstance<TestRunnerApi>();
-            api.RegisterCallbacks(new SessionStoreTestCallbacks(s_testResultStore, api));
+            api.RegisterCallbacks(new SessionStoreTestCallbacks(testResultStore, api));
             Debug.Log("[UniCortex] Re-registered test callbacks after domain reload");
         }
 
