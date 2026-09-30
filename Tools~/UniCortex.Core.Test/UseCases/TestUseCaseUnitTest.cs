@@ -14,6 +14,24 @@ public class TestUseCaseUnitTest
     private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
 
     [Test]
+    public async ValueTask RunAsync_StartsRunThenReturnsStoredResult()
+    {
+        // Arrange
+        var client = new FakeUnityEditorClient();
+        var useCase = new TestUseCase(client);
+
+        // Act
+        var json = await useCase.RunAsync(cancellationToken: CancellationToken.None);
+
+        // Assert
+        var response = JsonSerializer.Deserialize<RunTestsResponse>(json, s_jsonOptions)!;
+        Assert.That(response.passed, Is.EqualTo(1));
+        Assert.That(client.PostCallCount, Is.EqualTo(1));
+        Assert.That(client.GetCallCount, Is.EqualTo(1));
+        Assert.That(client.LastResendAfterDisconnect, Is.False);
+    }
+
+    [Test]
     public async ValueTask RunAsync_PollsStoredResult_WhenServerCancelsRunRequest()
     {
         // Arrange
@@ -75,6 +93,7 @@ public class TestUseCaseUnitTest
     private sealed class FakeUnityEditorClient : IUnityEditorClient
     {
         public Exception? PostException { get; init; }
+        public int PostCallCount { get; private set; }
         public int GetCallCount { get; private set; }
 
         public ValueTask WaitForServerAsync(CancellationToken cancellationToken = default)
@@ -87,13 +106,20 @@ public class TestUseCaseUnitTest
         public ValueTask<TRes> PostAsync<TReq, TRes>(string route, TReq? request = null,
             CancellationToken cancellationToken = default, bool resendAfterDisconnect = true) where TReq : class
         {
+            PostCallCount++;
             LastResendAfterDisconnect = resendAfterDisconnect;
             if (PostException != null)
             {
                 throw PostException;
             }
 
-            throw new InvalidOperationException("PostAsync should have thrown before returning.");
+            if (typeof(TRes) == typeof(RunTestsAcceptedResponse))
+            {
+                object accepted = new RunTestsAcceptedResponse(true);
+                return new ValueTask<TRes>((TRes)accepted);
+            }
+
+            throw new InvalidOperationException("Unexpected PostAsync call.");
         }
 
         public ValueTask<TRes> GetAsync<TReq, TRes>(string route, TReq? request = null,

@@ -18,13 +18,13 @@ namespace UniCortex.Editor.Tests.Infrastructures
         public void SetUp()
         {
             _store = new FakeTestResultStore();
-            _store.MarkPending();
         }
 
         [Test]
         public void Constructor_RestoresResultsSavedBeforeDomainReload()
         {
             // Arrange
+            _store.MarkPending();
             _store.SavePendingResults(new List<TestResultItem> { new("BeforeReload", "Passed", 0.1f) });
 
             // Act
@@ -32,7 +32,6 @@ namespace UniCortex.Editor.Tests.Infrastructures
             callbacks.RunFinished(null);
 
             // Assert
-            CollectionAssert.AreEqual(new[] { "BeforeReload" }, callbacks.Results.Select(r => r.Name).ToArray());
             var response = JsonUtility.FromJson<RunTestsResponse>(_store.GetResult());
             Assert.AreEqual(1, response.passed);
             Assert.AreEqual("BeforeReload", response.results[0].name);
@@ -40,33 +39,86 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void RunFinished_PassesAllResultsToCompletionCallback()
+        public void RunStarted_StartsFromPendingResultsOfTheRun()
         {
             // Arrange
-            _store.SavePendingResults(new List<TestResultItem> { new("BeforeReload", "Passed", 0.1f) });
-            IReadOnlyList<TestResultItem> received = null;
-            var callbacks = new SessionStoreTestCallbacks(_store, onRunFinished: results => received = results);
+            var callbacks = new SessionStoreTestCallbacks(_store);
+            _store.MarkPending();
+            _store.SavePendingResults(new List<TestResultItem> { new("Stored", "Passed", 0.1f) });
+
+            // Act
+            callbacks.RunStarted(null);
+
+            // Assert
+            CollectionAssert.AreEqual(new[] { "Stored" }, callbacks.Results.Select(r => r.Name).ToArray());
+        }
+
+        [Test]
+        public void RunFinished_CountsResultsByStatus()
+        {
+            // Arrange
+            _store.MarkPending();
+            _store.SavePendingResults(new List<TestResultItem>
+            {
+                new("Test1", TestStatuses.Passed, 0.1f),
+                new("Test2", TestStatuses.Failed, 0.2f, "assertion error"),
+                new("Test3", TestStatuses.Passed, 0.05f),
+                new("Test4", "Skipped", 0f)
+            });
+            var callbacks = new SessionStoreTestCallbacks(_store);
 
             // Act
             callbacks.RunFinished(null);
 
             // Assert
-            Assert.IsNotNull(received);
-            CollectionAssert.AreEqual(new[] { "BeforeReload" }, received.Select(r => r.Name).ToArray());
+            var response = JsonUtility.FromJson<RunTestsResponse>(_store.GetResult());
+            Assert.AreEqual(2, response.passed);
+            Assert.AreEqual(1, response.failed);
+            Assert.AreEqual(1, response.skipped);
+            Assert.AreEqual(4, response.results.Count);
+            Assert.AreEqual(0, callbacks.Results.Count);
+        }
+
+        [Test]
+        public void RunFinished_WhenNoRunIsPending_KeepsStoredResult()
+        {
+            // Arrange
+            _store.StoreResult("{\"passed\":3}");
+            var callbacks = new SessionStoreTestCallbacks(_store);
+
+            // Act
+            callbacks.RunStarted(null);
+            callbacks.RunFinished(null);
+
+            // Assert
+            Assert.AreEqual("{\"passed\":3}", _store.GetResult());
+            Assert.IsFalse(_store.IsPending);
+        }
+
+        [Test]
+        public void SavePendingResults_WhenNoRunIsPending_DoesNotStartRun()
+        {
+            // Arrange
+            var callbacks = new SessionStoreTestCallbacks(_store);
+
+            // Act
+            callbacks.SavePendingResults();
+
+            // Assert
+            Assert.IsFalse(_store.IsPending);
         }
 
         [Test]
         public void SavePendingResults_PersistsCurrentResultsForTheNextCallbacks()
         {
             // Arrange
+            _store.MarkPending();
             _store.SavePendingResults(new List<TestResultItem> { new("First", "Failed", 0.2f, "boom") });
             var beforeReload = new SessionStoreTestCallbacks(_store);
 
             // Act
             beforeReload.SavePendingResults();
             var afterReload = new SessionStoreTestCallbacks(_store);
-            afterReload.RunFinished(null);
-            beforeReload.RunFinished(null);
 
             // Assert
             var restored = afterReload.Results.Single();

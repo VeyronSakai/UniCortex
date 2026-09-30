@@ -44,9 +44,9 @@ namespace UniCortex.Editor.Handlers.Tests
 
             try
             {
-                var response = await _useCase.ExecuteAsync(request, cancellationToken);
-                var json = JsonUtility.ToJson(response);
-                await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+                await _useCase.ExecuteAsync(request, cancellationToken);
+                var json = JsonUtility.ToJson(new RunTestsAcceptedResponse(true));
+                await context.WriteResponseAsync(HttpStatusCodes.Accepted, json);
             }
             catch (PlayModeException ex)
             {

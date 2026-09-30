@@ -84,7 +84,7 @@ namespace UniCortex.Editor
         private static void RegisterHandlers(RequestRouter router)
         {
             var testResultStore = new TestResultStore(TestResultJsonKey, TestPendingResultsJsonKey);
-            RegisterTestCallbacksIfNeeded(testResultStore);
+            RegisterTestCallbacks(testResultStore);
 
             var editorApplication = new EditorApplicationAdapter();
             var compilationPipeline = new CompilationPipelineAdapter();
@@ -450,22 +450,14 @@ namespace UniCortex.Editor
             ServerUrlFile.Delete();
         }
 
-        // Must be called only once per domain (it is reached only from the static constructor via StartServer).
-        // A second call during a pending run would register another set of callbacks and record every result twice.
-        private static void RegisterTestCallbacksIfNeeded(ITestResultStore testResultStore)
+        // Registers the callbacks that record the results of runs started through POST /tests/run.
+        // Registered callbacks are discarded by a domain reload, so this runs in every domain, including the one
+        // that continues a run after a reload. Must be called only once per domain (it is reached only from the static
+        // constructor via StartServer); a second call would register another set of callbacks and record every result twice.
+        private static void RegisterTestCallbacks(ITestResultStore testResultStore)
         {
-            if (!testResultStore.IsPending)
-            {
-                return;
-            }
-
-            // After a domain reload the TaskCompletionSource used by TestRunnerAdapter
-            // no longer exists, so there is no way to complete the HTTP response.
-            // Register SessionStoreTestCallbacks without a completion callback
-            // so that test results are still persisted to SessionState via TestResultStore.
             var api = ScriptableObject.CreateInstance<TestRunnerApi>();
-            api.RegisterCallbacks(new SessionStoreTestCallbacks(testResultStore, api));
-            Debug.Log("[UniCortex] Re-registered test callbacks after domain reload");
+            api.RegisterCallbacks(new SessionStoreTestCallbacks(testResultStore));
         }
 
         private static void Shutdown()
