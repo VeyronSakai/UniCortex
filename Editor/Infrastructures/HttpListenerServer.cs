@@ -10,10 +10,20 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class HttpListenerServer : IHttpServer
     {
+        // Upper bound for letting the current request write its response (e.g. 408 after cancellation)
+        // before the listener is closed. Keeps a stuck handler from delaying the domain reload for long.
+        private static readonly TimeSpan s_currentRequestTaskTimeout = TimeSpan.FromSeconds(1);
+
         private readonly IRequestRouter _router;
         private readonly int _port;
         private HttpListener _listener;
         private CancellationTokenSource _cts;
+
+        // Completes when the handling of the current request (including writing its response) ends.
+        // The listen loop handles one request at a time, so there is at most one such task.
+        // Written by the listen loop and read by Stop() on the main thread, so it is guarded by _gate.
+        private readonly object _gate = new();
+        private Task _currentRequestTask = Task.CompletedTask;
 
         public HttpListenerServer(IRequestRouter router, int port)
         {
@@ -76,6 +86,12 @@ namespace UniCortex.Editor.Infrastructures
 
             _cts?.Cancel();
 
+            // Closing the listener ends open responses as they are (an empty 200 or a dropped connection).
+            // Wait for the cancelled request to finish writing its error response first.
+            // Handlers resume on thread-pool threads, so they can finish while the main thread waits here;
+            // a handler that still needs the main thread just runs into the timeout.
+            WaitForCurrentRequestTask();
+
             try
             {
                 _listener.Stop();
@@ -97,7 +113,26 @@ namespace UniCortex.Editor.Infrastructures
                 try
                 {
                     var httpContext = await _listener.GetContextAsync();
-                    await HandleContextAsync(httpContext, token);
+
+                    // 1. Before the handler starts, publish a not-yet-completed task as the current request task,
+                    //    so that Stop() waits for it even if it is called while the handler is still running
+                    //    synchronously. Publishing it after the handler would let Stop() see nothing to wait for.
+                    var currentRequestTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    lock (_gate)
+                    {
+                        _currentRequestTask = currentRequestTcs.Task;
+                    }
+
+                    try
+                    {
+                        // Returns after the response (including a 408 on cancellation) has been written.
+                        await HandleContextAsync(httpContext, token);
+                    }
+                    finally
+                    {
+                        // 2. The response has been written: complete the task so that Stop() can close the listener.
+                        currentRequestTcs.TrySetResult(true);
+                    }
                 }
                 catch (ObjectDisposedException)
                 {
@@ -107,6 +142,20 @@ namespace UniCortex.Editor.Infrastructures
                 {
                     break;
                 }
+            }
+        }
+
+        private void WaitForCurrentRequestTask()
+        {
+            Task currentRequestTask;
+            lock (_gate)
+            {
+                currentRequestTask = _currentRequestTask;
+            }
+
+            if (!currentRequestTask.Wait(s_currentRequestTaskTimeout))
+            {
+                Debug.LogWarning("[UniCortex] Timed out waiting for the current request to respond before stopping.");
             }
         }
 
