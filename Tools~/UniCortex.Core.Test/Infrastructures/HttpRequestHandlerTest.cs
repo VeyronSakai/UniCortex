@@ -69,7 +69,7 @@ public class HttpRequestHandlerTest
     public async ValueTask SendAsync_RetriesRequestCancelledByServerStop_ByDefault()
     {
         // Arrange
-        var inner = new ScriptedHandler(RequestTimeout(), Ok());
+        var inner = new ScriptedHandler(ServiceUnavailable(), Ok());
         using var client = CreateClient(inner);
 
         // Act
@@ -84,14 +84,14 @@ public class HttpRequestHandlerTest
     public async ValueTask SendAsync_ReturnsRequestCancelledByServerStop_WhenResendIsDisabled()
     {
         // Arrange
-        var inner = new ScriptedHandler(RequestTimeout(), Ok());
+        var inner = new ScriptedHandler(ServiceUnavailable(), Ok());
         using var client = CreateClient(inner);
 
         // Act
         using var response = await client.SendAsync(CreateNoResendRequest());
 
         // Assert
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.RequestTimeout));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.ServiceUnavailable));
         Assert.That(inner.CallCount, Is.EqualTo(1));
     }
 
@@ -112,11 +112,11 @@ public class HttpRequestHandlerTest
         return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") };
     }
 
-    private static HttpResponseMessage RequestTimeout()
+    private static HttpResponseMessage ServiceUnavailable()
     {
-        return new HttpResponseMessage(HttpStatusCode.RequestTimeout)
+        return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
         {
-            Content = new StringContent("{\"error\":\"Request was cancelled.\"}")
+            Content = new StringContent("{\"error\":\"The server was stopped.\"}")
         };
     }
 

@@ -10,15 +10,15 @@ namespace UniCortex.Editor.Tests.Infrastructures
     internal sealed class RequestExceptionResponderTest
     {
         [Test]
-        public void RespondAsync_Returns408_WhenOperationCancelled()
+        public void RespondAsync_Returns503_WhenOperationCancelled()
         {
             var context = new FakeRequestContext(HttpMethodType.Post, "/tests/run");
 
             RequestExceptionResponder.RespondAsync(context, new OperationCanceledException())
                 .GetAwaiter().GetResult();
 
-            Assert.AreEqual(HttpStatusCodes.RequestTimeout, context.ResponseStatusCode);
-            StringAssert.Contains(ErrorMessages.RequestWasCancelled, context.ResponseBody);
+            Assert.AreEqual(HttpStatusCodes.ServiceUnavailable, context.ResponseStatusCode);
+            StringAssert.Contains(ErrorMessages.ServerStopped, context.ResponseBody);
         }
 
         [Test]

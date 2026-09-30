@@ -10,10 +10,12 @@ namespace UniCortex.Editor.Infrastructures
     {
         public static Task RespondAsync(IRequestContext context, Exception exception)
         {
+            // The server's only cancellation source is its stop token,
+            // so a cancelled request means the server is going away (e.g. for a domain reload).
             if (exception is OperationCanceledException)
             {
-                return context.WriteResponseAsync(HttpStatusCodes.RequestTimeout,
-                    JsonUtility.ToJson(new ErrorResponse(ErrorMessages.RequestWasCancelled)));
+                return context.WriteResponseAsync(HttpStatusCodes.ServiceUnavailable,
+                    JsonUtility.ToJson(new ErrorResponse(ErrorMessages.ServerStopped)));
             }
 
             return context.WriteResponseAsync(HttpStatusCodes.InternalServerError,

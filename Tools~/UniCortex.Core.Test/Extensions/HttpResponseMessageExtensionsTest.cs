@@ -13,10 +13,10 @@ public class HttpResponseMessageExtensionsTest
     [Test]
     public void EnsureSuccessWithErrorBodyAsync_ThrowsWithStatusCode()
     {
-        using var response = new HttpResponseMessage(HttpStatusCode.RequestTimeout)
+        using var response = new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
         {
             Content = new StringContent(
-                "{\"error\":\"Request was cancelled.\"}",
+                $"{{\"error\":\"{ErrorMessages.ServerStopped}\"}}",
                 Encoding.UTF8,
                 "application/json")
         };
@@ -24,7 +24,7 @@ public class HttpResponseMessageExtensionsTest
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
             await response.EnsureSuccessWithErrorBodyAsync(CancellationToken.None));
 
-        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.RequestTimeout));
-        Assert.That(ex.Message, Is.EqualTo(ErrorMessages.RequestWasCancelled));
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.ServiceUnavailable));
+        Assert.That(ex.Message, Is.EqualTo(ErrorMessages.ServerStopped));
     }
 }
