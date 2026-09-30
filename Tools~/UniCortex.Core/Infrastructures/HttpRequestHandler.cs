@@ -34,10 +34,10 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
                     throw new HttpRequestException();
                 }
 
-                // The server answers 408 when it is stopped (e.g. by a domain reload) while handling the request.
+                // The server answers 503 when it is stopped (e.g. by a domain reload) while handling the request.
                 // Like an empty response, this means the server may have received the request, so it is retried
-                // only when resending is allowed. Otherwise the 408 is returned to the caller as is.
-                if (response.StatusCode == HttpStatusCode.RequestTimeout && resendAfterDisconnect)
+                // only when resending is allowed. Otherwise the 503 is returned to the caller as is.
+                if (response.StatusCode == HttpStatusCode.ServiceUnavailable && resendAfterDisconnect)
                 {
                     response.Dispose();
                     throw new HttpRequestException();

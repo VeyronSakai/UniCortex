@@ -10,7 +10,7 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class HttpListenerServer : IHttpServer
     {
-        // Upper bound for letting the current request write its response (e.g. 408 after cancellation)
+        // Upper bound for letting the current request write its response (e.g. 503 after cancellation)
         // before the listener is closed. Keeps a stuck handler from delaying the domain reload for long.
         private static readonly TimeSpan s_currentRequestTaskTimeout = TimeSpan.FromSeconds(1);
 
@@ -125,7 +125,7 @@ namespace UniCortex.Editor.Infrastructures
 
                     try
                     {
-                        // Returns after the response (including a 408 on cancellation) has been written.
+                        // Returns after the response (including a 503 on cancellation) has been written.
                         await HandleContextAsync(httpContext, token);
                     }
                     finally

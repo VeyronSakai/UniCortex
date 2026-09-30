@@ -114,6 +114,7 @@ Request/response JSON serialization uses DTO classes.
 
 Responses are always `application/json; charset=utf-8`.
 On error: an HTTP status code plus `{"error": "message"}`.
+If the server is stopped while handling a request (e.g. by a domain reload), it answers `503 Service Unavailable`. The client retries such requests unless they must not be sent twice (`POST /tests/run`).
 All scene-mutating operations support Undo.
 
 ### Editor Control

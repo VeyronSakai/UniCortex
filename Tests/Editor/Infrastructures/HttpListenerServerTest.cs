@@ -67,7 +67,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
 
             // Assert
             using var response = responseTask.GetAwaiter().GetResult();
-            Assert.AreEqual(HttpStatusCode.RequestTimeout, response.StatusCode);
+            Assert.AreEqual(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         }
 
         private static int FindFreePort()

@@ -28,10 +28,10 @@ public class TestUseCase(IUnityEditorClient client)
             await client.PostAsync<RunTestsRequest, RunTestsAcceptedResponse>(ApiRoutes.TestsRun, request,
                 cancellationToken, resendAfterDisconnect: false);
         }
-        catch (HttpRequestException ex) when (ex.StatusCode is null or HttpStatusCode.RequestTimeout)
+        catch (HttpRequestException ex) when (ex.StatusCode is null or HttpStatusCode.ServiceUnavailable)
         {
             // The server was stopped (e.g. by the domain reload for entering Play Mode) before it could answer.
-            // The server answers 408 in that case, or the connection is dropped without a status code.
+            // The server answers 503 in that case, or the connection is dropped without a status code.
             // The run has started and stores its result, so fall through to polling.
             // Other status codes (e.g. 400 in Play Mode) are real errors and are rethrown.
         }

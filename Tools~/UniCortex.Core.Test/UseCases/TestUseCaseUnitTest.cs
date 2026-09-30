@@ -37,10 +37,8 @@ public class TestUseCaseUnitTest
         // Arrange
         var client = new FakeUnityEditorClient
         {
-            PostException = new HttpRequestException(
-                ErrorMessages.RequestWasCancelled,
-                null,
-                HttpStatusCode.RequestTimeout)
+            PostException = new HttpRequestException(ErrorMessages.ServerStopped, null,
+                HttpStatusCode.ServiceUnavailable)
         };
         var useCase = new TestUseCase(client);
 
