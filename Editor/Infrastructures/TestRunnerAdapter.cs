@@ -11,10 +11,12 @@ namespace UniCortex.Editor.Infrastructures
     internal sealed class TestRunnerAdapter : ITestRunner
     {
         private readonly IMainThreadDispatcher _dispatcher;
+        private readonly ITestResultStore _testResultStore;
 
-        public TestRunnerAdapter(IMainThreadDispatcher dispatcher)
+        public TestRunnerAdapter(IMainThreadDispatcher dispatcher, ITestResultStore testResultStore)
         {
             _dispatcher = dispatcher;
+            _testResultStore = testResultStore;
         }
 
         public async Task<IReadOnlyList<TestResultItem>> RunTestsAsync(RunTestsRequest request,
@@ -27,10 +29,10 @@ namespace UniCortex.Editor.Infrastructures
             {
                 await _dispatcher.RunOnMainThreadAsync(() =>
                 {
-                    TestResultStore.Default.MarkPending();
+                    _testResultStore.MarkPending();
 
                     var testRunnerApi = ScriptableObject.CreateInstance<TestRunnerApi>();
-                    var callbacks = new TestCallbacks(testRunnerApi, tcs);
+                    var callbacks = new TestCallbacks(testRunnerApi, tcs, _testResultStore);
                     testRunnerApi.RegisterCallbacks(callbacks);
 
                     var filter = new Filter
@@ -86,11 +88,12 @@ namespace UniCortex.Editor.Infrastructures
             private readonly TaskCompletionSource<IReadOnlyList<TestResultItem>> _tcs;
             private readonly SessionStoreTestCallbacks _inner;
 
-            public TestCallbacks(TestRunnerApi testRunnerApi, TaskCompletionSource<IReadOnlyList<TestResultItem>> tcs)
+            public TestCallbacks(TestRunnerApi testRunnerApi, TaskCompletionSource<IReadOnlyList<TestResultItem>> tcs,
+                ITestResultStore testResultStore)
             {
                 _testRunnerApi = testRunnerApi;
                 _tcs = tcs;
-                _inner = new SessionStoreTestCallbacks();
+                _inner = new SessionStoreTestCallbacks(testResultStore);
             }
 
             public void RunStarted(ITestAdaptor testsToRun) => _inner.RunStarted(testsToRun);

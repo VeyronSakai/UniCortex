@@ -8,45 +8,39 @@ using UnityEngine;
 namespace UniCortex.Editor.Infrastructures
 {
     // Keeps test run state in SessionState so that it survives domain reloads during a run.
-    internal sealed class TestResultStore
+    internal sealed class TestResultStore : ITestResultStore
     {
-        internal static readonly TestResultStore Default = new("UniCortex.");
-
-        private readonly string _pendingKey;
         private readonly string _resultJsonKey;
-        private readonly string _partialResultsJsonKey;
+        private readonly string _pendingResultsJsonKey;
 
-        // The key prefix lets tests use their own keys without touching the state of an ongoing run.
-        internal TestResultStore(string keyPrefix)
+        // The keys are injected so that tests can use their own keys without touching the state of an ongoing run.
+        public TestResultStore(string resultJsonKey, string pendingResultsJsonKey)
         {
-            _pendingKey = keyPrefix + "TestRunPending";
-            _resultJsonKey = keyPrefix + "TestResultJson";
-            _partialResultsJsonKey = keyPrefix + "TestPartialResultsJson";
+            _resultJsonKey = resultJsonKey;
+            _pendingResultsJsonKey = pendingResultsJsonKey;
         }
 
-        internal bool IsPending => SessionState.GetBool(_pendingKey, false);
+        // Pending results exist exactly while a run is pending: MarkPending writes them and StoreResult erases them.
+        public bool IsPending => !string.IsNullOrEmpty(SessionState.GetString(_pendingResultsJsonKey, ""));
 
-        internal void MarkPending()
+        public void MarkPending()
         {
-            SessionState.SetBool(_pendingKey, true);
             SessionState.SetString(_resultJsonKey, "");
-            SessionState.EraseString(_partialResultsJsonKey);
+            SavePendingResults(Array.Empty<TestResultItem>());
         }
 
-        internal void StoreResult(string json)
+        public void StoreResult(string json)
         {
             SessionState.SetString(_resultJsonKey, json);
-            SessionState.EraseString(_partialResultsJsonKey);
-            SessionState.SetBool(_pendingKey, false);
+            SessionState.EraseString(_pendingResultsJsonKey);
         }
 
-        internal string GetResult()
+        public string GetResult()
         {
             return SessionState.GetString(_resultJsonKey, "");
         }
 
-        // Results of tests that finished before a domain reload in the middle of a run.
-        internal void SavePartialResults(IReadOnlyList<TestResultItem> results)
+        public void SavePendingResults(IReadOnlyList<TestResultItem> results)
         {
             var entries = new List<TestResultEntry>(results.Count);
             foreach (var item in results)
@@ -54,19 +48,19 @@ namespace UniCortex.Editor.Infrastructures
                 entries.Add(new TestResultEntry(item.Name, item.Status, item.Duration, item.Message));
             }
 
-            SessionState.SetString(_partialResultsJsonKey, JsonUtility.ToJson(new PartialResults(entries)));
+            SessionState.SetString(_pendingResultsJsonKey, JsonUtility.ToJson(new PendingResults(entries)));
         }
 
-        internal List<TestResultItem> LoadPartialResults()
+        public IReadOnlyList<TestResultItem> LoadPendingResults()
         {
             var results = new List<TestResultItem>();
-            var json = SessionState.GetString(_partialResultsJsonKey, "");
+            var json = SessionState.GetString(_pendingResultsJsonKey, "");
             if (string.IsNullOrEmpty(json))
             {
                 return results;
             }
 
-            foreach (var entry in JsonUtility.FromJson<PartialResults>(json).results)
+            foreach (var entry in JsonUtility.FromJson<PendingResults>(json).results)
             {
                 results.Add(new TestResultItem(entry.name, entry.status, entry.duration, entry.message));
             }
@@ -76,17 +70,16 @@ namespace UniCortex.Editor.Infrastructures
 
         internal void Clear()
         {
-            SessionState.EraseBool(_pendingKey);
             SessionState.EraseString(_resultJsonKey);
-            SessionState.EraseString(_partialResultsJsonKey);
+            SessionState.EraseString(_pendingResultsJsonKey);
         }
 
         [Serializable]
-        private sealed class PartialResults
+        private sealed class PendingResults
         {
             public List<TestResultEntry> results;
 
-            public PartialResults(List<TestResultEntry> results)
+            public PendingResults(List<TestResultEntry> results)
             {
                 this.results = results;
             }

@@ -1,3 +1,4 @@
+using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Handlers.AnimationClip;
 using UniCortex.Editor.Handlers.Asset;
 using UniCortex.Editor.Handlers.Component;
@@ -30,8 +31,12 @@ namespace UniCortex.Editor
     {
         private const string PortKey = "UniCortex.Port";
 
+        private const string TestResultJsonKey = "UniCortex.TestResultJson";
+        private const string TestPendingResultsJsonKey = "UniCortex.TestPendingResultsJson";
+
         private static MainThreadDispatcher s_dispatcher;
         private static HttpListenerServer s_server;
+        private static ITestResultStore s_testResultStore;
 
         static EntryPoint()
         {
@@ -49,6 +54,7 @@ namespace UniCortex.Editor
             s_dispatcher = new MainThreadDispatcher();
             EditorApplication.update += s_dispatcher.OnUpdate;
 
+            s_testResultStore = new TestResultStore(TestResultJsonKey, TestPendingResultsJsonKey);
             ReregisterTestCallbacksIfNeeded();
 
             StartServer();
@@ -118,10 +124,10 @@ namespace UniCortex.Editor
             var redoUseCase = new RedoUseCase(s_dispatcher, undoAdapter);
             var redoHandler = new RedoHandler(redoUseCase);
 
-            var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher);
+            var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher, s_testResultStore);
             var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, s_dispatcher, editorApplication);
             var runTestsHandler = new RunTestsHandler(runTestsUseCase);
-            var testResultHandler = new TestResultHandler(s_dispatcher);
+            var testResultHandler = new TestResultHandler(s_dispatcher, s_testResultStore);
 
             var consoleLogCollector = new ConsoleLogCollector();
 
@@ -447,7 +453,7 @@ namespace UniCortex.Editor
 
         private static void ReregisterTestCallbacksIfNeeded()
         {
-            if (!TestResultStore.Default.IsPending)
+            if (!s_testResultStore.IsPending)
             {
                 return;
             }
@@ -457,7 +463,7 @@ namespace UniCortex.Editor
             // Register SessionStoreTestCallbacks directly (without the TestCallbacks wrapper)
             // so that test results are still persisted to SessionState via TestResultStore.
             var api = ScriptableObject.CreateInstance<TestRunnerApi>();
-            api.RegisterCallbacks(new SessionStoreTestCallbacks(api));
+            api.RegisterCallbacks(new SessionStoreTestCallbacks(s_testResultStore, api));
             Debug.Log("[UniCortex] Re-registered test callbacks after domain reload");
         }
 

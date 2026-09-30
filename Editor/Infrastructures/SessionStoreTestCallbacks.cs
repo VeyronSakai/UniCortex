@@ -9,24 +9,24 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class SessionStoreTestCallbacks : ICallbacks
     {
+        private readonly ITestResultStore _store;
         private readonly TestRunnerApi _testRunnerApi;
-        private readonly TestResultStore _store;
         private readonly List<TestResultItem> _results;
 
-        public SessionStoreTestCallbacks(TestRunnerApi testRunnerApi = null, TestResultStore store = null)
+        public SessionStoreTestCallbacks(ITestResultStore store, TestRunnerApi testRunnerApi = null)
         {
+            _store = store;
             _testRunnerApi = testRunnerApi;
-            _store = store ?? TestResultStore.Default;
 
             // A domain reload in the middle of a run (e.g. entering Play Mode) discards these callbacks,
             // and new ones are registered afterwards. Carry over the results reported before the reload.
-            _results = _store.LoadPartialResults();
-            AssemblyReloadEvents.beforeAssemblyReload += SavePartialResults;
+            _results = new List<TestResultItem>(_store.LoadPendingResults());
+            AssemblyReloadEvents.beforeAssemblyReload += SavePendingResults;
         }
 
-        internal void SavePartialResults()
+        internal void SavePendingResults()
         {
-            _store.SavePartialResults(_results);
+            _store.SavePendingResults(_results);
         }
 
         internal IReadOnlyList<TestResultItem> Results => _results;
@@ -37,7 +37,7 @@ namespace UniCortex.Editor.Infrastructures
 
         public void RunFinished(ITestResultAdaptor result)
         {
-            AssemblyReloadEvents.beforeAssemblyReload -= SavePartialResults;
+            AssemblyReloadEvents.beforeAssemblyReload -= SavePendingResults;
 
             var entries = new List<TestResultEntry>(_results.Count);
             int passed = 0, failed = 0, skipped = 0;

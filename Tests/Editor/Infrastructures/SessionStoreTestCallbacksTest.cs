@@ -4,6 +4,7 @@ using NUnit.Framework;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Infrastructures;
+using UniCortex.Editor.Tests.TestDoubles;
 using UnityEngine;
 
 namespace UniCortex.Editor.Tests.Infrastructures
@@ -11,29 +12,23 @@ namespace UniCortex.Editor.Tests.Infrastructures
     [TestFixture]
     internal sealed class SessionStoreTestCallbacksTest
     {
-        // A dedicated prefix so that the test does not touch the state of the run executing it.
-        private readonly TestResultStore _store = new("UniCortex.Tests.SessionStoreTestCallbacksTest.");
+        private FakeTestResultStore _store;
 
         [SetUp]
         public void SetUp()
         {
+            _store = new FakeTestResultStore();
             _store.MarkPending();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _store.Clear();
         }
 
         [Test]
         public void Constructor_RestoresResultsSavedBeforeDomainReload()
         {
             // Arrange
-            _store.SavePartialResults(new List<TestResultItem> { new("BeforeReload", "Passed", 0.1f) });
+            _store.SavePendingResults(new List<TestResultItem> { new("BeforeReload", "Passed", 0.1f) });
 
             // Act
-            var callbacks = new SessionStoreTestCallbacks(null, _store);
+            var callbacks = new SessionStoreTestCallbacks(_store);
             callbacks.RunFinished(null);
 
             // Assert
@@ -45,15 +40,15 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void SavePartialResults_PersistsCurrentResultsForTheNextCallbacks()
+        public void SavePendingResults_PersistsCurrentResultsForTheNextCallbacks()
         {
             // Arrange
-            _store.SavePartialResults(new List<TestResultItem> { new("First", "Failed", 0.2f, "boom") });
-            var beforeReload = new SessionStoreTestCallbacks(null, _store);
+            _store.SavePendingResults(new List<TestResultItem> { new("First", "Failed", 0.2f, "boom") });
+            var beforeReload = new SessionStoreTestCallbacks(_store);
 
             // Act
-            beforeReload.SavePartialResults();
-            var afterReload = new SessionStoreTestCallbacks(null, _store);
+            beforeReload.SavePendingResults();
+            var afterReload = new SessionStoreTestCallbacks(_store);
             afterReload.RunFinished(null);
             beforeReload.RunFinished(null);
 

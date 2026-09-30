@@ -8,8 +8,10 @@ namespace UniCortex.Editor.Tests.Infrastructures
     [TestFixture]
     internal sealed class TestResultStoreTest
     {
-        // A dedicated prefix so that the test does not touch the state of the run executing it.
-        private readonly TestResultStore _store = new("UniCortex.Tests.TestResultStoreTest.");
+        // Dedicated keys so that the test does not touch the state of the run executing it.
+        private readonly TestResultStore _store = new(
+            "UniCortex.Tests.TestResultStoreTest.TestResultJson",
+            "UniCortex.Tests.TestResultStoreTest.TestPendingResultsJson");
 
         [TearDown]
         public void TearDown()
@@ -18,9 +20,33 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void SavePartialResults_ThenLoad_RoundTripsResults()
+        public void IsPending_BeforeAnyRun_ReturnsFalse()
+        {
+            // Act & Assert
+            Assert.IsFalse(_store.IsPending);
+            Assert.AreEqual(string.Empty, _store.GetResult());
+        }
+
+        [Test]
+        public void MarkPending_StartsRunWithoutPendingResults()
         {
             // Arrange
+            _store.StoreResult("{\"previous\":true}");
+
+            // Act
+            _store.MarkPending();
+
+            // Assert
+            Assert.IsTrue(_store.IsPending);
+            Assert.AreEqual(string.Empty, _store.GetResult());
+            Assert.AreEqual(0, _store.LoadPendingResults().Count);
+        }
+
+        [Test]
+        public void SavePendingResults_ThenLoad_RoundTripsResults()
+        {
+            // Arrange
+            _store.MarkPending();
             var results = new List<TestResultItem>
             {
                 new("TestA", "Passed", 0.5f),
@@ -28,10 +54,11 @@ namespace UniCortex.Editor.Tests.Infrastructures
             };
 
             // Act
-            _store.SavePartialResults(results);
-            var loaded = _store.LoadPartialResults();
+            _store.SavePendingResults(results);
+            var loaded = _store.LoadPendingResults();
 
             // Assert
+            Assert.IsTrue(_store.IsPending);
             Assert.AreEqual(2, loaded.Count);
             Assert.AreEqual("TestA", loaded[0].Name);
             Assert.AreEqual("Passed", loaded[0].Status);
@@ -42,35 +69,11 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void LoadPartialResults_WhenNothingSaved_ReturnsEmpty()
-        {
-            // Act
-            var loaded = _store.LoadPartialResults();
-
-            // Assert
-            Assert.AreEqual(0, loaded.Count);
-        }
-
-        [Test]
-        public void MarkPending_ClearsPartialResultsOfPreviousRun()
-        {
-            // Arrange
-            _store.SavePartialResults(new List<TestResultItem> { new("Stale", "Passed", 0f) });
-
-            // Act
-            _store.MarkPending();
-
-            // Assert
-            Assert.IsTrue(_store.IsPending);
-            Assert.AreEqual(0, _store.LoadPartialResults().Count);
-        }
-
-        [Test]
-        public void StoreResult_ClearsPendingAndPartialResults()
+        public void StoreResult_FinishesRunAndClearsPendingResults()
         {
             // Arrange
             _store.MarkPending();
-            _store.SavePartialResults(new List<TestResultItem> { new("TestA", "Passed", 0f) });
+            _store.SavePendingResults(new List<TestResultItem> { new("TestA", "Passed", 0f) });
 
             // Act
             _store.StoreResult("{}");
@@ -78,7 +81,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             // Assert
             Assert.IsFalse(_store.IsPending);
             Assert.AreEqual("{}", _store.GetResult());
-            Assert.AreEqual(0, _store.LoadPartialResults().Count);
+            Assert.AreEqual(0, _store.LoadPendingResults().Count);
         }
     }
 }
