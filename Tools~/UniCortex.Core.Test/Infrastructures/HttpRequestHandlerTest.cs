@@ -81,7 +81,7 @@ public class HttpRequestHandlerTest
     }
 
     [Test]
-    public async ValueTask SendAsync_ReturnsRequestCancelledByServerStop_WhenResendIsDisabled()
+    public async ValueTask SendAsync_RetriesRequestCancelledByServerStop_WhenResendIsDisabled()
     {
         // Arrange
         var inner = new ScriptedHandler(ServiceUnavailable(), Ok());
@@ -91,8 +91,8 @@ public class HttpRequestHandlerTest
         using var response = await client.SendAsync(CreateNoResendRequest());
 
         // Assert
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.ServiceUnavailable));
-        Assert.That(inner.CallCount, Is.EqualTo(1));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(inner.CallCount, Is.EqualTo(2));
     }
 
     private static HttpClient CreateClient(HttpMessageHandler inner)

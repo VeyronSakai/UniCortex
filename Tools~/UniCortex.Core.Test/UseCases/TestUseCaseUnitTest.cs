@@ -31,8 +31,10 @@ public class TestUseCaseUnitTest
         Assert.That(client.LastResendAfterDisconnect, Is.False);
     }
 
+    // The client resends a request cancelled by a server stop (503) until the server comes back, so a 503
+    // reaches the use case only when it gives up. The run has not started then, so there is nothing to poll.
     [Test]
-    public async ValueTask RunAsync_PollsStoredResult_WhenServerCancelsRunRequest()
+    public void RunAsync_RethrowsWithoutPolling_WhenServerStaysUnavailable()
     {
         // Arrange
         var client = new FakeUnityEditorClient
@@ -43,13 +45,12 @@ public class TestUseCaseUnitTest
         var useCase = new TestUseCase(client);
 
         // Act
-        var json = await useCase.RunAsync(cancellationToken: CancellationToken.None);
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await useCase.RunAsync(cancellationToken: CancellationToken.None));
 
         // Assert
-        var response = JsonSerializer.Deserialize<RunTestsResponse>(json, s_jsonOptions)!;
-        Assert.That(response.passed, Is.EqualTo(1));
-        Assert.That(client.GetCallCount, Is.EqualTo(1));
-        Assert.That(client.LastResendAfterDisconnect, Is.False);
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.ServiceUnavailable));
+        Assert.That(client.GetCallCount, Is.EqualTo(0));
     }
 
     [Test]
