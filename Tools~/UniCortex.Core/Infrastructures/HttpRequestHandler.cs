@@ -9,7 +9,9 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
 
     // Every request is resent until the server answers, so that requests survive domain reloads.
     // - Connection refused: the server is not listening, so it never received the request.
-    // - 503: the server was stopped before running the request (see below).
+    // - 503: the server was stopped before running the request. Requests run on the main thread, and so does
+    //   stopping the server: either the request ran first and its response is written before the server closes,
+    //   or the stop came first and the queued request was dropped without running.
     // - Dropped connection or empty response: it is unknown whether the server ran the request. This hardly
     //   happens, since the server writes the response of the current request before it stops. It remains when
     //   the Editor crashes, or when a request still queued in the listener is dropped without running; resending
@@ -27,21 +29,13 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
             {
                 var response = await base.SendAsync(request, cancellationToken);
 
-                // If the domain is reloading, a response with Content-Length 0 may be returned, which will also be considered a failure and will be retried.
-                if (response.Content.Headers.ContentLength is null or 0)
+                // If the domain is reloading, an empty response may be returned. The server also answers 503 when it is
+                // stopped (e.g. by a domain reload) before running the request. Both are retried.
+                if (response.Content.Headers.ContentLength is null or 0 ||
+                    response.StatusCode == HttpStatusCode.ServiceUnavailable)
                 {
                     response.Dispose();
                     throw new HttpRequestException();
-                }
-
-                // The server answers 503 when it is stopped (e.g. by a domain reload) before running the request.
-                // Requests run on the main thread, and so does stopping the server: either the request ran first
-                // and its response is written before the server closes, or the stop came first and the queued
-                // request was dropped without running.
-                if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
-                {
-                    response.Dispose();
-                    throw new HttpRequestException(null, null, HttpStatusCode.ServiceUnavailable);
                 }
 
                 if (logged)
