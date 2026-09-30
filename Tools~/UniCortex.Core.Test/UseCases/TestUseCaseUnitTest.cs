@@ -28,44 +28,6 @@ public class TestUseCaseUnitTest
         Assert.That(response.passed, Is.EqualTo(1));
         Assert.That(client.PostCallCount, Is.EqualTo(1));
         Assert.That(client.GetCallCount, Is.EqualTo(1));
-        Assert.That(client.LastResendAfterDisconnect, Is.False);
-    }
-
-    [Test]
-    public async ValueTask RunAsync_PollsStoredResult_WhenServerCancelsRunRequest()
-    {
-        // Arrange
-        var client = new FakeUnityEditorClient
-        {
-            PostException = new HttpRequestException(ErrorMessages.ServerStopped, null,
-                HttpStatusCode.ServiceUnavailable)
-        };
-        var useCase = new TestUseCase(client);
-
-        // Act
-        var json = await useCase.RunAsync(cancellationToken: CancellationToken.None);
-
-        // Assert
-        var response = JsonSerializer.Deserialize<RunTestsResponse>(json, s_jsonOptions)!;
-        Assert.That(response.passed, Is.EqualTo(1));
-        Assert.That(client.GetCallCount, Is.EqualTo(1));
-        Assert.That(client.LastResendAfterDisconnect, Is.False);
-    }
-
-    [Test]
-    public async ValueTask RunAsync_PollsStoredResult_WhenConnectionIsDropped()
-    {
-        // Arrange
-        var client = new FakeUnityEditorClient { PostException = new HttpRequestException() };
-        var useCase = new TestUseCase(client);
-
-        // Act
-        var json = await useCase.RunAsync(cancellationToken: CancellationToken.None);
-
-        // Assert
-        var response = JsonSerializer.Deserialize<RunTestsResponse>(json, s_jsonOptions)!;
-        Assert.That(response.passed, Is.EqualTo(1));
-        Assert.That(client.GetCallCount, Is.EqualTo(1));
     }
 
     [Test]
@@ -99,13 +61,10 @@ public class TestUseCaseUnitTest
             return ValueTask.CompletedTask;
         }
 
-        public bool? LastResendAfterDisconnect { get; private set; }
-
         public ValueTask<TRes> PostAsync<TReq, TRes>(string route, TReq? request = null,
-            CancellationToken cancellationToken = default, bool resendAfterDisconnect = true) where TReq : class
+            CancellationToken cancellationToken = default) where TReq : class
         {
             PostCallCount++;
-            LastResendAfterDisconnect = resendAfterDisconnect;
             if (PostException != null)
             {
                 throw PostException;

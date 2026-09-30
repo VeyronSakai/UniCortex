@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
@@ -21,20 +20,9 @@ public class TestUseCase(IUnityEditorClient client)
             categoryNames != null ? new List<string>(categoryNames) : null,
             assemblyNames != null ? new List<string>(assemblyNames) : null);
 
-        try
-        {
-            // POST /tests/run only starts the run. Never resend it: once the server has received the request,
-            // a resent one would start the run twice, or be rejected with 400 if the Editor is in Play Mode by then.
-            await client.PostAsync<RunTestsRequest, RunTestsAcceptedResponse>(ApiRoutes.TestsRun, request,
-                cancellationToken, resendAfterDisconnect: false);
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode is null or HttpStatusCode.ServiceUnavailable)
-        {
-            // The server was stopped (e.g. by the domain reload for entering Play Mode) before it could answer.
-            // The server answers 503 in that case, or the connection is dropped without a status code.
-            // The run has started and stores its result, so fall through to polling.
-            // Other status codes (e.g. 400 in Play Mode) are real errors and are rethrown.
-        }
+        // POST /tests/run only starts the run. Its result is stored and read with GET /tests/result.
+        await client.PostAsync<RunTestsRequest, RunTestsAcceptedResponse>(ApiRoutes.TestsRun, request,
+            cancellationToken);
 
         // GET /tests/result answers with an empty body while the run is in progress; the client retries it
         // (also across domain reloads) until the result is stored.
