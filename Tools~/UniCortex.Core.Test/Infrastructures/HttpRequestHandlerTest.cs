@@ -11,7 +11,7 @@ namespace UniCortex.Core.Test.Infrastructures;
 public class HttpRequestHandlerTest
 {
     [Test]
-    public async ValueTask SendAsync_RetriesAfterDisconnect_ByDefault()
+    public async ValueTask SendAsync_RetriesAfterDisconnect()
     {
         // Arrange
         var inner = new ScriptedHandler(new HttpRequestException(), Ok());
@@ -26,31 +26,22 @@ public class HttpRequestHandlerTest
     }
 
     [Test]
-    public void SendAsync_DoesNotResendAfterDisconnect_WhenDisabled()
-    {
-        // Arrange
-        var inner = new ScriptedHandler(new HttpRequestException(), Ok());
-        using var client = CreateClient(inner);
-
-        // Act & Assert
-        Assert.ThrowsAsync<HttpRequestException>(async () => await client.SendAsync(CreateNoResendRequest()));
-        Assert.That(inner.CallCount, Is.EqualTo(1));
-    }
-
-    [Test]
-    public void SendAsync_DoesNotResendAfterEmptyResponse_WhenDisabled()
+    public async ValueTask SendAsync_RetriesAfterEmptyResponse()
     {
         // Arrange
         var inner = new ScriptedHandler(new HttpResponseMessage(HttpStatusCode.OK), Ok());
         using var client = CreateClient(inner);
 
-        // Act & Assert
-        Assert.ThrowsAsync<HttpRequestException>(async () => await client.SendAsync(CreateNoResendRequest()));
-        Assert.That(inner.CallCount, Is.EqualTo(1));
+        // Act
+        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/"));
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(inner.CallCount, Is.EqualTo(2));
     }
 
     [Test]
-    public async ValueTask SendAsync_RetriesRefusedConnection_WhenResendIsDisabled()
+    public async ValueTask SendAsync_RetriesRefusedConnection()
     {
         // Arrange
         var refused = new HttpRequestException("refused", new SocketException((int)SocketError.ConnectionRefused));
@@ -58,7 +49,7 @@ public class HttpRequestHandlerTest
         using var client = CreateClient(inner);
 
         // Act
-        using var response = await client.SendAsync(CreateNoResendRequest());
+        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/"));
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -66,29 +57,14 @@ public class HttpRequestHandlerTest
     }
 
     [Test]
-    public async ValueTask SendAsync_RetriesRequestCancelledByServerStop_ByDefault()
+    public async ValueTask SendAsync_RetriesRequestCancelledByServerStop()
     {
         // Arrange
         var inner = new ScriptedHandler(ServiceUnavailable(), Ok());
         using var client = CreateClient(inner);
 
         // Act
-        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "http://localhost/"));
-
-        // Assert
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-        Assert.That(inner.CallCount, Is.EqualTo(2));
-    }
-
-    [Test]
-    public async ValueTask SendAsync_RetriesRequestCancelledByServerStop_WhenResendIsDisabled()
-    {
-        // Arrange
-        var inner = new ScriptedHandler(ServiceUnavailable(), Ok());
-        using var client = CreateClient(inner);
-
-        // Act
-        using var response = await client.SendAsync(CreateNoResendRequest());
+        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/"));
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -98,13 +74,6 @@ public class HttpRequestHandlerTest
     private static HttpClient CreateClient(HttpMessageHandler inner)
     {
         return new HttpClient(new HttpRequestHandler(NullLogger<HttpRequestHandler>.Instance) { InnerHandler = inner });
-    }
-
-    private static HttpRequestMessage CreateNoResendRequest()
-    {
-        var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/");
-        request.Options.Set(HttpRequestHandler.ResendAfterDisconnectKey, false);
-        return request;
     }
 
     private static HttpResponseMessage Ok()

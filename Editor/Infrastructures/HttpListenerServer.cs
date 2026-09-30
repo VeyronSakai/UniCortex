@@ -11,8 +11,10 @@ namespace UniCortex.Editor.Infrastructures
     internal sealed class HttpListenerServer : IHttpServer
     {
         // Upper bound for letting the current request write its response (e.g. 503 after cancellation)
-        // before the listener is closed. Keeps a stuck handler from delaying the domain reload for long.
-        private static readonly TimeSpan s_currentRequestTaskTimeout = TimeSpan.FromSeconds(1);
+        // before the listener is closed. The request usually finishes within milliseconds once cancelled;
+        // the timeout only keeps a stuck handler from blocking the domain reload forever. It is generous because
+        // clients resend a request whose response is lost, which could run it twice.
+        private static readonly TimeSpan s_currentRequestTaskTimeout = TimeSpan.FromSeconds(10);
 
         private readonly IRequestRouter _router;
         private readonly int _port;

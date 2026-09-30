@@ -114,7 +114,8 @@ Request/response JSON serialization uses DTO classes.
 
 Responses are always `application/json; charset=utf-8`.
 On error: an HTTP status code plus `{"error": "message"}`.
-If the server is stopped while handling a request (e.g. by a domain reload), it answers `503 Service Unavailable`. The request has not been run in that case (requests and the server stop both run on the main thread, and a request that has run gets its response written before the server closes), so the client always resends it once the server is back, including `POST /tests/run`, which is otherwise never resent.
+If the server is stopped while handling a request (e.g. by a domain reload), it answers `503 Service Unavailable`. The request has not been run in that case: requests and the server stop both run on the main thread, and the server waits (up to 10 seconds) for the response of a request that has run to be written before it closes.
+The client resends a request until the server answers: on a refused connection, a 503, a dropped connection or an empty response.
 All scene-mutating operations support Undo.
 
 ### Editor Control
