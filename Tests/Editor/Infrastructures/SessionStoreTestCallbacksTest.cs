@@ -40,6 +40,22 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
+        public void RunFinished_PassesAllResultsToCompletionCallback()
+        {
+            // Arrange
+            _store.SavePendingResults(new List<TestResultItem> { new("BeforeReload", "Passed", 0.1f) });
+            IReadOnlyList<TestResultItem> received = null;
+            var callbacks = new SessionStoreTestCallbacks(_store, onRunFinished: results => received = results);
+
+            // Act
+            callbacks.RunFinished(null);
+
+            // Assert
+            Assert.IsNotNull(received);
+            CollectionAssert.AreEqual(new[] { "BeforeReload" }, received.Select(r => r.Name).ToArray());
+        }
+
+        [Test]
         public void SavePendingResults_PersistsCurrentResultsForTheNextCallbacks()
         {
             // Arrange

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
@@ -11,12 +12,17 @@ namespace UniCortex.Editor.Infrastructures
     {
         private readonly ITestResultStore _store;
         private readonly TestRunnerApi _testRunnerApi;
+        private readonly Action<IReadOnlyList<TestResultItem>> _onRunFinished;
         private readonly List<TestResultItem> _results;
 
-        public SessionStoreTestCallbacks(ITestResultStore store, TestRunnerApi testRunnerApi = null)
+        // testRunnerApi: the API these callbacks are registered with; they unregister themselves when the run finishes.
+        // onRunFinished: receives all results of the run after they are stored.
+        public SessionStoreTestCallbacks(ITestResultStore store, TestRunnerApi testRunnerApi = null,
+            Action<IReadOnlyList<TestResultItem>> onRunFinished = null)
         {
             _store = store;
             _testRunnerApi = testRunnerApi;
+            _onRunFinished = onRunFinished;
 
             // A domain reload in the middle of a run (e.g. entering Play Mode) discards these callbacks,
             // and new ones are registered afterwards. Carry over the results reported before the reload.
@@ -62,6 +68,7 @@ namespace UniCortex.Editor.Infrastructures
             _store.StoreResult(JsonUtility.ToJson(response));
             _testRunnerApi?.UnregisterCallbacks(this);
             Debug.Log("[UniCortex] Test results stored in SessionState");
+            _onRunFinished?.Invoke(_results);
         }
 
         public void TestStarted(ITestAdaptor test)

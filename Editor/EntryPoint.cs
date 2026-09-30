@@ -37,10 +37,6 @@ namespace UniCortex.Editor
         private static MainThreadDispatcher s_dispatcher;
         private static HttpListenerServer s_server;
 
-        // Static fields are reset by a domain reload, so this is true once ReregisterTestCallbacksIfNeeded
-        // has run after the latest reload.
-        private static bool s_testCallbacksReregistrationChecked;
-
         static EntryPoint()
         {
             // AssetImportWorkerProcess runs in a separate process with its own SessionState,
@@ -88,7 +84,7 @@ namespace UniCortex.Editor
         private static void RegisterHandlers(RequestRouter router)
         {
             var testResultStore = new TestResultStore(TestResultJsonKey, TestPendingResultsJsonKey);
-            ReregisterTestCallbacksIfNeeded(testResultStore);
+            RegisterTestCallbacksIfNeeded(testResultStore);
 
             var editorApplication = new EditorApplicationAdapter();
             var compilationPipeline = new CompilationPipelineAdapter();
@@ -454,18 +450,10 @@ namespace UniCortex.Editor
             ServerUrlFile.Delete();
         }
 
-        private static void ReregisterTestCallbacksIfNeeded(ITestResultStore testResultStore)
+        // Must be called only once per domain (it is reached only from the static constructor via StartServer).
+        // A second call during a pending run would register another set of callbacks and record every result twice.
+        private static void RegisterTestCallbacksIfNeeded(ITestResultStore testResultStore)
         {
-            // Only the run that was pending when the domain reloaded needs this, so check once per domain.
-            // Checking again (e.g. if the server is restarted) could register a second set of callbacks for a run
-            // that already has them, recording every result twice. Later runs register their own in TestRunnerAdapter.
-            if (s_testCallbacksReregistrationChecked)
-            {
-                return;
-            }
-
-            s_testCallbacksReregistrationChecked = true;
-
             if (!testResultStore.IsPending)
             {
                 return;
@@ -473,7 +461,7 @@ namespace UniCortex.Editor
 
             // After a domain reload the TaskCompletionSource used by TestRunnerAdapter
             // no longer exists, so there is no way to complete the HTTP response.
-            // Register SessionStoreTestCallbacks directly (without the TestCallbacks wrapper)
+            // Register SessionStoreTestCallbacks without a completion callback
             // so that test results are still persisted to SessionState via TestResultStore.
             var api = ScriptableObject.CreateInstance<TestRunnerApi>();
             api.RegisterCallbacks(new SessionStoreTestCallbacks(testResultStore, api));
