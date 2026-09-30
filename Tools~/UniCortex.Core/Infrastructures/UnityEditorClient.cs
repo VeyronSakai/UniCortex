@@ -16,9 +16,10 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
 
     /// <summary>
     /// POST with optional JSON body, return the response deserialized as <typeparamref name="TRes"/>.
+    /// Pass <paramref name="resendAfterDisconnect"/> = false for requests that must not be sent twice.
     /// </summary>
     public async ValueTask<TRes> PostAsync<TReq, TRes>(string route, TReq? request = null,
-        CancellationToken cancellationToken = default) where TReq : class
+        CancellationToken cancellationToken = default, bool resendAfterDisconnect = true) where TReq : class
     {
         var baseUrl = BaseUrl;
         await WaitForServerAsync(cancellationToken);
@@ -29,7 +30,9 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
                 Encoding.UTF8,
                 MediaTypeNames.Application.Json)
             : null;
-        using var response = await _httpClient.PostAsync($"{baseUrl}{route}", content, cancellationToken);
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}{route}") { Content = content };
+        httpRequest.Options.Set(HttpRequestHandler.ResendAfterDisconnectKey, resendAfterDisconnect);
+        using var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);

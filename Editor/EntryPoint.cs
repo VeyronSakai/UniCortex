@@ -1,3 +1,4 @@
+using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Handlers.AnimationClip;
 using UniCortex.Editor.Handlers.Asset;
 using UniCortex.Editor.Handlers.Component;
@@ -30,6 +31,9 @@ namespace UniCortex.Editor
     {
         private const string PortKey = "UniCortex.Port";
 
+        private const string TestResultJsonKey = "UniCortex.TestResultJson";
+        private const string TestPendingResultsJsonKey = "UniCortex.TestPendingResultsJson";
+
         private static MainThreadDispatcher s_dispatcher;
         private static HttpListenerServer s_server;
 
@@ -48,8 +52,6 @@ namespace UniCortex.Editor
 
             s_dispatcher = new MainThreadDispatcher();
             EditorApplication.update += s_dispatcher.OnUpdate;
-
-            ReregisterTestCallbacksIfNeeded();
 
             StartServer();
         }
@@ -81,6 +83,9 @@ namespace UniCortex.Editor
 
         private static void RegisterHandlers(RequestRouter router)
         {
+            var testResultStore = new TestResultStore(TestResultJsonKey, TestPendingResultsJsonKey);
+            RegisterTestCallbacks(testResultStore);
+
             var editorApplication = new EditorApplicationAdapter();
             var compilationPipeline = new CompilationPipelineAdapter();
 
@@ -118,10 +123,10 @@ namespace UniCortex.Editor
             var redoUseCase = new RedoUseCase(s_dispatcher, undoAdapter);
             var redoHandler = new RedoHandler(redoUseCase);
 
-            var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher);
+            var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher, testResultStore);
             var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, s_dispatcher, editorApplication);
             var runTestsHandler = new RunTestsHandler(runTestsUseCase);
-            var testResultHandler = new TestResultHandler(s_dispatcher);
+            var testResultHandler = new TestResultHandler(s_dispatcher, testResultStore);
 
             var consoleLogCollector = new ConsoleLogCollector();
 
@@ -445,20 +450,14 @@ namespace UniCortex.Editor
             ServerUrlFile.Delete();
         }
 
-        private static void ReregisterTestCallbacksIfNeeded()
+        // Registers the callbacks that record the results of runs started through POST /tests/run.
+        // Registered callbacks are discarded by a domain reload, so this runs in every domain, including the one
+        // that continues a run after a reload. Must be called only once per domain (it is reached only from the static
+        // constructor via StartServer); a second call would register another set of callbacks and record every result twice.
+        private static void RegisterTestCallbacks(ITestResultStore testResultStore)
         {
-            if (!TestResultStore.IsPending)
-            {
-                return;
-            }
-
-            // After a domain reload the TaskCompletionSource used by TestRunnerAdapter
-            // no longer exists, so there is no way to complete the HTTP response.
-            // Register SessionStoreTestCallbacks directly (without the TestCallbacks wrapper)
-            // so that test results are still persisted to SessionState via TestResultStore.
             var api = ScriptableObject.CreateInstance<TestRunnerApi>();
-            api.RegisterCallbacks(new SessionStoreTestCallbacks(api));
-            Debug.Log("[UniCortex] Re-registered test callbacks after domain reload");
+            api.RegisterCallbacks(new SessionStoreTestCallbacks(testResultStore));
         }
 
         private static void Shutdown()

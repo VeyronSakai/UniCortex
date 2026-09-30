@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -8,23 +7,15 @@ namespace UniCortex.Editor.Tests.TestDoubles
 {
     internal sealed class SpyTestRunner : ITestRunner
     {
-        public int RunTestsCallCount { get; private set; }
+        public int StartCallCount { get; private set; }
         public RunTestsRequest LastRequest { get; private set; }
         public string LastTestMode => LastRequest?.testMode;
 
-        private readonly IReadOnlyList<TestResultItem> _results;
-
-        public SpyTestRunner(IReadOnlyList<TestResultItem> results = null)
+        public Task StartAsync(RunTestsRequest request, CancellationToken cancellationToken)
         {
-            _results = results ?? new List<TestResultItem>();
-        }
-
-        public Task<IReadOnlyList<TestResultItem>> RunTestsAsync(RunTestsRequest request,
-            CancellationToken cancellationToken)
-        {
-            RunTestsCallCount++;
+            StartCallCount++;
             LastRequest = request;
-            return Task.FromResult(_results);
+            return Task.CompletedTask;
         }
     }
 }

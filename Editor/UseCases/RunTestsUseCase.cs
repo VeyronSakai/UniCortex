@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Exceptions;
@@ -22,8 +20,8 @@ namespace UniCortex.Editor.UseCases
             _editorApplication = editorApplication;
         }
 
-        public async Task<RunTestsResponse> ExecuteAsync(RunTestsRequest request,
-            CancellationToken cancellationToken)
+        // Starts the run and returns once it has started; the results are obtained from GET /tests/result.
+        public async Task ExecuteAsync(RunTestsRequest request, CancellationToken cancellationToken)
         {
             await _dispatcher.RunOnMainThreadAsync(() =>
             {
@@ -33,19 +31,7 @@ namespace UniCortex.Editor.UseCases
                 }
             }, cancellationToken);
 
-            var items = await _testRunner.RunTestsAsync(request, cancellationToken);
-
-            var passed = items.Count(i => i.Status == TestStatuses.Passed);
-            var failed = items.Count(i => i.Status == TestStatuses.Failed);
-            var skipped = items.Count(i => i.Status != TestStatuses.Passed && i.Status != TestStatuses.Failed);
-
-            var results = new List<TestResultEntry>(items.Count);
-            foreach (var item in items)
-            {
-                results.Add(new TestResultEntry(item.Name, item.Status, item.Duration, item.Message));
-            }
-
-            return new RunTestsResponse(passed, failed, skipped, results);
+            await _testRunner.StartAsync(request, cancellationToken);
         }
     }
 }

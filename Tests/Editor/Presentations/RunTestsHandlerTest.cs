@@ -14,12 +14,9 @@ namespace UniCortex.Editor.Tests.Presentations
     internal sealed class RunTestsHandlerTest
     {
         [Test]
-        public void HandleRunTests_Returns200WithTestResults()
+        public void HandleRunTests_Returns202_WhenRunStarted()
         {
-            var spy = new SpyTestRunner(new List<TestResultItem>
-            {
-                new("Test1", TestStatuses.Passed, 0.1f), new("Test2", TestStatuses.Failed, 0.2f, "error"),
-            });
+            var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
             var dispatcher = new FakeMainThreadDispatcher();
             var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
@@ -33,9 +30,9 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            StringAssert.Contains("\"passed\":1", context.ResponseBody);
-            StringAssert.Contains("\"failed\":1", context.ResponseBody);
+            Assert.AreEqual(HttpStatusCodes.Accepted, context.ResponseStatusCode);
+            StringAssert.Contains("\"success\":true", context.ResponseBody);
+            Assert.AreEqual(1, spy.StartCallCount);
             Assert.AreEqual(TestModes.EditMode, spy.LastTestMode);
         }
 
@@ -55,7 +52,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Accepted, context.ResponseStatusCode);
             Assert.AreEqual(TestModes.EditMode, spy.LastTestMode);
         }
 
@@ -75,7 +72,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Accepted, context.ResponseStatusCode);
             Assert.AreEqual(TestModes.EditMode, spy.LastTestMode);
         }
 
@@ -98,7 +95,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(HttpStatusCodes.Accepted, context.ResponseStatusCode);
             Assert.AreEqual(new List<string> { "TestA", "TestB" }, spy.LastRequest.testNames);
             Assert.AreEqual(new List<string> { "Smoke" }, spy.LastRequest.categoryNames);
             Assert.AreEqual(0, spy.LastRequest.groupNames?.Count ?? 0);
@@ -124,7 +121,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("Cannot run tests during play mode", context.ResponseBody);
-            Assert.AreEqual(0, spy.RunTestsCallCount);
+            Assert.AreEqual(0, spy.StartCallCount);
         }
     }
 }
