@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Infrastructures
                     $"Asset path must be under 'Assets/' (got '{assetPath}').");
             }
 
-            EnsureFolderExists(normalized.Substring(0, separatorIndex), assetPath);
+            EnsureFolderExists(normalized[..separatorIndex], assetPath);
         }
 
         private static void EnsureFolderExists(string folderPath, string assetPath)
@@ -39,8 +39,8 @@ namespace UniCortex.Editor.Infrastructures
                     $"Asset path must be under 'Assets/' (got '{assetPath}').");
             }
 
-            var parentPath = folderPath.Substring(0, separatorIndex);
-            var folderName = folderPath.Substring(separatorIndex + 1);
+            var parentPath = folderPath[..separatorIndex];
+            var folderName = folderPath[(separatorIndex + 1)..];
             if (string.IsNullOrEmpty(folderName))
             {
                 throw new ArgumentException($"Asset path contains an empty folder name (got '{assetPath}').");
