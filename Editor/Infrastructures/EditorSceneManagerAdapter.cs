@@ -10,11 +10,17 @@ namespace UniCortex.Editor.Infrastructures
     {
         public bool CreateScene(string scenePath)
         {
+            AssetUtility.EnsureParentFolderExists(scenePath);
             SaveIfDirty();
             var scene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
                 UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
                 UnityEditor.SceneManagement.NewSceneMode.Single);
-            return UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, scenePath);
+            if (!UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, scenePath))
+            {
+                throw new System.ArgumentException($"Failed to save scene at '{scenePath}'.");
+            }
+
+            return true;
         }
 
         public void OpenScene(string scenePath)

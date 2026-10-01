@@ -25,7 +25,7 @@ namespace UniCortex.Editor.Infrastructures
                     $"Failed to create instance of ScriptableObject type '{typeName}'.");
             }
 
-            AssetDatabase.CreateAsset(asset, assetPath);
+            AssetUtility.CreateAsset(asset, assetPath);
             Undo.RegisterCreatedObjectUndo(asset, $"Create {type.Name}");
             AssetDatabase.SaveAssets();
 

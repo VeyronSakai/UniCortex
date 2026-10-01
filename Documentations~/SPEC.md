@@ -117,6 +117,7 @@ On error: an HTTP status code plus `{"error": "message"}`.
 If the server is stopped while handling a request (e.g. by a domain reload), it answers `503 Service Unavailable`. The request has not been run in that case: requests and the server stop both run on the main thread, and the server waits (up to 10 seconds) for the response of a request that has run to be written before it closes.
 The client resends a request until the server answers: on a refused connection, a 503, a dropped connection or an empty response.
 All scene-mutating operations support Undo.
+Endpoints that save a new asset at a given path (`/scene/create`, `/scriptable-object/create`, `/animation-clip/create`, `/prefab/create`, `/timeline/create`) create any missing parent folders under `Assets/` first. A path outside `Assets/` or an asset that still cannot be saved returns `400 Bad Request` with the reason.
 
 ### Editor Control
 
