@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    internal static class AssetFolderUtility
+    internal static class AssetUtility
     {
         // Creates every missing folder between the project root and the asset, one level at a time,
         // because AssetDatabase.CreateAsset and friends fail when the parent folder does not exist.

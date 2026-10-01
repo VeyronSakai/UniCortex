@@ -17,7 +17,7 @@ namespace UniCortex.Editor.Infrastructures
                 throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
             }
 
-            AssetFolderUtility.EnsureParentFolderExists(assetPath);
+            AssetUtility.EnsureParentFolderExists(assetPath);
 
             if (PrefabUtility.SaveAsPrefabAsset(go, assetPath) == null)
             {

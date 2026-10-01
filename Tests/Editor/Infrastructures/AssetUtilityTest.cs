@@ -7,9 +7,9 @@ using UnityEngine;
 namespace UniCortex.Editor.Tests.Infrastructures
 {
     [TestFixture]
-    internal sealed class AssetFolderUtilityTest
+    internal sealed class AssetUtilityTest
     {
-        private const string RootFolder = "Assets/AssetFolderUtilityTest";
+        private const string RootFolder = "Assets/AssetUtilityTest";
 
         [TearDown]
         public void TearDown()
@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             const string assetPath = RootFolder + "/Nested/Deep/Foo.anim";
 
             // Act
-            AssetFolderUtility.EnsureParentFolderExists(assetPath);
+            AssetUtility.EnsureParentFolderExists(assetPath);
 
             // Assert
             Assert.IsTrue(AssetDatabase.IsValidFolder(RootFolder + "/Nested/Deep"));
@@ -34,16 +34,16 @@ namespace UniCortex.Editor.Tests.Infrastructures
         public void EnsureParentFolderExists_DoesNothing_WhenParentIsAssets()
         {
             // Act & Assert
-            Assert.DoesNotThrow(() => AssetFolderUtility.EnsureParentFolderExists("Assets/Foo.anim"));
+            Assert.DoesNotThrow(() => AssetUtility.EnsureParentFolderExists("Assets/Foo.anim"));
         }
 
         [Test]
         public void EnsureParentFolderExists_Throws_WhenPathIsNotUnderAssets()
         {
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => AssetFolderUtility.EnsureParentFolderExists("Foo.anim"));
+            Assert.Throws<ArgumentException>(() => AssetUtility.EnsureParentFolderExists("Foo.anim"));
             Assert.Throws<ArgumentException>(() =>
-                AssetFolderUtility.EnsureParentFolderExists("NotAssets/Sub/Foo.anim"));
+                AssetUtility.EnsureParentFolderExists("NotAssets/Sub/Foo.anim"));
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             var asset = new AnimationClip();
 
             // Act
-            AssetFolderUtility.CreateAsset(asset, assetPath);
+            AssetUtility.CreateAsset(asset, assetPath);
 
             // Assert
             Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<AnimationClip>(assetPath));

@@ -10,7 +10,7 @@ namespace UniCortex.Editor.Infrastructures
     {
         public bool CreateScene(string scenePath)
         {
-            AssetFolderUtility.EnsureParentFolderExists(scenePath);
+            AssetUtility.EnsureParentFolderExists(scenePath);
             SaveIfDirty();
             var scene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
                 UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
