@@ -584,7 +584,9 @@ graph LR
 
 - [`Documentations~/SPEC.md`](Documentations~/SPEC.md) — Full API endpoint and MCP tool definitions
 
-## Contributing
+## Development
+
+- Do not edit `README.md` directly. Make README documentation changes in `.github/DRAFT_README.md` instead.
 
 When developing this package locally:
 
