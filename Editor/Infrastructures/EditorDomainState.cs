@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using UniCortex.Editor.Domains.Interfaces;
 using UnityEditor.Compilation;
 
@@ -7,15 +6,14 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class EditorDomainState : IEditorDomainState
     {
-        private int _failedCompilationCount;
-
         // Only touched by the compilation events, which run on the main thread.
         private bool _hasCompileErrors;
 
         public string DomainId { get; } = Guid.NewGuid().ToString("N");
 
-        // Read from the HTTP server threads.
-        public int FailedCompilationCount => Volatile.Read(ref _failedCompilationCount);
+        // Written only on the main thread. The HTTP server threads read it on every ping, so a stale value is
+        // at worst seen until the next poll.
+        public int FailedCompilationCount { get; private set; }
 
         public EditorDomainState()
         {
@@ -32,6 +30,11 @@ namespace UniCortex.Editor.Infrastructures
 
         private void OnAssemblyCompilationFinished(string assemblyPath, CompilerMessage[] messages)
         {
+            if (_hasCompileErrors)
+            {
+                return;
+            }
+
             foreach (var message in messages)
             {
                 if (message.type == CompilerMessageType.Error)
@@ -46,7 +49,7 @@ namespace UniCortex.Editor.Infrastructures
         {
             if (_hasCompileErrors)
             {
-                Interlocked.Increment(ref _failedCompilationCount);
+                FailedCompilationCount++;
             }
         }
     }
