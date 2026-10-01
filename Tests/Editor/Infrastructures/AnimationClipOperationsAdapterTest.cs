@@ -56,6 +56,28 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
+        public void Create_CreatesParentFolders_WhenMissing()
+        {
+            // Arrange
+            const string folder = "Assets/AnimationClipOperationsAdapterTest";
+            const string assetPath = folder + "/Nested/Foo.anim";
+
+            try
+            {
+                // Act
+                var response = _adapter.Create(assetPath, false, 60f);
+
+                // Assert
+                Assert.IsTrue(response.success);
+                Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<AnimationClip>(assetPath));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(folder);
+            }
+        }
+
+        [Test]
         public void Create_Throws_WhenExtensionIsNotAnim()
         {
             // Arrange

@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Infrastructures
         public CreateTimelineResponse CreateTimeline(string assetPath)
         {
             var timelineAsset = ScriptableObject.CreateInstance<TimelineAsset>();
-            AssetDatabase.CreateAsset(timelineAsset, assetPath);
+            AssetFolderUtility.CreateAsset(timelineAsset, assetPath);
 
             return new CreateTimelineResponse(true, assetPath);
         }

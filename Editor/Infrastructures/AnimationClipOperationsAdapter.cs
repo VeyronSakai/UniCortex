@@ -17,7 +17,7 @@ namespace UniCortex.Editor.Infrastructures
             ValidateAnimPath(assetPath);
 
             var clip = new AnimationClip { frameRate = frameRate > 0f ? frameRate : DefaultFrameRate };
-            AssetDatabase.CreateAsset(clip, assetPath);
+            AssetFolderUtility.CreateAsset(clip, assetPath);
 
             var settings = AnimationUtility.GetAnimationClipSettings(clip);
             settings.loopTime = loop;
