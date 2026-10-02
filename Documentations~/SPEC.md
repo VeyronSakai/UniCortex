@@ -127,8 +127,11 @@ Server reachability check. **Logs `pong` to the Unity Console** and returns a re
 
 Response:
 ```json
-{"status": "ok", "message": "pong"}
+{"status": "ok", "message": "pong", "domainId": "3f2a...", "failedCompilationCount": 0}
 ```
+
+- `domainId`: Identifies the current domain. A new value is generated on every domain reload
+- `failedCompilationCount`: Number of script compilations in the current domain that ended with errors. Such compilations do not reload the domain
 
 #### GET `/editor/status`
 Returns the current state of the Editor. Also used for internal polling inside MCP tools.
@@ -157,6 +160,8 @@ Response: `{"success": true}`
 Requests a domain reload (script recompilation). `CompilationPipeline.RequestScriptCompilation()`
 
 Response: `{"success": true}`
+
+The response is written before the compilation starts, so the old domain may keep answering for a while. The client reads `domainId` and `failedCompilationCount` from `/editor/ping` before the request, then polls `/editor/ping` until `domainId` changes (the reload has completed) or `failedCompilationCount` increases (compilation failed and the domain was not reloaded).
 
 #### POST `/editor/undo`
 Undoes the most recent operation. `Undo.PerformUndo()`

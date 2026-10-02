@@ -7,6 +7,7 @@ public class EditorUseCase(IUnityEditorClient client)
 {
     private static readonly TimeSpan s_pollInterval = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan s_pollTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan s_domainReloadPollInterval = TimeSpan.FromMilliseconds(200);
 
     public async ValueTask<string> PingAsync(CancellationToken cancellationToken)
     {
@@ -114,19 +115,37 @@ public class EditorUseCase(IUnityEditorClient client)
         // If Unity is already auto-recompiling (e.g. after a .cs file change),
         // the server will be unavailable; this prevents a double RequestScriptCompilation() call
         // that can freeze Unity.
-        await client.WaitForServerAsync(cancellationToken);
+        var before = await GetPingAsync(cancellationToken);
 
         await client.PostAsync<DomainReloadRequest, DomainReloadResponse>(ApiRoutes.DomainReload,
             cancellationToken: cancellationToken);
 
-        // RequestScriptCompilation() is dispatched asynchronously on the Unity main thread.
-        // Wait briefly so that compilation starts and the server becomes unavailable
-        // before we begin polling /ping.
-        await Task.Delay(100, cancellationToken);
+        // RequestScriptCompilation() is dispatched asynchronously on the Unity main thread, so the server of the
+        // old domain may keep answering for a while. Wait until the domain ID changes instead of waiting for
+        // a fixed time. Requests sent while the domain is reloading are resent by HttpRequestHandler.
+        while (true)
+        {
+            await Task.Delay(s_domainReloadPollInterval, cancellationToken);
 
-        await client.WaitForServerAsync(cancellationToken);
+            var current = await GetPingAsync(cancellationToken);
+            if (current.domainId != before.domainId)
+            {
+                return "Domain reload completed successfully.";
+            }
 
-        return "Domain reload completed successfully.";
+            // A compilation with errors does not reload the domain, so the domain ID never changes.
+            if (current.failedCompilationCount != before.failedCompilationCount)
+            {
+                throw new InvalidOperationException(
+                    "Script compilation failed, so the domain was not reloaded. Check the compile errors in the Console.");
+            }
+        }
+    }
+
+    private async ValueTask<PingResponse> GetPingAsync(CancellationToken cancellationToken)
+    {
+        return await client.GetAsync<PingRequest, PingResponse>(ApiRoutes.Ping,
+            cancellationToken: cancellationToken);
     }
 
     private async ValueTask<bool> GetIsPlayingAsync(CancellationToken cancellationToken)
