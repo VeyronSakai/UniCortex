@@ -7,6 +7,8 @@ namespace UniCortex.Editor.Infrastructures
     internal sealed class EditorDomainState : IEditorDomainState
     {
         // Only touched by the compilation events, which run on the main thread.
+        // EditorUtility.scriptCompilationFailed cannot be used instead: it still holds the result of the previous
+        // compilation when compilationFinished is raised, so the first failed compilation would not be counted.
         private bool _hasCompileErrors;
 
         public string DomainId { get; } = Guid.NewGuid().ToString("N");
@@ -18,6 +20,9 @@ namespace UniCortex.Editor.Infrastructures
         public EditorDomainState()
         {
             // Event subscriptions are discarded by a domain reload, so they live as long as this domain.
+            // Compile errors are only reported per assembly (assemblyCompilationFinished), which is raised several
+            // times in one compilation. Counting there would count one failed compilation once per failing
+            // assembly, so errors are only recorded there and counted once in compilationFinished.
             CompilationPipeline.compilationStarted += OnCompilationStarted;
             CompilationPipeline.assemblyCompilationFinished += OnAssemblyCompilationFinished;
             CompilationPipeline.compilationFinished += OnCompilationFinished;
