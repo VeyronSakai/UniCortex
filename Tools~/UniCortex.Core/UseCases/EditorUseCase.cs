@@ -116,15 +116,14 @@ public class EditorUseCase(IUnityEditorClient client)
         // that can freeze Unity.
         await client.WaitForServerAsync(cancellationToken);
 
+        // The server responds when the compilation has finished: right before the domain reload starts,
+        // or with an error (thrown here) when the compilation failed and the domain is not reloaded.
         await client.PostAsync<DomainReloadRequest, DomainReloadResponse>(ApiRoutes.DomainReload,
             cancellationToken: cancellationToken);
 
-        // RequestScriptCompilation() is dispatched asynchronously on the Unity main thread.
-        // Wait briefly so that compilation starts and the server becomes unavailable
-        // before we begin polling /ping.
-        await Task.Delay(100, cancellationToken);
-
-        await client.WaitForServerAsync(cancellationToken);
+        // /editor/status runs on the main thread, which is busy with the reload until the old server has stopped,
+        // so it is answered by the server of the new domain. Requests sent meanwhile are resent by HttpRequestHandler.
+        await GetStatusAsync(cancellationToken);
 
         return "Domain reload completed successfully.";
     }
