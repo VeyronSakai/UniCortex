@@ -78,7 +78,7 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
          "Specify the position either with x and y, or with instanceId to send the event to the center of a UI element; " +
          "exactly one of them is required. " +
          "With a target, the event still goes through the EventSystem raycast like a real tap, " +
-         "so a target covered by other UI does not receive it; the result warns when the target is covered. " +
+         "so a target covered by other UI does not receive it. " +
          "Requires the Input System package to be installed (and com.unity.ugui for a target). " +
          "Does NOT work with legacy UnityEngine.Input.GetMouseButton()."),
      UsedImplicitly]

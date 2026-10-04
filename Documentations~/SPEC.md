@@ -934,10 +934,9 @@ Request body (UI target):
 
 With a target, the event still goes through the Input System and the EventSystem raycast like a real tap. `onClick.Invoke()` is intentionally not called, so a target covered by other UI does not receive the event.
 
-Response: `{"success": true, "x": 100.0, "y": 200.0, "blocked": false}`
+Response: `{"success": true, "x": 100.0, "y": 200.0}`
 
 - `x`, `y`: the position the event was sent to
-- `blocked`: only set with a target. `true` when the topmost EventSystem raycast hit at the target's center is neither the target nor its child (covered by other UI or off-screen). The event is still sent
 
 #### GET `/input/pointer-targets`
 Lists the uGUI objects in the Game View that can be pressed now, so that an agent can find targets for `POST /input/mouse`. Play mode only. Requires the uGUI package (`com.unity.ugui`) and an active `EventSystem`.

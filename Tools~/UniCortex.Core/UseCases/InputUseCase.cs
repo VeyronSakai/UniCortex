@@ -40,12 +40,7 @@ public class InputUseCase(IUnityEditorClient client)
             return $"Mouse event sent: ({response.x}, {response.y}) button={button} ({eventType})";
         }
 
-        var message =
-            $"Mouse event sent to instanceId {instanceId} at ({response.x}, {response.y}) button={button} ({eventType})";
-        return response.blocked
-            ? $"{message}. Warning: the target is covered by other UI or off-screen at its center, " +
-              "so it may not receive the event."
-            : message;
+        return $"Mouse event sent to instanceId {instanceId} at ({response.x}, {response.y}) button={button} ({eventType})";
     }
 
     public async ValueTask<string> GetPointerTargetsAsync(CancellationToken cancellationToken)

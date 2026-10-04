@@ -34,10 +34,10 @@ namespace UniCortex.Editor.UseCases
             var task = await _dispatcher.RunOnMainThreadAsync(
                 () => _pointerTargetOperations.GetTargetCenterAsync(instanceId, cancellationToken),
                 cancellationToken);
-            var (x, y, blocked) = await task;
+            var (x, y) = await task;
 
             await SendAsync(x, y, button, eventType, cancellationToken);
-            return new SendMouseEventResponse(true, x, y, blocked);
+            return new SendMouseEventResponse(true, x, y);
         }
 
         private async Task SendAsync(float x, float y, string button, string eventType,

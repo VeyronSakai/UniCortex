@@ -356,7 +356,7 @@ public class InputUseCaseTest
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
             // Act
-            var message = await _fixture.InputUseCase.SendMouseEventAsync(null, null, bottomRight.instanceId,
+            await _fixture.InputUseCase.SendMouseEventAsync(null, null, bottomRight.instanceId,
                 MouseButton.Left, InputEventType.Click, CancellationToken.None);
             await Task.Delay(500);
 
@@ -364,7 +364,6 @@ public class InputUseCaseTest
             var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
                 cancellationToken: CancellationToken.None);
             Assert.That(logs, Does.Contain("[ButtonClickDebug] Button clicked: BottomRightButton"));
-            Assert.That(message, Does.Not.Contain("Warning"));
         }
         finally
         {
@@ -373,7 +372,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask SendMouseEvent_InPlayMode_WarnsAndDoesNotClick_WhenTargetIsCovered()
+    public async ValueTask SendMouseEvent_InPlayMode_DoesNotClick_WhenTargetIsCovered()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -386,12 +385,11 @@ public class InputUseCaseTest
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
             // Act
-            var message = await _fixture.InputUseCase.SendMouseEventAsync(null, null, testButton.instanceId,
+            await _fixture.InputUseCase.SendMouseEventAsync(null, null, testButton.instanceId,
                 MouseButton.Left, InputEventType.Click, CancellationToken.None);
             await Task.Delay(500);
 
             // Assert
-            Assert.That(message, Does.Contain("Warning"));
             var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
                 cancellationToken: CancellationToken.None);
             Assert.That(logs, Does.Not.Contain("[ButtonClickDebug] Button clicked"));

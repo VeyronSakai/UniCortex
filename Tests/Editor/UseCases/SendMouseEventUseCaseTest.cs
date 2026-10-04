@@ -31,7 +31,6 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.IsTrue(response.success);
             Assert.AreEqual(100f, response.x);
             Assert.AreEqual(200f, response.y);
-            Assert.IsFalse(response.blocked);
         }
 
         [Test]
@@ -67,7 +66,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var pointerTargetOps = new SpyPointerTargetOperations { TargetCenterToReturn = (320f, 180f, false) };
+            var pointerTargetOps = new SpyPointerTargetOperations { TargetCenterToReturn = (320f, 180f) };
             var useCase = new SendMouseEventUseCase(dispatcher, ops, pointerTargetOps);
 
             // Act
@@ -84,7 +83,6 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(2, dispatcher.CallCount);
             Assert.AreEqual(320f, response.x);
             Assert.AreEqual(180f, response.y);
-            Assert.IsFalse(response.blocked);
         }
 
         [Test]
@@ -93,7 +91,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var pointerTargetOps = new SpyPointerTargetOperations { TargetCenterToReturn = (40f, 60f, false) };
+            var pointerTargetOps = new SpyPointerTargetOperations { TargetCenterToReturn = (40f, 60f) };
             var useCase = new SendMouseEventUseCase(dispatcher, ops, pointerTargetOps);
 
             // Act
@@ -108,24 +106,6 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(40f, ops.MouseEventHistory[1].X);
             Assert.AreEqual(60f, ops.MouseEventHistory[1].Y);
             Assert.AreEqual(InputEventType.Release, ops.MouseEventHistory[1].EventType);
-        }
-
-        [Test]
-        public void ExecuteAsync_WithBlockedTarget_StillSendsEvent_And_ReturnsBlocked()
-        {
-            // Arrange
-            var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyInputOperations();
-            var pointerTargetOps = new SpyPointerTargetOperations { TargetCenterToReturn = (10f, 20f, true) };
-            var useCase = new SendMouseEventUseCase(dispatcher, ops, pointerTargetOps);
-
-            // Act
-            var response = useCase.ExecuteAsync(100, MouseButton.Left, InputEventType.Click,
-                CancellationToken.None).GetAwaiter().GetResult();
-
-            // Assert
-            Assert.IsTrue(response.blocked);
-            Assert.AreEqual(2, ops.SendMouseEventCallCount);
         }
     }
 }

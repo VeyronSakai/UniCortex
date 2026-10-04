@@ -11,15 +11,11 @@ namespace UniCortex.Editor.Domains.Models
         public float x;
         public float y;
 
-        // Set only when a target is given: true when other UI covers the target at its center.
-        public bool blocked;
-
-        public SendMouseEventResponse(bool success, float x, float y, bool blocked = false)
+        public SendMouseEventResponse(bool success, float x, float y)
         {
             this.success = success;
             this.x = x;
             this.y = y;
-            this.blocked = blocked;
         }
     }
 }

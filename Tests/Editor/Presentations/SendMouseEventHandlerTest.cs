@@ -88,7 +88,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             // Arrange
             var (router, ops, pointerTargetOps) = CreateRouter();
-            pointerTargetOps.TargetCenterToReturn = (320f, 180f, false);
+            pointerTargetOps.TargetCenterToReturn = (320f, 180f);
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
                 "{\"instanceId\":12345}");
 
@@ -103,26 +103,6 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(180f, ops.LastMouseY);
             StringAssert.Contains("\"x\":320.0", context.ResponseBody);
             StringAssert.Contains("\"y\":180.0", context.ResponseBody);
-            StringAssert.Contains("\"blocked\":false", context.ResponseBody);
-        }
-
-        [Test]
-        public void Handle_Returns200_WithBlocked_WhenTargetIsCovered()
-        {
-            // Arrange
-            var (router, ops, pointerTargetOps) = CreateRouter();
-            pointerTargetOps.TargetCenterToReturn = (10f, 20f, true);
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
-                "{\"instanceId\":12345,\"eventType\":\"press\"}");
-
-            // Act
-            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
-
-            // Assert
-            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual(1, ops.SendMouseEventCallCount);
-            Assert.AreEqual(InputEventType.Press, ops.LastMouseEventType);
-            StringAssert.Contains("\"blocked\":true", context.ResponseBody);
         }
 
         [Test]

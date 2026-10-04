@@ -51,7 +51,7 @@ namespace UniCortex.Editor.Infrastructures
             return PlayerLoopRunner.RunAsync(GetPointerTargets, cancellationToken);
         }
 
-        public Task<(float x, float y, bool blocked)> GetTargetCenterAsync(int instanceId,
+        public Task<(float x, float y)> GetTargetCenterAsync(int instanceId,
             CancellationToken cancellationToken)
         {
             return PlayerLoopRunner.RunAsync(() => GetTargetCenter(instanceId), cancellationToken);
@@ -74,10 +74,8 @@ namespace UniCortex.Editor.Infrastructures
             return targets;
         }
 
-        private static (float x, float y, bool blocked) GetTargetCenter(int instanceId)
+        private static (float x, float y) GetTargetCenter(int instanceId)
         {
-            var eventSystem = GetEventSystem();
-
             var gameObject = FindByInstanceId(instanceId);
             if (!(gameObject.transform is RectTransform rectTransform) || GetCanvas(rectTransform) == null)
             {
@@ -86,8 +84,7 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var center = GetScreenCenter(rectTransform);
-            var blocked = !IsTopmostAt(gameObject, center, eventSystem, new List<RaycastResult>());
-            return (center.x, center.y, blocked);
+            return (center.x, center.y);
         }
 
         // Collects objects that can be pressed now: active, interactable, handling pointer events,

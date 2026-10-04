@@ -11,8 +11,8 @@ namespace UniCortex.Editor.Domains.Interfaces
     {
         Task<List<PointerTarget>> GetPointerTargetsAsync(CancellationToken cancellationToken);
 
-        // Returns the center of a UI object in Game View coordinates, and whether other UI covers it there.
-        Task<(float x, float y, bool blocked)> GetTargetCenterAsync(int instanceId,
+        // Returns the center of a UI object in Game View coordinates.
+        Task<(float x, float y)> GetTargetCenterAsync(int instanceId,
             CancellationToken cancellationToken);
     }
 }

@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
 
         public List<PointerTarget> PointerTargetsToReturn { get; set; } = new();
 
-        public (float x, float y, bool blocked) TargetCenterToReturn { get; set; }
+        public (float x, float y) TargetCenterToReturn { get; set; }
 
         public Exception ExceptionToThrow { get; set; }
 
@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
             return Task.FromResult(PointerTargetsToReturn);
         }
 
-        public Task<(float x, float y, bool blocked)> GetTargetCenterAsync(int instanceId,
+        public Task<(float x, float y)> GetTargetCenterAsync(int instanceId,
             CancellationToken cancellationToken)
         {
             GetTargetCenterCallCount++;
