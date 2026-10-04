@@ -34,9 +34,6 @@ namespace UniCortex.Editor
         private const string TestResultJsonKey = "UniCortex.TestResultJson";
         private const string TestPendingResultsJsonKey = "UniCortex.TestPendingResultsJson";
 
-        private static MainThreadDispatcher s_dispatcher;
-        private static HttpListenerServer s_server;
-
         static EntryPoint()
         {
             // AssetImportWorkerProcess runs in a separate process with its own SessionState,
@@ -47,18 +44,18 @@ namespace UniCortex.Editor
                 return;
             }
 
+            var dispatcher = new MainThreadDispatcher();
             var compilationPipeline = new CompilationPipelineAdapter();
 
-            AssemblyReloadEvents.beforeAssemblyReload += () => Shutdown(compilationPipeline);
+            var server = StartServer(dispatcher, compilationPipeline);
+
+            EditorApplication.update += dispatcher.OnUpdate;
+            AssemblyReloadEvents.beforeAssemblyReload += () => Shutdown(dispatcher, compilationPipeline, server);
             EditorApplication.quitting += OnQuit;
-
-            s_dispatcher = new MainThreadDispatcher();
-            EditorApplication.update += s_dispatcher.OnUpdate;
-
-            StartServer(compilationPipeline);
         }
 
-        private static void StartServer(CompilationPipelineAdapter compilationPipeline)
+        private static HttpListenerServer StartServer(IMainThreadDispatcher dispatcher,
+            ICompilationPipeline compilationPipeline)
         {
             var port = SessionState.GetInt(PortKey, 0);
             if (port == 0)
@@ -69,169 +66,172 @@ namespace UniCortex.Editor
 
             var router = new RequestRouter();
 
-            RegisterHandlers(router, compilationPipeline);
+            RegisterHandlers(router, dispatcher, compilationPipeline);
 
-            s_server = new HttpListenerServer(router, port);
+            var server = new HttpListenerServer(router, port);
             try
             {
-                s_server.Start();
+                server.Start();
                 ServerUrlFile.Write(port);
             }
             catch (System.Exception ex)
             {
                 Debug.LogError($"[UniCortex] Failed to start server on port {port}: {ex.Message}");
             }
+
+            return server;
         }
 
-        private static void RegisterHandlers(RequestRouter router, ICompilationPipeline compilationPipeline)
+        private static void RegisterHandlers(RequestRouter router, IMainThreadDispatcher dispatcher,
+            ICompilationPipeline compilationPipeline)
         {
             var testResultStore = new TestResultStore(TestResultJsonKey, TestPendingResultsJsonKey);
             RegisterTestCallbacks(testResultStore);
 
             var editorApplication = new EditorApplicationAdapter();
 
-            var pingUseCase = new PingUseCase(s_dispatcher);
+            var pingUseCase = new PingUseCase(dispatcher);
             var pingHandler = new PingHandler(pingUseCase);
 
             var sceneManagerAdapter = new EditorSceneManagerAdapter();
 
-            var playUseCase = new PlayUseCase(s_dispatcher, editorApplication);
+            var playUseCase = new PlayUseCase(dispatcher, editorApplication);
             var playHandler = new PlayHandler(playUseCase);
 
-            var stopUseCase = new StopUseCase(s_dispatcher, editorApplication);
+            var stopUseCase = new StopUseCase(dispatcher, editorApplication);
             var stopHandler = new StopHandler(stopUseCase);
 
-            var requestDomainReloadUseCase = new RequestDomainReloadUseCase(s_dispatcher, compilationPipeline,
+            var requestDomainReloadUseCase = new RequestDomainReloadUseCase(dispatcher, compilationPipeline,
                 editorApplication);
             var requestDomainReloadHandler = new DomainReloadHandler(requestDomainReloadUseCase);
 
-            var getEditorStatusUseCase = new GetEditorStatusUseCase(s_dispatcher, editorApplication);
+            var getEditorStatusUseCase = new GetEditorStatusUseCase(dispatcher, editorApplication);
             var editorStatusHandler = new EditorStatusHandler(getEditorStatusUseCase);
 
-            var pauseUseCase = new PauseUseCase(s_dispatcher, editorApplication);
+            var pauseUseCase = new PauseUseCase(dispatcher, editorApplication);
             var pauseHandler = new PauseHandler(pauseUseCase);
 
-            var unpauseUseCase = new UnpauseUseCase(s_dispatcher, editorApplication);
+            var unpauseUseCase = new UnpauseUseCase(dispatcher, editorApplication);
             var unpauseHandler = new UnpauseHandler(unpauseUseCase);
 
-            var stepUseCase = new StepUseCase(s_dispatcher, editorApplication);
+            var stepUseCase = new StepUseCase(dispatcher, editorApplication);
             var stepHandler = new StepHandler(stepUseCase);
 
             var undoAdapter = new UndoAdapter();
 
-            var undoUseCase = new UndoUseCase(s_dispatcher, undoAdapter);
+            var undoUseCase = new UndoUseCase(dispatcher, undoAdapter);
             var undoHandler = new UndoHandler(undoUseCase);
 
-            var redoUseCase = new RedoUseCase(s_dispatcher, undoAdapter);
+            var redoUseCase = new RedoUseCase(dispatcher, undoAdapter);
             var redoHandler = new RedoHandler(redoUseCase);
 
-            var testRunnerAdapter = new TestRunnerAdapter(s_dispatcher, testResultStore);
-            var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, s_dispatcher, editorApplication);
+            var testRunnerAdapter = new TestRunnerAdapter(dispatcher, testResultStore);
+            var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, dispatcher, editorApplication);
             var runTestsHandler = new RunTestsHandler(runTestsUseCase);
-            var testResultHandler = new TestResultHandler(s_dispatcher, testResultStore);
+            var testResultHandler = new TestResultHandler(dispatcher, testResultStore);
 
             var consoleLogCollector = new ConsoleLogCollector();
 
-            var getConsoleLogsUseCase = new GetConsoleLogsUseCase(s_dispatcher, consoleLogCollector);
+            var getConsoleLogsUseCase = new GetConsoleLogsUseCase(dispatcher, consoleLogCollector);
             var consoleLogsHandler = new ConsoleLogsHandler(getConsoleLogsUseCase);
 
-            var clearConsoleLogsUseCase = new ClearConsoleLogsUseCase(s_dispatcher, consoleLogCollector);
+            var clearConsoleLogsUseCase = new ClearConsoleLogsUseCase(dispatcher, consoleLogCollector);
             var consoleClearHandler = new ConsoleClearHandler(clearConsoleLogsUseCase);
 
-            var createSceneUseCase = new CreateSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
+            var createSceneUseCase = new CreateSceneUseCase(dispatcher, sceneManagerAdapter, editorApplication);
             var createSceneHandler = new CreateSceneHandler(createSceneUseCase);
 
-            var openSceneUseCase = new OpenSceneUseCase(s_dispatcher, sceneManagerAdapter, editorApplication);
+            var openSceneUseCase = new OpenSceneUseCase(dispatcher, sceneManagerAdapter, editorApplication);
             var openSceneHandler = new OpenSceneHandler(openSceneUseCase);
 
-            var saveUseCase = new SaveUseCase(s_dispatcher, editorApplication);
+            var saveUseCase = new SaveUseCase(dispatcher, editorApplication);
             var saveHandler = new Handlers.Editor.SaveHandler(saveUseCase);
 
-            var getHierarchyUseCase = new GetHierarchyUseCase(s_dispatcher, sceneManagerAdapter);
+            var getHierarchyUseCase = new GetHierarchyUseCase(dispatcher, sceneManagerAdapter);
             var hierarchyHandler = new HierarchyHandler(getHierarchyUseCase);
 
             var gameObjectOps = new GameObjectOperationsAdapter();
 
-            var getGameObjectsUseCase = new GetGameObjectsUseCase(s_dispatcher, gameObjectOps);
+            var getGameObjectsUseCase = new GetGameObjectsUseCase(dispatcher, gameObjectOps);
             var getGameObjectsHandler = new GetGameObjectsHandler(getGameObjectsUseCase);
 
-            var createGameObjectUseCase = new CreateGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var createGameObjectUseCase = new CreateGameObjectUseCase(dispatcher, gameObjectOps);
             var createGameObjectHandler = new CreateGameObjectHandler(createGameObjectUseCase);
 
-            var deleteGameObjectUseCase = new DeleteGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var deleteGameObjectUseCase = new DeleteGameObjectUseCase(dispatcher, gameObjectOps);
             var deleteGameObjectHandler = new DeleteGameObjectHandler(deleteGameObjectUseCase);
 
-            var modifyGameObjectUseCase = new ModifyGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var modifyGameObjectUseCase = new ModifyGameObjectUseCase(dispatcher, gameObjectOps);
             var modifyGameObjectHandler = new ModifyGameObjectHandler(modifyGameObjectUseCase);
 
-            var duplicateGameObjectUseCase = new DuplicateGameObjectUseCase(s_dispatcher, gameObjectOps);
+            var duplicateGameObjectUseCase = new DuplicateGameObjectUseCase(dispatcher, gameObjectOps);
             var duplicateGameObjectHandler = new DuplicateGameObjectHandler(duplicateGameObjectUseCase);
 
             var componentOps = new ComponentOperationsAdapter();
 
-            var addComponentUseCase = new AddComponentUseCase(s_dispatcher, componentOps);
+            var addComponentUseCase = new AddComponentUseCase(dispatcher, componentOps);
             var addComponentHandler = new AddComponentHandler(addComponentUseCase);
 
-            var removeComponentUseCase = new RemoveComponentUseCase(s_dispatcher, componentOps);
+            var removeComponentUseCase = new RemoveComponentUseCase(dispatcher, componentOps);
             var removeComponentHandler = new RemoveComponentHandler(removeComponentUseCase);
 
-            var getComponentPropertiesUseCase = new GetComponentPropertiesUseCase(s_dispatcher, componentOps);
+            var getComponentPropertiesUseCase = new GetComponentPropertiesUseCase(dispatcher, componentOps);
             var componentPropertiesHandler = new ComponentPropertiesHandler(getComponentPropertiesUseCase);
 
-            var setComponentPropertyUseCase = new SetComponentPropertyUseCase(s_dispatcher, componentOps);
+            var setComponentPropertyUseCase = new SetComponentPropertyUseCase(dispatcher, componentOps);
             var setComponentPropertyHandler = new SetComponentPropertyHandler(setComponentPropertyUseCase);
 
             var prefabOps = new PrefabOperationsAdapter();
 
-            var createPrefabUseCase = new CreatePrefabUseCase(s_dispatcher, prefabOps);
+            var createPrefabUseCase = new CreatePrefabUseCase(dispatcher, prefabOps);
             var createPrefabHandler = new CreatePrefabHandler(createPrefabUseCase);
 
-            var instantiatePrefabUseCase = new InstantiatePrefabUseCase(s_dispatcher, prefabOps);
+            var instantiatePrefabUseCase = new InstantiatePrefabUseCase(dispatcher, prefabOps);
             var instantiatePrefabHandler = new InstantiatePrefabHandler(instantiatePrefabUseCase);
 
-            var openPrefabUseCase = new OpenPrefabUseCase(s_dispatcher, prefabOps);
+            var openPrefabUseCase = new OpenPrefabUseCase(dispatcher, prefabOps);
             var openPrefabHandler = new OpenPrefabHandler(openPrefabUseCase);
 
-            var closePrefabUseCase = new ClosePrefabUseCase(s_dispatcher, prefabOps);
+            var closePrefabUseCase = new ClosePrefabUseCase(dispatcher, prefabOps);
             var closePrefabHandler = new ClosePrefabHandler(closePrefabUseCase);
 
             var scriptableObjectOps = new ScriptableObjectOperationsAdapter();
 
-            var createScriptableObjectUseCase = new CreateScriptableObjectUseCase(s_dispatcher, scriptableObjectOps);
+            var createScriptableObjectUseCase = new CreateScriptableObjectUseCase(dispatcher, scriptableObjectOps);
             var createScriptableObjectHandler = new CreateScriptableObjectHandler(createScriptableObjectUseCase);
 
             var getScriptableObjectPropertiesUseCase =
-                new GetScriptableObjectPropertiesUseCase(s_dispatcher, scriptableObjectOps);
+                new GetScriptableObjectPropertiesUseCase(dispatcher, scriptableObjectOps);
             var scriptableObjectPropertiesHandler =
                 new ScriptableObjectPropertiesHandler(getScriptableObjectPropertiesUseCase);
 
             var setScriptableObjectPropertyUseCase =
-                new SetScriptableObjectPropertyUseCase(s_dispatcher, scriptableObjectOps);
+                new SetScriptableObjectPropertyUseCase(dispatcher, scriptableObjectOps);
             var setScriptableObjectPropertyHandler =
                 new SetScriptableObjectPropertyHandler(setScriptableObjectPropertyUseCase);
 
             var animationClipOps = new AnimationClipOperationsAdapter();
 
-            var createAnimationClipUseCase = new CreateAnimationClipUseCase(s_dispatcher, animationClipOps);
+            var createAnimationClipUseCase = new CreateAnimationClipUseCase(dispatcher, animationClipOps);
             var createAnimationClipHandler = new CreateAnimationClipHandler(createAnimationClipUseCase);
 
-            var getAnimationCurvesUseCase = new GetAnimationCurvesUseCase(s_dispatcher, animationClipOps);
+            var getAnimationCurvesUseCase = new GetAnimationCurvesUseCase(dispatcher, animationClipOps);
             var animationCurvesHandler = new AnimationCurvesHandler(getAnimationCurvesUseCase);
 
-            var setAnimationCurveUseCase = new SetAnimationCurveUseCase(s_dispatcher, animationClipOps);
+            var setAnimationCurveUseCase = new SetAnimationCurveUseCase(dispatcher, animationClipOps);
             var setAnimationCurveHandler = new SetAnimationCurveHandler(setAnimationCurveUseCase);
 
-            var removeAnimationCurveUseCase = new RemoveAnimationCurveUseCase(s_dispatcher, animationClipOps);
+            var removeAnimationCurveUseCase = new RemoveAnimationCurveUseCase(dispatcher, animationClipOps);
             var removeAnimationCurveHandler = new RemoveAnimationCurveHandler(removeAnimationCurveUseCase);
 
 
             var assetDbOps = new AssetDatabaseOperationsAdapter();
             var projectWindowOps = new ProjectWindowOperationsAdapter();
 
-            var refreshAssetDatabaseUseCase = new RefreshAssetDatabaseUseCase(s_dispatcher, assetDbOps);
+            var refreshAssetDatabaseUseCase = new RefreshAssetDatabaseUseCase(dispatcher, assetDbOps);
             var assetRefreshHandler = new AssetDatabaseRefreshHandler(refreshAssetDatabaseUseCase);
 
-            var selectProjectWindowAssetUseCase = new SelectProjectWindowAssetUseCase(s_dispatcher, projectWindowOps);
+            var selectProjectWindowAssetUseCase = new SelectProjectWindowAssetUseCase(dispatcher, projectWindowOps);
             var selectProjectWindowAssetHandler =
                 new SelectProjectWindowAssetHandler(selectProjectWindowAssetUseCase);
 
@@ -239,37 +239,37 @@ namespace UniCortex.Editor
             var menuItemOps = new MenuItemOperationsAdapter();
             var captureOps = new CaptureOperationsAdapter();
 
-            var executeMenuItemUseCase = new ExecuteMenuItemUseCase(s_dispatcher, menuItemOps);
+            var executeMenuItemUseCase = new ExecuteMenuItemUseCase(dispatcher, menuItemOps);
             var executeMenuItemHandler = new ExecuteMenuItemHandler(executeMenuItemUseCase);
 
             var editorWindowOps = new EditorWindowOperationsAdapter();
 
             var captureGameViewUseCase =
-                new CaptureGameViewUseCase(s_dispatcher, editorApplication, editorWindowOps, captureOps);
+                new CaptureGameViewUseCase(dispatcher, editorApplication, editorWindowOps, captureOps);
             var captureGameViewHandler = new CaptureGameViewHandler(captureGameViewUseCase);
 
-            var captureSceneViewUseCase = new CaptureSceneViewUseCase(s_dispatcher, editorWindowOps, captureOps);
+            var captureSceneViewUseCase = new CaptureSceneViewUseCase(dispatcher, editorWindowOps, captureOps);
             var captureSceneViewHandler = new CaptureSceneViewHandler(captureSceneViewUseCase);
 
-            var focusSceneViewUseCase = new FocusSceneViewUseCase(s_dispatcher, editorWindowOps);
+            var focusSceneViewUseCase = new FocusSceneViewUseCase(dispatcher, editorWindowOps);
             var focusSceneViewHandler = new FocusSceneViewHandler(focusSceneViewUseCase);
 
-            var focusGameViewUseCase = new FocusGameViewUseCase(s_dispatcher, editorWindowOps);
+            var focusGameViewUseCase = new FocusGameViewUseCase(dispatcher, editorWindowOps);
             var focusGameViewHandler = new FocusGameViewHandler(focusGameViewUseCase);
 
-            var getGameViewSizeUseCase = new GetGameViewSizeUseCase(s_dispatcher, editorWindowOps);
+            var getGameViewSizeUseCase = new GetGameViewSizeUseCase(dispatcher, editorWindowOps);
             var getGameViewSizeHandler = new GetGameViewSizeHandler(getGameViewSizeUseCase);
 
-            var getGameViewSizeListUseCase = new GetGameViewSizeListUseCase(s_dispatcher, editorWindowOps);
+            var getGameViewSizeListUseCase = new GetGameViewSizeListUseCase(dispatcher, editorWindowOps);
             var getGameViewSizeListHandler = new GetGameViewSizeListHandler(getGameViewSizeListUseCase);
 
-            var setGameViewSizeUseCase = new SetGameViewSizeUseCase(s_dispatcher, editorWindowOps);
+            var setGameViewSizeUseCase = new SetGameViewSizeUseCase(dispatcher, editorWindowOps);
             var setGameViewSizeHandler = new SetGameViewSizeHandler(setGameViewSizeUseCase);
 
-            var getGameViewScaleUseCase = new GetGameViewScaleUseCase(s_dispatcher, editorWindowOps);
+            var getGameViewScaleUseCase = new GetGameViewScaleUseCase(dispatcher, editorWindowOps);
             var getGameViewScaleHandler = new GetGameViewScaleHandler(getGameViewScaleUseCase);
 
-            var setGameViewScaleUseCase = new SetGameViewScaleUseCase(s_dispatcher, editorWindowOps);
+            var setGameViewScaleUseCase = new SetGameViewScaleUseCase(dispatcher, editorWindowOps);
             var setGameViewScaleHandler = new SetGameViewScaleHandler(setGameViewScaleUseCase);
 
 #if UNICORTEX_RECORDER
@@ -280,19 +280,19 @@ namespace UniCortex.Editor
             var movieRecordingOps = new MovieRecordingNotSupportedAdapter();
 #endif
 
-            var addMovieRecorderUseCase = new AddMovieRecorderUseCase(s_dispatcher, movieRecordingOps);
+            var addMovieRecorderUseCase = new AddMovieRecorderUseCase(dispatcher, movieRecordingOps);
             var addMovieRecorderHandler = new AddMovieRecorderHandler(addMovieRecorderUseCase);
 
-            var getRecorderListUseCase = new GetRecorderListUseCase(s_dispatcher, allRecorderOps);
+            var getRecorderListUseCase = new GetRecorderListUseCase(dispatcher, allRecorderOps);
             var getRecorderListHandler = new GetRecorderListHandler(getRecorderListUseCase);
 
-            var removeMovieRecorderUseCase = new RemoveMovieRecorderUseCase(s_dispatcher, movieRecordingOps);
+            var removeMovieRecorderUseCase = new RemoveMovieRecorderUseCase(dispatcher, movieRecordingOps);
             var removeMovieRecorderHandler = new RemoveMovieRecorderHandler(removeMovieRecorderUseCase);
 
-            var startMovieRecordingUseCase = new StartMovieRecordingUseCase(s_dispatcher, movieRecordingOps);
+            var startMovieRecordingUseCase = new StartMovieRecordingUseCase(dispatcher, movieRecordingOps);
             var startMovieRecorderHandler = new StartMovieRecorderHandler(startMovieRecordingUseCase);
 
-            var stopMovieRecordingUseCase = new StopMovieRecordingUseCase(s_dispatcher, movieRecordingOps);
+            var stopMovieRecordingUseCase = new StopMovieRecordingUseCase(dispatcher, movieRecordingOps);
             var stopMovieRecorderHandler = new StopMovieRecorderHandler(stopMovieRecordingUseCase);
 
 #if UNICORTEX_INPUT_SYSTEM
@@ -301,59 +301,59 @@ namespace UniCortex.Editor
             var inputSimOps = new InputNotSupportedAdapter();
 #endif
 
-            var sendKeyEventUseCase = new SendKeyEventUseCase(s_dispatcher, inputSimOps);
+            var sendKeyEventUseCase = new SendKeyEventUseCase(dispatcher, inputSimOps);
             var sendKeyEventHandler = new SendKeyEventHandler(sendKeyEventUseCase);
 
-            var sendMouseEventUseCase = new SendMouseEventUseCase(s_dispatcher, inputSimOps);
+            var sendMouseEventUseCase = new SendMouseEventUseCase(dispatcher, inputSimOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
 
             var timelineOps = new TimelineOperationsAdapter();
 
-            var createTimelineUseCase = new CreateTimelineUseCase(s_dispatcher, timelineOps);
+            var createTimelineUseCase = new CreateTimelineUseCase(dispatcher, timelineOps);
             var createTimelineHandler = new CreateTimelineHandler(createTimelineUseCase);
 
-            var addTimelineTrackUseCase = new AddTimelineTrackUseCase(s_dispatcher, timelineOps);
+            var addTimelineTrackUseCase = new AddTimelineTrackUseCase(dispatcher, timelineOps);
             var addTimelineTrackHandler = new AddTimelineTrackHandler(addTimelineTrackUseCase);
 
-            var removeTimelineTrackUseCase = new RemoveTimelineTrackUseCase(s_dispatcher, timelineOps);
+            var removeTimelineTrackUseCase = new RemoveTimelineTrackUseCase(dispatcher, timelineOps);
             var removeTimelineTrackHandler = new RemoveTimelineTrackHandler(removeTimelineTrackUseCase);
 
-            var bindTimelineTrackUseCase = new BindTimelineTrackUseCase(s_dispatcher, timelineOps);
+            var bindTimelineTrackUseCase = new BindTimelineTrackUseCase(dispatcher, timelineOps);
             var bindTimelineTrackHandler = new BindTimelineTrackHandler(bindTimelineTrackUseCase);
 
-            var addTimelineClipUseCase = new AddTimelineClipUseCase(s_dispatcher, timelineOps);
+            var addTimelineClipUseCase = new AddTimelineClipUseCase(dispatcher, timelineOps);
             var addTimelineClipHandler = new AddTimelineClipHandler(addTimelineClipUseCase);
 
-            var removeTimelineClipUseCase = new RemoveTimelineClipUseCase(s_dispatcher, timelineOps);
+            var removeTimelineClipUseCase = new RemoveTimelineClipUseCase(dispatcher, timelineOps);
             var removeTimelineClipHandler = new RemoveTimelineClipHandler(removeTimelineClipUseCase);
 
-            var getTimelineTracksUseCase = new GetTimelineTracksUseCase(s_dispatcher, timelineOps);
+            var getTimelineTracksUseCase = new GetTimelineTracksUseCase(dispatcher, timelineOps);
             var getTimelineTracksHandler = new GetTimelineTracksHandler(getTimelineTracksUseCase);
 
-            var getTimelineTrackPropertiesUseCase = new GetTimelineTrackPropertiesUseCase(s_dispatcher, timelineOps);
+            var getTimelineTrackPropertiesUseCase = new GetTimelineTrackPropertiesUseCase(dispatcher, timelineOps);
             var getTimelineTrackPropertiesHandler = new GetTimelineTrackPropertiesHandler(getTimelineTrackPropertiesUseCase);
 
-            var getTimelineClipPropertiesUseCase = new GetTimelineClipPropertiesUseCase(s_dispatcher, timelineOps);
+            var getTimelineClipPropertiesUseCase = new GetTimelineClipPropertiesUseCase(dispatcher, timelineOps);
             var getTimelineClipPropertiesHandler = new GetTimelineClipPropertiesHandler(getTimelineClipPropertiesUseCase);
 
-            var modifyTimelineClipUseCase = new ModifyTimelineClipUseCase(s_dispatcher, timelineOps);
+            var modifyTimelineClipUseCase = new ModifyTimelineClipUseCase(dispatcher, timelineOps);
             var modifyTimelineClipHandler = new ModifyTimelineClipHandler(modifyTimelineClipUseCase);
 
             var setTimelineClipPropertyUseCase =
-                new SetTimelineClipPropertyUseCase(s_dispatcher, timelineOps);
+                new SetTimelineClipPropertyUseCase(dispatcher, timelineOps);
             var setTimelineClipPropertyHandler =
                 new SetTimelineClipPropertyHandler(setTimelineClipPropertyUseCase);
 
-            var setTimelineTrackPropertyUseCase = new SetTimelineTrackPropertyUseCase(s_dispatcher, timelineOps);
+            var setTimelineTrackPropertyUseCase = new SetTimelineTrackPropertyUseCase(dispatcher, timelineOps);
             var setTimelineTrackPropertyHandler = new SetTimelineTrackPropertyHandler(setTimelineTrackPropertyUseCase);
 
-            var playTimelineUseCase = new PlayTimelineUseCase(s_dispatcher, timelineOps);
+            var playTimelineUseCase = new PlayTimelineUseCase(dispatcher, timelineOps);
             var playTimelineHandler = new PlayTimelineHandler(playTimelineUseCase);
 
-            var stopTimelineUseCase = new StopTimelineUseCase(s_dispatcher, timelineOps);
+            var stopTimelineUseCase = new StopTimelineUseCase(dispatcher, timelineOps);
             var stopTimelineHandler = new StopTimelineHandler(stopTimelineUseCase);
 
-            var evaluateTimelineUseCase = new EvaluateTimelineUseCase(s_dispatcher, timelineOps);
+            var evaluateTimelineUseCase = new EvaluateTimelineUseCase(dispatcher, timelineOps);
             var evaluateTimelineHandler = new EvaluateTimelineHandler(evaluateTimelineUseCase);
 
             pingHandler.Register(router);
@@ -432,7 +432,7 @@ namespace UniCortex.Editor
 
             var extensionRegistry = new ExtensionRegistry();
             var extensionListHandler = new ExtensionListHandler(extensionRegistry);
-            var extensionExecuteHandler = new ExtensionExecuteHandler(extensionRegistry, s_dispatcher);
+            var extensionExecuteHandler = new ExtensionExecuteHandler(extensionRegistry, dispatcher);
             extensionListHandler.Register(router);
             extensionExecuteHandler.Register(router);
         }
@@ -462,21 +462,17 @@ namespace UniCortex.Editor
             api.RegisterCallbacks(new SessionStoreTestCallbacks(testResultStore));
         }
 
-        private static void Shutdown(CompilationPipelineAdapter compilationPipeline)
+        private static void Shutdown(MainThreadDispatcher dispatcher, CompilationPipelineAdapter compilationPipeline,
+            HttpListenerServer server)
         {
             // Must run before the server stops: it lets a pending POST /editor/domain-reload request respond.
             // Stopping first would cancel the request with a 503, and the client would resend it and reload
             // the domain once more. The server waits for that response to be written before it closes.
             compilationPipeline.NotifyBeforeAssemblyReload();
 
-            s_server?.Stop();
-            s_server = null;
+            server.Stop();
 
-            if (s_dispatcher != null)
-            {
-                EditorApplication.update -= s_dispatcher.OnUpdate;
-                s_dispatcher = null;
-            }
+            EditorApplication.update -= dispatcher.OnUpdate;
         }
     }
 }
