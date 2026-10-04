@@ -111,5 +111,5 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
      UsedImplicitly]
     public ValueTask<CallToolResult> GetPointerTargetsAsync(CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => inputUseCase.GetPointerTargetsAsync(ct), cancellationToken);
+            inputUseCase.GetPointerTargetsAsync, cancellationToken);
 }
