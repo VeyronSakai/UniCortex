@@ -6,9 +6,9 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class CompilationPipelineAdapter : ICompilationPipeline
     {
-        // All members run on the main thread: RequestScriptCompilation is called through the dispatcher,
-        // and the compilation events and NotifyBeforeAssemblyReload are raised there.
-        private TaskCompletionSource<bool> _pendingCompilation;
+        // All members run on the main thread: RequestScriptCompilationAsync is called through the dispatcher,
+        // the compilation events are raised there, and NotifyBeforeAssemblyReload is called from beforeAssemblyReload.
+        private TaskCompletionSource<bool> _pendingCompilationSource;
         private bool _hasCompileErrors;
 
         public CompilationPipelineAdapter()
@@ -23,13 +23,14 @@ namespace UniCortex.Editor.Infrastructures
             CompilationPipeline.compilationFinished += OnCompilationFinished;
         }
 
-        public Task<bool> RequestScriptCompilation()
+        public Task<bool> RequestScriptCompilationAsync()
         {
             // RunContinuationsAsynchronously: the continuation writes the HTTP response, which must not run
             // synchronously on the main thread inside the compilation events or beforeAssemblyReload.
-            _pendingCompilation ??= new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _pendingCompilationSource ??=
+                new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             CompilationPipeline.RequestScriptCompilation();
-            return _pendingCompilation.Task;
+            return _pendingCompilationSource.Task;
         }
 
         // Called before the server stops for a domain reload, so that a pending request learns that the
@@ -72,8 +73,8 @@ namespace UniCortex.Editor.Infrastructures
 
         private void CompletePendingCompilation(bool succeeded)
         {
-            _pendingCompilation?.TrySetResult(succeeded);
-            _pendingCompilation = null;
+            _pendingCompilationSource?.TrySetResult(succeeded);
+            _pendingCompilationSource = null;
         }
     }
 }

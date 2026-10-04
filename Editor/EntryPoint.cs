@@ -50,7 +50,7 @@ namespace UniCortex.Editor
             var server = StartServer(dispatcher, compilationPipeline);
 
             EditorApplication.update += dispatcher.OnUpdate;
-            AssemblyReloadEvents.beforeAssemblyReload += () => Shutdown(dispatcher, compilationPipeline, server);
+            AssemblyReloadEvents.beforeAssemblyReload += () => Shutdown(compilationPipeline, server);
             EditorApplication.quitting += OnQuit;
         }
 
@@ -462,8 +462,7 @@ namespace UniCortex.Editor
             api.RegisterCallbacks(new SessionStoreTestCallbacks(testResultStore));
         }
 
-        private static void Shutdown(MainThreadDispatcher dispatcher, CompilationPipelineAdapter compilationPipeline,
-            HttpListenerServer server)
+        private static void Shutdown(CompilationPipelineAdapter compilationPipeline, HttpListenerServer server)
         {
             // Must run before the server stops: it lets a pending POST /editor/domain-reload request respond.
             // Stopping first would cancel the request with a 503, and the client would resend it and reload
@@ -471,8 +470,6 @@ namespace UniCortex.Editor
             compilationPipeline.NotifyBeforeAssemblyReload();
 
             server.Stop();
-
-            EditorApplication.update -= dispatcher.OnUpdate;
         }
     }
 }

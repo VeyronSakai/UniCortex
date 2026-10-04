@@ -11,7 +11,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
         // false when the compilation failed.
         public bool CompilationSucceeds { get; set; } = true;
 
-        public Task<bool> RequestScriptCompilation()
+        public Task<bool> RequestScriptCompilationAsync()
         {
             RequestScriptCompilationCallCount++;
             return Task.FromResult(CompilationSucceeds);
