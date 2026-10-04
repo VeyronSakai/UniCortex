@@ -50,10 +50,15 @@ namespace UniCortex.Editor.Infrastructures
             EnsureInstalled();
 
             var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // Cancel the task as soon as the token is canceled, without waiting for the next player loop update.
+            // The token is canceled when the HTTP server stops (e.g. for a domain reload), and the request is then
+            // answered with 503 right away. The queued function is skipped later because the task is already done.
             cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
             _queue.Enqueue(new Request(
                 () =>
                 {
+                    // Already canceled (see above), so do not run the function.
                     if (tcs.Task.IsCompleted)
                     {
                         return;
@@ -117,6 +122,9 @@ namespace UniCortex.Editor.Infrastructures
 
                 var systems = (phase.subSystemList ?? Array.Empty<PlayerLoopSystem>()).ToList();
                 var index = systems.FindIndex(s => s.type == typeof(PlayerLoopDispatcher));
+
+                // A delegate equals another only when both its target instance and its method are the same,
+                // so this is true only when the installed system calls this instance's OnPlayerLoopUpdate.
                 if (index >= 0 && Equals(systems[index].updateDelegate, system.updateDelegate))
                 {
                     return;
@@ -124,6 +132,9 @@ namespace UniCortex.Editor.Infrastructures
 
                 if (index >= 0)
                 {
+                    // The installed system calls another instance, e.g. one created by a test or one left from
+                    // before a domain reload. Keeping it would drain that instance's queue instead of this one,
+                    // so the requests queued here would never run. Replace it with this instance's system.
                     systems[index] = system;
                 }
                 else
