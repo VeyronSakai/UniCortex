@@ -89,9 +89,7 @@ namespace UniCortex.Editor
             var editorApplication = new EditorApplicationAdapter();
             var compilationPipeline = new CompilationPipelineAdapter();
 
-            var domainState = new EditorDomainState();
-
-            var pingUseCase = new PingUseCase(s_dispatcher, domainState);
+            var pingUseCase = new PingUseCase(s_dispatcher);
             var pingHandler = new PingHandler(pingUseCase);
 
             var sceneManagerAdapter = new EditorSceneManagerAdapter();

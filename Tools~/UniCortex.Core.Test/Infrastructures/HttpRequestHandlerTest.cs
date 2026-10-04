@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using UniCortex.Core.Infrastructures;
@@ -71,6 +72,44 @@ public class HttpRequestHandlerTest
         Assert.That(inner.CallCount, Is.EqualTo(2));
     }
 
+    [Test]
+    public async ValueTask SendAsync_RetriesResponseWrittenByClosingListener()
+    {
+        // Arrange
+        var listenerResponse = new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent("<h1>Bad Request (Invalid host)</h1>", Encoding.UTF8, "text/html")
+        };
+        var inner = new ScriptedHandler(listenerResponse, Ok());
+        using var client = CreateClient(inner);
+
+        // Act
+        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "http://localhost/"));
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(inner.CallCount, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async ValueTask SendAsync_DoesNotRetryErrorWrittenByHandler()
+    {
+        // Arrange
+        var handlerError = new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = Json("{\"error\":\"Script compilation failed\"}")
+        };
+        var inner = new ScriptedHandler(handlerError);
+        using var client = CreateClient(inner);
+
+        // Act
+        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/"));
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(inner.CallCount, Is.EqualTo(1));
+    }
+
     private static HttpClient CreateClient(HttpMessageHandler inner)
     {
         return new HttpClient(new HttpRequestHandler(NullLogger<HttpRequestHandler>.Instance) { InnerHandler = inner });
@@ -78,15 +117,20 @@ public class HttpRequestHandlerTest
 
     private static HttpResponseMessage Ok()
     {
-        return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") };
+        return new HttpResponseMessage(HttpStatusCode.OK) { Content = Json("{}") };
     }
 
     private static HttpResponseMessage ServiceUnavailable()
     {
         return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
         {
-            Content = new StringContent("{\"error\":\"The server was stopped.\"}")
+            Content = Json("{\"error\":\"The server was stopped.\"}")
         };
+    }
+
+    private static StringContent Json(string json)
+    {
+        return new StringContent(json, Encoding.UTF8, "application/json");
     }
 
     // Returns (or throws) the scripted outcomes in order, one per call.

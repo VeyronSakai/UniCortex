@@ -25,8 +25,8 @@ namespace UniCortex.Editor.Handlers.Editor
         {
             var verbose = string.Equals(context.GetQueryParameter(QueryParameterNames.Verbose), "true",
                 System.StringComparison.OrdinalIgnoreCase);
-            var response = await _useCase.ExecuteAsync(verbose, cancellationToken);
-            var json = JsonUtility.ToJson(response);
+            var message = await _useCase.ExecuteAsync(verbose, cancellationToken);
+            var json = JsonUtility.ToJson(new PingResponse(status: "ok", message: message));
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }
