@@ -12,11 +12,6 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class PlayerLoopDispatcher : IPlayerLoopDispatcher
     {
-        // Marker type that identifies the system inserted into the player loop.
-        private struct UniCortexPlayerLoopDispatcher
-        {
-        }
-
         private readonly struct Request
         {
             public readonly Action Run;
@@ -107,7 +102,7 @@ namespace UniCortex.Editor.Infrastructures
         {
             var system = new PlayerLoopSystem
             {
-                type = typeof(UniCortexPlayerLoopDispatcher),
+                type = typeof(PlayerLoopDispatcher),
                 updateDelegate = OnPlayerLoopUpdate
             };
 
@@ -121,7 +116,7 @@ namespace UniCortex.Editor.Infrastructures
                 }
 
                 var systems = (phase.subSystemList ?? Array.Empty<PlayerLoopSystem>()).ToList();
-                var index = systems.FindIndex(s => s.type == typeof(UniCortexPlayerLoopDispatcher));
+                var index = systems.FindIndex(s => s.type == typeof(PlayerLoopDispatcher));
                 if (index >= 0 && Equals(systems[index].updateDelegate, system.updateDelegate))
                 {
                     return;
