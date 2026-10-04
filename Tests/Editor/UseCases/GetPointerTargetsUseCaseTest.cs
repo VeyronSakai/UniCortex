@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
-            var target = SpyPointerTargetOperations.CreateTarget(100f, 200f, false, "");
+            var target = new PointerTarget("Canvas/Button", 100, new ScreenRect(50f, 180f, 100f, 40f));
             var ops = new SpyPointerTargetOperations
             {
                 PointerTargetsToReturn = new List<PointerTarget> { target }

@@ -75,44 +75,38 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
          "Send a mouse event via Unity Input System (com.unity.inputsystem) in Play Mode. " +
          "Uses InputSystem.QueueEvent() to simulate device-level input. " +
          "Triggers Input System actions (InputAction, PlayerInput) and Mouse.current states. " +
-         "Specify the position either with x and y, or with a UI target (targetInstanceId or targetPath) " +
-         "to send the event to the center of that UI element without capturing the Game View; exactly one of them is required. " +
+         "Specify the position either with x and y, or with instanceId to send the event to the center of a UI element; " +
+         "exactly one of them is required. " +
          "With a target, the event still goes through the EventSystem raycast like a real tap, " +
-         "so a target covered by other UI does not receive it; the result warns when the target is blocked. " +
+         "so a target covered by other UI does not receive it; the result warns when the target is covered. " +
          "Requires the Input System package to be installed (and com.unity.ugui for a target). " +
          "Does NOT work with legacy UnityEngine.Input.GetMouseButton()."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SendMouseEventAsync(
-        [Description("X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view images are at the Game View resolution with a top-left origin, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py. Must be given together with y, and not with a target.")]
+        [Description("X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view images are at the Game View resolution with a top-left origin, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py. Must be given together with y, and not with instanceId.")]
         float? x = null,
-        [Description("Y coordinate in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. This is the inverse of typical image coordinates where Y increases downward. Must be given together with x, and not with a target.")]
+        [Description("Y coordinate in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. This is the inverse of typical image coordinates where Y increases downward. Must be given together with x, and not with instanceId.")]
         float? y = null,
-        [Description("instanceId of the UI GameObject (a RectTransform under a Canvas) to send the event to, e.g. from get_pointer_targets. The event is sent to its center. Cannot be combined with x/y or targetPath.")]
-        int? targetInstanceId = null,
-        [Description("Hierarchy path of the UI GameObject to send the event to, e.g. \"Canvas/Menu/StartButton\" as returned by get_pointer_targets. The event is sent to its center. Fails when several objects share the path. Cannot be combined with x/y or targetInstanceId.")]
-        string? targetPath = null,
+        [Description("instanceId of the UI GameObject (a RectTransform under a Canvas) to send the event to, e.g. from get_pointer_targets. The event is sent to its center. Cannot be combined with x/y.")]
+        int? instanceId = null,
         [Description($"Mouse button: \"{MouseButton.Left}\" (default), \"{MouseButton.Right}\", or \"{MouseButton.Middle}\".")]
         string button = MouseButton.Left,
         [Description($"Event type: \"{InputEventType.Click}\" (default, press then release after one frame), \"{InputEventType.Press}\", \"{InputEventType.Release}\", or \"{InputEventType.Move}\" (position only, no button).")]
         string eventType = InputEventType.Click,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => inputUseCase.SendMouseEventAsync(x, y, targetInstanceId, targetPath, button, eventType, ct),
+            ct => inputUseCase.SendMouseEventAsync(x, y, instanceId, button, eventType, ct),
             cancellationToken);
 
     [McpServerTool(Name = "get_pointer_targets", ReadOnly = true),
      Description(
-         "List the uGUI objects in the Game View that receive pointer events, in Play Mode. " +
-         "Returns objects under a Canvas with an enabled component implementing a pointer event handler " +
-         "(e.g. Button, Toggle, Slider, ScrollRect, EventTrigger, custom drag or long-press components), including inactive ones. " +
-         "Each item has name, Hierarchy path, instanceId, " +
-         "centerX/centerY and rect in Game View coordinates (same as send_mouse_event x/y), " +
-         "the pointer events it handles (enter, exit, down, up, click, initializePotentialDrag, beginDrag, drag, endDrag, drop, scroll), " +
-         "activeInHierarchy, interactable (Selectable.IsInteractable(); true for non-Selectable objects), " +
-         "and blocked: true when the topmost EventSystem raycast hit at its center is neither the object nor its child " +
-         "(covered by a modal or overlay, off-screen, inactive, or not a raycast target). blockedBy is the Hierarchy path of that hit. " +
-         "Use it to find targets for send_mouse_event (targetInstanceId / targetPath) without capturing the Game View. " +
-         "Use \"click\" for objects handling click, and press, move, release for drag. " +
+         "List the uGUI objects in the Game View that can be pressed now, in Play Mode. " +
+         "An object is listed when it is active, is under a Canvas, has an enabled component handling pointer events " +
+         "(e.g. Button, Toggle, Slider, ScrollRect, EventTrigger, custom drag or long-press components), " +
+         "is interactable (Selectable.IsInteractable()), and is the topmost EventSystem raycast hit at its center " +
+         "(not covered by other UI and not off-screen). " +
+         "Each item has the Hierarchy path, instanceId, and rect in Game View coordinates (same as send_mouse_event x/y). " +
+         "Pass instanceId to send_mouse_event to press one. " +
          "Requires the uGUI package (com.unity.ugui) and an EventSystem in the scene."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetPointerTargetsAsync(CancellationToken cancellationToken = default)

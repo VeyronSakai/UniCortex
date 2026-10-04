@@ -31,7 +31,7 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.IsTrue(response.success);
             Assert.AreEqual(100f, response.x);
             Assert.AreEqual(200f, response.y);
-            Assert.IsFalse(response.targetBlocked);
+            Assert.IsFalse(response.blocked);
         }
 
         [Test]
@@ -67,20 +67,16 @@ namespace UniCortex.Editor.Tests.UseCases
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var pointerTargetOps = new SpyPointerTargetOperations
-            {
-                PointerTargetToReturn = SpyPointerTargetOperations.CreateTarget(320f, 180f, false, "")
-            };
+            var pointerTargetOps = new SpyPointerTargetOperations { TargetCenterToReturn = (320f, 180f, false) };
             var useCase = new SendMouseEventUseCase(dispatcher, ops, pointerTargetOps);
 
             // Act
-            var response = useCase.ExecuteAsync(0, "Canvas/Button", MouseButton.Left, InputEventType.Press,
+            var response = useCase.ExecuteAsync(12345, MouseButton.Left, InputEventType.Press,
                 CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.AreEqual(1, pointerTargetOps.GetPointerTargetCallCount);
-            Assert.AreEqual(0, pointerTargetOps.LastInstanceId);
-            Assert.AreEqual("Canvas/Button", pointerTargetOps.LastPath);
+            Assert.AreEqual(1, pointerTargetOps.GetTargetCenterCallCount);
+            Assert.AreEqual(12345, pointerTargetOps.LastInstanceId);
             Assert.AreEqual(1, ops.SendMouseEventCallCount);
             Assert.AreEqual(320f, ops.LastMouseX);
             Assert.AreEqual(180f, ops.LastMouseY);
@@ -88,7 +84,7 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(2, dispatcher.CallCount);
             Assert.AreEqual(320f, response.x);
             Assert.AreEqual(180f, response.y);
-            Assert.IsFalse(response.targetBlocked);
+            Assert.IsFalse(response.blocked);
         }
 
         [Test]
@@ -97,18 +93,14 @@ namespace UniCortex.Editor.Tests.UseCases
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var pointerTargetOps = new SpyPointerTargetOperations
-            {
-                PointerTargetToReturn = SpyPointerTargetOperations.CreateTarget(40f, 60f, false, "")
-            };
+            var pointerTargetOps = new SpyPointerTargetOperations { TargetCenterToReturn = (40f, 60f, false) };
             var useCase = new SendMouseEventUseCase(dispatcher, ops, pointerTargetOps);
 
             // Act
-            useCase.ExecuteAsync(12345, null, MouseButton.Left, InputEventType.Click, CancellationToken.None)
+            useCase.ExecuteAsync(12345, MouseButton.Left, InputEventType.Click, CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             // Assert
-            Assert.AreEqual(12345, pointerTargetOps.LastInstanceId);
             Assert.AreEqual(2, ops.SendMouseEventCallCount);
             Assert.AreEqual(40f, ops.MouseEventHistory[0].X);
             Assert.AreEqual(60f, ops.MouseEventHistory[0].Y);
@@ -119,24 +111,20 @@ namespace UniCortex.Editor.Tests.UseCases
         }
 
         [Test]
-        public void ExecuteAsync_WithBlockedTarget_ReturnsBlockedBy()
+        public void ExecuteAsync_WithBlockedTarget_StillSendsEvent_And_ReturnsBlocked()
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var pointerTargetOps = new SpyPointerTargetOperations
-            {
-                PointerTargetToReturn = SpyPointerTargetOperations.CreateTarget(10f, 20f, true, "Canvas/Modal")
-            };
+            var pointerTargetOps = new SpyPointerTargetOperations { TargetCenterToReturn = (10f, 20f, true) };
             var useCase = new SendMouseEventUseCase(dispatcher, ops, pointerTargetOps);
 
             // Act
-            var response = useCase.ExecuteAsync(100, null, MouseButton.Left, InputEventType.Click,
+            var response = useCase.ExecuteAsync(100, MouseButton.Left, InputEventType.Click,
                 CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.IsTrue(response.targetBlocked);
-            Assert.AreEqual("Canvas/Modal", response.blockedBy);
+            Assert.IsTrue(response.blocked);
             Assert.AreEqual(2, ops.SendMouseEventCallCount);
         }
     }

@@ -11,8 +11,7 @@ namespace UniCortex.Editor.Handlers.Input
 {
     internal sealed class SendMouseEventHandler
     {
-        private const string PositionRequiredMessage =
-            "Specify either x and y, or one of targetInstanceId or targetPath.";
+        private const string PositionRequiredMessage = "Specify either x and y, or instanceId.";
 
         private readonly SendMouseEventUseCase _useCase;
 
@@ -33,8 +32,7 @@ namespace UniCortex.Editor.Handlers.Input
         {
             public float x;
             public float y;
-            public int targetInstanceId;
-            public string targetPath;
+            public int instanceId;
             public string button;
             public string eventType;
         }
@@ -53,8 +51,7 @@ namespace UniCortex.Editor.Handlers.Input
 
             var hasX = HasField(body, "x");
             var hasY = HasField(body, "y");
-            var hasInstanceId = HasField(body, "targetInstanceId");
-            var hasPath = !string.IsNullOrEmpty(request.targetPath);
+            var hasTarget = HasField(body, "instanceId");
 
             if (hasX != hasY)
             {
@@ -62,23 +59,15 @@ namespace UniCortex.Editor.Handlers.Input
                 return;
             }
 
-            if (hasInstanceId && hasPath)
-            {
-                await WriteErrorAsync(context, "Specify only one of targetInstanceId or targetPath.");
-                return;
-            }
-
-            var hasCoordinates = hasX;
-            var hasTarget = hasInstanceId || hasPath;
-            if (hasCoordinates == hasTarget)
+            if (hasX == hasTarget)
             {
                 await WriteErrorAsync(context, PositionRequiredMessage);
                 return;
             }
 
-            if (hasInstanceId && request.targetInstanceId == 0)
+            if (hasTarget && request.instanceId == 0)
             {
-                await WriteErrorAsync(context, "targetInstanceId must not be 0.");
+                await WriteErrorAsync(context, "instanceId must not be 0.");
                 return;
             }
 
@@ -89,8 +78,7 @@ namespace UniCortex.Editor.Handlers.Input
             try
             {
                 response = hasTarget
-                    ? await _useCase.ExecuteAsync(request.targetInstanceId, request.targetPath, button, eventType,
-                        cancellationToken)
+                    ? await _useCase.ExecuteAsync(request.instanceId, button, eventType, cancellationToken)
                     : await _useCase.ExecuteAsync(request.x, request.y, button, eventType, cancellationToken);
             }
             catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException

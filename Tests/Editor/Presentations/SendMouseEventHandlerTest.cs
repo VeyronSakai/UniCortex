@@ -80,17 +80,17 @@ namespace UniCortex.Editor.Tests.Presentations
             // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.AreEqual(1, ops.SendMouseEventCallCount);
-            Assert.AreEqual(0, pointerTargetOps.GetPointerTargetCallCount);
+            Assert.AreEqual(0, pointerTargetOps.GetTargetCenterCallCount);
         }
 
         [Test]
-        public void Handle_Returns200_WithTargetInstanceId()
+        public void Handle_Returns200_WithInstanceId()
         {
             // Arrange
             var (router, ops, pointerTargetOps) = CreateRouter();
-            pointerTargetOps.PointerTargetToReturn = SpyPointerTargetOperations.CreateTarget(320f, 180f, false, "");
+            pointerTargetOps.TargetCenterToReturn = (320f, 180f, false);
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
-                "{\"targetInstanceId\":12345}");
+                "{\"instanceId\":12345}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -103,29 +103,26 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(180f, ops.LastMouseY);
             StringAssert.Contains("\"x\":320.0", context.ResponseBody);
             StringAssert.Contains("\"y\":180.0", context.ResponseBody);
+            StringAssert.Contains("\"blocked\":false", context.ResponseBody);
         }
 
         [Test]
-        public void Handle_Returns200_WithTargetPath()
+        public void Handle_Returns200_WithBlocked_WhenTargetIsCovered()
         {
             // Arrange
             var (router, ops, pointerTargetOps) = CreateRouter();
-            pointerTargetOps.PointerTargetToReturn =
-                SpyPointerTargetOperations.CreateTarget(10f, 20f, true, "Canvas/Modal");
+            pointerTargetOps.TargetCenterToReturn = (10f, 20f, true);
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
-                "{\"targetPath\":\"Canvas/x\",\"eventType\":\"press\"}");
+                "{\"instanceId\":12345,\"eventType\":\"press\"}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual(0, pointerTargetOps.LastInstanceId);
-            Assert.AreEqual("Canvas/x", pointerTargetOps.LastPath);
             Assert.AreEqual(1, ops.SendMouseEventCallCount);
             Assert.AreEqual(InputEventType.Press, ops.LastMouseEventType);
-            StringAssert.Contains("\"targetBlocked\":true", context.ResponseBody);
-            StringAssert.Contains("\"blockedBy\":\"Canvas/Modal\"", context.ResponseBody);
+            StringAssert.Contains("\"blocked\":true", context.ResponseBody);
         }
 
         [Test]
@@ -164,7 +161,7 @@ namespace UniCortex.Editor.Tests.Presentations
             // Arrange
             var (router, ops, pointerTargetOps) = CreateRouter();
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
-                "{\"x\":1.0,\"y\":2.0,\"targetInstanceId\":12345}");
+                "{\"x\":1.0,\"y\":2.0,\"instanceId\":12345}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -172,16 +169,16 @@ namespace UniCortex.Editor.Tests.Presentations
             // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             Assert.AreEqual(0, ops.SendMouseEventCallCount);
-            Assert.AreEqual(0, pointerTargetOps.GetPointerTargetCallCount);
+            Assert.AreEqual(0, pointerTargetOps.GetTargetCenterCallCount);
         }
 
         [Test]
-        public void Handle_Returns400_WhenBothTargetInstanceIdAndTargetPath()
+        public void Handle_Returns400_WhenInstanceIdIsZero()
         {
             // Arrange
-            var (router, ops, _) = CreateRouter();
+            var (router, ops, pointerTargetOps) = CreateRouter();
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
-                "{\"targetInstanceId\":12345,\"targetPath\":\"Canvas/Button\"}");
+                "{\"instanceId\":0}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -189,6 +186,7 @@ namespace UniCortex.Editor.Tests.Presentations
             // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             Assert.AreEqual(0, ops.SendMouseEventCallCount);
+            Assert.AreEqual(0, pointerTargetOps.GetTargetCenterCallCount);
         }
 
         [Test]
@@ -211,9 +209,9 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             // Arrange
             var (router, ops, pointerTargetOps) = CreateRouter();
-            pointerTargetOps.ExceptionToThrow = new ArgumentException("GameObject at path 'Missing' not found.");
+            pointerTargetOps.ExceptionToThrow = new ArgumentException("GameObject with instanceId 999 not found.");
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
-                "{\"targetPath\":\"Missing\"}");
+                "{\"instanceId\":999}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();

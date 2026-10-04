@@ -15,36 +15,35 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class PointerTargetOperationsAdapter : IPointerTargetOperations
     {
-        // Pointer event interfaces in the order they are reported.
-        private static readonly (Type type, string name)[] s_pointerHandlers =
+        private static readonly Type[] s_pointerHandlerTypes =
         {
-            (typeof(IPointerEnterHandler), PointerEventName.Enter),
-            (typeof(IPointerExitHandler), PointerEventName.Exit),
-            (typeof(IPointerDownHandler), PointerEventName.Down),
-            (typeof(IPointerUpHandler), PointerEventName.Up),
-            (typeof(IPointerClickHandler), PointerEventName.Click),
-            (typeof(IInitializePotentialDragHandler), PointerEventName.InitializePotentialDrag),
-            (typeof(IBeginDragHandler), PointerEventName.BeginDrag),
-            (typeof(IDragHandler), PointerEventName.Drag),
-            (typeof(IEndDragHandler), PointerEventName.EndDrag),
-            (typeof(IDropHandler), PointerEventName.Drop),
-            (typeof(IScrollHandler), PointerEventName.Scroll),
+            typeof(IPointerEnterHandler),
+            typeof(IPointerExitHandler),
+            typeof(IPointerDownHandler),
+            typeof(IPointerUpHandler),
+            typeof(IPointerClickHandler),
+            typeof(IInitializePotentialDragHandler),
+            typeof(IBeginDragHandler),
+            typeof(IDragHandler),
+            typeof(IEndDragHandler),
+            typeof(IDropHandler),
+            typeof(IScrollHandler),
         };
 
-        // EventTrigger implements every handler interface, so its registered entries are used instead.
-        private static readonly Dictionary<EventTriggerType, string> s_eventTriggerTypes = new()
+        // EventTrigger implements every handler interface, so its registered entries are checked instead.
+        private static readonly HashSet<EventTriggerType> s_pointerEventTriggerTypes = new()
         {
-            { EventTriggerType.PointerEnter, PointerEventName.Enter },
-            { EventTriggerType.PointerExit, PointerEventName.Exit },
-            { EventTriggerType.PointerDown, PointerEventName.Down },
-            { EventTriggerType.PointerUp, PointerEventName.Up },
-            { EventTriggerType.PointerClick, PointerEventName.Click },
-            { EventTriggerType.InitializePotentialDrag, PointerEventName.InitializePotentialDrag },
-            { EventTriggerType.BeginDrag, PointerEventName.BeginDrag },
-            { EventTriggerType.Drag, PointerEventName.Drag },
-            { EventTriggerType.EndDrag, PointerEventName.EndDrag },
-            { EventTriggerType.Drop, PointerEventName.Drop },
-            { EventTriggerType.Scroll, PointerEventName.Scroll },
+            EventTriggerType.PointerEnter,
+            EventTriggerType.PointerExit,
+            EventTriggerType.PointerDown,
+            EventTriggerType.PointerUp,
+            EventTriggerType.PointerClick,
+            EventTriggerType.InitializePotentialDrag,
+            EventTriggerType.BeginDrag,
+            EventTriggerType.Drag,
+            EventTriggerType.EndDrag,
+            EventTriggerType.Drop,
+            EventTriggerType.Scroll,
         };
 
         public Task<List<PointerTarget>> GetPointerTargetsAsync(CancellationToken cancellationToken)
@@ -52,10 +51,10 @@ namespace UniCortex.Editor.Infrastructures
             return PlayerLoopRunner.RunAsync(GetPointerTargets, cancellationToken);
         }
 
-        public Task<PointerTarget> GetPointerTargetAsync(int instanceId, string path,
+        public Task<(float x, float y, bool blocked)> GetTargetCenterAsync(int instanceId,
             CancellationToken cancellationToken)
         {
-            return PlayerLoopRunner.RunAsync(() => GetPointerTarget(instanceId, path), cancellationToken);
+            return PlayerLoopRunner.RunAsync(() => GetTargetCenter(instanceId), cancellationToken);
         }
 
         private static List<PointerTarget> GetPointerTargets()
@@ -75,30 +74,41 @@ namespace UniCortex.Editor.Infrastructures
             return targets;
         }
 
-        private static PointerTarget GetPointerTarget(int instanceId, string path)
+        private static (float x, float y, bool blocked) GetTargetCenter(int instanceId)
         {
             var eventSystem = GetEventSystem();
 
-            var gameObject = instanceId != 0 ? FindByInstanceId(instanceId) : FindByPath(path);
+            var gameObject = FindByInstanceId(instanceId);
             if (!(gameObject.transform is RectTransform rectTransform) || GetCanvas(rectTransform) == null)
             {
                 throw new ArgumentException(
                     $"'{GetPath(gameObject.transform)}' is not a UI element (a RectTransform under a Canvas).");
             }
 
-            return BuildTarget(rectTransform, GetPointerEvents(gameObject), eventSystem,
-                new List<RaycastResult>());
+            var center = GetScreenCenter(rectTransform);
+            var blocked = !IsTopmostAt(gameObject, center, eventSystem, new List<RaycastResult>());
+            return (center.x, center.y, blocked);
         }
 
+        // Collects objects that can be pressed now: active, interactable, handling pointer events,
+        // and hit first by the EventSystem raycast at their center.
         private static void CollectTargets(Transform transform, EventSystem eventSystem,
             List<RaycastResult> raycastResults, List<PointerTarget> targets)
         {
-            if (transform is RectTransform rectTransform && GetCanvas(rectTransform) != null)
+            if (!transform.gameObject.activeInHierarchy)
             {
-                var events = GetPointerEvents(transform.gameObject);
-                if (events.Count > 0)
+                return;
+            }
+
+            if (transform is RectTransform rectTransform && GetCanvas(rectTransform) != null
+                                                          && HandlesPointerEvents(transform.gameObject)
+                                                          && IsInteractable(transform.gameObject))
+            {
+                var center = GetScreenCenter(rectTransform);
+                if (IsTopmostAt(transform.gameObject, center, eventSystem, raycastResults))
                 {
-                    targets.Add(BuildTarget(rectTransform, events, eventSystem, raycastResults));
+                    targets.Add(new PointerTarget(GetPath(transform), transform.gameObject.GetInstanceID(),
+                        GetScreenRect(rectTransform)));
                 }
             }
 
@@ -108,9 +118,8 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        private static List<string> GetPointerEvents(GameObject gameObject)
+        private static bool HandlesPointerEvents(GameObject gameObject)
         {
-            var events = new HashSet<string>();
             foreach (var behaviour in gameObject.GetComponents<MonoBehaviour>())
             {
                 // Missing scripts are null. Disabled components do not receive events.
@@ -121,31 +130,38 @@ namespace UniCortex.Editor.Infrastructures
 
                 if (behaviour is EventTrigger eventTrigger)
                 {
-                    foreach (var entry in eventTrigger.triggers)
+                    if (eventTrigger.triggers.Any(entry => s_pointerEventTriggerTypes.Contains(entry.eventID)))
                     {
-                        if (s_eventTriggerTypes.TryGetValue(entry.eventID, out var name))
-                        {
-                            events.Add(name);
-                        }
+                        return true;
                     }
 
                     continue;
                 }
 
-                foreach (var (type, name) in s_pointerHandlers)
+                if (s_pointerHandlerTypes.Any(type => type.IsInstanceOfType(behaviour)))
                 {
-                    if (type.IsInstanceOfType(behaviour))
-                    {
-                        events.Add(name);
-                    }
+                    return true;
                 }
             }
 
-            return s_pointerHandlers.Select(h => h.name).Where(events.Contains).ToList();
+            return false;
         }
 
-        private static PointerTarget BuildTarget(RectTransform rectTransform, List<string> events,
-            EventSystem eventSystem, List<RaycastResult> raycastResults)
+        // Selectable.IsInteractable() also takes CanvasGroup.interactable into account.
+        private static bool IsInteractable(GameObject gameObject)
+        {
+            var selectable = gameObject.GetComponent<Selectable>();
+            return selectable == null || selectable.IsInteractable();
+        }
+
+        private static Vector2 GetScreenCenter(RectTransform rectTransform)
+        {
+            var camera = GetEventCamera(GetCanvas(rectTransform));
+            return RectTransformUtility.WorldToScreenPoint(camera,
+                rectTransform.TransformPoint(rectTransform.rect.center));
+        }
+
+        private static ScreenRect GetScreenRect(RectTransform rectTransform)
         {
             var camera = GetEventCamera(GetCanvas(rectTransform));
 
@@ -160,43 +176,16 @@ namespace UniCortex.Editor.Infrastructures
                 max = Vector2.Max(max, point);
             }
 
-            var center = RectTransformUtility.WorldToScreenPoint(camera,
-                rectTransform.TransformPoint(rectTransform.rect.center));
-
-            var gameObject = rectTransform.gameObject;
-            var blockedBy = Raycast(gameObject, center, eventSystem, raycastResults, out var blocked);
-            var selectable = gameObject.GetComponent<Selectable>();
-
-            return new PointerTarget(
-                gameObject.name,
-                GetPath(rectTransform),
-                gameObject.GetInstanceID(),
-                center.x,
-                center.y,
-                new ScreenRect(min.x, min.y, max.x - min.x, max.y - min.y),
-                events,
-                gameObject.activeInHierarchy,
-                selectable == null || selectable.IsInteractable(),
-                blocked,
-                blockedBy);
+            return new ScreenRect(min.x, min.y, max.x - min.x, max.y - min.y);
         }
 
-        // Returns the Hierarchy path of the topmost hit when it is neither the target nor its child.
-        private static string Raycast(GameObject target, Vector2 position, EventSystem eventSystem,
-            List<RaycastResult> raycastResults, out bool blocked)
+        // True when the topmost EventSystem raycast hit at the position is the target or its child.
+        private static bool IsTopmostAt(GameObject target, Vector2 position, EventSystem eventSystem,
+            List<RaycastResult> raycastResults)
         {
             raycastResults.Clear();
             eventSystem.RaycastAll(new PointerEventData(eventSystem) { position = position }, raycastResults);
-
-            if (raycastResults.Count == 0)
-            {
-                blocked = true;
-                return "";
-            }
-
-            var hit = raycastResults[0].gameObject.transform;
-            blocked = !hit.IsChildOf(target.transform);
-            return blocked ? GetPath(hit) : "";
+            return raycastResults.Count > 0 && raycastResults[0].gameObject.transform.IsChildOf(target.transform);
         }
 
         private static Canvas GetCanvas(RectTransform rectTransform)
@@ -232,54 +221,6 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             return gameObject;
-        }
-
-        private static GameObject FindByPath(string path)
-        {
-            var names = path.Trim('/').Split('/');
-            var matches = new List<Transform>();
-            foreach (var scene in LoadedScenes.Get())
-            {
-                foreach (var root in scene.GetRootGameObjects())
-                {
-                    if (root.name == names[0])
-                    {
-                        CollectPathMatches(root.transform, names, 1, matches);
-                    }
-                }
-            }
-
-            if (matches.Count == 0)
-            {
-                throw new ArgumentException($"GameObject at path '{path}' not found.");
-            }
-
-            if (matches.Count > 1)
-            {
-                var ids = string.Join(", ", matches.Select(m => m.gameObject.GetInstanceID()));
-                throw new ArgumentException(
-                    $"Multiple GameObjects match path '{path}' (instanceIds: {ids}). Specify targetInstanceId instead.");
-            }
-
-            return matches[0].gameObject;
-        }
-
-        private static void CollectPathMatches(Transform transform, string[] names, int depth,
-            List<Transform> matches)
-        {
-            if (depth == names.Length)
-            {
-                matches.Add(transform);
-                return;
-            }
-
-            foreach (Transform child in transform)
-            {
-                if (child.name == names[depth])
-                {
-                    CollectPathMatches(child, names, depth + 1, matches);
-                }
-            }
         }
 
         private static string GetPath(Transform transform)

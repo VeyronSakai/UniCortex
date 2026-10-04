@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
             {
                 PointerTargetsToReturn = new List<PointerTarget>
                 {
-                    SpyPointerTargetOperations.CreateTarget(100f, 200f, true, "Canvas/Modal")
+                    new PointerTarget("Canvas/Button", 100, new ScreenRect(50f, 180f, 100f, 40f))
                 }
             };
             var handler = new GetPointerTargetsHandler(new GetPointerTargetsUseCase(dispatcher, ops));
@@ -37,10 +37,9 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             StringAssert.Contains("\"targets\"", context.ResponseBody);
             StringAssert.Contains("\"path\":\"Canvas/Button\"", context.ResponseBody);
-            StringAssert.Contains("\"centerX\":100.0", context.ResponseBody);
-            StringAssert.Contains("\"events\":[\"click\"]", context.ResponseBody);
-            StringAssert.Contains("\"blocked\":true", context.ResponseBody);
-            StringAssert.Contains("\"blockedBy\":\"Canvas/Modal\"", context.ResponseBody);
+            StringAssert.Contains("\"instanceId\":100", context.ResponseBody);
+            StringAssert.Contains("\"rect\":{\"x\":50.0,\"y\":180.0,\"width\":100.0,\"height\":40.0}",
+                context.ResponseBody);
         }
 
         [Test]

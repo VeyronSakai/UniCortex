@@ -11,18 +11,15 @@ namespace UniCortex.Editor.Domains.Models
         public float x;
         public float y;
 
-        // Set only when a target is given. See PointerTarget.blocked / blockedBy.
-        public bool targetBlocked;
-        public string blockedBy;
+        // Set only when a target is given: true when other UI covers the target at its center.
+        public bool blocked;
 
-        public SendMouseEventResponse(bool success, float x, float y, bool targetBlocked = false,
-            string blockedBy = "")
+        public SendMouseEventResponse(bool success, float x, float y, bool blocked = false)
         {
             this.success = success;
             this.x = x;
             this.y = y;
-            this.targetBlocked = targetBlocked;
-            this.blockedBy = blockedBy;
+            this.blocked = blocked;
         }
     }
 }

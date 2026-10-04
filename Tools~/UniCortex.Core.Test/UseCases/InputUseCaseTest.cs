@@ -268,23 +268,21 @@ public class InputUseCaseTest
             var targets = await GetPointerTargetsAsync();
 
             // Assert
+            Assert.That(targets.Select(t => t.path),
+                Is.EquivalentTo(new[] { "Canvas/TestButton", "Canvas/TopLeftButton", "Canvas/BottomRightButton" }));
+
             // TopLeftButton (200x80) is anchored at the top-left corner of the screen.
             var topLeft = targets.Single(t => t.path == "Canvas/TopLeftButton");
-            Assert.That(topLeft.centerX, Is.EqualTo(100f).Within(1f));
-            Assert.That(topLeft.centerY, Is.EqualTo(size.screenHeight - 40f).Within(1f));
+            Assert.That(topLeft.rect.x, Is.EqualTo(0f).Within(1f));
+            Assert.That(topLeft.rect.y, Is.EqualTo(size.screenHeight - 80f).Within(1f));
             Assert.That(topLeft.rect.width, Is.EqualTo(200f).Within(1f));
             Assert.That(topLeft.rect.height, Is.EqualTo(80f).Within(1f));
-            Assert.That(topLeft.events, Does.Contain(PointerEventName.Click));
-            Assert.That(topLeft.activeInHierarchy, Is.True);
-            Assert.That(topLeft.interactable, Is.True);
-            Assert.That(topLeft.blocked, Is.False);
 
-            // BottomRightButton is at the bottom-right corner, which is checked against the Game View size
-            // by the EventSystem raycast.
+            // BottomRightButton is at the bottom-right corner. It is listed only when the EventSystem raycast
+            // is checked against the Game View size.
             var bottomRight = targets.Single(t => t.path == "Canvas/BottomRightButton");
-            Assert.That(bottomRight.centerX, Is.EqualTo(size.screenWidth - 100f).Within(1f));
-            Assert.That(bottomRight.centerY, Is.EqualTo(40f).Within(1f));
-            Assert.That(bottomRight.blocked, Is.False);
+            Assert.That(bottomRight.rect.x, Is.EqualTo(size.screenWidth - 200f).Within(1f));
+            Assert.That(bottomRight.rect.y, Is.EqualTo(0f).Within(1f));
         }
         finally
         {
@@ -293,7 +291,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask GetPointerTargets_InPlayMode_ReportsBlocked_WhenCoveredByOtherUI()
+    public async ValueTask GetPointerTargets_InPlayMode_ExcludesButtonCoveredByOtherUI()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -307,10 +305,8 @@ public class InputUseCaseTest
             var targets = await GetPointerTargetsAsync();
 
             // Assert
-            var testButton = targets.Single(t => t.path == "Canvas/TestButton");
-            Assert.That(testButton.blocked, Is.True);
-            Assert.That(testButton.blockedBy, Is.EqualTo("Canvas/Overlay"));
-            Assert.That(targets.Single(t => t.path == "Canvas/TopLeftButton").blocked, Is.False);
+            Assert.That(targets.Select(t => t.path), Does.Not.Contain("Canvas/TestButton"));
+            Assert.That(targets.Select(t => t.path), Does.Contain("Canvas/TopLeftButton"));
         }
         finally
         {
@@ -319,18 +315,49 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask SendMouseEvent_InPlayMode_ClicksUIButton_WithTargetPath()
+    public async ValueTask GetPointerTargets_InPlayMode_ExcludesInactiveAndNonInteractableButtons()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
+            var before = await GetPointerTargetsAsync();
+            var topLeft = before.Single(t => t.path == "Canvas/TopLeftButton");
+            var bottomRight = before.Single(t => t.path == "Canvas/BottomRightButton");
+
+            await _fixture.GameObjectUseCase.ModifyAsync(topLeft.instanceId, activeSelf: false,
+                cancellationToken: CancellationToken.None);
+            await _fixture.ComponentUseCase.SetPropertyAsync(bottomRight.instanceId, "UnityEngine.UI.Button",
+                "UnityEngine.UI", "m_Interactable", "false", CancellationToken.None);
+
+            // Act
+            var targets = await GetPointerTargetsAsync();
+
+            // Assert
+            Assert.That(targets.Select(t => t.path), Is.EquivalentTo(new[] { "Canvas/TestButton" }));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_InPlayMode_ClicksUIButton_WithInstanceId()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            var targets = await GetPointerTargetsAsync();
+            var bottomRight = targets.Single(t => t.path == "Canvas/BottomRightButton");
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
             // Act
-            var message = await _fixture.InputUseCase.SendMouseEventAsync(null, null, null,
-                "Canvas/BottomRightButton", MouseButton.Left, InputEventType.Click, CancellationToken.None);
+            var message = await _fixture.InputUseCase.SendMouseEventAsync(null, null, bottomRight.instanceId,
+                MouseButton.Left, InputEventType.Click, CancellationToken.None);
             await Task.Delay(500);
 
             // Assert
@@ -346,7 +373,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask SendMouseEvent_InPlayMode_ClicksUIButton_WithTargetInstanceId()
+    public async ValueTask SendMouseEvent_InPlayMode_WarnsAndDoesNotClick_WhenTargetIsCovered()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -354,43 +381,17 @@ public class InputUseCaseTest
         try
         {
             var targets = await GetPointerTargetsAsync();
-            var topLeft = targets.Single(t => t.path == "Canvas/TopLeftButton");
-            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
-
-            // Act
-            await _fixture.InputUseCase.SendMouseEventAsync(null, null, topLeft.instanceId, null,
-                MouseButton.Left, InputEventType.Click, CancellationToken.None);
-            await Task.Delay(500);
-
-            // Assert
-            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
-                cancellationToken: CancellationToken.None);
-            Assert.That(logs, Does.Contain("[ButtonClickDebug] Button clicked: TopLeftButton"));
-        }
-        finally
-        {
-            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
-        }
-    }
-
-    [Test, CancelAfter(120_000)]
-    public async ValueTask SendMouseEvent_InPlayMode_WarnsAndDoesNotClick_WhenTargetIsBlocked()
-    {
-        // Arrange
-        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
-        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
-        try
-        {
+            var testButton = targets.Single(t => t.path == "Canvas/TestButton");
             await CreateOverlayAsync("Overlay");
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
             // Act
-            var message = await _fixture.InputUseCase.SendMouseEventAsync(null, null, null, "Canvas/TestButton",
+            var message = await _fixture.InputUseCase.SendMouseEventAsync(null, null, testButton.instanceId,
                 MouseButton.Left, InputEventType.Click, CancellationToken.None);
             await Task.Delay(500);
 
             // Assert
-            Assert.That(message, Does.Contain("Warning").And.Contain("Canvas/Overlay"));
+            Assert.That(message, Does.Contain("Warning"));
             var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
                 cancellationToken: CancellationToken.None);
             Assert.That(logs, Does.Not.Contain("[ButtonClickDebug] Button clicked"));
@@ -402,7 +403,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask SendMouseEvent_ReturnsError_WhenTargetPathNotFound()
+    public async ValueTask SendMouseEvent_ReturnsError_WhenInstanceIdNotFound()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -411,7 +412,7 @@ public class InputUseCaseTest
         {
             // Act & Assert
             var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-                await _fixture.InputUseCase.SendMouseEventAsync(null, null, null, "Canvas/Missing",
+                await _fixture.InputUseCase.SendMouseEventAsync(null, null, int.MaxValue,
                     MouseButton.Left, InputEventType.Click, CancellationToken.None));
 
             Assert.That(ex!.Message, Does.Contain("not found"));
@@ -427,7 +428,7 @@ public class InputUseCaseTest
     {
         // Act & Assert
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.InputUseCase.SendMouseEventAsync(100f, 200f, null, "Canvas/TestButton",
+            await _fixture.InputUseCase.SendMouseEventAsync(100f, 200f, 12345,
                 MouseButton.Left, InputEventType.Click, CancellationToken.None));
 
         Assert.That(ex!.Message, Does.Contain("Specify either x and y"));
@@ -438,7 +439,7 @@ public class InputUseCaseTest
     {
         // Act & Assert
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.InputUseCase.SendMouseEventAsync(null, null, null, null,
+            await _fixture.InputUseCase.SendMouseEventAsync(null, null, null,
                 MouseButton.Left, InputEventType.Click, CancellationToken.None));
 
         Assert.That(ex!.Message, Does.Contain("Specify either x and y"));

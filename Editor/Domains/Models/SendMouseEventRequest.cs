@@ -7,8 +7,7 @@ namespace UniCortex.Editor.Domains.Models
     {
         public float? x;
         public float? y;
-        public int? targetInstanceId;
-        public string targetPath;
+        public int? instanceId;
         public string button;
         public string eventType;
     }

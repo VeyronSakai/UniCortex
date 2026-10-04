@@ -11,7 +11,8 @@ namespace UniCortex.Editor.Domains.Interfaces
     {
         Task<List<PointerTarget>> GetPointerTargetsAsync(CancellationToken cancellationToken);
 
-        // Resolves a UI object by instanceId (when non-zero) or by Hierarchy path.
-        Task<PointerTarget> GetPointerTargetAsync(int instanceId, string path, CancellationToken cancellationToken);
+        // Returns the center of a UI object in Game View coordinates, and whether other UI covers it there.
+        Task<(float x, float y, bool blocked)> GetTargetCenterAsync(int instanceId,
+            CancellationToken cancellationToken);
     }
 }

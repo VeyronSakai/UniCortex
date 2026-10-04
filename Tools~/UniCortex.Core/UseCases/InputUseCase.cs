@@ -18,41 +18,34 @@ public class InputUseCase(IUnityEditorClient client)
     public async ValueTask<string> SendMouseEventAsync(float x, float y, string button, string eventType,
         CancellationToken cancellationToken)
     {
-        return await SendMouseEventAsync(x, y, null, null, button, eventType, cancellationToken);
+        return await SendMouseEventAsync(x, y, null, button, eventType, cancellationToken);
     }
 
-    public async ValueTask<string> SendMouseEventAsync(float? x, float? y, int? targetInstanceId, string? targetPath,
+    public async ValueTask<string> SendMouseEventAsync(float? x, float? y, int? instanceId,
         string button, string eventType, CancellationToken cancellationToken)
     {
         var request = new SendMouseEventRequest
         {
             x = x,
             y = y,
-            targetInstanceId = targetInstanceId,
-            targetPath = targetPath,
+            instanceId = instanceId,
             button = button,
             eventType = eventType
         };
         var response = await client.PostAsync<SendMouseEventRequest, SendMouseEventResponse>(ApiRoutes.InputMouse,
             request, cancellationToken);
 
-        if (targetInstanceId == null && string.IsNullOrEmpty(targetPath))
+        if (instanceId == null)
         {
             return $"Mouse event sent: ({response.x}, {response.y}) button={button} ({eventType})";
         }
 
-        var target = targetInstanceId?.ToString() ?? targetPath;
-        var message = $"Mouse event sent to target {target} at ({response.x}, {response.y}) button={button} ({eventType})";
-        if (!response.targetBlocked)
-        {
-            return message;
-        }
-
-        return string.IsNullOrEmpty(response.blockedBy)
-            ? $"{message}. Warning: nothing receives pointer input at the target's center " +
-              "(it may be off-screen, inactive, or not a raycast target), so the target may not receive the event."
-            : $"{message}. Warning: the target's center is covered by '{response.blockedBy}', " +
-              "so the event may go to that object instead.";
+        var message =
+            $"Mouse event sent to instanceId {instanceId} at ({response.x}, {response.y}) button={button} ({eventType})";
+        return response.blocked
+            ? $"{message}. Warning: the target is covered by other UI or off-screen at its center, " +
+              "so it may not receive the event."
+            : message;
     }
 
     public async ValueTask<string> GetPointerTargetsAsync(CancellationToken cancellationToken)

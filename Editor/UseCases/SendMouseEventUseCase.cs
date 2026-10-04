@@ -27,18 +27,17 @@ namespace UniCortex.Editor.UseCases
             return new SendMouseEventResponse(true, x, y);
         }
 
-        // Sends the event to the center of a UI object given by instanceId (when non-zero) or Hierarchy path.
-        public async Task<SendMouseEventResponse> ExecuteAsync(int targetInstanceId, string targetPath,
-            string button, string eventType, CancellationToken cancellationToken = default)
+        // Sends the event to the center of the UI object with the given instanceId.
+        public async Task<SendMouseEventResponse> ExecuteAsync(int instanceId, string button,
+            string eventType, CancellationToken cancellationToken = default)
         {
             var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _pointerTargetOperations.GetPointerTargetAsync(targetInstanceId, targetPath, cancellationToken),
+                () => _pointerTargetOperations.GetTargetCenterAsync(instanceId, cancellationToken),
                 cancellationToken);
-            var target = await task;
+            var (x, y, blocked) = await task;
 
-            await SendAsync(target.centerX, target.centerY, button, eventType, cancellationToken);
-            return new SendMouseEventResponse(true, target.centerX, target.centerY, target.blocked,
-                target.blockedBy);
+            await SendAsync(x, y, button, eventType, cancellationToken);
+            return new SendMouseEventResponse(true, x, y, blocked);
         }
 
         private async Task SendAsync(float x, float y, string button, string eventType,

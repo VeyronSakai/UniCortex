@@ -15,7 +15,7 @@ namespace UniCortex.Editor.Infrastructures
             throw CreateException();
         }
 
-        public Task<PointerTarget> GetPointerTargetAsync(int instanceId, string path,
+        public Task<(float x, float y, bool blocked)> GetTargetCenterAsync(int instanceId,
             CancellationToken cancellationToken)
         {
             throw CreateException();
