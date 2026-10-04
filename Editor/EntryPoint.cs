@@ -36,7 +36,6 @@ namespace UniCortex.Editor
 
         private static MainThreadDispatcher s_dispatcher;
         private static HttpListenerServer s_server;
-        private static CompilationPipelineAdapter s_compilationPipeline;
 
         static EntryPoint()
         {
@@ -48,16 +47,18 @@ namespace UniCortex.Editor
                 return;
             }
 
-            AssemblyReloadEvents.beforeAssemblyReload += Shutdown;
+            var compilationPipeline = new CompilationPipelineAdapter();
+
+            AssemblyReloadEvents.beforeAssemblyReload += () => Shutdown(compilationPipeline);
             EditorApplication.quitting += OnQuit;
 
             s_dispatcher = new MainThreadDispatcher();
             EditorApplication.update += s_dispatcher.OnUpdate;
 
-            StartServer();
+            StartServer(compilationPipeline);
         }
 
-        private static void StartServer()
+        private static void StartServer(CompilationPipelineAdapter compilationPipeline)
         {
             var port = SessionState.GetInt(PortKey, 0);
             if (port == 0)
@@ -68,7 +69,7 @@ namespace UniCortex.Editor
 
             var router = new RequestRouter();
 
-            RegisterHandlers(router);
+            RegisterHandlers(router, compilationPipeline);
 
             s_server = new HttpListenerServer(router, port);
             try
@@ -82,13 +83,12 @@ namespace UniCortex.Editor
             }
         }
 
-        private static void RegisterHandlers(RequestRouter router)
+        private static void RegisterHandlers(RequestRouter router, ICompilationPipeline compilationPipeline)
         {
             var testResultStore = new TestResultStore(TestResultJsonKey, TestPendingResultsJsonKey);
             RegisterTestCallbacks(testResultStore);
 
             var editorApplication = new EditorApplicationAdapter();
-            s_compilationPipeline = new CompilationPipelineAdapter();
 
             var pingUseCase = new PingUseCase(s_dispatcher);
             var pingHandler = new PingHandler(pingUseCase);
@@ -101,7 +101,7 @@ namespace UniCortex.Editor
             var stopUseCase = new StopUseCase(s_dispatcher, editorApplication);
             var stopHandler = new StopHandler(stopUseCase);
 
-            var requestDomainReloadUseCase = new RequestDomainReloadUseCase(s_dispatcher, s_compilationPipeline,
+            var requestDomainReloadUseCase = new RequestDomainReloadUseCase(s_dispatcher, compilationPipeline,
                 editorApplication);
             var requestDomainReloadHandler = new DomainReloadHandler(requestDomainReloadUseCase);
 
@@ -462,13 +462,12 @@ namespace UniCortex.Editor
             api.RegisterCallbacks(new SessionStoreTestCallbacks(testResultStore));
         }
 
-        private static void Shutdown()
+        private static void Shutdown(CompilationPipelineAdapter compilationPipeline)
         {
             // Must run before the server stops: it lets a pending POST /editor/domain-reload request respond.
             // Stopping first would cancel the request with a 503, and the client would resend it and reload
             // the domain once more. The server waits for that response to be written before it closes.
-            s_compilationPipeline?.NotifyBeforeAssemblyReload();
-            s_compilationPipeline = null;
+            compilationPipeline.NotifyBeforeAssemblyReload();
 
             s_server?.Stop();
             s_server = null;
