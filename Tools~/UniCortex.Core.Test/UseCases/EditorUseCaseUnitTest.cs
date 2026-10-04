@@ -1,3 +1,4 @@
+using System.Net;
 using NUnit.Framework;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.UseCases;
@@ -8,52 +9,45 @@ namespace UniCortex.Core.Test.UseCases;
 [TestFixture]
 public class EditorUseCaseUnitTest
 {
-    [Test, CancelAfter(10_000)]
-    public async ValueTask ReloadDomainAsync_WaitsUntilDomainIdChanges(CancellationToken cancellationToken)
+    [Test]
+    public async ValueTask ReloadDomainAsync_WaitsForStatusAfterDomainReloadRequest()
     {
         // Arrange
-        // The old domain keeps answering for a while after the reload request.
-        var client = new FakeUnityEditorClient(
-            new PingResponse("ok", "pong", "old", 0),
-            new PingResponse("ok", "pong", "old", 0),
-            new PingResponse("ok", "pong", "old", 0),
-            new PingResponse("ok", "pong", "new", 0));
+        var client = new FakeUnityEditorClient();
         var useCase = new EditorUseCase(client);
 
         // Act
-        var message = await useCase.ReloadDomainAsync(cancellationToken);
+        var message = await useCase.ReloadDomainAsync(CancellationToken.None);
 
         // Assert
         Assert.That(message, Does.Contain("completed"));
-        Assert.That(client.PingCallCount, Is.EqualTo(4));
-        Assert.That(client.DomainReloadCallCount, Is.EqualTo(1));
+        Assert.That(client.Calls, Is.EqualTo(new[] { ApiRoutes.DomainReload, ApiRoutes.Status }));
     }
 
-    [Test, CancelAfter(10_000)]
-    public void ReloadDomainAsync_Throws_WhenCompilationFails(CancellationToken cancellationToken)
+    [Test]
+    public void ReloadDomainAsync_Throws_WhenDomainReloadRequestFails()
     {
         // Arrange
-        var client = new FakeUnityEditorClient(
-            new PingResponse("ok", "pong", "old", 1),
-            new PingResponse("ok", "pong", "old", 1),
-            new PingResponse("ok", "pong", "old", 2));
+        var client = new FakeUnityEditorClient
+        {
+            DomainReloadException = new HttpRequestException("Script compilation failed", null,
+                HttpStatusCode.BadRequest)
+        };
         var useCase = new EditorUseCase(client);
 
         // Act
-        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await useCase.ReloadDomainAsync(cancellationToken));
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await useCase.ReloadDomainAsync(CancellationToken.None));
 
         // Assert
-        Assert.That(ex!.Message, Does.Contain("compilation failed"));
-        Assert.That(client.PingCallCount, Is.EqualTo(3));
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(client.Calls, Is.EqualTo(new[] { ApiRoutes.DomainReload }));
     }
 
-    private sealed class FakeUnityEditorClient(params PingResponse[] pingResponses) : IUnityEditorClient
+    private sealed class FakeUnityEditorClient : IUnityEditorClient
     {
-        private readonly Queue<PingResponse> _pingResponses = new(pingResponses);
-
-        public int PingCallCount { get; private set; }
-        public int DomainReloadCallCount { get; private set; }
+        public Exception? DomainReloadException { get; init; }
+        public List<string> Calls { get; } = [];
 
         public ValueTask WaitForServerAsync(CancellationToken cancellationToken = default)
         {
@@ -63,27 +57,32 @@ public class EditorUseCaseUnitTest
         public ValueTask<TRes> PostAsync<TReq, TRes>(string route, TReq? request = null,
             CancellationToken cancellationToken = default) where TReq : class
         {
-            if (route == ApiRoutes.DomainReload)
+            Calls.Add(route);
+            if (route != ApiRoutes.DomainReload)
             {
-                DomainReloadCallCount++;
-                object response = new DomainReloadResponse(true);
-                return new ValueTask<TRes>((TRes)response);
+                throw new InvalidOperationException("Unexpected PostAsync call.");
             }
 
-            throw new InvalidOperationException("Unexpected PostAsync call.");
+            if (DomainReloadException != null)
+            {
+                throw DomainReloadException;
+            }
+
+            object response = new DomainReloadResponse(true);
+            return new ValueTask<TRes>((TRes)response);
         }
 
         public ValueTask<TRes> GetAsync<TReq, TRes>(string route, TReq? request = null,
             CancellationToken cancellationToken = default) where TReq : class
         {
-            if (route == ApiRoutes.Ping)
+            Calls.Add(route);
+            if (route != ApiRoutes.Status)
             {
-                PingCallCount++;
-                object response = _pingResponses.Dequeue();
-                return new ValueTask<TRes>((TRes)response);
+                throw new InvalidOperationException("Unexpected GetAsync call.");
             }
 
-            throw new InvalidOperationException("Unexpected GetAsync call.");
+            object response = new GetEditorStatusResponse(false, false);
+            return new ValueTask<TRes>((TRes)response);
         }
     }
 }

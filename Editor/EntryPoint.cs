@@ -36,6 +36,7 @@ namespace UniCortex.Editor
 
         private static MainThreadDispatcher s_dispatcher;
         private static HttpListenerServer s_server;
+        private static CompilationPipelineAdapter s_compilationPipeline;
 
         static EntryPoint()
         {
@@ -87,7 +88,7 @@ namespace UniCortex.Editor
             RegisterTestCallbacks(testResultStore);
 
             var editorApplication = new EditorApplicationAdapter();
-            var compilationPipeline = new CompilationPipelineAdapter();
+            s_compilationPipeline = new CompilationPipelineAdapter();
 
             var pingUseCase = new PingUseCase(s_dispatcher);
             var pingHandler = new PingHandler(pingUseCase);
@@ -100,7 +101,8 @@ namespace UniCortex.Editor
             var stopUseCase = new StopUseCase(s_dispatcher, editorApplication);
             var stopHandler = new StopHandler(stopUseCase);
 
-            var requestDomainReloadUseCase = new RequestDomainReloadUseCase(s_dispatcher, compilationPipeline);
+            var requestDomainReloadUseCase = new RequestDomainReloadUseCase(s_dispatcher, s_compilationPipeline,
+                editorApplication);
             var requestDomainReloadHandler = new DomainReloadHandler(requestDomainReloadUseCase);
 
             var getEditorStatusUseCase = new GetEditorStatusUseCase(s_dispatcher, editorApplication);
@@ -462,6 +464,12 @@ namespace UniCortex.Editor
 
         private static void Shutdown()
         {
+            // Must run before the server stops: it lets a pending POST /editor/domain-reload request respond.
+            // Stopping first would cancel the request with a 503, and the client would resend it and reload
+            // the domain once more. The server waits for that response to be written before it closes.
+            s_compilationPipeline?.NotifyBeforeAssemblyReload();
+            s_compilationPipeline = null;
+
             s_server?.Stop();
             s_server = null;
 

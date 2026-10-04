@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
 
 namespace UniCortex.Editor.Tests.TestDoubles
@@ -6,6 +7,14 @@ namespace UniCortex.Editor.Tests.TestDoubles
     {
         public int RequestScriptCompilationCallCount { get; private set; }
 
-        public void RequestScriptCompilation() => RequestScriptCompilationCallCount++;
+        // Result of the requested compilation: true when the domain is about to be reloaded,
+        // false when the compilation failed.
+        public bool CompilationSucceeds { get; set; } = true;
+
+        public Task<bool> RequestScriptCompilation()
+        {
+            RequestScriptCompilationCallCount++;
+            return Task.FromResult(CompilationSucceeds);
+        }
     }
 }

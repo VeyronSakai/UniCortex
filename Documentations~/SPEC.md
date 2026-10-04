@@ -115,7 +115,7 @@ Request/response JSON serialization uses DTO classes.
 Responses are always `application/json; charset=utf-8`.
 On error: an HTTP status code plus `{"error": "message"}`.
 If the server is stopped while handling a request (e.g. by a domain reload), it answers `503 Service Unavailable`. The request has not been run in that case: requests and the server stop both run on the main thread, and the server waits (up to 10 seconds) for the response of a request that has run to be written before it closes.
-The client resends a request until the server answers: on a refused connection, a 503, a dropped connection or an empty response.
+The client resends a request until the server answers: on a refused connection, a 503, a dropped connection, an empty response, or a response that is not JSON (every response written by a request handler is JSON; a non-JSON one, such as a `400` written by the listener itself while it is closing, means the request never reached a handler).
 All scene-mutating operations support Undo.
 Endpoints that save a new asset at a given path (`/scene/create`, `/scriptable-object/create`, `/animation-clip/create`, `/prefab/create`, `/timeline/create`) create any missing parent folders under `Assets/` first. A path outside `Assets/` or an asset that still cannot be saved returns `400 Bad Request` with the reason.
 
@@ -156,7 +156,12 @@ Response: `{"success": true}`
 #### POST `/editor/domain-reload`
 Requests a domain reload (script recompilation). `CompilationPipeline.RequestScriptCompilation()`
 
-Response: `{"success": true}`
+The response is held until the compilation finishes:
+- Compilation succeeded: `{"success": true}`, written right before the domain reload starts. The server stops for the reload only after this response has been written, so the request is not cancelled with a `503` (which would make the client resend it and reload the domain again)
+- Compilation failed with errors (the domain is not reloaded): `400 Bad Request` with `{"error": "Script compilation failed, ..."}`
+- In play mode: `400 Bad Request` without compiling. Depending on the "Script Changes While Playing" preference, compilation may be put off until play mode ends, and the held request would block every other request (the server handles one request at a time)
+
+After a successful response, the client waits for `GET /editor/status` to succeed. It runs on the main thread, which is busy with the reload until the old server has stopped, so the answer comes from the new domain.
 
 #### POST `/editor/undo`
 Undoes the most recent operation. `Undo.PerformUndo()`
