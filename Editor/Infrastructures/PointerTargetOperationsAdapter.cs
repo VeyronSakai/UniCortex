@@ -46,15 +46,22 @@ namespace UniCortex.Editor.Infrastructures
             EventTriggerType.Scroll,
         };
 
+        private readonly IPlayerLoopDispatcher _playerLoopDispatcher;
+
+        public PointerTargetOperationsAdapter(IPlayerLoopDispatcher playerLoopDispatcher)
+        {
+            _playerLoopDispatcher = playerLoopDispatcher;
+        }
+
         public Task<List<PointerTarget>> GetPointerTargetsAsync(CancellationToken cancellationToken)
         {
-            return PlayerLoopRunner.RunAsync(GetPointerTargets, cancellationToken);
+            return _playerLoopDispatcher.RunAsync(GetPointerTargets, cancellationToken);
         }
 
         public Task<(float x, float y)> GetTargetCenterAsync(int instanceId,
             CancellationToken cancellationToken)
         {
-            return PlayerLoopRunner.RunAsync(() => GetTargetCenter(instanceId), cancellationToken);
+            return _playerLoopDispatcher.RunAsync(() => GetTargetCenter(instanceId), cancellationToken);
         }
 
         private static List<PointerTarget> GetPointerTargets()

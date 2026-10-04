@@ -3,19 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using UniCortex.Editor.Domains.Interfaces;
 using UnityEditor;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    // Runs functions inside the player loop in Play Mode.
-    // Some APIs (e.g. Screen.width/height, which GraphicRaycaster uses) return Game View values only while
-    // the player loop runs; from EditorApplication.update they return the size of another view.
-    internal static class PlayerLoopRunner
+    internal sealed class PlayerLoopDispatcher : IPlayerLoopDispatcher
     {
         // Marker type that identifies the system inserted into the player loop.
-        private struct UniCortexPlayerLoopRunner
+        private struct UniCortexPlayerLoopDispatcher
         {
         }
 
@@ -31,24 +29,24 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        private static readonly Queue<Request> s_queue = new();
+        private readonly IEditorApplication _editorApplication;
+        private readonly Queue<Request> _queue = new();
 
-        static PlayerLoopRunner()
+        public PlayerLoopDispatcher(IEditorApplication editorApplication)
         {
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            _editorApplication = editorApplication;
         }
 
-        // Must be called on the main thread.
-        public static Task<T> RunAsync<T>(Func<T> func, CancellationToken cancellationToken = default)
+        public Task<T> RunAsync<T>(Func<T> func, CancellationToken cancellationToken = default)
         {
-            if (!EditorApplication.isPlaying)
+            if (!_editorApplication.IsPlaying)
             {
                 throw new InvalidOperationException(
                     "This operation is only available in Play Mode. Enter Play Mode first.");
             }
 
             // The player loop does not run while the Editor is paused, so the request would never complete.
-            if (EditorApplication.isPaused)
+            if (_editorApplication.IsPaused)
             {
                 throw new InvalidOperationException(
                     "This operation is not available while the Editor is paused. Unpause the Editor first.");
@@ -58,7 +56,7 @@ namespace UniCortex.Editor.Infrastructures
 
             var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
             cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
-            s_queue.Enqueue(new Request(
+            _queue.Enqueue(new Request(
                 () =>
                 {
                     if (tcs.Task.IsCompleted)
@@ -79,15 +77,16 @@ namespace UniCortex.Editor.Infrastructures
             return tcs.Task;
         }
 
-        private static void Run()
+        // Called from the system inserted into the player loop.
+        internal void OnPlayerLoopUpdate()
         {
-            while (s_queue.Count > 0)
+            while (_queue.Count > 0)
             {
-                s_queue.Dequeue().Run();
+                _queue.Dequeue().Run();
             }
         }
 
-        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        internal void OnPlayModeStateChanged(PlayModeStateChange state)
         {
             if (state != PlayModeStateChange.ExitingPlayMode)
             {
@@ -95,36 +94,48 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             // The player loop stops with Play Mode, so fail the pending requests instead of leaving them waiting.
-            while (s_queue.Count > 0)
+            while (_queue.Count > 0)
             {
-                s_queue.Dequeue().Fail(
+                _queue.Dequeue().Fail(
                     new InvalidOperationException("Play Mode was exited before the operation ran."));
             }
         }
 
-        // The player loop may be replaced (e.g. on entering Play Mode or by user code), so check on every request.
-        private static void EnsureInstalled()
+        // The player loop may be replaced (e.g. on entering Play Mode or by user code), and may still hold
+        // the system of another instance (e.g. from before a domain reload), so check on every request.
+        private void EnsureInstalled()
         {
-            var loop = PlayerLoop.GetCurrentPlayerLoop();
-            if (Contains(loop))
+            var system = new PlayerLoopSystem
             {
-                return;
-            }
+                type = typeof(UniCortexPlayerLoopDispatcher),
+                updateDelegate = OnPlayerLoopUpdate
+            };
 
+            var loop = PlayerLoop.GetCurrentPlayerLoop();
             for (var i = 0; i < loop.subSystemList.Length; i++)
             {
-                if (loop.subSystemList[i].type != typeof(PreLateUpdate))
+                var phase = loop.subSystemList[i];
+                if (phase.type != typeof(PreLateUpdate))
                 {
                     continue;
                 }
 
-                var phase = loop.subSystemList[i];
                 var systems = (phase.subSystemList ?? Array.Empty<PlayerLoopSystem>()).ToList();
-                systems.Add(new PlayerLoopSystem
+                var index = systems.FindIndex(s => s.type == typeof(UniCortexPlayerLoopDispatcher));
+                if (index >= 0 && Equals(systems[index].updateDelegate, system.updateDelegate))
                 {
-                    type = typeof(UniCortexPlayerLoopRunner),
-                    updateDelegate = Run
-                });
+                    return;
+                }
+
+                if (index >= 0)
+                {
+                    systems[index] = system;
+                }
+                else
+                {
+                    systems.Add(system);
+                }
+
                 phase.subSystemList = systems.ToArray();
                 loop.subSystemList[i] = phase;
                 PlayerLoop.SetPlayerLoop(loop);
@@ -132,12 +143,6 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             throw new InvalidOperationException("PreLateUpdate phase was not found in the player loop.");
-        }
-
-        private static bool Contains(PlayerLoopSystem system)
-        {
-            return system.type == typeof(UniCortexPlayerLoopRunner)
-                   || (system.subSystemList != null && system.subSystemList.Any(Contains));
         }
     }
 }

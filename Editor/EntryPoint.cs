@@ -45,17 +45,19 @@ namespace UniCortex.Editor
             }
 
             var dispatcher = new MainThreadDispatcher();
+            var playerLoopDispatcher = new PlayerLoopDispatcher(new EditorApplicationAdapter());
             var compilationPipeline = new CompilationPipelineAdapter();
 
-            var server = StartServer(dispatcher, compilationPipeline);
+            var server = StartServer(dispatcher, playerLoopDispatcher, compilationPipeline);
 
             EditorApplication.update += dispatcher.OnUpdate;
+            EditorApplication.playModeStateChanged += playerLoopDispatcher.OnPlayModeStateChanged;
             AssemblyReloadEvents.beforeAssemblyReload += () => Shutdown(compilationPipeline, server);
             EditorApplication.quitting += OnQuit;
         }
 
         private static HttpListenerServer StartServer(IMainThreadDispatcher dispatcher,
-            ICompilationPipeline compilationPipeline)
+            IPlayerLoopDispatcher playerLoopDispatcher, ICompilationPipeline compilationPipeline)
         {
             var port = SessionState.GetInt(PortKey, 0);
             if (port == 0)
@@ -66,7 +68,7 @@ namespace UniCortex.Editor
 
             var router = new RequestRouter();
 
-            RegisterHandlers(router, dispatcher, compilationPipeline);
+            RegisterHandlers(router, dispatcher, playerLoopDispatcher, compilationPipeline);
 
             var server = new HttpListenerServer(router, port);
             try
@@ -83,7 +85,7 @@ namespace UniCortex.Editor
         }
 
         private static void RegisterHandlers(RequestRouter router, IMainThreadDispatcher dispatcher,
-            ICompilationPipeline compilationPipeline)
+            IPlayerLoopDispatcher playerLoopDispatcher, ICompilationPipeline compilationPipeline)
         {
             var testResultStore = new TestResultStore(TestResultJsonKey, TestPendingResultsJsonKey);
             RegisterTestCallbacks(testResultStore);
@@ -305,7 +307,7 @@ namespace UniCortex.Editor
             var sendKeyEventHandler = new SendKeyEventHandler(sendKeyEventUseCase);
 
 #if UNICORTEX_UGUI
-            var pointerTargetOps = new PointerTargetOperationsAdapter();
+            var pointerTargetOps = new PointerTargetOperationsAdapter(playerLoopDispatcher);
 #else
             var pointerTargetOps = new PointerTargetNotSupportedAdapter();
 #endif
