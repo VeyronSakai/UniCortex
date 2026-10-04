@@ -304,8 +304,17 @@ namespace UniCortex.Editor
             var sendKeyEventUseCase = new SendKeyEventUseCase(dispatcher, inputSimOps);
             var sendKeyEventHandler = new SendKeyEventHandler(sendKeyEventUseCase);
 
-            var sendMouseEventUseCase = new SendMouseEventUseCase(dispatcher, inputSimOps);
+#if UNICORTEX_UGUI
+            var pointerTargetOps = new PointerTargetOperationsAdapter();
+#else
+            var pointerTargetOps = new PointerTargetNotSupportedAdapter();
+#endif
+
+            var sendMouseEventUseCase = new SendMouseEventUseCase(dispatcher, inputSimOps, pointerTargetOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
+
+            var getPointerTargetsUseCase = new GetPointerTargetsUseCase(dispatcher, pointerTargetOps);
+            var getPointerTargetsHandler = new GetPointerTargetsHandler(getPointerTargetsUseCase);
 
             var timelineOps = new TimelineOperationsAdapter();
 
@@ -414,6 +423,7 @@ namespace UniCortex.Editor
 
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
+            getPointerTargetsHandler.Register(router);
             createTimelineHandler.Register(router);
             addTimelineTrackHandler.Register(router);
             removeTimelineTrackHandler.Register(router);

@@ -46,6 +46,7 @@ namespace UniCortex.Editor.Domains.Models
 
         public const string InputKey = "/input/key";
         public const string InputMouse = "/input/mouse";
+        public const string InputPointerTargets = "/input/pointer-targets";
         public const string TimelineCreate = "/timeline/create";
         public const string TimelineTracks = "/timeline/tracks";
         public const string TimelineAddTrack = "/timeline/track/add";

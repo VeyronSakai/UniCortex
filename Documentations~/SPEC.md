@@ -916,16 +916,66 @@ Response: `{"success": true}`
 #### POST `/input/mouse`
 Sends a mouse event through the Input System while in Play mode.
 
-Request body:
+Request body (coordinates):
 ```json
 {"x": 100.0, "y": 200.0, "button": "left", "eventType": "press"}
 ```
 
-- `x`, `y`: screen coordinates in pixels. The origin (0, 0) is the bottom-left of the screen. X increases to the right, Y increases upward. The value range depends on the Game View resolution (e.g. for 800x600: x: 0–800, y: 0–600). Same coordinate system as `Mouse.current.position.ReadValue()`. Note: images from `capture_game_view` are at the Game View resolution with a top-left origin and Y increasing downward, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py.
-- `button`: optional. `"left"` (default), `"right"`, `"middle"`
-- `eventType`: optional. `"click"` (default: press, wait one frame, then release), `"press"`, `"release"`, or `"move"` (only update position, no button action)
+Request body (UI target):
+```json
+{"targetPath": "Canvas/Menu/StartButton", "eventType": "click"}
+```
 
-Response: `{"success": true}`
+- `x`, `y`: screen coordinates in pixels. The origin (0, 0) is the bottom-left of the screen. X increases to the right, Y increases upward. The value range depends on the Game View resolution (e.g. for 800x600: x: 0–800, y: 0–600). Same coordinate system as `Mouse.current.position.ReadValue()`. Note: images from `capture_game_view` are at the Game View resolution with a top-left origin and Y increasing downward, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py.
+- `targetInstanceId` / `targetPath`: a UI object (a `RectTransform` under a `Canvas`) given by instanceId or by Hierarchy path (names from the scene root joined with `/`). The event is sent to its center, computed the same way as `GET /input/pointer-targets`. A path that matches several objects returns `400`; use `targetInstanceId` then. Requires the uGUI package (`com.unity.ugui`).
+- Exactly one of the coordinates (`x` and `y` together) or a target (`targetInstanceId` or `targetPath`, not both) must be given. Otherwise `400` is returned.
+- `button`: optional. `"left"` (default), `"right"`, `"middle"`
+- `eventType`: optional. `"click"` (default: press, wait one frame, then release), `"press"`, `"release"`, or `"move"` (only update position, no button action). Works with a target too, so a drag can start from a target.
+
+With a target, the event still goes through the Input System and the EventSystem raycast like a real tap. `onClick.Invoke()` is intentionally not called, so a target covered by other UI does not receive the event.
+
+Response: `{"success": true, "x": 100.0, "y": 200.0, "targetBlocked": false, "blockedBy": ""}`
+
+- `x`, `y`: the position the event was sent to
+- `targetBlocked`, `blockedBy`: only set with a target. Same as `blocked` / `blockedBy` of `GET /input/pointer-targets`
+
+#### GET `/input/pointer-targets`
+Lists the uGUI objects in the Game View that receive pointer events, so that an agent can operate UI without capturing the Game View to find coordinates. Play mode only. Requires the uGUI package (`com.unity.ugui`) and an active `EventSystem`.
+
+**Optional dependency**: `UNICORTEX_UGUI` is defined via `versionDefines` in `UniCortex.Editor.asmdef` when `com.unity.ugui` is installed. When it is not installed, a fallback adapter throws `NotSupportedException`.
+
+An object is listed when it is under a `Canvas` and has an enabled component implementing a pointer event handler interface (`IPointerEnterHandler`, `IPointerExitHandler`, `IPointerDownHandler`, `IPointerUpHandler`, `IPointerClickHandler`, `IInitializePotentialDragHandler`, `IBeginDragHandler`, `IDragHandler`, `IEndDragHandler`, `IDropHandler`, `IScrollHandler`). This covers `Selectable` (`Button`, `Toggle`, `Slider`, ...), `ScrollRect` and custom drag / long-press components. For `EventTrigger`, which implements every interface, only its registered entries are reported. Inactive objects are included. Results are in Hierarchy order across every loaded scene (including `DontDestroyOnLoad`).
+
+Unlike `GET /gameobjects` ("what is in the Hierarchy"), this answers "what in the Game View can receive pointer input now", and has no query syntax.
+
+The positions and the raycast are computed inside the player loop: `GraphicRaycaster` uses `Screen.width` / `Screen.height`, which return the Game View resolution only while the player loop runs (from `EditorApplication.update` they return the size of another view). Because the player loop does not run while the Editor is paused, this endpoint (and `POST /input/mouse` with a target) returns `400` while paused.
+
+Response:
+```json
+{
+  "targets": [
+    {
+      "name": "StartButton",
+      "path": "Canvas/Menu/StartButton",
+      "instanceId": 12345,
+      "centerX": 960.0,
+      "centerY": 540.0,
+      "rect": {"x": 860.0, "y": 500.0, "width": 200.0, "height": 80.0},
+      "events": ["enter", "exit", "down", "up", "click"],
+      "activeInHierarchy": true,
+      "interactable": true,
+      "blocked": false,
+      "blockedBy": ""
+    }
+  ]
+}
+```
+
+- `centerX`, `centerY`, `rect`: Game View coordinates (same as `POST /input/mouse` `x` / `y`), computed with `RectTransformUtility.WorldToScreenPoint` and the event camera of the root Canvas's raycaster. `rect` is the bounding box of the four corners
+- `events`: pointer events handled by the object: `enter`, `exit`, `down`, `up`, `click`, `initializePotentialDrag`, `beginDrag`, `drag`, `endDrag`, `drop`, `scroll`. A `click` is enough for `click`; a drag needs `press` → `move` → `release`
+- `interactable`: `Selectable.IsInteractable()` (including `CanvasGroup`) for a `Selectable`, otherwise `true`
+- `blocked`: `true` when the topmost hit of an `EventSystem.RaycastAll` at the center is neither the object nor its child. This catches objects behind a modal, transparent overlays, a wrong `raycastTarget`, inactive objects, and objects outside the screen
+- `blockedBy`: the Hierarchy path of that topmost hit, or empty when nothing was hit
 
 ### Timeline
 
@@ -1263,7 +1313,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
   3. Exits with an error if neither is set
 - Logs go to stderr (stdout is reserved for the MCP protocol)
 
-### MCP Tools (45 tools total)
+### MCP Tools (46 tools total)
 
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
@@ -1374,12 +1424,13 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `get_game_view_size_list` | GET `/game-view/size/list` | Get the list of available Game View sizes |
 | `set_game_view_size` | POST `/game-view/size` | Set the Game View resolution by index |
 
-#### Input (2)
+#### Input (3)
 
 | Tool | API | Description |
 |------|-----|-------------|
 | `send_key_event` | POST `/input/key` | Send a key event through the Input System (requires com.unity.inputsystem) |
-| `send_mouse_event` | POST `/input/mouse` | Send a mouse event through the Input System (requires com.unity.inputsystem) |
+| `send_mouse_event` | POST `/input/mouse` | Send a mouse event through the Input System to coordinates or to the center of a UI target (requires com.unity.inputsystem, and com.unity.ugui for a target) |
+| `get_pointer_targets` | GET `/input/pointer-targets` | List the uGUI objects that receive pointer events, with Game View coordinates, handled events and blocked state (requires com.unity.ugui) |
 
 #### Timeline (15)
 
@@ -1490,7 +1541,7 @@ menu execute
 scene-view focus|capture
 game-view focus|capture
 game-view size get|list|set
-input send-key|send-mouse
+input send-key|send-mouse|pointer-targets
 timeline create|play|stop
 timeline track list|add|remove|bind
 timeline track property list|set
