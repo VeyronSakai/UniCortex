@@ -35,7 +35,7 @@ namespace UniCortex.Editor.UseCases
                 }
 
                 Debug.Log("[UniCortex] Domain Reload");
-                return _compilationPipeline.RequestScriptCompilation();
+                return _compilationPipeline.RequestScriptCompilationAsync();
             }, cancellationToken);
 
             // The cancellation token is not used here. The server is only stopped for a domain reload, and
