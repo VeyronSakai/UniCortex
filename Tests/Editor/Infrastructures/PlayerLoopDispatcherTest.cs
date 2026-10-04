@@ -11,34 +11,101 @@ namespace UniCortex.Editor.Tests.Infrastructures
     [TestFixture]
     internal sealed class PlayerLoopDispatcherTest
     {
+        private static PlayerLoopDispatcher CreateDispatcher(SpyPlayerLoop playerLoop, bool isPlaying = true,
+            bool isPaused = false)
+        {
+            var editorApplication = new SpyEditorApplication { IsPlaying = isPlaying, IsPaused = isPaused };
+            return new PlayerLoopDispatcher(editorApplication, playerLoop);
+        }
+
         [Test]
         public void RunAsync_Throws_WhenNotPlaying()
         {
             // Arrange
-            var dispatcher = new PlayerLoopDispatcher(new SpyEditorApplication { IsPlaying = false });
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop, isPlaying: false);
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => dispatcher.RunAsync(() => 1));
             StringAssert.Contains("Play Mode", ex.Message);
+            Assert.AreEqual(0, playerLoop.InsertCallCount);
         }
 
         [Test]
         public void RunAsync_Throws_WhenPaused()
         {
             // Arrange
-            var dispatcher = new PlayerLoopDispatcher(
-                new SpyEditorApplication { IsPlaying = true, IsPaused = true });
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop, isPaused: true);
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => dispatcher.RunAsync(() => 1));
             StringAssert.Contains("paused", ex.Message);
+            Assert.AreEqual(0, playerLoop.InsertCallCount);
         }
 
         [Test]
-        public void OnPlayerLoopUpdate_RunsQueuedFunctionsInEnqueueOrder()
+        public void RunAsync_InsertsSystem_OnlyOnce()
         {
             // Arrange
-            var dispatcher = new PlayerLoopDispatcher(new SpyEditorApplication { IsPlaying = true });
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
+
+            // Act
+            dispatcher.RunAsync(() => 1);
+            dispatcher.RunAsync(() => 2);
+
+            // Assert
+            Assert.AreEqual(1, playerLoop.InsertCallCount);
+            Assert.AreEqual(1, playerLoop.Systems.Count);
+            Assert.AreEqual(typeof(PlayerLoopDispatcher), playerLoop.Systems[0].type);
+        }
+
+        [Test]
+        public void RunAsync_ReplacesSystem_OfAnotherInstance()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var previous = CreateDispatcher(playerLoop);
+            previous.RunAsync(() => "previous");
+            var current = CreateDispatcher(playerLoop);
+
+            // Act
+            var task = current.RunAsync(() => "current");
+            playerLoop.Update();
+
+            // Assert
+            Assert.AreEqual(2, playerLoop.InsertCallCount);
+            Assert.AreEqual(1, playerLoop.Systems.Count);
+            Assert.AreEqual("current", task.GetAwaiter().GetResult());
+        }
+
+        [Test]
+        public void RunAsync_DoesNotRunFunction_UntilPlayerLoopUpdates()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
+            var executed = false;
+
+            // Act
+            var task = dispatcher.RunAsync(() =>
+            {
+                executed = true;
+                return 1;
+            });
+
+            // Assert
+            Assert.IsFalse(executed);
+            Assert.IsFalse(task.IsCompleted);
+        }
+
+        [Test]
+        public void PlayerLoopUpdate_RunsQueuedFunctionsInEnqueueOrder()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
             var order = new List<int>();
             var first = dispatcher.RunAsync(() =>
             {
@@ -52,7 +119,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             });
 
             // Act
-            dispatcher.OnPlayerLoopUpdate();
+            playerLoop.Update();
 
             // Assert
             Assert.AreEqual("first", first.GetAwaiter().GetResult());
@@ -61,14 +128,15 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void OnPlayerLoopUpdate_PassesException_ToTask()
+        public void PlayerLoopUpdate_PassesException_ToTask()
         {
             // Arrange
-            var dispatcher = new PlayerLoopDispatcher(new SpyEditorApplication { IsPlaying = true });
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
             var task = dispatcher.RunAsync<int>(() => throw new ArgumentException("failed"));
 
             // Act
-            dispatcher.OnPlayerLoopUpdate();
+            playerLoop.Update();
 
             // Assert
             var ex = Assert.Throws<ArgumentException>(() => task.GetAwaiter().GetResult());
@@ -76,10 +144,11 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void OnPlayerLoopUpdate_DoesNotRunFunction_WhenCanceledBefore()
+        public void PlayerLoopUpdate_DoesNotRunFunction_WhenCanceledBefore()
         {
             // Arrange
-            var dispatcher = new PlayerLoopDispatcher(new SpyEditorApplication { IsPlaying = true });
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
             var executed = false;
             using var cts = new CancellationTokenSource();
             var task = dispatcher.RunAsync(() =>
@@ -90,7 +159,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             cts.Cancel();
 
             // Act
-            dispatcher.OnPlayerLoopUpdate();
+            playerLoop.Update();
 
             // Assert
             Assert.IsTrue(task.IsCanceled);
@@ -101,7 +170,8 @@ namespace UniCortex.Editor.Tests.Infrastructures
         public void OnPlayModeStateChanged_FailsPendingRequests_WhenExitingPlayMode()
         {
             // Arrange
-            var dispatcher = new PlayerLoopDispatcher(new SpyEditorApplication { IsPlaying = true });
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
             var executed = false;
             var task = dispatcher.RunAsync(() =>
             {
@@ -111,7 +181,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
 
             // Act
             dispatcher.OnPlayModeStateChanged(PlayModeStateChange.ExitingPlayMode);
-            dispatcher.OnPlayerLoopUpdate();
+            playerLoop.Update();
 
             // Assert
             var ex = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult());

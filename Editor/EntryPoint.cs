@@ -45,7 +45,8 @@ namespace UniCortex.Editor
             }
 
             var dispatcher = new MainThreadDispatcher();
-            var playerLoopDispatcher = new PlayerLoopDispatcher(new EditorApplicationAdapter());
+            var playerLoopDispatcher = new PlayerLoopDispatcher(new EditorApplicationAdapter(),
+                new PlayerLoopAdapter());
             var compilationPipeline = new CompilationPipelineAdapter();
 
             var server = StartServer(dispatcher, playerLoopDispatcher, compilationPipeline);

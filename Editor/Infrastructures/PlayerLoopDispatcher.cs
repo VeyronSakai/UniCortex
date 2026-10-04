@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
 using UnityEditor;
-using UnityEngine.LowLevel;
-using UnityEngine.PlayerLoop;
 
 namespace UniCortex.Editor.Infrastructures
 {
@@ -25,11 +22,13 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         private readonly IEditorApplication _editorApplication;
+        private readonly IPlayerLoop _playerLoop;
         private readonly Queue<Request> _queue = new();
 
-        public PlayerLoopDispatcher(IEditorApplication editorApplication)
+        public PlayerLoopDispatcher(IEditorApplication editorApplication, IPlayerLoop playerLoop)
         {
             _editorApplication = editorApplication;
+            _playerLoop = playerLoop;
         }
 
         public Task<T> RunAsync<T>(Func<T> func, CancellationToken cancellationToken = default)
@@ -78,7 +77,7 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         // Called from the system inserted into the player loop.
-        internal void OnPlayerLoopUpdate()
+        private void OnPlayerLoopUpdate()
         {
             while (_queue.Count > 0)
             {
@@ -101,54 +100,22 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        // The player loop may be replaced (e.g. on entering Play Mode or by user code), and may still hold
-        // the system of another instance (e.g. from before a domain reload), so check on every request.
+        // The player loop may be replaced (e.g. on entering Play Mode or by user code), so check on every request.
         private void EnsureInstalled()
         {
-            var system = new PlayerLoopSystem
+            Action update = OnPlayerLoopUpdate;
+
+            // A delegate equals another only when both its target instance and its method are the same,
+            // so this is true only when the installed system calls this instance's OnPlayerLoopUpdate.
+            if (_playerLoop.Contains(typeof(PlayerLoopDispatcher), update))
             {
-                type = typeof(PlayerLoopDispatcher),
-                updateDelegate = OnPlayerLoopUpdate
-            };
-
-            var loop = PlayerLoop.GetCurrentPlayerLoop();
-            for (var i = 0; i < loop.subSystemList.Length; i++)
-            {
-                var phase = loop.subSystemList[i];
-                if (phase.type != typeof(PreLateUpdate))
-                {
-                    continue;
-                }
-
-                var systems = (phase.subSystemList ?? Array.Empty<PlayerLoopSystem>()).ToList();
-                var index = systems.FindIndex(s => s.type == typeof(PlayerLoopDispatcher));
-
-                // A delegate equals another only when both its target instance and its method are the same,
-                // so this is true only when the installed system calls this instance's OnPlayerLoopUpdate.
-                if (index >= 0 && Equals(systems[index].updateDelegate, system.updateDelegate))
-                {
-                    return;
-                }
-
-                if (index >= 0)
-                {
-                    // The installed system calls another instance, e.g. one created by a test or one left from
-                    // before a domain reload. Keeping it would drain that instance's queue instead of this one,
-                    // so the requests queued here would never run. Replace it with this instance's system.
-                    systems[index] = system;
-                }
-                else
-                {
-                    systems.Add(system);
-                }
-
-                phase.subSystemList = systems.ToArray();
-                loop.subSystemList[i] = phase;
-                PlayerLoop.SetPlayerLoop(loop);
                 return;
             }
 
-            throw new InvalidOperationException("PreLateUpdate phase was not found in the player loop.");
+            // Insert also replaces a system that calls another instance, e.g. one left from before a domain
+            // reload. Keeping it would drain that instance's queue instead of this one, so the requests queued
+            // here would never run.
+            _playerLoop.Insert(typeof(PlayerLoopDispatcher), update);
         }
     }
 }
