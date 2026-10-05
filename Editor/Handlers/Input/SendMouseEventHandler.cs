@@ -12,6 +12,7 @@ namespace UniCortex.Editor.Handlers.Input
     internal sealed class SendMouseEventHandler
     {
         private const string PositionRequiredMessage = "Specify either x and y, or instanceId.";
+        private const int DefaultDragFrames = 10;
 
         private readonly SendMouseEventUseCase _useCase;
 
@@ -35,6 +36,11 @@ namespace UniCortex.Editor.Handlers.Input
             public int instanceId;
             public string button;
             public string eventType;
+            public float toX;
+            public float toY;
+            public int toInstanceId;
+            public int frames;
+            public int holdFrames;
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -53,33 +59,59 @@ namespace UniCortex.Editor.Handlers.Input
             var hasY = HasField(body, "y");
             var hasTarget = HasField(body, "instanceId");
 
-            if (hasX != hasY)
+            var startError = ValidatePosition(hasX, hasY, hasTarget, request.instanceId, "x", "y", "instanceId");
+            if (startError != null)
             {
-                await WriteErrorAsync(context, "x and y must be specified together.");
-                return;
-            }
-
-            if (hasX == hasTarget)
-            {
-                await WriteErrorAsync(context, PositionRequiredMessage);
-                return;
-            }
-
-            if (hasTarget && request.instanceId == 0)
-            {
-                await WriteErrorAsync(context, "instanceId must not be 0.");
+                await WriteErrorAsync(context, startError);
                 return;
             }
 
             var button = string.IsNullOrEmpty(request.button) ? MouseButton.Left : request.button;
             var eventType = string.IsNullOrEmpty(request.eventType) ? InputEventType.Click : request.eventType;
+            var isDrag = string.Equals(eventType, InputEventType.Drag, StringComparison.OrdinalIgnoreCase);
+
+            var hasToX = HasField(body, "toX");
+            var hasToY = HasField(body, "toY");
+            var hasToTarget = HasField(body, "toInstanceId");
+            var hasFrames = HasField(body, "frames");
+            var hasHoldFrames = HasField(body, "holdFrames");
+
+            if (!isDrag && (hasToX || hasToY || hasToTarget || hasFrames || hasHoldFrames))
+            {
+                await WriteErrorAsync(context,
+                    $"toX, toY, toInstanceId, frames and holdFrames are only valid with eventType \"{InputEventType.Drag}\".");
+                return;
+            }
 
             SendMouseEventResponse response;
             try
             {
-                response = hasTarget
-                    ? await _useCase.ExecuteAsync(request.instanceId, button, eventType, cancellationToken)
-                    : await _useCase.ExecuteAsync(request.x, request.y, button, eventType, cancellationToken);
+                if (isDrag)
+                {
+                    var endError = ValidatePosition(hasToX, hasToY, hasToTarget, request.toInstanceId,
+                        "toX", "toY", "toInstanceId");
+                    if (endError != null)
+                    {
+                        await WriteErrorAsync(context, endError);
+                        return;
+                    }
+
+                    var start = hasTarget
+                        ? MousePosition.CenterOf(request.instanceId)
+                        : MousePosition.At(request.x, request.y);
+                    var end = hasToTarget
+                        ? MousePosition.CenterOf(request.toInstanceId)
+                        : MousePosition.At(request.toX, request.toY);
+                    var frames = hasFrames ? request.frames : DefaultDragFrames;
+                    var holdFrames = hasHoldFrames ? request.holdFrames : 0;
+                    response = await _useCase.DragAsync(start, end, button, frames, holdFrames, cancellationToken);
+                }
+                else
+                {
+                    response = hasTarget
+                        ? await _useCase.ExecuteAsync(request.instanceId, button, eventType, cancellationToken)
+                        : await _useCase.ExecuteAsync(request.x, request.y, button, eventType, cancellationToken);
+                }
             }
             catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException
                                            or ArgumentException)
@@ -90,6 +122,28 @@ namespace UniCortex.Editor.Handlers.Input
 
             var json = JsonUtility.ToJson(response);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+        }
+
+        // Returns an error message when the position is not given by exactly one of the coordinates or a target.
+        private static string ValidatePosition(bool hasX, bool hasY, bool hasTarget, int instanceId,
+            string xName, string yName, string targetName)
+        {
+            if (hasX != hasY)
+            {
+                return $"{xName} and {yName} must be specified together.";
+            }
+
+            if (hasX == hasTarget)
+            {
+                return $"Specify either {xName} and {yName}, or {targetName}.";
+            }
+
+            if (hasTarget && instanceId == 0)
+            {
+                return $"{targetName} must not be 0.";
+            }
+
+            return null;
         }
 
         // Matches the key followed by a colon so that a string value such as "x" is not taken as the key.

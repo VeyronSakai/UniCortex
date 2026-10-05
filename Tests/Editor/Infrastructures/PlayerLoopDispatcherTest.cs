@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
@@ -189,6 +190,135 @@ namespace UniCortex.Editor.Tests.Infrastructures
             var ex = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult());
             StringAssert.Contains("Play Mode was exited", ex.Message);
             Assert.IsFalse(executed);
+        }
+
+        [Test]
+        public void RunEachFrameAsync_CallsStepOncePerUpdate_UntilItReturnsFalse()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
+            var calledFrames = new List<int>();
+
+            // Act
+            var task = dispatcher.RunEachFrameAsync(frame =>
+            {
+                calledFrames.Add(frame);
+                return frame < 2;
+            });
+            var calledBeforeUpdate = calledFrames.Count;
+            playerLoop.Update();
+            playerLoop.Update();
+            var completedBeforeLastUpdate = task.IsCompleted;
+            playerLoop.Update();
+            playerLoop.Update();
+
+            // Assert
+            Assert.AreEqual(0, calledBeforeUpdate);
+            Assert.IsFalse(completedBeforeLastUpdate);
+            Assert.IsTrue(task.IsCompleted);
+            task.GetAwaiter().GetResult();
+            CollectionAssert.AreEqual(new[] { 0, 1, 2 }, calledFrames);
+        }
+
+        [Test]
+        public void RunEachFrameAsync_PassesException_ToTask_AndStops()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
+            var callCount = 0;
+            var task = dispatcher.RunEachFrameAsync(frame =>
+            {
+                callCount++;
+                if (frame == 1)
+                {
+                    throw new ArgumentException("failed");
+                }
+
+                return true;
+            });
+
+            // Act
+            playerLoop.Update();
+            playerLoop.Update();
+            playerLoop.Update();
+
+            // Assert
+            var ex = Assert.Throws<ArgumentException>(() => task.GetAwaiter().GetResult());
+            Assert.AreEqual("failed", ex.Message);
+            Assert.AreEqual(2, callCount);
+        }
+
+        [Test]
+        public void RunEachFrameAsync_StopsCallingStep_WhenCanceled()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
+            var callCount = 0;
+            using var cts = new CancellationTokenSource();
+            var task = dispatcher.RunEachFrameAsync(_ =>
+            {
+                callCount++;
+                return true;
+            }, cts.Token);
+            playerLoop.Update();
+
+            // Act
+            cts.Cancel();
+            playerLoop.Update();
+
+            // Assert
+            Assert.IsTrue(task.IsCanceled);
+            Assert.AreEqual(1, callCount);
+        }
+
+        [Test]
+        public void PlayerLoopUpdate_RunsRequestQueuedDuringUpdate_InNextFrame()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
+            Task<int> inner = null;
+            dispatcher.RunAsync(() =>
+            {
+                inner = dispatcher.RunAsync(() => 2);
+                return 1;
+            });
+
+            // Act
+            playerLoop.Update();
+            var completedInSameFrame = inner.IsCompleted;
+            playerLoop.Update();
+
+            // Assert
+            Assert.IsFalse(completedInSameFrame);
+            Assert.AreEqual(2, inner.GetAwaiter().GetResult());
+        }
+
+        [Test]
+        public void OnPlayModeStateChanged_FailsRunningRequest_WhenExitingPlayMode()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
+            var callCount = 0;
+            var task = dispatcher.RunEachFrameAsync(_ =>
+            {
+                callCount++;
+                return true;
+            });
+            playerLoop.Update();
+
+            // Act
+            dispatcher.OnPlayModeStateChanged(PlayModeStateChange.ExitingPlayMode);
+            playerLoop.Update();
+
+            // Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult());
+            StringAssert.Contains("Play Mode was exited", ex.Message);
+            Assert.AreEqual(1, callCount);
         }
     }
 }

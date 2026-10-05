@@ -443,6 +443,56 @@ public class InputUseCaseTest
         Assert.That(ex!.Message, Does.Contain("Specify either x and y"));
     }
 
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_InPlayMode_Drag_PressesAtStartAndReleasesAtEnd()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
+
+            // Act
+            var message = await _fixture.InputUseCase.SendMouseEventAsync(10f, 20f, null, MouseButton.Left,
+                InputEventType.Drag, 110f, 70f, null, 5, 2, CancellationToken.None);
+
+            // Assert
+            // No delay before reading the logs: the drag returns after the release has been processed.
+            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
+                cancellationToken: CancellationToken.None);
+            Assert.That(message, Does.Contain("from (10, 20) to (110, 70)"));
+            Assert.That(logs, Does.Contain("[InputSystemDebug] Left mouse pressed at (10"));
+            Assert.That(logs, Does.Contain("[InputSystemDebug] Left mouse released at (110"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_ReturnsError_WhenDragEndIsMissing()
+    {
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.SendMouseEventAsync(100f, 200f, null, MouseButton.Left,
+                InputEventType.Drag, null, null, null, null, null, CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Specify either toX and toY"));
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_ReturnsError_WhenDragParametersAreGivenWithoutDrag()
+    {
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.SendMouseEventAsync(100f, 200f, null, MouseButton.Left,
+                InputEventType.Click, 1f, 1f, null, null, null, CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("only valid with eventType"));
+    }
+
     private async ValueTask<List<PointerTarget>> GetPointerTargetsAsync()
     {
         var json = await _fixture.InputUseCase.GetPointerTargetsAsync(CancellationToken.None);

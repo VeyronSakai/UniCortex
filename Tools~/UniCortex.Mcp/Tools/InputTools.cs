@@ -79,6 +79,9 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
          "exactly one of them is required. " +
          "With a target, the event still goes through the EventSystem raycast like a real tap, " +
          "so a target covered by other UI does not receive it. " +
+         $"With eventType \"{InputEventType.Drag}\", drags in one call: presses at the start (x/y or instanceId), " +
+         "moves along a straight line to the end (toX/toY or toInstanceId) with one move per frame, and releases at the end. " +
+         "The call returns after the release has been processed. " +
          "Requires the Input System package to be installed (and com.unity.ugui for a target). " +
          "Does NOT work with legacy UnityEngine.Input.GetMouseButton()."),
      UsedImplicitly]
@@ -91,11 +94,22 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         int? instanceId = null,
         [Description($"Mouse button: \"{MouseButton.Left}\" (default), \"{MouseButton.Right}\", or \"{MouseButton.Middle}\".")]
         string button = MouseButton.Left,
-        [Description($"Event type: \"{InputEventType.Click}\" (default, press then release after one frame), \"{InputEventType.Press}\", \"{InputEventType.Release}\", or \"{InputEventType.Move}\" (position only, no button).")]
+        [Description($"Event type: \"{InputEventType.Click}\" (default, press then release after one frame), \"{InputEventType.Press}\", \"{InputEventType.Release}\", \"{InputEventType.Move}\" (position only, no button), or \"{InputEventType.Drag}\" (press, move over frames, and release in one call).")]
         string eventType = InputEventType.Click,
+        [Description($"End X coordinate of a drag, in the same space as x. Only with eventType \"{InputEventType.Drag}\". Must be given together with toY, and not with toInstanceId.")]
+        float? toX = null,
+        [Description($"End Y coordinate of a drag, in the same space as y. Only with eventType \"{InputEventType.Drag}\". Must be given together with toX, and not with toInstanceId.")]
+        float? toY = null,
+        [Description($"instanceId of the UI GameObject whose center is the end of a drag. Only with eventType \"{InputEventType.Drag}\". Cannot be combined with toX/toY.")]
+        int? toInstanceId = null,
+        [Description($"Number of frames to move from the start to the end, with one move per frame (default 10, at least 1). Only with eventType \"{InputEventType.Drag}\".")]
+        int? frames = null,
+        [Description($"Number of frames to keep the button pressed at the start before moving, e.g. for long-press-then-drag (default 0). Only with eventType \"{InputEventType.Drag}\".")]
+        int? holdFrames = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => inputUseCase.SendMouseEventAsync(x, y, instanceId, button, eventType, ct),
+            ct => inputUseCase.SendMouseEventAsync(x, y, instanceId, button, eventType, toX, toY, toInstanceId,
+                frames, holdFrames, ct),
             cancellationToken);
 
     [McpServerTool(Name = "get_pointer_targets", ReadOnly = true),

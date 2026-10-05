@@ -11,5 +11,10 @@ namespace UniCortex.Editor.Domains.Interfaces
     {
         // Must be called on the main thread.
         Task<T> RunAsync<T>(Func<T> func, CancellationToken cancellationToken = default);
+
+        // Calls step once per frame, starting in the next frame, until it returns false.
+        // The argument is the number of frames since the first call (0 for the first call).
+        // Must be called on the main thread.
+        Task RunEachFrameAsync(Func<int, bool> step, CancellationToken cancellationToken = default);
     }
 }

@@ -313,7 +313,8 @@ namespace UniCortex.Editor
             var pointerTargetOps = new PointerTargetNotSupportedAdapter();
 #endif
 
-            var sendMouseEventUseCase = new SendMouseEventUseCase(dispatcher, inputSimOps, pointerTargetOps);
+            var sendMouseEventUseCase = new SendMouseEventUseCase(dispatcher, playerLoopDispatcher, inputSimOps,
+                pointerTargetOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
 
             var getPointerTargetsUseCase = new GetPointerTargetsUseCase(dispatcher, pointerTargetOps);

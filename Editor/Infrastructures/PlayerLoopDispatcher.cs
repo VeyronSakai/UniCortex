@@ -12,10 +12,11 @@ namespace UniCortex.Editor.Infrastructures
     {
         private readonly struct Request
         {
-            public readonly Action Run;
+            // Returns true to run again in the next frame.
+            public readonly Func<bool> Run;
             public readonly Action<Exception> Fail;
 
-            public Request(Action run, Action<Exception> fail)
+            public Request(Func<bool> run, Action<Exception> fail)
             {
                 Run = run;
                 Fail = fail;
@@ -34,6 +35,34 @@ namespace UniCortex.Editor.Infrastructures
 
         public Task<T> RunAsync<T>(Func<T> func, CancellationToken cancellationToken = default)
         {
+            var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Enqueue(tcs, () =>
+            {
+                tcs.TrySetResult(func());
+                return false;
+            }, cancellationToken);
+            return tcs.Task;
+        }
+
+        public Task RunEachFrameAsync(Func<int, bool> step, CancellationToken cancellationToken = default)
+        {
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var frame = 0;
+            Enqueue(tcs, () =>
+            {
+                if (step(frame++))
+                {
+                    return true;
+                }
+
+                tcs.TrySetResult(true);
+                return false;
+            }, cancellationToken);
+            return tcs.Task;
+        }
+
+        private void Enqueue<T>(TaskCompletionSource<T> tcs, Func<bool> run, CancellationToken cancellationToken)
+        {
             if (!_editorApplication.IsPlaying)
             {
                 throw new InvalidOperationException(
@@ -49,8 +78,6 @@ namespace UniCortex.Editor.Infrastructures
 
             EnsureInstalled();
 
-            var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
-
             // Cancel the task as soon as the token is canceled, without waiting for the next player loop update.
             // The token is canceled when the HTTP server stops (e.g. for a domain reload), and the request is then
             // answered with 503 right away. The queued function is skipped later because the task is already done.
@@ -61,28 +88,35 @@ namespace UniCortex.Editor.Infrastructures
                     // Already canceled (see above), so do not run the function.
                     if (tcs.Task.IsCompleted)
                     {
-                        return;
+                        return false;
                     }
 
                     try
                     {
-                        tcs.TrySetResult(func());
+                        return run();
                     }
                     catch (Exception ex)
                     {
                         tcs.TrySetException(ex);
+                        return false;
                     }
                 },
                 ex => tcs.TrySetException(ex)));
-            return tcs.Task;
         }
 
         // Called from the system inserted into the player loop.
         private void OnPlayerLoopUpdate()
         {
-            while (_queue.Count > 0)
+            // Run only the requests queued before this update. Requests that run again, and requests queued by the
+            // functions run here, wait for the next frame.
+            var count = _queue.Count;
+            for (var i = 0; i < count; i++)
             {
-                _queue.Dequeue().Run();
+                var request = _queue.Dequeue();
+                if (request.Run())
+                {
+                    _queue.Enqueue(request);
+                }
             }
         }
 
@@ -97,7 +131,7 @@ namespace UniCortex.Editor.Infrastructures
             while (_queue.Count > 0)
             {
                 _queue.Dequeue().Fail(
-                    new InvalidOperationException("Play Mode was exited before the operation ran."));
+                    new InvalidOperationException("Play Mode was exited before the operation completed."));
             }
         }
 

@@ -24,16 +24,34 @@ public class InputUseCase(IUnityEditorClient client)
     public async ValueTask<string> SendMouseEventAsync(float? x, float? y, int? instanceId,
         string button, string eventType, CancellationToken cancellationToken)
     {
+        return await SendMouseEventAsync(x, y, instanceId, button, eventType, null, null, null, null, null,
+            cancellationToken);
+    }
+
+    public async ValueTask<string> SendMouseEventAsync(float? x, float? y, int? instanceId,
+        string button, string eventType, float? toX, float? toY, int? toInstanceId, int? frames, int? holdFrames,
+        CancellationToken cancellationToken)
+    {
         var request = new SendMouseEventRequest
         {
             x = x,
             y = y,
             instanceId = instanceId,
             button = button,
-            eventType = eventType
+            eventType = eventType,
+            toX = toX,
+            toY = toY,
+            toInstanceId = toInstanceId,
+            frames = frames,
+            holdFrames = holdFrames
         };
         var response = await client.PostAsync<SendMouseEventRequest, SendMouseEventResponse>(ApiRoutes.InputMouse,
             request, cancellationToken);
+
+        if (string.Equals(eventType, InputEventType.Drag, StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Mouse dragged from ({response.x}, {response.y}) to ({response.toX}, {response.toY}) button={button}";
+        }
 
         if (instanceId == null)
         {

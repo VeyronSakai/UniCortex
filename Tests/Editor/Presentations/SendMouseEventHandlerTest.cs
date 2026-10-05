@@ -18,7 +18,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
             var pointerTargetOps = new SpyPointerTargetOperations();
-            var useCase = new SendMouseEventUseCase(dispatcher, ops, pointerTargetOps);
+            var useCase = new SendMouseEventUseCase(dispatcher, new FakePlayerLoopDispatcher(), ops,
+                pointerTargetOps);
             var handler = new SendMouseEventHandler(useCase);
 
             var router = new RequestRouter();
@@ -199,6 +200,113 @@ namespace UniCortex.Editor.Tests.Presentations
             // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("not found", context.ResponseBody);
+            Assert.AreEqual(0, ops.SendMouseEventCallCount);
+        }
+
+        [Test]
+        public void Handle_Drag_Returns200_AndDragsOverGivenFrames()
+        {
+            // Arrange
+            var (router, ops, _) = CreateRouter();
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
+                "{\"x\":0.0,\"y\":0.0,\"toX\":100.0,\"toY\":40.0,\"eventType\":\"drag\",\"frames\":2}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(4, ops.SendMouseEventCallCount);
+            Assert.AreEqual(InputEventType.Press, ops.MouseEventHistory[0].EventType);
+            Assert.AreEqual(InputEventType.Move, ops.MouseEventHistory[1].EventType);
+            Assert.AreEqual(50f, ops.MouseEventHistory[1].X);
+            Assert.AreEqual(20f, ops.MouseEventHistory[1].Y);
+            Assert.AreEqual(InputEventType.Move, ops.MouseEventHistory[2].EventType);
+            Assert.AreEqual(InputEventType.Release, ops.MouseEventHistory[3].EventType);
+            StringAssert.Contains("\"toX\":100.0", context.ResponseBody);
+            StringAssert.Contains("\"toY\":40.0", context.ResponseBody);
+        }
+
+        [Test]
+        public void Handle_Drag_UsesDefaultFrames_WhenFramesIsOmitted()
+        {
+            // Arrange
+            var (router, ops, _) = CreateRouter();
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
+                "{\"x\":0.0,\"y\":0.0,\"toX\":100.0,\"toY\":0.0,\"eventType\":\"drag\"}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            // Press, 10 moves, and release.
+            Assert.AreEqual(12, ops.SendMouseEventCallCount);
+        }
+
+        [Test]
+        public void Handle_Drag_Returns200_WithTargets()
+        {
+            // Arrange
+            var (router, ops, pointerTargetOps) = CreateRouter();
+            pointerTargetOps.TargetCentersToReturn[111] = (10f, 20f);
+            pointerTargetOps.TargetCentersToReturn[222] = (30f, 40f);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse,
+                "{\"instanceId\":111,\"toInstanceId\":222,\"eventType\":\"drag\",\"frames\":1}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(2, pointerTargetOps.GetTargetCenterCallCount);
+            Assert.AreEqual(10f, ops.MouseEventHistory[0].X);
+            Assert.AreEqual(20f, ops.MouseEventHistory[0].Y);
+            Assert.AreEqual(30f, ops.LastMouseX);
+            Assert.AreEqual(40f, ops.LastMouseY);
+        }
+
+        [TestCase("{\"x\":0.0,\"y\":0.0,\"eventType\":\"drag\"}", "Specify either toX and toY, or toInstanceId.")]
+        [TestCase("{\"x\":0.0,\"y\":0.0,\"toX\":1.0,\"eventType\":\"drag\"}", "toX and toY must be specified together.")]
+        [TestCase("{\"x\":0.0,\"y\":0.0,\"toX\":1.0,\"toY\":1.0,\"toInstanceId\":1,\"eventType\":\"drag\"}",
+            "Specify either toX and toY, or toInstanceId.")]
+        [TestCase("{\"x\":0.0,\"y\":0.0,\"toInstanceId\":0,\"eventType\":\"drag\"}", "toInstanceId must not be 0.")]
+        [TestCase("{\"x\":0.0,\"y\":0.0,\"toX\":1.0,\"toY\":1.0,\"eventType\":\"drag\",\"frames\":0}",
+            "frames must be 1 or greater.")]
+        [TestCase("{\"x\":0.0,\"y\":0.0,\"toX\":1.0,\"toY\":1.0,\"eventType\":\"drag\",\"holdFrames\":-1}",
+            "holdFrames must be 0 or greater.")]
+        [TestCase("{\"toX\":1.0,\"toY\":1.0,\"eventType\":\"drag\"}", "Specify either x and y, or instanceId.")]
+        public void Handle_Drag_Returns400_WhenParametersAreInvalid(string body, string expectedMessage)
+        {
+            // Arrange
+            var (router, ops, _) = CreateRouter();
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse, body);
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            StringAssert.Contains(expectedMessage, context.ResponseBody);
+            Assert.AreEqual(0, ops.SendMouseEventCallCount);
+        }
+
+        [TestCase("{\"x\":0.0,\"y\":0.0,\"toX\":1.0,\"toY\":1.0}")]
+        [TestCase("{\"x\":0.0,\"y\":0.0,\"eventType\":\"press\",\"toInstanceId\":1}")]
+        [TestCase("{\"x\":0.0,\"y\":0.0,\"eventType\":\"move\",\"frames\":5}")]
+        [TestCase("{\"x\":0.0,\"y\":0.0,\"eventType\":\"click\",\"holdFrames\":5}")]
+        public void Handle_Returns400_WhenDragParametersAreGivenWithoutDrag(string body)
+        {
+            // Arrange
+            var (router, ops, _) = CreateRouter();
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouse, body);
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            StringAssert.Contains("only valid with eventType", context.ResponseBody);
             Assert.AreEqual(0, ops.SendMouseEventCallCount);
         }
     }

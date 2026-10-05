@@ -6,5 +6,6 @@ namespace UniCortex.Editor.Domains.Models
         public const string Press = "press";
         public const string Release = "release";
         public const string Move = "move";
+        public const string Drag = "drag";
     }
 }
