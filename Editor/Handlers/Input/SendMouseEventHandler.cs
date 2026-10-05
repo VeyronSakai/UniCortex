@@ -96,12 +96,12 @@ namespace UniCortex.Editor.Handlers.Input
                         return;
                     }
 
-                    var start = hasTarget
-                        ? MousePosition.CenterOf(request.instanceId)
-                        : MousePosition.At(request.x, request.y);
-                    var end = hasToTarget
-                        ? MousePosition.CenterOf(request.toInstanceId)
-                        : MousePosition.At(request.toX, request.toY);
+                    MousePosition start = hasTarget
+                        ? new MousePosition.Target(request.instanceId)
+                        : new MousePosition.Coordinates(request.x, request.y);
+                    MousePosition end = hasToTarget
+                        ? new MousePosition.Target(request.toInstanceId)
+                        : new MousePosition.Coordinates(request.toX, request.toY);
                     var frames = hasFrames ? request.frames : DefaultDragFrames;
                     var holdFrames = hasHoldFrames ? request.holdFrames : 0;
                     response = await _useCase.DragAsync(start, end, button, frames, holdFrames, cancellationToken);

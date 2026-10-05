@@ -33,7 +33,7 @@ namespace UniCortex.Editor.UseCases
         public async Task<SendMouseEventResponse> ExecuteAsync(int instanceId, string button,
             string eventType, CancellationToken cancellationToken = default)
         {
-            var (x, y) = await ResolveAsync(MousePosition.CenterOf(instanceId), cancellationToken);
+            var (x, y) = await ResolveAsync(new MousePosition.Target(instanceId), cancellationToken);
 
             await SendAsync(x, y, button, eventType, cancellationToken);
             return new SendMouseEventResponse(true, x, y, x, y);
@@ -104,15 +104,20 @@ namespace UniCortex.Editor.UseCases
         private async Task<(float x, float y)> ResolveAsync(MousePosition position,
             CancellationToken cancellationToken)
         {
-            if (position.InstanceId is not { } instanceId)
+            switch (position)
             {
-                return (position.X, position.Y);
-            }
+                case MousePosition.Coordinates coordinates:
+                    return (coordinates.X, coordinates.Y);
 
-            var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _pointerTargetOperations.GetTargetCenterAsync(instanceId, cancellationToken),
-                cancellationToken);
-            return await task;
+                case MousePosition.Target target:
+                    var task = await _dispatcher.RunOnMainThreadAsync(
+                        () => _pointerTargetOperations.GetTargetCenterAsync(target.InstanceId, cancellationToken),
+                        cancellationToken);
+                    return await task;
+
+                default:
+                    throw new ArgumentException($"Unsupported mouse position: {position}.");
+            }
         }
 
         private async Task SendAsync(float x, float y, string button, string eventType,

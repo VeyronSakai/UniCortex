@@ -151,7 +151,7 @@ namespace UniCortex.Editor.Tests.UseCases
             playerLoopDispatcher.OnFrame = _ => frameStarts.Add(ops.MouseEventHistory.Count);
 
             // Act
-            var response = useCase.DragAsync(MousePosition.At(0f, 0f), MousePosition.At(100f, 50f),
+            var response = useCase.DragAsync(new MousePosition.Coordinates(0f, 0f), new MousePosition.Coordinates(100f, 50f),
                 MouseButton.Left, 4, 0, CancellationToken.None).GetAwaiter().GetResult();
             var frames = SplitByFrame(ops.MouseEventHistory, frameStarts);
 
@@ -186,7 +186,7 @@ namespace UniCortex.Editor.Tests.UseCases
             playerLoopDispatcher.OnFrame = _ => frameStarts.Add(ops.MouseEventHistory.Count);
 
             // Act
-            useCase.DragAsync(MousePosition.At(10f, 20f), MousePosition.At(30f, 40f),
+            useCase.DragAsync(new MousePosition.Coordinates(10f, 20f), new MousePosition.Coordinates(30f, 40f),
                 MouseButton.Right, 1, 3, CancellationToken.None).GetAwaiter().GetResult();
             var frames = SplitByFrame(ops.MouseEventHistory, frameStarts);
 
@@ -215,7 +215,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var useCase = new SendMouseEventUseCase(dispatcher, playerLoopDispatcher, ops, pointerTargetOps);
 
             // Act
-            var response = useCase.DragAsync(MousePosition.CenterOf(111), MousePosition.CenterOf(222),
+            var response = useCase.DragAsync(new MousePosition.Target(111), new MousePosition.Target(222),
                 MouseButton.Left, 2, 0, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
@@ -243,8 +243,8 @@ namespace UniCortex.Editor.Tests.UseCases
                 new SpyPointerTargetOperations());
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => useCase.DragAsync(MousePosition.At(0f, 0f),
-                MousePosition.At(1f, 1f), MouseButton.Left, frames, holdFrames, CancellationToken.None)
+            var ex = Assert.Throws<ArgumentException>(() => useCase.DragAsync(new MousePosition.Coordinates(0f, 0f),
+                new MousePosition.Coordinates(1f, 1f), MouseButton.Left, frames, holdFrames, CancellationToken.None)
                 .GetAwaiter().GetResult());
             StringAssert.StartsWith(parameterName + " ", ex.Message);
             Assert.AreEqual(0, playerLoopDispatcher.RunEachFrameCallCount);
