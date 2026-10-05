@@ -9,6 +9,7 @@ using UniCortex.Editor.Domains.Models;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Pool;
 using UnityEngine.UI;
 
 namespace UniCortex.Editor.Infrastructures
@@ -69,12 +70,11 @@ namespace UniCortex.Editor.Infrastructures
             var eventSystem = GetEventSystem();
 
             var targets = new List<PointerTarget>();
-            var raycastResults = new List<RaycastResult>();
             foreach (var scene in LoadedScenes.Get())
             {
                 foreach (var root in scene.GetRootGameObjects())
                 {
-                    CollectTargets(root.transform, eventSystem, raycastResults, targets);
+                    CollectTargets(root.transform, eventSystem, targets);
                 }
             }
 
@@ -97,7 +97,7 @@ namespace UniCortex.Editor.Infrastructures
         // Collects objects that can be pressed now: active, interactable, handling pointer events,
         // and hit first by the EventSystem raycast at their center.
         private static void CollectTargets(Transform transform, EventSystem eventSystem,
-            List<RaycastResult> raycastResults, List<PointerTarget> targets)
+            List<PointerTarget> targets)
         {
             if (!transform.gameObject.activeInHierarchy)
             {
@@ -109,7 +109,7 @@ namespace UniCortex.Editor.Infrastructures
                                                           && IsInteractable(transform.gameObject))
             {
                 var center = GetScreenCenter(rectTransform);
-                if (IsTopmostAt(transform.gameObject, center, eventSystem, raycastResults))
+                if (IsTopmostAt(transform.gameObject, center, eventSystem))
                 {
                     targets.Add(new PointerTarget(GetPath(transform), transform.gameObject.GetInstanceID(),
                         GetScreenRect(rectTransform)));
@@ -118,7 +118,7 @@ namespace UniCortex.Editor.Infrastructures
 
             foreach (Transform child in transform)
             {
-                CollectTargets(child, eventSystem, raycastResults, targets);
+                CollectTargets(child, eventSystem, targets);
             }
         }
 
@@ -184,10 +184,9 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         // True when the topmost EventSystem raycast hit at the position is the target or its child.
-        private static bool IsTopmostAt(GameObject target, Vector2 position, EventSystem eventSystem,
-            List<RaycastResult> raycastResults)
+        private static bool IsTopmostAt(GameObject target, Vector2 position, EventSystem eventSystem)
         {
-            raycastResults.Clear();
+            using var _ = ListPool<RaycastResult>.Get(out var raycastResults);
             eventSystem.RaycastAll(new PointerEventData(eventSystem) { position = position }, raycastResults);
             return raycastResults.Count > 0 && raycastResults[0].gameObject.transform.IsChildOf(target.transform);
         }
