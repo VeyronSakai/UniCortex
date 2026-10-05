@@ -9,18 +9,18 @@ namespace UniCortex.Editor.Tests.TestDoubles
     {
         private readonly List<(Type type, Action update)> _systems = new();
 
-        public int InsertCallCount { get; private set; }
+        public int InsertIntoPostLateUpdateCallCount { get; private set; }
 
         public IReadOnlyList<(Type type, Action update)> Systems => _systems;
 
-        public bool Contains(Type type, Action update)
+        public bool ContainsInPostLateUpdate(Type type, Action update)
         {
             return _systems.Any(system => system.type == type && system.update.Equals(update));
         }
 
-        public void Insert(Type type, Action update)
+        public void InsertIntoPostLateUpdate(Type type, Action update)
         {
-            InsertCallCount++;
+            InsertIntoPostLateUpdateCallCount++;
             _systems.RemoveAll(system => system.type == type);
             _systems.Add((type, update));
         }

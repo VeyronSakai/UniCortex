@@ -107,15 +107,15 @@ namespace UniCortex.Editor.Infrastructures
 
             // A delegate equals another only when both its target instance and its method are the same,
             // so this is true only when the installed system calls this instance's OnPlayerLoopUpdate.
-            if (_playerLoop.Contains(typeof(PlayerLoopDispatcher), update))
+            if (_playerLoop.ContainsInPostLateUpdate(typeof(PlayerLoopDispatcher), update))
             {
                 return;
             }
 
-            // Insert also replaces a system that calls another instance, e.g. one left from before a domain
+            // InsertIntoPostLateUpdate also replaces a system that calls another instance, e.g. one left from before a domain
             // reload. Keeping it would drain that instance's queue instead of this one, so the requests queued
             // here would never run.
-            _playerLoop.Insert(typeof(PlayerLoopDispatcher), update);
+            _playerLoop.InsertIntoPostLateUpdate(typeof(PlayerLoopDispatcher), update);
         }
     }
 }
