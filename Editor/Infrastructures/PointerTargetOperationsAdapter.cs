@@ -109,7 +109,7 @@ namespace UniCortex.Editor.Infrastructures
                                                           && IsInteractable(transform.gameObject))
             {
                 var center = GetScreenCenter(rectTransform);
-                if (IsTopmostAt(transform.gameObject, center, eventSystem))
+                if (ReceivesPointer(transform.gameObject, center, eventSystem))
                 {
                     targets.Add(new PointerTarget(GetPath(transform), transform.gameObject.GetInstanceID(),
                         GetScreenRect(rectTransform)));
@@ -183,8 +183,10 @@ namespace UniCortex.Editor.Infrastructures
             return new ScreenRect(min.x, min.y, max.x - min.x, max.y - min.y);
         }
 
-        // True when the topmost EventSystem raycast hit at the position is the target or its child.
-        private static bool IsTopmostAt(GameObject target, Vector2 position, EventSystem eventSystem)
+        // True when a pointer event at the position reaches the target, that is, when the topmost EventSystem
+        // raycast hit there is the target or its child (the EventSystem looks for a handler from the hit object
+        // up through its parents).
+        private static bool ReceivesPointer(GameObject target, Vector2 position, EventSystem eventSystem)
         {
             using var _ = ListPool<RaycastResult>.Get(out var raycastResults);
             eventSystem.RaycastAll(new PointerEventData(eventSystem) { position = position }, raycastResults);
