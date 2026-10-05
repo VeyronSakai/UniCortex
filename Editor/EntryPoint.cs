@@ -45,17 +45,20 @@ namespace UniCortex.Editor
             }
 
             var dispatcher = new MainThreadDispatcher();
+            var playerLoopDispatcher = new PlayerLoopDispatcher(new EditorApplicationAdapter(),
+                new PlayerLoopAdapter());
             var compilationPipeline = new CompilationPipelineAdapter();
 
-            var server = StartServer(dispatcher, compilationPipeline);
+            var server = StartServer(dispatcher, playerLoopDispatcher, compilationPipeline);
 
             EditorApplication.update += dispatcher.OnUpdate;
+            EditorApplication.playModeStateChanged += playerLoopDispatcher.OnPlayModeStateChanged;
             AssemblyReloadEvents.beforeAssemblyReload += () => Shutdown(compilationPipeline, server);
             EditorApplication.quitting += OnQuit;
         }
 
         private static HttpListenerServer StartServer(IMainThreadDispatcher dispatcher,
-            ICompilationPipeline compilationPipeline)
+            IPlayerLoopDispatcher playerLoopDispatcher, ICompilationPipeline compilationPipeline)
         {
             var port = SessionState.GetInt(PortKey, 0);
             if (port == 0)
@@ -66,7 +69,7 @@ namespace UniCortex.Editor
 
             var router = new RequestRouter();
 
-            RegisterHandlers(router, dispatcher, compilationPipeline);
+            RegisterHandlers(router, dispatcher, playerLoopDispatcher, compilationPipeline);
 
             var server = new HttpListenerServer(router, port);
             try
@@ -83,7 +86,7 @@ namespace UniCortex.Editor
         }
 
         private static void RegisterHandlers(RequestRouter router, IMainThreadDispatcher dispatcher,
-            ICompilationPipeline compilationPipeline)
+            IPlayerLoopDispatcher playerLoopDispatcher, ICompilationPipeline compilationPipeline)
         {
             var testResultStore = new TestResultStore(TestResultJsonKey, TestPendingResultsJsonKey);
             RegisterTestCallbacks(testResultStore);
@@ -304,8 +307,17 @@ namespace UniCortex.Editor
             var sendKeyEventUseCase = new SendKeyEventUseCase(dispatcher, inputSimOps);
             var sendKeyEventHandler = new SendKeyEventHandler(sendKeyEventUseCase);
 
-            var sendMouseEventUseCase = new SendMouseEventUseCase(dispatcher, inputSimOps);
+#if UNICORTEX_UGUI
+            var pointerTargetOps = new PointerTargetOperationsAdapter(playerLoopDispatcher);
+#else
+            var pointerTargetOps = new PointerTargetNotSupportedAdapter();
+#endif
+
+            var sendMouseEventUseCase = new SendMouseEventUseCase(dispatcher, inputSimOps, pointerTargetOps);
             var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
+
+            var getPointerTargetsUseCase = new GetPointerTargetsUseCase(dispatcher, pointerTargetOps);
+            var getPointerTargetsHandler = new GetPointerTargetsHandler(getPointerTargetsUseCase);
 
             var timelineOps = new TimelineOperationsAdapter();
 
@@ -414,6 +426,7 @@ namespace UniCortex.Editor
 
             sendKeyEventHandler.Register(router);
             sendMouseEventHandler.Register(router);
+            getPointerTargetsHandler.Register(router);
             createTimelineHandler.Register(router);
             addTimelineTrackHandler.Register(router);
             removeTimelineTrackHandler.Register(router);

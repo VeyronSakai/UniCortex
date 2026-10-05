@@ -1,3 +1,4 @@
+using System.Text.Json;
 using NUnit.Framework;
 using UniCortex.Core.Test.Fixtures;
 using UniCortex.Editor.Domains.Models;
@@ -7,6 +8,7 @@ namespace UniCortex.Core.Test.UseCases;
 [TestFixture]
 public class InputUseCaseTest
 {
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { IncludeFields = true };
     private UnityEditorFixture _fixture = null!;
 
     [OneTimeSetUp]
@@ -242,4 +244,224 @@ public class InputUseCaseTest
         }
     }
 
+    [Test, CancelAfter(120_000)]
+    public async ValueTask GetPointerTargets_ReturnsError_WhenNotInPlayMode()
+    {
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.GetPointerTargetsAsync(CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Play Mode").Or.Contain("com.unity.ugui"));
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask GetPointerTargets_InPlayMode_ReturnsButtonsInGameViewCoordinates()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            var size = await _fixture.GameViewUseCase.GetSizeResponseAsync(CancellationToken.None);
+
+            // Act
+            var targets = await GetPointerTargetsAsync();
+
+            // Assert
+            Assert.That(targets.Select(t => t.path),
+                Is.EquivalentTo(new[] { "Canvas/TestButton", "Canvas/TopLeftButton", "Canvas/BottomRightButton" }));
+
+            // TopLeftButton (200x80) is anchored at the top-left corner of the screen.
+            var topLeft = targets.Single(t => t.path == "Canvas/TopLeftButton");
+            Assert.That(topLeft.rect.x, Is.EqualTo(0f).Within(1f));
+            Assert.That(topLeft.rect.y, Is.EqualTo(size.screenHeight - 80f).Within(1f));
+            Assert.That(topLeft.rect.width, Is.EqualTo(200f).Within(1f));
+            Assert.That(topLeft.rect.height, Is.EqualTo(80f).Within(1f));
+
+            // BottomRightButton is at the bottom-right corner. It is listed only when the EventSystem raycast
+            // is checked against the Game View size.
+            var bottomRight = targets.Single(t => t.path == "Canvas/BottomRightButton");
+            Assert.That(bottomRight.rect.x, Is.EqualTo(size.screenWidth - 200f).Within(1f));
+            Assert.That(bottomRight.rect.y, Is.EqualTo(0f).Within(1f));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask GetPointerTargets_InPlayMode_ExcludesButtonCoveredByOtherUI()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            // An Image added as the last child of the Canvas is drawn on top of TestButton at the screen center.
+            await CreateOverlayAsync("Overlay");
+
+            // Act
+            var targets = await GetPointerTargetsAsync();
+
+            // Assert
+            Assert.That(targets.Select(t => t.path), Does.Not.Contain("Canvas/TestButton"));
+            Assert.That(targets.Select(t => t.path), Does.Contain("Canvas/TopLeftButton"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask GetPointerTargets_InPlayMode_ExcludesInactiveAndNonInteractableButtons()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            var before = await GetPointerTargetsAsync();
+            var topLeft = before.Single(t => t.path == "Canvas/TopLeftButton");
+            var bottomRight = before.Single(t => t.path == "Canvas/BottomRightButton");
+
+            await _fixture.GameObjectUseCase.ModifyAsync(topLeft.instanceId, activeSelf: false,
+                cancellationToken: CancellationToken.None);
+            await _fixture.ComponentUseCase.SetPropertyAsync(bottomRight.instanceId, "UnityEngine.UI.Button",
+                "UnityEngine.UI", "m_Interactable", "false", CancellationToken.None);
+
+            // Act
+            var targets = await GetPointerTargetsAsync();
+
+            // Assert
+            Assert.That(targets.Select(t => t.path), Is.EquivalentTo(new[] { "Canvas/TestButton" }));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_InPlayMode_ClicksUIButton_WithInstanceId()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            var targets = await GetPointerTargetsAsync();
+            var bottomRight = targets.Single(t => t.path == "Canvas/BottomRightButton");
+            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
+
+            // Act
+            await _fixture.InputUseCase.SendMouseEventAsync(null, null, bottomRight.instanceId,
+                MouseButton.Left, InputEventType.Click, CancellationToken.None);
+            await Task.Delay(500);
+
+            // Assert
+            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
+                cancellationToken: CancellationToken.None);
+            Assert.That(logs, Does.Contain("[ButtonClickDebug] Button clicked: BottomRightButton"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_InPlayMode_DoesNotClick_WhenTargetIsCovered()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            var targets = await GetPointerTargetsAsync();
+            var testButton = targets.Single(t => t.path == "Canvas/TestButton");
+            await CreateOverlayAsync("Overlay");
+            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
+
+            // Act
+            await _fixture.InputUseCase.SendMouseEventAsync(null, null, testButton.instanceId,
+                MouseButton.Left, InputEventType.Click, CancellationToken.None);
+            await Task.Delay(500);
+
+            // Assert
+            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
+                cancellationToken: CancellationToken.None);
+            Assert.That(logs, Does.Not.Contain("[ButtonClickDebug] Button clicked"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_ReturnsError_WhenInstanceIdNotFound()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _fixture.InputUseCase.SendMouseEventAsync(null, null, int.MaxValue,
+                    MouseButton.Left, InputEventType.Click, CancellationToken.None));
+
+            Assert.That(ex!.Message, Does.Contain("not found"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_ReturnsError_WhenBothCoordinatesAndTargetAreGiven()
+    {
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.SendMouseEventAsync(100f, 200f, 12345,
+                MouseButton.Left, InputEventType.Click, CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Specify either x and y"));
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SendMouseEvent_ReturnsError_WhenNeitherCoordinatesNorTargetAreGiven()
+    {
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.SendMouseEventAsync(null, null, null,
+                MouseButton.Left, InputEventType.Click, CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Specify either x and y"));
+    }
+
+    private async ValueTask<List<PointerTarget>> GetPointerTargetsAsync()
+    {
+        var json = await _fixture.InputUseCase.GetPointerTargetsAsync(CancellationToken.None);
+        return JsonSerializer.Deserialize<GetPointerTargetsResponse>(json, s_jsonOptions)!.targets;
+    }
+
+    private async ValueTask CreateOverlayAsync(string name)
+    {
+        var findJson = await _fixture.GameObjectUseCase.FindAsync("t:Canvas", CancellationToken.None);
+        var canvas = JsonSerializer.Deserialize<FindGameObjectsResponse>(findJson, s_jsonOptions)!.gameObjects
+            .Single(g => g.name == "Canvas");
+
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync(name, canvas.instanceId,
+            useRectTransform: true, cancellationToken: CancellationToken.None);
+        var overlay = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+        await _fixture.ComponentUseCase.AddAsync(overlay.instanceId, "UnityEngine.UI.Image", "UnityEngine.UI",
+            CancellationToken.None);
+
+        // Wait for the Canvas to update so the new Image is registered for raycasts.
+        await Task.Delay(200);
+    }
 }

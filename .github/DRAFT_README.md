@@ -217,7 +217,8 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | Tool | Description |
 |------|-------------|
 | `send_key_event` | Send a keyboard event via Input System in Play Mode (requires com.unity.inputsystem) |
-| `send_mouse_event` | Send a mouse event via Input System in Play Mode (requires com.unity.inputsystem). Supports press, release, and move for drag simulation |
+| `send_mouse_event` | Send a mouse event via Input System in Play Mode (requires com.unity.inputsystem). Supports press, release, and move for drag simulation. Accepts either x/y or the instanceId of a UI target (requires com.unity.ugui) |
+| `get_pointer_targets` | List the uGUI objects that can be pressed now in Play Mode, with their rects in Game View coordinates (requires com.unity.ugui) |
 
 #### Timeline
 
@@ -427,7 +428,8 @@ Component commands accept the fully-qualified component type name plus the defin
 | Command | Description |
 | --- | --- |
 | `input send-key` | Send an Input System key event. Requires `com.unity.inputsystem`; Play Mode only. |
-| `input send-mouse` | Send an Input System mouse event. Requires `com.unity.inputsystem`; Play Mode only. |
+| `input send-mouse` | Send an Input System mouse event to `--x`/`--y` or to a UI object (`--instance-id`). Requires `com.unity.inputsystem`; Play Mode only. |
+| `input pointer-targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
 
 #### `recorder all`, `recorder movie`
 

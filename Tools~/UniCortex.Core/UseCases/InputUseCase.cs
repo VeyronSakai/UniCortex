@@ -1,3 +1,5 @@
+using System.Text.Json;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -16,9 +18,35 @@ public class InputUseCase(IUnityEditorClient client)
     public async ValueTask<string> SendMouseEventAsync(float x, float y, string button, string eventType,
         CancellationToken cancellationToken)
     {
-        var request = new SendMouseEventRequest { x = x, y = y, button = button, eventType = eventType };
-        await client.PostAsync<SendMouseEventRequest, SendMouseEventResponse>(ApiRoutes.InputMouse, request,
-            cancellationToken);
-        return $"Mouse event sent: ({x}, {y}) button={button} ({eventType})";
+        return await SendMouseEventAsync(x, y, null, button, eventType, cancellationToken);
+    }
+
+    public async ValueTask<string> SendMouseEventAsync(float? x, float? y, int? instanceId,
+        string button, string eventType, CancellationToken cancellationToken)
+    {
+        var request = new SendMouseEventRequest
+        {
+            x = x,
+            y = y,
+            instanceId = instanceId,
+            button = button,
+            eventType = eventType
+        };
+        var response = await client.PostAsync<SendMouseEventRequest, SendMouseEventResponse>(ApiRoutes.InputMouse,
+            request, cancellationToken);
+
+        if (instanceId == null)
+        {
+            return $"Mouse event sent: ({response.x}, {response.y}) button={button} ({eventType})";
+        }
+
+        return $"Mouse event sent to instanceId {instanceId} at ({response.x}, {response.y}) button={button} ({eventType})";
+    }
+
+    public async ValueTask<string> GetPointerTargetsAsync(CancellationToken cancellationToken)
+    {
+        var response = await client.GetAsync<GetPointerTargetsRequest, GetPointerTargetsResponse>(
+            ApiRoutes.InputPointerTargets, cancellationToken: cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 }

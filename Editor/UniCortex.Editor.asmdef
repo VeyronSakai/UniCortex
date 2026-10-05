@@ -5,7 +5,8 @@
         "GUID:75469ad4d38634e559750d17036d5f7c",
         "GUID:f06555f75b070af458a003d92f9efb00",
         "GUID:847b179520b009e4c8d15c296b1cbf35",
-        "GUID:02f771204943f4a40949438e873e3eff"
+        "GUID:02f771204943f4a40949438e873e3eff",
+        "GUID:2bafac87e7f4b9b418d9448d219b01ab"
     ],
     "includePlatforms": [
         "Editor"
@@ -26,6 +27,11 @@
             "name": "com.unity.recorder",
             "expression": "2.0.0",
             "define": "UNICORTEX_RECORDER"
+        },
+        {
+            "name": "com.unity.ugui",
+            "expression": "1.0.0",
+            "define": "UNICORTEX_UGUI"
         }
     ],
     "noEngineReferences": false
