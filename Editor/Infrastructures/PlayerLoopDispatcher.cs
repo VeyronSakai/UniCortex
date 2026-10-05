@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
 using UnityEditor;
+using UnityEngine.PlayerLoop;
 
 namespace UniCortex.Editor.Infrastructures
 {
@@ -100,6 +101,9 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
+        // Runs at the end of PostLateUpdate, after Canvas layout updates and rendering, so that UI positions and
+        // raycasts match what the Game View shows for the frame. Before rendering, UI changed in the frame is not
+        // laid out yet, and Graphics shown for the first time have no depth, so GraphicRaycaster does not hit them.
         // The player loop may be replaced (e.g. on entering Play Mode or by user code), so check on every request.
         private void EnsureInstalled()
         {
@@ -107,15 +111,15 @@ namespace UniCortex.Editor.Infrastructures
 
             // A delegate equals another only when both its target instance and its method are the same,
             // so this is true only when the installed system calls this instance's OnPlayerLoopUpdate.
-            if (_playerLoop.ContainsInPostLateUpdate(typeof(PlayerLoopDispatcher), update))
+            if (_playerLoop.Contains<PostLateUpdate, PlayerLoopDispatcher>(update))
             {
                 return;
             }
 
-            // InsertIntoPostLateUpdate also replaces a system that calls another instance, e.g. one left from before a domain
+            // Insert also replaces a system that calls another instance, e.g. one left from before a domain
             // reload. Keeping it would drain that instance's queue instead of this one, so the requests queued
             // here would never run.
-            _playerLoop.InsertIntoPostLateUpdate(typeof(PlayerLoopDispatcher), update);
+            _playerLoop.Insert<PostLateUpdate, PlayerLoopDispatcher>(update);
         }
     }
 }

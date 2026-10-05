@@ -105,7 +105,7 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             if (transform is RectTransform rectTransform && GetCanvas(rectTransform) != null
-                                                          && HandlesPointerEvents(transform.gameObject)
+                                                          && HasPointerEventHandler(transform.gameObject)
                                                           && IsInteractable(transform.gameObject))
             {
                 var center = GetScreenCenter(rectTransform);
@@ -122,7 +122,7 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        private static bool HandlesPointerEvents(GameObject gameObject)
+        private static bool HasPointerEventHandler(GameObject gameObject)
         {
             foreach (var behaviour in gameObject.GetComponents<MonoBehaviour>())
             {

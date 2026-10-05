@@ -5,6 +5,7 @@ using NUnit.Framework;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
 using UnityEditor;
+using UnityEngine.PlayerLoop;
 
 namespace UniCortex.Editor.Tests.Infrastructures
 {
@@ -28,7 +29,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => dispatcher.RunAsync(() => 1));
             StringAssert.Contains("Play Mode", ex.Message);
-            Assert.AreEqual(0, playerLoop.InsertIntoPostLateUpdateCallCount);
+            Assert.AreEqual(0, playerLoop.InsertCallCount);
         }
 
         [Test]
@@ -41,7 +42,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => dispatcher.RunAsync(() => 1));
             StringAssert.Contains("paused", ex.Message);
-            Assert.AreEqual(0, playerLoop.InsertIntoPostLateUpdateCallCount);
+            Assert.AreEqual(0, playerLoop.InsertCallCount);
         }
 
         [Test]
@@ -56,8 +57,9 @@ namespace UniCortex.Editor.Tests.Infrastructures
             dispatcher.RunAsync(() => 2);
 
             // Assert
-            Assert.AreEqual(1, playerLoop.InsertIntoPostLateUpdateCallCount);
+            Assert.AreEqual(1, playerLoop.InsertCallCount);
             Assert.AreEqual(1, playerLoop.Systems.Count);
+            Assert.AreEqual(typeof(PostLateUpdate), playerLoop.Systems[0].phase);
             Assert.AreEqual(typeof(PlayerLoopDispatcher), playerLoop.Systems[0].type);
         }
 
@@ -75,7 +77,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             playerLoop.Update();
 
             // Assert
-            Assert.AreEqual(2, playerLoop.InsertIntoPostLateUpdateCallCount);
+            Assert.AreEqual(2, playerLoop.InsertCallCount);
             Assert.AreEqual(1, playerLoop.Systems.Count);
             Assert.AreEqual("current", task.GetAwaiter().GetResult());
         }
