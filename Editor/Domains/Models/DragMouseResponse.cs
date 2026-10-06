@@ -3,7 +3,7 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class DragPointerResponse
+    public class DragMouseResponse
     {
         public bool success;
 
@@ -13,7 +13,7 @@ namespace UniCortex.Editor.Domains.Models
         public float toX;
         public float toY;
 
-        public DragPointerResponse(bool success, float fromX, float fromY, float toX, float toY)
+        public DragMouseResponse(bool success, float fromX, float fromY, float toX, float toY)
         {
             this.success = success;
             this.fromX = fromX;

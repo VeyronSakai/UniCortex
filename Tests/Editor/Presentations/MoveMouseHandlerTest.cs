@@ -10,14 +10,14 @@ using MouseAction = UniCortex.Editor.Tests.TestDoubles.SpyInputOperations.MouseA
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class MovePointerHandlerTest
+    internal sealed class MoveMouseHandlerTest
     {
         private static (RequestRouter router, SpyInputOperations ops) CreateRouter()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
             var resolver = new PointerPositionResolver(dispatcher, new SpyPointerTargetOperations());
-            var handler = new MovePointerHandler(new MovePointerUseCase(dispatcher, resolver, ops));
+            var handler = new MoveMouseHandler(new MoveMouseUseCase(dispatcher, resolver, ops));
 
             var router = new RequestRouter();
             handler.Register(router);
@@ -29,7 +29,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             // Arrange
             var (router, ops) = CreateRouter();
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputPointerMove,
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouseMove,
                 "{\"x\":0.0,\"y\":0.0}");
 
             // Act
@@ -48,7 +48,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             // Arrange
             var (router, ops) = CreateRouter();
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputPointerMove, "{}");
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouseMove, "{}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();

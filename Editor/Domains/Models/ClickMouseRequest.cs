@@ -3,7 +3,7 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class ClickPointerRequest
+    public class ClickMouseRequest
     {
         public float? x;
         public float? y;

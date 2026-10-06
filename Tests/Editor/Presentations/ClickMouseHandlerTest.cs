@@ -11,7 +11,7 @@ using MouseAction = UniCortex.Editor.Tests.TestDoubles.SpyInputOperations.MouseA
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class ClickPointerHandlerTest
+    internal sealed class ClickMouseHandlerTest
     {
         private static (RequestRouter router, SpyInputOperations ops, SpyPointerTargetOperations pointerTargetOps)
             CreateRouter()
@@ -20,8 +20,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var ops = new SpyInputOperations();
             var pointerTargetOps = new SpyPointerTargetOperations();
             var resolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
-            var useCase = new ClickPointerUseCase(dispatcher, new FakePlayerLoopDispatcher(), resolver, ops);
-            var handler = new ClickPointerHandler(useCase);
+            var useCase = new ClickMouseUseCase(dispatcher, new FakePlayerLoopDispatcher(), resolver, ops);
+            var handler = new ClickMouseHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
@@ -30,7 +30,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
         private static FakeRequestContext CreateContext(string body)
         {
-            return new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputPointerClick, body);
+            return new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouseClick, body);
         }
 
         [Test]
@@ -106,7 +106,7 @@ namespace UniCortex.Editor.Tests.Presentations
                 }
             };
             var resolver = new PointerPositionResolver(dispatcher, new SpyPointerTargetOperations());
-            var handler = new ClickPointerHandler(new ClickPointerUseCase(dispatcher, playerLoopDispatcher,
+            var handler = new ClickMouseHandler(new ClickMouseUseCase(dispatcher, playerLoopDispatcher,
                 resolver, ops));
             var router = new RequestRouter();
             handler.Register(router);

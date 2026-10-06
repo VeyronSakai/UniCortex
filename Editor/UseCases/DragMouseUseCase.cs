@@ -9,7 +9,7 @@ namespace UniCortex.Editor.UseCases
     // Presses at the start, moves along a straight line to the end over duration seconds (one move per frame), and
     // releases at the end.
     // Completes after the release has been processed, so the next request sees the result.
-    internal sealed class DragPointerUseCase
+    internal sealed class DragMouseUseCase
     {
         public const float DefaultDuration = 0.2f;
 
@@ -18,7 +18,7 @@ namespace UniCortex.Editor.UseCases
         private readonly PointerPositionResolver _resolver;
         private readonly IInputOperations _operations;
 
-        public DragPointerUseCase(IMainThreadDispatcher dispatcher, IPlayerLoopDispatcher playerLoopDispatcher,
+        public DragMouseUseCase(IMainThreadDispatcher dispatcher, IPlayerLoopDispatcher playerLoopDispatcher,
             PointerPositionResolver resolver, IInputOperations operations)
         {
             _dispatcher = dispatcher;
@@ -27,7 +27,7 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<DragPointerResponse> ExecuteAsync(PointerPosition start, PointerPosition end,
+        public async Task<DragMouseResponse> ExecuteAsync(PointerPosition start, PointerPosition end,
             string button, float duration, CancellationToken cancellationToken = default)
         {
             if (duration < 0f)
@@ -72,7 +72,7 @@ namespace UniCortex.Editor.UseCases
                 () => _playerLoopDispatcher.RunEachFrameAsync(Step, cancellationToken), cancellationToken);
             await task;
 
-            return new DragPointerResponse(true, fromX, fromY, toX, toY);
+            return new DragMouseResponse(true, fromX, fromY, toX, toY);
         }
     }
 }

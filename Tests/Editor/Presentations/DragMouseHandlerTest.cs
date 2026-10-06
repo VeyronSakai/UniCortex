@@ -10,7 +10,7 @@ using MouseAction = UniCortex.Editor.Tests.TestDoubles.SpyInputOperations.MouseA
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class DragPointerHandlerTest
+    internal sealed class DragMouseHandlerTest
     {
         private static (RequestRouter router, SpyInputOperations ops, SpyPointerTargetOperations pointerTargetOps)
             CreateRouter()
@@ -19,8 +19,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var ops = new SpyInputOperations();
             var pointerTargetOps = new SpyPointerTargetOperations();
             var resolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
-            var useCase = new DragPointerUseCase(dispatcher, new FakePlayerLoopDispatcher(), resolver, ops);
-            var handler = new DragPointerHandler(useCase);
+            var useCase = new DragMouseUseCase(dispatcher, new FakePlayerLoopDispatcher(), resolver, ops);
+            var handler = new DragMouseHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
@@ -29,7 +29,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
         private static FakeRequestContext CreateContext(string body)
         {
-            return new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputPointerDrag, body);
+            return new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputMouseDrag, body);
         }
 
         [Test]
@@ -73,7 +73,7 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             // The default duration is shorter than a frame of FakePlayerLoopDispatcher (0.25s), so it presses, moves
             // to the end once in the next frame, and releases.
-            Assert.Less(DragPointerUseCase.DefaultDuration, 0.25f);
+            Assert.Less(DragMouseUseCase.DefaultDuration, 0.25f);
             Assert.AreEqual(3, ops.MouseEventHistory.Count);
             Assert.AreEqual(MouseAction.Press, ops.MouseEventHistory[0].Action);
             Assert.AreEqual(MouseButton.Left, ops.MouseEventHistory[0].Button);

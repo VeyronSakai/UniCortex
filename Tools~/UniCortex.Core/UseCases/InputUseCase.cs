@@ -15,10 +15,10 @@ public class InputUseCase(IUnityEditorClient client)
         return $"Key event sent: {key} ({eventType})";
     }
 
-    public async ValueTask<string> ClickPointerAsync(float? x, float? y, int? instanceId, string button,
+    public async ValueTask<string> ClickMouseAsync(float? x, float? y, int? instanceId, string button,
         float? holdDuration, CancellationToken cancellationToken)
     {
-        var request = new ClickPointerRequest
+        var request = new ClickMouseRequest
         {
             x = x,
             y = y,
@@ -26,25 +26,25 @@ public class InputUseCase(IUnityEditorClient client)
             button = button,
             holdDuration = holdDuration
         };
-        var response = await client.PostAsync<ClickPointerRequest, PointerResponse>(ApiRoutes.InputPointerClick,
+        var response = await client.PostAsync<ClickMouseRequest, MouseResponse>(ApiRoutes.InputMouseClick,
             request, cancellationToken);
         return $"Clicked pointer at ({response.x}, {response.y}) button={button}";
     }
 
-    public async ValueTask<string> MovePointerAsync(float? x, float? y, int? instanceId,
+    public async ValueTask<string> MoveMouseAsync(float? x, float? y, int? instanceId,
         CancellationToken cancellationToken)
     {
-        var request = new MovePointerRequest { x = x, y = y, instanceId = instanceId };
-        var response = await client.PostAsync<MovePointerRequest, PointerResponse>(ApiRoutes.InputPointerMove,
+        var request = new MoveMouseRequest { x = x, y = y, instanceId = instanceId };
+        var response = await client.PostAsync<MoveMouseRequest, MouseResponse>(ApiRoutes.InputMouseMove,
             request, cancellationToken);
         return $"Moved pointer to ({response.x}, {response.y})";
     }
 
-    public async ValueTask<string> DragPointerAsync(float? fromX, float? fromY, int? fromInstanceId,
+    public async ValueTask<string> DragMouseAsync(float? fromX, float? fromY, int? fromInstanceId,
         float? toX, float? toY, int? toInstanceId, string button, float? duration,
         CancellationToken cancellationToken)
     {
-        var request = new DragPointerRequest
+        var request = new DragMouseRequest
         {
             fromX = fromX,
             fromY = fromY,
@@ -55,7 +55,7 @@ public class InputUseCase(IUnityEditorClient client)
             button = button,
             duration = duration
         };
-        var response = await client.PostAsync<DragPointerRequest, DragPointerResponse>(ApiRoutes.InputPointerDrag,
+        var response = await client.PostAsync<DragMouseRequest, DragMouseResponse>(ApiRoutes.InputMouseDrag,
             request, cancellationToken);
         return $"Dragged pointer from ({response.fromX}, {response.fromY}) " +
                $"to ({response.toX}, {response.toY}) button={button}";

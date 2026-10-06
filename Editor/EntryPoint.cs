@@ -316,16 +316,16 @@ namespace UniCortex.Editor
 
             var pointerPositionResolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
 
-            var clickPointerUseCase = new ClickPointerUseCase(dispatcher, playerLoopDispatcher,
+            var clickMouseUseCase = new ClickMouseUseCase(dispatcher, playerLoopDispatcher,
                 pointerPositionResolver, inputSimOps);
-            var clickPointerHandler = new ClickPointerHandler(clickPointerUseCase);
+            var clickMouseHandler = new ClickMouseHandler(clickMouseUseCase);
 
-            var movePointerUseCase = new MovePointerUseCase(dispatcher, pointerPositionResolver, inputSimOps);
-            var movePointerHandler = new MovePointerHandler(movePointerUseCase);
+            var moveMouseUseCase = new MoveMouseUseCase(dispatcher, pointerPositionResolver, inputSimOps);
+            var moveMouseHandler = new MoveMouseHandler(moveMouseUseCase);
 
-            var dragPointerUseCase = new DragPointerUseCase(dispatcher, playerLoopDispatcher,
+            var dragMouseUseCase = new DragMouseUseCase(dispatcher, playerLoopDispatcher,
                 pointerPositionResolver, inputSimOps);
-            var dragPointerHandler = new DragPointerHandler(dragPointerUseCase);
+            var dragMouseHandler = new DragMouseHandler(dragMouseUseCase);
 
             var getPointerTargetsUseCase = new GetPointerTargetsUseCase(dispatcher, pointerTargetOps);
             var getPointerTargetsHandler = new GetPointerTargetsHandler(getPointerTargetsUseCase);
@@ -436,9 +436,9 @@ namespace UniCortex.Editor
             stopMovieRecorderHandler.Register(router);
 
             sendKeyEventHandler.Register(router);
-            clickPointerHandler.Register(router);
-            movePointerHandler.Register(router);
-            dragPointerHandler.Register(router);
+            clickMouseHandler.Register(router);
+            moveMouseHandler.Register(router);
+            dragMouseHandler.Register(router);
             getPointerTargetsHandler.Register(router);
             createTimelineHandler.Register(router);
             addTimelineTrackHandler.Register(router);

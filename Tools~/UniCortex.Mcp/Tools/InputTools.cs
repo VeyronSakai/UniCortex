@@ -70,9 +70,10 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => inputUseCase.SendKeyEventAsync(key, eventType, ct), cancellationToken);
 
-    private const string PointerToolDescription =
+    private const string MouseToolDescription =
         "Uses InputSystem.QueueEvent() to simulate the Mouse device of Unity Input System (com.unity.inputsystem) " +
         "in Play Mode, so uGUI (EventSystem) receives it as a pointer, the same as a tap on a touch screen. " +
+        "The UI of touch-screen games can also be operated this way. " +
         "Triggers Input System actions (InputAction, PlayerInput) and Mouse.current states. " +
         "Specify the position either with x and y, or with instanceId to use the center of a UI element; " +
         "exactly one of them is required. " +
@@ -93,12 +94,12 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
     private const string ButtonDescription =
         $"Mouse button: \"{MouseButton.Left}\" (default), \"{MouseButton.Right}\", or \"{MouseButton.Middle}\". Use the default for a tap.";
 
-    [McpServerTool(Name = "click_pointer", ReadOnly = false),
+    [McpServerTool(Name = "click_mouse", ReadOnly = false),
      Description("Click (or tap) at a position: press, keep it pressed for holdDuration seconds, and release. " +
                  "Use holdDuration for a long press. Returns after the release has been processed. " +
-                 PointerToolDescription),
+                 MouseToolDescription),
      UsedImplicitly]
-    public ValueTask<CallToolResult> ClickPointerAsync(
+    public ValueTask<CallToolResult> ClickMouseAsync(
         [Description(XDescription)] float? x = null,
         [Description(YDescription)] float? y = null,
         [Description(InstanceIdDescription)] int? instanceId = null,
@@ -107,16 +108,16 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         float? holdDuration = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => inputUseCase.ClickPointerAsync(x, y, instanceId, button, holdDuration, ct), cancellationToken);
+            ct => inputUseCase.ClickMouseAsync(x, y, instanceId, button, holdDuration, ct), cancellationToken);
 
-    [McpServerTool(Name = "drag_pointer", ReadOnly = false),
+    [McpServerTool(Name = "drag_mouse", ReadOnly = false),
      Description(
          "Drag (or swipe) in one call: press at the start, move along a straight line to the end over duration seconds " +
          "with one move per frame, and release at the end. Returns after the release has been processed. " +
          "Because the movement is spread over frames, ScrollRect inertia, swipe detection and the EventSystem drag threshold " +
-         "behave as with a real drag. " + PointerToolDescription),
+         "behave as with a real drag. " + MouseToolDescription),
      UsedImplicitly]
-    public ValueTask<CallToolResult> DragPointerAsync(
+    public ValueTask<CallToolResult> DragMouseAsync(
         [Description("Start X coordinate of the drag, in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view images are at the Game View resolution with a top-left origin, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py. Must be given together with fromY, and not with fromInstanceId.")]
         float? fromX = null,
         [Description("Start Y coordinate of the drag, in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. Must be given together with fromX, and not with fromInstanceId.")]
@@ -134,21 +135,21 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         float? duration = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => inputUseCase.DragPointerAsync(fromX, fromY, fromInstanceId, toX, toY, toInstanceId, button, duration,
+            ct => inputUseCase.DragMouseAsync(fromX, fromY, fromInstanceId, toX, toY, toInstanceId, button, duration,
                 ct),
             cancellationToken);
 
-    [McpServerTool(Name = "move_pointer", ReadOnly = false),
-     Description("Move the pointer to a position without pressing a button, e.g. for hover. " +
-                 PointerToolDescription),
+    [McpServerTool(Name = "move_mouse", ReadOnly = false),
+     Description("Move the mouse to a position without pressing a button, e.g. for hover. " +
+                 MouseToolDescription),
      UsedImplicitly]
-    public ValueTask<CallToolResult> MovePointerAsync(
+    public ValueTask<CallToolResult> MoveMouseAsync(
         [Description(XDescription)] float? x = null,
         [Description(YDescription)] float? y = null,
         [Description(InstanceIdDescription)] int? instanceId = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => inputUseCase.MovePointerAsync(x, y, instanceId, ct), cancellationToken);
+            ct => inputUseCase.MoveMouseAsync(x, y, instanceId, ct), cancellationToken);
 
     [McpServerTool(Name = "get_pointer_targets", ReadOnly = true),
      Description(
@@ -157,8 +158,8 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
          "(e.g. Button, Toggle, Slider, ScrollRect, EventTrigger, custom drag or long-press components), " +
          "is interactable (Selectable.IsInteractable()), and is the topmost EventSystem raycast hit at its center " +
          "(not covered by other UI and not off-screen). " +
-         "Each item has the Hierarchy path, instanceId, and rect in Game View coordinates (same as x/y of the pointer tools). " +
-         "Pass instanceId to click_pointer (or the other pointer tools) to press one. " +
+         "Each item has the Hierarchy path, instanceId, and rect in Game View coordinates (same as x/y of the mouse tools). " +
+         "Pass instanceId to click_mouse (or the other mouse tools) to press one. " +
          "Requires the uGUI package (com.unity.ugui) and an EventSystem in the scene."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetPointerTargetsAsync(CancellationToken cancellationToken = default)

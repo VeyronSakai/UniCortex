@@ -12,15 +12,15 @@ using MouseEventRecord = UniCortex.Editor.Tests.TestDoubles.SpyInputOperations.M
 namespace UniCortex.Editor.Tests.UseCases
 {
     [TestFixture]
-    internal sealed class DragPointerUseCaseTest
+    internal sealed class DragMouseUseCaseTest
     {
-        private static DragPointerUseCase CreateUseCase(FakePlayerLoopDispatcher playerLoopDispatcher,
+        private static DragMouseUseCase CreateUseCase(FakePlayerLoopDispatcher playerLoopDispatcher,
             SpyInputOperations ops, SpyPointerTargetOperations pointerTargetOps = null)
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var resolver = new PointerPositionResolver(dispatcher,
                 pointerTargetOps ?? new SpyPointerTargetOperations());
-            return new DragPointerUseCase(dispatcher, playerLoopDispatcher, resolver, ops);
+            return new DragMouseUseCase(dispatcher, playerLoopDispatcher, resolver, ops);
         }
 
         // Splits the sent mouse events by the frame they were sent in.
@@ -56,7 +56,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
             var ops = new SpyInputOperations();
             var useCase = CreateUseCase(playerLoopDispatcher, ops);
-            DragPointerResponse response = null;
+            DragMouseResponse response = null;
 
             // Act
             var frames = RecordFrames(playerLoopDispatcher, ops, () =>

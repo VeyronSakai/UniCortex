@@ -8,7 +8,7 @@ using MouseAction = UniCortex.Editor.Tests.TestDoubles.SpyInputOperations.MouseA
 namespace UniCortex.Editor.Tests.UseCases
 {
     [TestFixture]
-    internal sealed class MovePointerUseCaseTest
+    internal sealed class MoveMouseUseCaseTest
     {
         [Test]
         public void ExecuteAsync_Moves_OnMainThread()
@@ -17,7 +17,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
             var resolver = new PointerPositionResolver(dispatcher, new SpyPointerTargetOperations());
-            var useCase = new MovePointerUseCase(dispatcher, resolver, ops);
+            var useCase = new MoveMouseUseCase(dispatcher, resolver, ops);
 
             // Act
             var response = useCase.ExecuteAsync(new PointerPosition.Coordinates(0f, 0f), CancellationToken.None)

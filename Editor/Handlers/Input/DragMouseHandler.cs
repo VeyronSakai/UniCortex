@@ -8,25 +8,25 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Input
 {
-    internal sealed class DragPointerHandler
+    internal sealed class DragMouseHandler
     {
         private const string StartRequiredMessage = "Specify either fromX and fromY, or fromInstanceId.";
 
-        private readonly DragPointerUseCase _useCase;
+        private readonly DragMouseUseCase _useCase;
 
-        public DragPointerHandler(DragPointerUseCase useCase)
+        public DragMouseHandler(DragMouseUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.InputPointerDrag, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.InputMouseDrag, HandleAsync);
         }
 
         // Non-nullable fields for JsonUtility (see PointerRequestParser).
         [Serializable]
-        private class RawDragPointerRequest
+        private class RawDragMouseRequest
         {
             public float fromX;
             public float fromY;
@@ -48,7 +48,7 @@ namespace UniCortex.Editor.Handlers.Input
                 return;
             }
 
-            var request = JsonUtility.FromJson<RawDragPointerRequest>(body);
+            var request = JsonUtility.FromJson<RawDragMouseRequest>(body);
 
             var start = PointerRequestParser.ParsePosition(body, request.fromX, request.fromY,
                 request.fromInstanceId, "fromX", "fromY", "fromInstanceId", out var startError);
@@ -69,9 +69,9 @@ namespace UniCortex.Editor.Handlers.Input
             var button = string.IsNullOrEmpty(request.button) ? MouseButton.Left : request.button;
             var duration = PointerRequestParser.HasField(body, "duration")
                 ? request.duration
-                : DragPointerUseCase.DefaultDuration;
+                : DragMouseUseCase.DefaultDuration;
 
-            DragPointerResponse response;
+            DragMouseResponse response;
             try
             {
                 response = await _useCase.ExecuteAsync(start, end, button, duration, cancellationToken);

@@ -8,23 +8,23 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Input
 {
-    internal sealed class ClickPointerHandler
+    internal sealed class ClickMouseHandler
     {
-        private readonly ClickPointerUseCase _useCase;
+        private readonly ClickMouseUseCase _useCase;
 
-        public ClickPointerHandler(ClickPointerUseCase useCase)
+        public ClickMouseHandler(ClickMouseUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.InputPointerClick, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.InputMouseClick, HandleAsync);
         }
 
         // Non-nullable fields for JsonUtility (see PointerRequestParser).
         [Serializable]
-        private class RawClickPointerRequest
+        private class RawClickMouseRequest
         {
             public float x;
             public float y;
@@ -43,7 +43,7 @@ namespace UniCortex.Editor.Handlers.Input
                 return;
             }
 
-            var request = JsonUtility.FromJson<RawClickPointerRequest>(body);
+            var request = JsonUtility.FromJson<RawClickMouseRequest>(body);
             var position = PointerRequestParser.ParsePosition(body, request.x, request.y, request.instanceId,
                 "x", "y", "instanceId", out var error);
             if (position == null)
@@ -54,7 +54,7 @@ namespace UniCortex.Editor.Handlers.Input
 
             var button = string.IsNullOrEmpty(request.button) ? MouseButton.Left : request.button;
 
-            PointerResponse response;
+            MouseResponse response;
             try
             {
                 response = await _useCase.ExecuteAsync(position, button, request.holdDuration, cancellationToken);

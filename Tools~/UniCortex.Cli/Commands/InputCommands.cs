@@ -19,7 +19,7 @@ public class InputCommands(InputUseCase inputUseCase)
     }
 }
 
-public class InputPointerCommands(InputUseCase inputUseCase)
+public class InputMouseCommands(InputUseCase inputUseCase)
 {
     /// <summary>Click (or tap) at a position: press, keep it pressed for --hold-duration seconds, and release. Simulates the Input System Mouse device in Play Mode. Requires com.unity.inputsystem. Specify either --x and --y, or --instance-id (requires com.unity.ugui).</summary>
     /// <param name="x">X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view images are at the Game View resolution with a top-left origin, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py.</param>
@@ -31,7 +31,7 @@ public class InputPointerCommands(InputUseCase inputUseCase)
     public async Task Click(float? x = null, float? y = null, int? instanceId = null,
         string button = MouseButton.Left, float? holdDuration = null, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine(await inputUseCase.ClickPointerAsync(x, y, instanceId, button, holdDuration,
+        Console.WriteLine(await inputUseCase.ClickMouseAsync(x, y, instanceId, button, holdDuration,
             cancellationToken));
     }
 
@@ -49,11 +49,11 @@ public class InputPointerCommands(InputUseCase inputUseCase)
         float? toX = null, float? toY = null, int? toInstanceId = null, string button = MouseButton.Left,
         float? duration = null, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine(await inputUseCase.DragPointerAsync(fromX, fromY, fromInstanceId, toX, toY, toInstanceId,
+        Console.WriteLine(await inputUseCase.DragMouseAsync(fromX, fromY, fromInstanceId, toX, toY, toInstanceId,
             button, duration, cancellationToken));
     }
 
-    /// <summary>Move the pointer to a position without pressing a button, e.g. for hover. Simulates the Input System Mouse device in Play Mode. Requires com.unity.inputsystem. Specify either --x and --y, or --instance-id (requires com.unity.ugui).</summary>
+    /// <summary>Move the mouse to a position without pressing a button, e.g. for hover. Simulates the Input System Mouse device in Play Mode. Requires com.unity.inputsystem. Specify either --x and --y, or --instance-id (requires com.unity.ugui).</summary>
     /// <param name="x">X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view images are at the Game View resolution with a top-left origin, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py.</param>
     /// <param name="y">Y coordinate in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. This is the inverse of typical image coordinates where Y increases downward.</param>
     /// <param name="instanceId">instanceId of the UI GameObject. Its center is used.</param>
@@ -61,9 +61,12 @@ public class InputPointerCommands(InputUseCase inputUseCase)
     public async Task Move(float? x = null, float? y = null, int? instanceId = null,
         CancellationToken cancellationToken = default)
     {
-        Console.WriteLine(await inputUseCase.MovePointerAsync(x, y, instanceId, cancellationToken));
+        Console.WriteLine(await inputUseCase.MoveMouseAsync(x, y, instanceId, cancellationToken));
     }
+}
 
+public class InputPointerCommands(InputUseCase inputUseCase)
+{
     /// <summary>List the uGUI objects in the Game View that can be pressed now, with their rects in Game View coordinates, in Play Mode. Requires com.unity.ugui.</summary>
     [Command("targets")]
     public async Task Targets(CancellationToken cancellationToken = default)

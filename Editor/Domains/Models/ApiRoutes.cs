@@ -45,9 +45,9 @@ namespace UniCortex.Editor.Domains.Models
         public const string MenuItemExecute = "/menu-item/execute";
 
         public const string InputKey = "/input/key";
-        public const string InputPointerClick = "/input/pointer/click";
-        public const string InputPointerMove = "/input/pointer/move";
-        public const string InputPointerDrag = "/input/pointer/drag";
+        public const string InputMouseClick = "/input/mouse/click";
+        public const string InputMouseMove = "/input/mouse/move";
+        public const string InputMouseDrag = "/input/mouse/drag";
         public const string InputPointerTargets = "/input/pointer-targets";
         public const string TimelineCreate = "/timeline/create";
         public const string TimelineTracks = "/timeline/tracks";

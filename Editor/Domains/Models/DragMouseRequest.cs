@@ -3,7 +3,7 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class DragPointerRequest
+    public class DragMouseRequest
     {
         // Start of the drag.
         public float? fromX;

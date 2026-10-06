@@ -5,14 +5,14 @@ using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.UseCases
 {
-    // Moves the pointer to the position without changing the button state.
-    internal sealed class MovePointerUseCase
+    // Moves the mouse to the position without changing the button state.
+    internal sealed class MoveMouseUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
         private readonly PointerPositionResolver _resolver;
         private readonly IInputOperations _operations;
 
-        public MovePointerUseCase(IMainThreadDispatcher dispatcher, PointerPositionResolver resolver,
+        public MoveMouseUseCase(IMainThreadDispatcher dispatcher, PointerPositionResolver resolver,
             IInputOperations operations)
         {
             _dispatcher = dispatcher;
@@ -20,13 +20,13 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<PointerResponse> ExecuteAsync(PointerPosition position,
+        public async Task<MouseResponse> ExecuteAsync(PointerPosition position,
             CancellationToken cancellationToken = default)
         {
             var (x, y) = await _resolver.ResolveAsync(position, cancellationToken);
 
             await _dispatcher.RunOnMainThreadAsync(() => _operations.MoveMouse(x, y), cancellationToken);
-            return new PointerResponse(true, x, y);
+            return new MouseResponse(true, x, y);
         }
     }
 }

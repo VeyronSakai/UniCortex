@@ -8,14 +8,14 @@ namespace UniCortex.Editor.UseCases
 {
     // Presses a pointer button at the position, keeps it pressed for holdDuration seconds, and releases it.
     // Completes after the release has been processed, so the next request sees the result.
-    internal sealed class ClickPointerUseCase
+    internal sealed class ClickMouseUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
         private readonly IPlayerLoopDispatcher _playerLoopDispatcher;
         private readonly PointerPositionResolver _resolver;
         private readonly IInputOperations _operations;
 
-        public ClickPointerUseCase(IMainThreadDispatcher dispatcher, IPlayerLoopDispatcher playerLoopDispatcher,
+        public ClickMouseUseCase(IMainThreadDispatcher dispatcher, IPlayerLoopDispatcher playerLoopDispatcher,
             PointerPositionResolver resolver, IInputOperations operations)
         {
             _dispatcher = dispatcher;
@@ -24,7 +24,7 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task<PointerResponse> ExecuteAsync(PointerPosition position, string button,
+        public async Task<MouseResponse> ExecuteAsync(PointerPosition position, string button,
             float holdDuration, CancellationToken cancellationToken = default)
         {
             if (holdDuration < 0f)
@@ -63,7 +63,7 @@ namespace UniCortex.Editor.UseCases
                 () => _playerLoopDispatcher.RunEachFrameAsync(Step, cancellationToken), cancellationToken);
             await task;
 
-            return new PointerResponse(true, x, y);
+            return new MouseResponse(true, x, y);
         }
     }
 }

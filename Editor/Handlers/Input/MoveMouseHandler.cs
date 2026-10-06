@@ -8,23 +8,23 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Input
 {
-    internal sealed class MovePointerHandler
+    internal sealed class MoveMouseHandler
     {
-        private readonly MovePointerUseCase _useCase;
+        private readonly MoveMouseUseCase _useCase;
 
-        public MovePointerHandler(MovePointerUseCase useCase)
+        public MoveMouseHandler(MoveMouseUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.InputPointerMove, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.InputMouseMove, HandleAsync);
         }
 
         // Non-nullable fields for JsonUtility (see PointerRequestParser).
         [Serializable]
-        private class RawMovePointerRequest
+        private class RawMoveMouseRequest
         {
             public float x;
             public float y;
@@ -41,7 +41,7 @@ namespace UniCortex.Editor.Handlers.Input
                 return;
             }
 
-            var request = JsonUtility.FromJson<RawMovePointerRequest>(body);
+            var request = JsonUtility.FromJson<RawMoveMouseRequest>(body);
             var position = PointerRequestParser.ParsePosition(body, request.x, request.y, request.instanceId,
                 "x", "y", "instanceId", out var error);
             if (position == null)
@@ -50,7 +50,7 @@ namespace UniCortex.Editor.Handlers.Input
                 return;
             }
 
-            PointerResponse response;
+            MouseResponse response;
             try
             {
                 response = await _useCase.ExecuteAsync(position, cancellationToken);
