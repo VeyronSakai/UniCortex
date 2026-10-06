@@ -44,7 +44,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string ProjectWindowSelect = "/project-window/select";
         public const string MenuItemExecute = "/menu-item/execute";
 
-        public const string InputKey = "/input/key";
+        public const string InputKeyPress = "/input/key/press";
         public const string InputMouseClick = "/input/mouse/click";
         public const string InputMouseMove = "/input/mouse/move";
         public const string InputMouseDrag = "/input/mouse/drag";

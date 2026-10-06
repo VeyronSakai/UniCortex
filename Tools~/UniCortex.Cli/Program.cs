@@ -36,7 +36,7 @@ app.Add<GameViewSizeCommands>("game-view size");
 app.Add<GameViewScaleCommands>("game-view scale");
 app.Add<RecorderAllCommands>("recorder all");
 app.Add<MovieRecorderCommands>("recorder movie");
-app.Add<InputCommands>("input");
+app.Add<InputKeyCommands>("input key");
 app.Add<InputMouseCommands>("input mouse");
 app.Add<InputPointerCommands>("input pointer");
 app.Add<TimelineCommands>("timeline");

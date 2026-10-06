@@ -11,64 +11,70 @@ namespace UniCortex.Mcp.Tools;
 [McpServerToolType, UsedImplicitly]
 public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequencer)
 {
-    [McpServerTool(Name = "send_key_event", ReadOnly = false),
+    private const string KeysDescription =
+        "Input System Key enum names of the keys to press together, e.g. [\"Space\"], or [\"LeftCtrl\", \"S\"] for Ctrl+S. " +
+        "Available keys: " +
+        // Letters
+        KeyName.A + ", " + KeyName.B + ", " + KeyName.C + ", " + KeyName.D + ", " +
+        KeyName.E + ", " + KeyName.F + ", " + KeyName.G + ", " + KeyName.H + ", " +
+        KeyName.I + ", " + KeyName.J + ", " + KeyName.K + ", " + KeyName.L + ", " +
+        KeyName.M + ", " + KeyName.N + ", " + KeyName.O + ", " + KeyName.P + ", " +
+        KeyName.Q + ", " + KeyName.R + ", " + KeyName.S + ", " + KeyName.T + ", " +
+        KeyName.U + ", " + KeyName.V + ", " + KeyName.W + ", " + KeyName.X + ", " +
+        KeyName.Y + ", " + KeyName.Z + ", " +
+        // Digits
+        KeyName.Digit0 + "-" + KeyName.Digit9 + ", " +
+        // Function keys
+        KeyName.F1 + "-" + KeyName.F12 + ", " +
+        // Editing
+        KeyName.Space + ", " + KeyName.Enter + ", " + KeyName.Tab + ", " +
+        KeyName.Backspace + ", " + KeyName.Delete + ", " + KeyName.Insert + ", " +
+        KeyName.Escape + ", " + KeyName.ContextMenu + ", " +
+        // Navigation
+        KeyName.LeftArrow + ", " + KeyName.RightArrow + ", " +
+        KeyName.UpArrow + ", " + KeyName.DownArrow + ", " +
+        KeyName.PageUp + ", " + KeyName.PageDown + ", " +
+        KeyName.Home + ", " + KeyName.End + ", " +
+        // Modifiers
+        KeyName.LeftShift + ", " + KeyName.RightShift + ", " +
+        KeyName.LeftCtrl + ", " + KeyName.RightCtrl + ", " +
+        KeyName.LeftAlt + ", " + KeyName.RightAlt + ", " +
+        KeyName.LeftMeta + ", " + KeyName.RightMeta + ", " +
+        // Punctuation and symbols
+        KeyName.Backquote + ", " + KeyName.Quote + ", " + KeyName.Semicolon + ", " +
+        KeyName.Comma + ", " + KeyName.Period + ", " + KeyName.Slash + ", " +
+        KeyName.Backslash + ", " + KeyName.LeftBracket + ", " + KeyName.RightBracket + ", " +
+        KeyName.Minus + ", " + KeyName.Equals + ", " +
+        // Lock and toggle keys
+        KeyName.CapsLock + ", " + KeyName.NumLock + ", " + KeyName.ScrollLock + ", " +
+        KeyName.PrintScreen + ", " + KeyName.Pause + ", " +
+        // Numpad
+        KeyName.Numpad0 + "-" + KeyName.Numpad9 + ", " +
+        KeyName.NumpadEnter + ", " + KeyName.NumpadDivide + ", " +
+        KeyName.NumpadMultiply + ", " + KeyName.NumpadPlus + ", " +
+        KeyName.NumpadMinus + ", " + KeyName.NumpadPeriod + ", " + KeyName.NumpadEquals + ", " +
+        // OEM and IME
+        KeyName.OEM1 + "-" + KeyName.OEM5 + ", " + KeyName.IMESelected;
+
+    [McpServerTool(Name = "press_key", ReadOnly = false),
      Description(
-         "Send a keyboard event via Unity Input System (com.unity.inputsystem) in Play Mode. " +
+         "Press keys of the keyboard via Unity Input System (com.unity.inputsystem) in Play Mode: " +
+         "press all the keys in the same frame, keep them pressed for holdDuration seconds, and release them " +
+         "in the same frame. Pass several keys for a combination such as Ctrl+S. " +
+         "Use holdDuration to keep a key pressed, e.g. a movement key. " +
+         "Returns after the release has been processed. " +
          "Uses InputSystem.QueueEvent() to simulate device-level input. " +
          "Triggers Input System actions (InputAction, PlayerInput) and Keyboard.current key states. " +
          "Requires the Input System package to be installed. " +
          "Does NOT work with legacy UnityEngine.Input.GetKey()."),
      UsedImplicitly]
-    public ValueTask<CallToolResult> SendKeyEventAsync(
-        [Description(
-            "Input System Key enum name. Available keys: " +
-            // Letters
-            KeyName.A + ", " + KeyName.B + ", " + KeyName.C + ", " + KeyName.D + ", " +
-            KeyName.E + ", " + KeyName.F + ", " + KeyName.G + ", " + KeyName.H + ", " +
-            KeyName.I + ", " + KeyName.J + ", " + KeyName.K + ", " + KeyName.L + ", " +
-            KeyName.M + ", " + KeyName.N + ", " + KeyName.O + ", " + KeyName.P + ", " +
-            KeyName.Q + ", " + KeyName.R + ", " + KeyName.S + ", " + KeyName.T + ", " +
-            KeyName.U + ", " + KeyName.V + ", " + KeyName.W + ", " + KeyName.X + ", " +
-            KeyName.Y + ", " + KeyName.Z + ", " +
-            // Digits
-            KeyName.Digit0 + "-" + KeyName.Digit9 + ", " +
-            // Function keys
-            KeyName.F1 + "-" + KeyName.F12 + ", " +
-            // Editing
-            KeyName.Space + ", " + KeyName.Enter + ", " + KeyName.Tab + ", " +
-            KeyName.Backspace + ", " + KeyName.Delete + ", " + KeyName.Insert + ", " +
-            KeyName.Escape + ", " + KeyName.ContextMenu + ", " +
-            // Navigation
-            KeyName.LeftArrow + ", " + KeyName.RightArrow + ", " +
-            KeyName.UpArrow + ", " + KeyName.DownArrow + ", " +
-            KeyName.PageUp + ", " + KeyName.PageDown + ", " +
-            KeyName.Home + ", " + KeyName.End + ", " +
-            // Modifiers
-            KeyName.LeftShift + ", " + KeyName.RightShift + ", " +
-            KeyName.LeftCtrl + ", " + KeyName.RightCtrl + ", " +
-            KeyName.LeftAlt + ", " + KeyName.RightAlt + ", " +
-            KeyName.LeftMeta + ", " + KeyName.RightMeta + ", " +
-            // Punctuation and symbols
-            KeyName.Backquote + ", " + KeyName.Quote + ", " + KeyName.Semicolon + ", " +
-            KeyName.Comma + ", " + KeyName.Period + ", " + KeyName.Slash + ", " +
-            KeyName.Backslash + ", " + KeyName.LeftBracket + ", " + KeyName.RightBracket + ", " +
-            KeyName.Minus + ", " + KeyName.Equals + ", " +
-            // Lock and toggle keys
-            KeyName.CapsLock + ", " + KeyName.NumLock + ", " + KeyName.ScrollLock + ", " +
-            KeyName.PrintScreen + ", " + KeyName.Pause + ", " +
-            // Numpad
-            KeyName.Numpad0 + "-" + KeyName.Numpad9 + ", " +
-            KeyName.NumpadEnter + ", " + KeyName.NumpadDivide + ", " +
-            KeyName.NumpadMultiply + ", " + KeyName.NumpadPlus + ", " +
-            KeyName.NumpadMinus + ", " + KeyName.NumpadPeriod + ", " + KeyName.NumpadEquals + ", " +
-            // OEM and IME
-            KeyName.OEM1 + "-" + KeyName.OEM5 + ", " + KeyName.IMESelected)]
-        string key,
-        [Description($"Event type: \"{InputEventType.Press}\" (default) or \"{InputEventType.Release}\".")]
-        string eventType = InputEventType.Press,
+    public ValueTask<CallToolResult> PressKeyAsync(
+        [Description(KeysDescription)] string[] keys,
+        [Description("Seconds to keep the keys pressed before releasing them (default 0: release in the next frame).")]
+        float? holdDuration = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => inputUseCase.SendKeyEventAsync(key, eventType, ct), cancellationToken);
+            ct => inputUseCase.PressKeyAsync(keys, holdDuration, ct), cancellationToken);
 
     private const string MouseToolDescription =
         "Uses InputSystem.QueueEvent() to simulate the Mouse device of Unity Input System (com.unity.inputsystem) " +

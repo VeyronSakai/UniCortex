@@ -12,12 +12,6 @@ using MouseButtonConst = UniCortex.Editor.Domains.Models.MouseButton;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    internal enum InputAction
-    {
-        Press,
-        Release,
-    }
-
     internal sealed class InputOperationsAdapter : IInputOperations
     {
         // Track queued key/button state ourselves instead of calling InputSystem.Update()
@@ -107,7 +101,17 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        public void SendKeyEvent(string key, string eventType)
+        public void PressKeys(string[] keys)
+        {
+            SendKeys(keys, true);
+        }
+
+        public void ReleaseKeys(string[] keys)
+        {
+            SendKeys(keys, false);
+        }
+
+        private static void SendKeys(string[] keys, bool targetPressed)
         {
             if (!EditorApplication.isPlaying)
             {
@@ -123,38 +127,43 @@ namespace UniCortex.Editor.Infrastructures
                 throw new InvalidOperationException("No Keyboard device is available.");
             }
 
-            if (!Enum.TryParse<Key>(key, true, out var keyEnum) || keyEnum == Key.None)
+            // Parse all the keys first, so that nothing is sent when one of them is invalid.
+            var keyEnums = new List<Key>(keys.Length);
+            foreach (var key in keys)
             {
-                throw new ArgumentException(
-                    $"Invalid key name: {key}. Use Input System Key enum names (e.g. Space, A, LeftArrow, Enter).");
-            }
+                if (!Enum.TryParse<Key>(key, true, out var keyEnum) || keyEnum == Key.None)
+                {
+                    throw new ArgumentException(
+                        $"Invalid key name: {key}. Use Input System Key enum names (e.g. Space, A, LeftArrow, Enter).");
+                }
 
-            var action = ParseButtonAction(eventType);
-            var targetPressed = action == InputAction.Press;
+                keyEnums.Add(keyEnum);
+            }
 
             // Track key state ourselves because isPressed only reflects
             // the last *processed* state, not events still sitting in the queue.
-            var alreadyPressed = s_pressedKeys.Contains(keyEnum);
-
             // wasPressedThisFrame / wasReleasedThisFrame detect a *change* from the
-            // previous frame. If the key is already in the target state, queuing the
+            // previous frame. If a key is already in the target state, queuing the
             // same state again would be a no-op. To guarantee a detectable transition
-            // we first queue the opposite state, then queue the desired state.
-            if (targetPressed && alreadyPressed
-                || !targetPressed && !alreadyPressed)
+            // we first queue the opposite state for such keys, then queue the desired state.
+            var keysInTargetState = keyEnums.FindAll(key => s_pressedKeys.Contains(key) == targetPressed);
+            if (keysInTargetState.Count > 0)
             {
-                InputSystem.QueueStateEvent(keyboard, BuildKeyboardState(keyEnum, !targetPressed));
+                InputSystem.QueueStateEvent(keyboard, BuildKeyboardState(keysInTargetState, !targetPressed));
             }
 
-            InputSystem.QueueStateEvent(keyboard, BuildKeyboardState(keyEnum, targetPressed));
+            InputSystem.QueueStateEvent(keyboard, BuildKeyboardState(keyEnums, targetPressed));
 
-            if (targetPressed)
+            foreach (var key in keyEnums)
             {
-                s_pressedKeys.Add(keyEnum);
-            }
-            else
-            {
-                s_pressedKeys.Remove(keyEnum);
+                if (targetPressed)
+                {
+                    s_pressedKeys.Add(key);
+                }
+                else
+                {
+                    s_pressedKeys.Remove(key);
+                }
             }
         }
 
@@ -247,14 +256,15 @@ namespace UniCortex.Editor.Infrastructures
 
         /// <summary>
         /// Builds a KeyboardState from scratch with all tracked key states.
-        /// The target key is set to the specified state, overriding any tracked value.
+        /// The target keys are set to the specified state, overriding any tracked value.
         /// </summary>
-        private static KeyboardState BuildKeyboardState(Key targetKey, bool targetPressed)
+        private static KeyboardState BuildKeyboardState(List<Key> targetKeys, bool targetPressed)
         {
             var state = new KeyboardState();
             foreach (var key in s_pressedKeys)
                 state.Set(key, true);
-            state.Set(targetKey, targetPressed);
+            foreach (var key in targetKeys)
+                state.Set(key, targetPressed);
             return state;
         }
 
@@ -265,13 +275,6 @@ namespace UniCortex.Editor.Infrastructures
             if (string.Equals(button, MouseButtonConst.Middle, StringComparison.OrdinalIgnoreCase))
                 return InputMouseButton.Middle;
             return InputMouseButton.Left;
-        }
-
-        private static InputAction ParseButtonAction(string eventType)
-        {
-            return string.Equals(eventType, InputEventType.Release, StringComparison.OrdinalIgnoreCase)
-                ? InputAction.Release
-                : InputAction.Press;
         }
     }
 }

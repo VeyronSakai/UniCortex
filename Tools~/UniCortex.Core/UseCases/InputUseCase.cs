@@ -7,12 +7,13 @@ namespace UniCortex.Core.UseCases;
 
 public class InputUseCase(IUnityEditorClient client)
 {
-    public async ValueTask<string> SendKeyEventAsync(string key, string eventType,
+    public async ValueTask<string> PressKeyAsync(string[] keys, float? holdDuration,
         CancellationToken cancellationToken)
     {
-        var request = new SendKeyEventRequest { key = key, eventType = eventType };
-        await client.PostAsync<SendKeyEventRequest, SendKeyEventResponse>(ApiRoutes.InputKey, request, cancellationToken);
-        return $"Key event sent: {key} ({eventType})";
+        var request = new PressKeyRequest { keys = keys, holdDuration = holdDuration };
+        await client.PostAsync<PressKeyRequest, PressKeyResponse>(ApiRoutes.InputKeyPress, request,
+            cancellationToken);
+        return $"Pressed keys: {string.Join("+", keys)}";
     }
 
     public async ValueTask<string> ClickMouseAsync(float? x, float? y, int? instanceId, string button,

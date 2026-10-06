@@ -902,16 +902,24 @@ Device-level input dispatch via the Unity Input System package (`com.unity.input
 
 **Optional dependency**: `UNICORTEX_INPUT_SYSTEM` is defined via `versionDefines` in `UniCortex.Editor.asmdef` when `com.unity.inputsystem` is installed. When it is not installed, a fallback adapter throws `NotSupportedException`.
 
-#### POST `/input/key`
-Sends a keyboard event through the Input System while in Play mode.
+#### POST `/input/key/press`
+Presses keys of the keyboard through the Input System while in Play mode, keeps them pressed for a given time, and releases them.
 
 Request body:
 ```json
-{"key": "Space", "eventType": "press"}
+{"keys": ["LeftCtrl", "S"], "holdDuration": 0.5}
 ```
 
-- `key`: required. Input System `Key` enum name (e.g. `"Space"`, `"A"`, `"LeftArrow"`, `"Return"`, `"LeftShift"`)
-- `eventType`: optional. `"press"` (default) or `"release"`
+- `keys`: required, at least one. Input System `Key` enum names (e.g. `"Space"`, `"A"`, `"LeftArrow"`, `"Enter"`, `"LeftShift"`). The keys are pressed together, e.g. `["LeftCtrl", "S"]` for Ctrl+S. An invalid name returns `400` and no key is pressed
+- `holdDuration`: optional. Seconds to keep the keys pressed before releasing them, e.g. for a movement key (default `0`, at least `0`)
+
+Steps (run in the same way as the mouse click, see below):
+
+1. Press all the keys in one state event, so they are pressed in the same frame
+2. Release all the keys in one state event, in the first later frame at least `holdDuration` seconds after the press (the next frame with the default `0`)
+3. Wait one more frame so that the release is processed
+
+There are no endpoints to press or release a key alone, so a key never stays pressed after a request. Holding a key while sending other input (e.g. Shift + click) is not supported.
 
 Response: `{"success": true}`
 
@@ -1459,7 +1467,7 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 
 | Tool | API | Description |
 |------|-----|-------------|
-| `send_key_event` | POST `/input/key` | Send a key event through the Input System (requires com.unity.inputsystem) |
+| `press_key` | POST `/input/key/press` | Press keys together, optionally holding them for a given time, and release them (requires com.unity.inputsystem) |
 | `click_mouse` | POST `/input/mouse/click` | Click (or tap) at coordinates or at the center of a UI object given by instanceId, optionally holding the button for a given time (requires com.unity.inputsystem, and com.unity.ugui for a target) |
 | `drag_mouse` | POST `/input/mouse/drag` | Drag (or swipe) from a start to an end over a given time in one call |
 | `move_mouse` | POST `/input/mouse/move` | Move the mouse without pressing a button, e.g. for hover |
@@ -1574,7 +1582,7 @@ menu execute
 scene-view focus|capture
 game-view focus|capture
 game-view size get|list|set
-input send-key
+input key press
 input mouse click|drag|move
 input pointer targets
 timeline create|play|stop
