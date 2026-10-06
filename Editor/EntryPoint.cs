@@ -301,6 +301,7 @@ namespace UniCortex.Editor
 
 #if UNICORTEX_INPUT_SYSTEM
             var inputSimOps = new InputOperationsAdapter();
+            EditorApplication.playModeStateChanged += inputSimOps.OnPlayModeStateChanged;
 #else
             var inputSimOps = new InputNotSupportedAdapter();
 #endif

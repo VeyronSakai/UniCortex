@@ -19,27 +19,23 @@ namespace UniCortex.Editor.Infrastructures
         // all pending events outside the normal player loop, causing input to be consumed
         // at unpredictable times and potentially breaking frame-dependent logic such as
         // wasPressedThisFrame / wasReleasedThisFrame in MonoBehaviour.Update().
-        private static readonly HashSet<Key> s_pressedKeys = new();
-        private static readonly HashSet<string> s_pressedMouseButtons = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<Key> _pressedKeys = new();
+        private readonly HashSet<string> _pressedMouseButtons = new(StringComparer.OrdinalIgnoreCase);
 
-        static InputOperationsAdapter()
-        {
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-        }
-
-        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        // Registered to EditorApplication.playModeStateChanged by EntryPoint.
+        internal void OnPlayModeStateChanged(PlayModeStateChange state)
         {
             switch (state)
             {
                 case PlayModeStateChange.ExitingPlayMode:
                     // Unity resets device state on exit, so clear our tracking to match.
-                    s_pressedKeys.Clear();
-                    s_pressedMouseButtons.Clear();
+                    _pressedKeys.Clear();
+                    _pressedMouseButtons.Clear();
                     break;
 
                 case PlayModeStateChange.EnteredPlayMode:
-                    s_pressedKeys.Clear();
-                    s_pressedMouseButtons.Clear();
+                    _pressedKeys.Clear();
+                    _pressedMouseButtons.Clear();
                     ConfigureInputSettingsForSimulation();
                     break;
             }
@@ -111,7 +107,7 @@ namespace UniCortex.Editor.Infrastructures
             SendKeys(keys, false);
         }
 
-        private static void SendKeys(string[] keys, bool targetPressed)
+        private void SendKeys(string[] keys, bool targetPressed)
         {
             if (!EditorApplication.isPlaying)
             {
@@ -146,7 +142,7 @@ namespace UniCortex.Editor.Infrastructures
             // previous frame. If a key is already in the target state, queuing the
             // same state again would be a no-op. To guarantee a detectable transition
             // we first queue the opposite state for such keys, then queue the desired state.
-            var keysInTargetState = keyEnums.FindAll(key => s_pressedKeys.Contains(key) == targetPressed);
+            var keysInTargetState = keyEnums.FindAll(key => _pressedKeys.Contains(key) == targetPressed);
             if (keysInTargetState.Count > 0)
             {
                 InputSystem.QueueStateEvent(keyboard, BuildKeyboardState(keysInTargetState, !targetPressed));
@@ -158,11 +154,11 @@ namespace UniCortex.Editor.Infrastructures
             {
                 if (targetPressed)
                 {
-                    s_pressedKeys.Add(key);
+                    _pressedKeys.Add(key);
                 }
                 else
                 {
-                    s_pressedKeys.Remove(key);
+                    _pressedKeys.Remove(key);
                 }
             }
         }
@@ -183,7 +179,7 @@ namespace UniCortex.Editor.Infrastructures
             InputSystem.QueueStateEvent(mouse, BuildMouseState(x, y));
         }
 
-        private static void SendMouseButton(float x, float y, string button, bool targetPressed)
+        private void SendMouseButton(float x, float y, string button, bool targetPressed)
         {
             var mouse = GetMouse();
 
@@ -192,7 +188,7 @@ namespace UniCortex.Editor.Infrastructures
 
             // Track button state ourselves because isPressed only reflects
             // the last *processed* state, not events still sitting in the queue.
-            var alreadyPressed = s_pressedMouseButtons.Contains(buttonName);
+            var alreadyPressed = _pressedMouseButtons.Contains(buttonName);
 
             // wasPressedThisFrame / wasReleasedThisFrame detect a *change* from the
             // previous frame. If the button is already in the target state (e.g.
@@ -214,11 +210,11 @@ namespace UniCortex.Editor.Infrastructures
 
             if (targetPressed)
             {
-                s_pressedMouseButtons.Add(buttonName);
+                _pressedMouseButtons.Add(buttonName);
             }
             else
             {
-                s_pressedMouseButtons.Remove(buttonName);
+                _pressedMouseButtons.Remove(buttonName);
             }
         }
 
@@ -246,10 +242,10 @@ namespace UniCortex.Editor.Infrastructures
         /// button states. Because the state is constructed rather than copied from the
         /// physical device, no physical mouse state can leak into simulated events.
         /// </summary>
-        private static MouseState BuildMouseState(float x, float y)
+        private MouseState BuildMouseState(float x, float y)
         {
             var state = new MouseState { position = new Vector2(x, y) };
-            foreach (var btn in s_pressedMouseButtons)
+            foreach (var btn in _pressedMouseButtons)
                 state = state.WithButton(ToInputMouseButton(btn));
             return state;
         }
@@ -258,10 +254,10 @@ namespace UniCortex.Editor.Infrastructures
         /// Builds a KeyboardState from scratch with all tracked key states.
         /// The target keys are set to the specified state, overriding any tracked value.
         /// </summary>
-        private static KeyboardState BuildKeyboardState(List<Key> targetKeys, bool targetPressed)
+        private KeyboardState BuildKeyboardState(List<Key> targetKeys, bool targetPressed)
         {
             var state = new KeyboardState();
-            foreach (var key in s_pressedKeys)
+            foreach (var key in _pressedKeys)
                 state.Set(key, true);
             foreach (var key in targetKeys)
                 state.Set(key, targetPressed);
