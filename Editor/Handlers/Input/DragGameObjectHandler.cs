@@ -8,28 +8,26 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Input
 {
-    internal sealed class DragPointerHandler
+    internal sealed class DragGameObjectHandler
     {
         private readonly DragPointerUseCase _useCase;
 
-        public DragPointerHandler(DragPointerUseCase useCase)
+        public DragGameObjectHandler(DragPointerUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.InputPointerDrag, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.InputGameObjectDrag, HandleAsync);
         }
 
         // JsonUtility does not support Nullable<T>, so frames and holdFrames are read into non-nullable fields.
         [Serializable]
-        private class RawDragPointerRequest
+        private class RawDragGameObjectRequest
         {
-            public float fromX;
-            public float fromY;
-            public float toX;
-            public float toY;
+            public int fromInstanceId;
+            public int toInstanceId;
             public string button;
             public int frames;
             public int holdFrames;
@@ -39,16 +37,19 @@ namespace UniCortex.Editor.Handlers.Input
         {
             var body = await context.ReadBodyAsync();
 
-            var error = PointerRequestParser.FindMissingField(body ?? string.Empty, "fromX", "fromY", "toX", "toY");
+            var request = string.IsNullOrEmpty(body)
+                ? new RawDragGameObjectRequest()
+                : JsonUtility.FromJson<RawDragGameObjectRequest>(body);
+            var error = PointerRequestParser.ValidateInstanceId(request.fromInstanceId, "fromInstanceId")
+                        ?? PointerRequestParser.ValidateInstanceId(request.toInstanceId, "toInstanceId");
             if (error != null)
             {
                 await WriteErrorAsync(context, error);
                 return;
             }
 
-            var request = JsonUtility.FromJson<RawDragPointerRequest>(body);
-            var start = new PointerPosition.Coordinates(request.fromX, request.fromY);
-            var end = new PointerPosition.Coordinates(request.toX, request.toY);
+            var start = new PointerPosition.Target(request.fromInstanceId);
+            var end = new PointerPosition.Target(request.toInstanceId);
             var button = string.IsNullOrEmpty(request.button) ? MouseButton.Left : request.button;
             var frames = PointerRequestParser.HasField(body, "frames")
                 ? request.frames

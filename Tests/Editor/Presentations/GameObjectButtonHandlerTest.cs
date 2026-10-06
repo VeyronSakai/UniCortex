@@ -11,7 +11,7 @@ using MouseAction = UniCortex.Editor.Tests.TestDoubles.SpyInputOperations.MouseA
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class PointerButtonHandlerTest
+    internal sealed class GameObjectButtonHandlerTest
     {
         // Uses click as a representative of the handlers for click, press and release.
         private static (RequestRouter router, SpyInputOperations ops, SpyPointerTargetOperations pointerTargetOps)
@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var pointerTargetOps = new SpyPointerTargetOperations();
             var resolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
             var useCase = new ClickPointerUseCase(dispatcher, resolver, ops);
-            var handler = new PointerButtonHandler(ApiRoutes.InputPointerClick, useCase.ExecuteAsync);
+            var handler = new GameObjectButtonHandler(ApiRoutes.InputGameObjectClick, useCase.ExecuteAsync);
 
             var router = new RequestRouter();
             handler.Register(router);
@@ -31,57 +31,39 @@ namespace UniCortex.Editor.Tests.Presentations
 
         private static FakeRequestContext CreateContext(string body)
         {
-            return new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputPointerClick, body);
+            return new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputGameObjectClick, body);
         }
 
         [Test]
-        public void Handle_Returns200_AndClicksAtCoordinates()
+        public void Handle_Returns200_AndClicksAtTargetCenter()
         {
             // Arrange
             var (router, ops, pointerTargetOps) = CreateRouter();
-            var context = CreateContext($"{{\"x\":100.0,\"y\":200.0,\"button\":\"{MouseButton.Right}\"}}");
+            pointerTargetOps.TargetCenterToReturn = (320f, 180f);
+            var context = CreateContext("{\"instanceId\":12345}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.AreEqual(12345, pointerTargetOps.LastInstanceId);
             Assert.AreEqual(2, ops.MouseEventHistory.Count);
-            Assert.AreEqual(MouseAction.Press, ops.MouseEventHistory[0].Action);
-            Assert.AreEqual(100f, ops.MouseEventHistory[0].X);
-            Assert.AreEqual(200f, ops.MouseEventHistory[0].Y);
-            Assert.AreEqual(MouseButton.Right, ops.MouseEventHistory[0].Button);
-            Assert.AreEqual(0, pointerTargetOps.GetTargetCenterCallCount);
-            StringAssert.Contains("\"x\":100.0", context.ResponseBody);
-            StringAssert.Contains("\"y\":200.0", context.ResponseBody);
-        }
-
-        [Test]
-        public void Handle_UsesLeftButton_AndAcceptsZero_WhenButtonIsOmitted()
-        {
-            // Arrange
-            var (router, ops, _) = CreateRouter();
-            var context = CreateContext("{\"x\":0.0,\"y\":0.0}");
-
-            // Act
-            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
-
-            // Assert
-            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual(0f, ops.MouseEventHistory[0].X);
-            Assert.AreEqual(0f, ops.MouseEventHistory[0].Y);
+            Assert.AreEqual(320f, ops.MouseEventHistory[0].X);
+            Assert.AreEqual(180f, ops.MouseEventHistory[0].Y);
             Assert.AreEqual(MouseButton.Left, ops.MouseEventHistory[0].Button);
+            StringAssert.Contains("\"x\":320.0", context.ResponseBody);
+            StringAssert.Contains("\"y\":180.0", context.ResponseBody);
         }
 
-        [TestCase("", "x is required.")]
-        [TestCase("{\"button\":\"left\"}", "x is required.")]
-        [TestCase("{\"x\":1.0}", "y is required.")]
-        [TestCase("{\"y\":1.0}", "x is required.")]
-        [TestCase("{\"instanceId\":12345}", "x is required.")]
-        public void Handle_Returns400_WhenCoordinatesAreMissing(string body, string expectedMessage)
+        [TestCase("")]
+        [TestCase("{\"button\":\"left\"}")]
+        [TestCase("{\"x\":1.0,\"y\":2.0}")]
+        [TestCase("{\"instanceId\":0}")]
+        public void Handle_Returns400_WhenInstanceIdIsMissingOrZero(string body)
         {
             // Arrange
-            var (router, ops, _) = CreateRouter();
+            var (router, ops, pointerTargetOps) = CreateRouter();
             var context = CreateContext(body);
 
             // Act
@@ -89,7 +71,25 @@ namespace UniCortex.Editor.Tests.Presentations
 
             // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
-            StringAssert.Contains(expectedMessage, context.ResponseBody);
+            StringAssert.Contains("instanceId is required and must not be 0.", context.ResponseBody);
+            CollectionAssert.IsEmpty(ops.MouseEventHistory);
+            Assert.AreEqual(0, pointerTargetOps.GetTargetCenterCallCount);
+        }
+
+        [Test]
+        public void Handle_Returns400_WhenTargetNotFound()
+        {
+            // Arrange
+            var (router, ops, pointerTargetOps) = CreateRouter();
+            pointerTargetOps.ExceptionToThrow = new ArgumentException("GameObject with instanceId 999 not found.");
+            var context = CreateContext("{\"instanceId\":999}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            StringAssert.Contains("not found", context.ResponseBody);
             CollectionAssert.IsEmpty(ops.MouseEventHistory);
         }
     }

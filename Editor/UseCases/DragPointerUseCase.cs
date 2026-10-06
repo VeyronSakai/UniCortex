@@ -40,27 +40,27 @@ namespace UniCortex.Editor.UseCases
                 throw new ArgumentException("holdFrames must be 0 or greater.");
             }
 
-            var (x, y) = await _resolver.ResolveAsync(start, cancellationToken);
+            var (fromX, fromY) = await _resolver.ResolveAsync(start, cancellationToken);
             var (toX, toY) = await _resolver.ResolveAsync(end, cancellationToken);
 
             var task = await _dispatcher.RunOnMainThreadAsync(
                 () => _playerLoopDispatcher.RunEachFrameAsync(
-                    frame => Step(frame, x, y, toX, toY, button, frames, holdFrames), cancellationToken),
+                    frame => Step(frame, fromX, fromY, toX, toY, button, frames, holdFrames), cancellationToken),
                 cancellationToken);
             await task;
 
-            return new DragPointerResponse(true, x, y, toX, toY);
+            return new DragPointerResponse(true, fromX, fromY, toX, toY);
         }
 
         // Runs one frame of a drag and returns false when the drag is done.
         // Frame 0 presses, the next holdFrames frames only wait, the next `frames` frames move, the next frame
         // releases, and the last frame waits so that the release is processed in it.
-        private bool Step(int frame, float x, float y, float toX, float toY, string button, int frames,
+        private bool Step(int frame, float fromX, float fromY, float toX, float toY, string button, int frames,
             int holdFrames)
         {
             if (frame == 0)
             {
-                _operations.PressMouseButton(x, y, button);
+                _operations.PressMouseButton(fromX, fromY, button);
                 return true;
             }
 
@@ -73,7 +73,7 @@ namespace UniCortex.Editor.UseCases
             if (move <= frames)
             {
                 var t = (float)move / frames;
-                _operations.MoveMouse(x + (toX - x) * t, y + (toY - y) * t);
+                _operations.MoveMouse(fromX + (toX - fromX) * t, fromY + (toY - fromY) * t);
                 return true;
             }
 

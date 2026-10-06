@@ -8,16 +8,16 @@ namespace UniCortex.Editor.Domains.Models
         public bool success;
 
         // Start and end of the drag, in Game View coordinates.
-        public float x;
-        public float y;
+        public float fromX;
+        public float fromY;
         public float toX;
         public float toY;
 
-        public DragPointerResponse(bool success, float x, float y, float toX, float toY)
+        public DragPointerResponse(bool success, float fromX, float fromY, float toX, float toY)
         {
             this.success = success;
-            this.x = x;
-            this.y = y;
+            this.fromX = fromX;
+            this.fromY = fromY;
             this.toX = toX;
             this.toY = toY;
         }

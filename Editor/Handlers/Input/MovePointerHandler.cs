@@ -22,33 +22,19 @@ namespace UniCortex.Editor.Handlers.Input
             router.Register(HttpMethodType.Post, ApiRoutes.InputPointerMove, HandleAsync);
         }
 
-        // Non-nullable fields for JsonUtility (see PointerRequestParser).
-        [Serializable]
-        private class RawMovePointerRequest
-        {
-            public float x;
-            public float y;
-            public int instanceId;
-        }
-
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var body = await context.ReadBodyAsync();
 
-            if (string.IsNullOrEmpty(body))
-            {
-                await WriteErrorAsync(context, PointerRequestParser.PositionRequiredMessage);
-                return;
-            }
-
-            var request = JsonUtility.FromJson<RawMovePointerRequest>(body);
-            var position = PointerRequestParser.ParsePosition(body, request.x, request.y, request.instanceId,
-                "x", "y", "instanceId", out var error);
-            if (position == null)
+            var error = PointerRequestParser.FindMissingField(body ?? string.Empty, "x", "y");
+            if (error != null)
             {
                 await WriteErrorAsync(context, error);
                 return;
             }
+
+            var request = JsonUtility.FromJson<MovePointerRequest>(body);
+            var position = new PointerPosition.Coordinates(request.x, request.y);
 
             PointerResponse response;
             try

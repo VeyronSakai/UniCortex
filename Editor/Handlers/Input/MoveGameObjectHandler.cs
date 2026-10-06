@@ -3,47 +3,45 @@ using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
+using UniCortex.Editor.UseCases;
 using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Input
 {
-    // Handles click, press and release at Game View coordinates.
-    internal sealed class PointerButtonHandler
+    internal sealed class MoveGameObjectHandler
     {
-        private readonly string _route;
-        private readonly Func<PointerPosition, string, CancellationToken, Task<PointerResponse>> _execute;
+        private readonly MovePointerUseCase _useCase;
 
-        public PointerButtonHandler(string route,
-            Func<PointerPosition, string, CancellationToken, Task<PointerResponse>> execute)
+        public MoveGameObjectHandler(MovePointerUseCase useCase)
         {
-            _route = route;
-            _execute = execute;
+            _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, _route, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.InputGameObjectMove, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var body = await context.ReadBodyAsync();
 
-            var error = PointerRequestParser.FindMissingField(body ?? string.Empty, "x", "y");
+            var request = string.IsNullOrEmpty(body)
+                ? new MoveGameObjectRequest()
+                : JsonUtility.FromJson<MoveGameObjectRequest>(body);
+            var error = PointerRequestParser.ValidateInstanceId(request.instanceId, "instanceId");
             if (error != null)
             {
                 await WriteErrorAsync(context, error);
                 return;
             }
 
-            var request = JsonUtility.FromJson<PointerButtonRequest>(body);
-            var position = new PointerPosition.Coordinates(request.x, request.y);
-            var button = string.IsNullOrEmpty(request.button) ? MouseButton.Left : request.button;
+            var position = new PointerPosition.Target(request.instanceId);
 
             PointerResponse response;
             try
             {
-                response = await _execute(position, button, cancellationToken);
+                response = await _useCase.ExecuteAsync(position, cancellationToken);
             }
             catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException
                                            or ArgumentException)

@@ -50,6 +50,11 @@ namespace UniCortex.Editor.Domains.Models
         public const string InputPointerRelease = "/input/pointer/release";
         public const string InputPointerMove = "/input/pointer/move";
         public const string InputPointerDrag = "/input/pointer/drag";
+        public const string InputGameObjectClick = "/input/game-object/click";
+        public const string InputGameObjectPress = "/input/game-object/press";
+        public const string InputGameObjectRelease = "/input/game-object/release";
+        public const string InputGameObjectMove = "/input/game-object/move";
+        public const string InputGameObjectDrag = "/input/game-object/drag";
         public const string InputPointerTargets = "/input/pointer-targets";
         public const string TimelineCreate = "/timeline/create";
         public const string TimelineTracks = "/timeline/tracks";

@@ -11,9 +11,8 @@ using MouseAction = UniCortex.Editor.Tests.TestDoubles.SpyInputOperations.MouseA
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class PointerButtonHandlerTest
+    internal sealed class DragGameObjectHandlerTest
     {
-        // Uses click as a representative of the handlers for click, press and release.
         private static (RequestRouter router, SpyInputOperations ops, SpyPointerTargetOperations pointerTargetOps)
             CreateRouter()
         {
@@ -21,8 +20,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var ops = new SpyInputOperations();
             var pointerTargetOps = new SpyPointerTargetOperations();
             var resolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
-            var useCase = new ClickPointerUseCase(dispatcher, resolver, ops);
-            var handler = new PointerButtonHandler(ApiRoutes.InputPointerClick, useCase.ExecuteAsync);
+            var useCase = new DragPointerUseCase(dispatcher, new FakePlayerLoopDispatcher(), resolver, ops);
+            var handler = new DragGameObjectHandler(useCase);
 
             var router = new RequestRouter();
             handler.Register(router);
@@ -31,54 +30,56 @@ namespace UniCortex.Editor.Tests.Presentations
 
         private static FakeRequestContext CreateContext(string body)
         {
-            return new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputPointerClick, body);
+            return new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputGameObjectDrag, body);
         }
 
         [Test]
-        public void Handle_Returns200_AndClicksAtCoordinates()
+        public void Handle_Returns200_AndDragsBetweenTargetCenters()
         {
             // Arrange
             var (router, ops, pointerTargetOps) = CreateRouter();
-            var context = CreateContext($"{{\"x\":100.0,\"y\":200.0,\"button\":\"{MouseButton.Right}\"}}");
+            pointerTargetOps.TargetCentersToReturn[111] = (10f, 20f);
+            pointerTargetOps.TargetCentersToReturn[222] = (30f, 40f);
+            var context = CreateContext("{\"fromInstanceId\":111,\"toInstanceId\":222,\"frames\":1}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual(2, ops.MouseEventHistory.Count);
+            Assert.AreEqual(2, pointerTargetOps.GetTargetCenterCallCount);
+            Assert.AreEqual(3, ops.MouseEventHistory.Count);
             Assert.AreEqual(MouseAction.Press, ops.MouseEventHistory[0].Action);
-            Assert.AreEqual(100f, ops.MouseEventHistory[0].X);
-            Assert.AreEqual(200f, ops.MouseEventHistory[0].Y);
-            Assert.AreEqual(MouseButton.Right, ops.MouseEventHistory[0].Button);
-            Assert.AreEqual(0, pointerTargetOps.GetTargetCenterCallCount);
-            StringAssert.Contains("\"x\":100.0", context.ResponseBody);
-            StringAssert.Contains("\"y\":200.0", context.ResponseBody);
+            Assert.AreEqual(10f, ops.MouseEventHistory[0].X);
+            Assert.AreEqual(20f, ops.MouseEventHistory[0].Y);
+            Assert.AreEqual(MouseAction.Release, ops.MouseEventHistory[2].Action);
+            Assert.AreEqual(30f, ops.MouseEventHistory[2].X);
+            Assert.AreEqual(40f, ops.MouseEventHistory[2].Y);
+            StringAssert.Contains("\"fromX\":10.0", context.ResponseBody);
+            StringAssert.Contains("\"toX\":30.0", context.ResponseBody);
         }
 
         [Test]
-        public void Handle_UsesLeftButton_AndAcceptsZero_WhenButtonIsOmitted()
+        public void Handle_UsesDefaultFrames_WhenFramesIsOmitted()
         {
             // Arrange
             var (router, ops, _) = CreateRouter();
-            var context = CreateContext("{\"x\":0.0,\"y\":0.0}");
+            var context = CreateContext("{\"fromInstanceId\":111,\"toInstanceId\":222}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual(0f, ops.MouseEventHistory[0].X);
-            Assert.AreEqual(0f, ops.MouseEventHistory[0].Y);
-            Assert.AreEqual(MouseButton.Left, ops.MouseEventHistory[0].Button);
+            Assert.AreEqual(DragPointerUseCase.DefaultFrames + 2, ops.MouseEventHistory.Count);
         }
 
-        [TestCase("", "x is required.")]
-        [TestCase("{\"button\":\"left\"}", "x is required.")]
-        [TestCase("{\"x\":1.0}", "y is required.")]
-        [TestCase("{\"y\":1.0}", "x is required.")]
-        [TestCase("{\"instanceId\":12345}", "x is required.")]
-        public void Handle_Returns400_WhenCoordinatesAreMissing(string body, string expectedMessage)
+        [TestCase("", "fromInstanceId is required and must not be 0.")]
+        [TestCase("{\"toInstanceId\":222}", "fromInstanceId is required and must not be 0.")]
+        [TestCase("{\"fromInstanceId\":111}", "toInstanceId is required and must not be 0.")]
+        [TestCase("{\"fromInstanceId\":111,\"toInstanceId\":0}", "toInstanceId is required and must not be 0.")]
+        [TestCase("{\"fromInstanceId\":111,\"toInstanceId\":222,\"frames\":0}", "frames must be 1 or greater.")]
+        public void Handle_Returns400_WhenParametersAreInvalid(string body, string expectedMessage)
         {
             // Arrange
             var (router, ops, _) = CreateRouter();

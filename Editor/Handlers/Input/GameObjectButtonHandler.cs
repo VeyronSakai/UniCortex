@@ -7,13 +7,13 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Input
 {
-    // Handles click, press and release at Game View coordinates.
-    internal sealed class PointerButtonHandler
+    // Handles click, press and release at the center of a GameObject.
+    internal sealed class GameObjectButtonHandler
     {
         private readonly string _route;
         private readonly Func<PointerPosition, string, CancellationToken, Task<PointerResponse>> _execute;
 
-        public PointerButtonHandler(string route,
+        public GameObjectButtonHandler(string route,
             Func<PointerPosition, string, CancellationToken, Task<PointerResponse>> execute)
         {
             _route = route;
@@ -29,15 +29,17 @@ namespace UniCortex.Editor.Handlers.Input
         {
             var body = await context.ReadBodyAsync();
 
-            var error = PointerRequestParser.FindMissingField(body ?? string.Empty, "x", "y");
+            var request = string.IsNullOrEmpty(body)
+                ? new GameObjectButtonRequest()
+                : JsonUtility.FromJson<GameObjectButtonRequest>(body);
+            var error = PointerRequestParser.ValidateInstanceId(request.instanceId, "instanceId");
             if (error != null)
             {
                 await WriteErrorAsync(context, error);
                 return;
             }
 
-            var request = JsonUtility.FromJson<PointerButtonRequest>(body);
-            var position = new PointerPosition.Coordinates(request.x, request.y);
+            var position = new PointerPosition.Target(request.instanceId);
             var button = string.IsNullOrEmpty(request.button) ? MouseButton.Left : request.button;
 
             PointerResponse response;

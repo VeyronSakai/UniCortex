@@ -3,12 +3,10 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class DragPointerRequest
+    public class DragGameObjectRequest
     {
-        public float fromX;
-        public float fromY;
-        public float toX;
-        public float toY;
+        public int fromInstanceId;
+        public int toInstanceId;
         public string button;
         public int? frames;
         public int? holdFrames;

@@ -74,8 +74,8 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(MouseButton.Left, frames[0].Single().Button);
             Assert.AreEqual(MouseButton.Left, frames[5].Single().Button);
             Assert.IsTrue(response.success);
-            Assert.AreEqual(0f, response.x);
-            Assert.AreEqual(0f, response.y);
+            Assert.AreEqual(0f, response.fromX);
+            Assert.AreEqual(0f, response.fromY);
             Assert.AreEqual(100f, response.toX);
             Assert.AreEqual(50f, response.toY);
         }
@@ -131,8 +131,8 @@ namespace UniCortex.Editor.Tests.UseCases
             AssertEvent(ops.MouseEventHistory[1], MouseAction.Move, 60f, 120f);
             AssertEvent(ops.MouseEventHistory[2], MouseAction.Move, 110f, 220f);
             AssertEvent(ops.MouseEventHistory[3], MouseAction.Release, 110f, 220f);
-            Assert.AreEqual(10f, response.x);
-            Assert.AreEqual(20f, response.y);
+            Assert.AreEqual(10f, response.fromX);
+            Assert.AreEqual(20f, response.fromY);
             Assert.AreEqual(110f, response.toX);
             Assert.AreEqual(220f, response.toY);
         }
