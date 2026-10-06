@@ -20,8 +20,8 @@ namespace UniCortex.Editor.Tests.Presentations
             var pointerTargetOps = new SpyPointerTargetOperations();
             var resolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
-            var useCase = new DragMouseUseCase(dispatcher, playerLoopDispatcher, resolver, ops,
-                playerLoopDispatcher.Time);
+            var useCase = new DragMouseUseCase(new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver,
+                ops, playerLoopDispatcher.Time);
             var handler = new DragMouseHandler(useCase);
 
             var router = new RequestRouter();

@@ -13,17 +13,15 @@ namespace UniCortex.Editor.UseCases
     {
         public const float DefaultDuration = 0.2f;
 
-        private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IPlayerLoopDispatcher _playerLoopDispatcher;
+        private readonly PlayerLoopRunner _runner;
         private readonly PointerPositionResolver _resolver;
         private readonly IInputOperations _operations;
         private readonly ITime _time;
 
-        public DragMouseUseCase(IMainThreadDispatcher dispatcher, IPlayerLoopDispatcher playerLoopDispatcher,
-            PointerPositionResolver resolver, IInputOperations operations, ITime time)
+        public DragMouseUseCase(PlayerLoopRunner runner, PointerPositionResolver resolver,
+            IInputOperations operations, ITime time)
         {
-            _dispatcher = dispatcher;
-            _playerLoopDispatcher = playerLoopDispatcher;
+            _runner = runner;
             _resolver = resolver;
             _operations = operations;
             _time = time;
@@ -41,19 +39,18 @@ namespace UniCortex.Editor.UseCases
             var (toX, toY) = await _resolver.ResolveAsync(end, cancellationToken);
 
             // Each step runs in a later frame than the previous one.
-            var pressedAt = await RunInPlayerLoopAsync(() => Press(fromX, fromY, button), cancellationToken);
+            var pressedAt = await _runner.RunAsync(() => Press(fromX, fromY, button), cancellationToken);
 
             var reachedEnd = false;
             while (!reachedEnd)
             {
-                reachedEnd = await RunInPlayerLoopAsync(
+                reachedEnd = await _runner.RunAsync(
                     () => MoveTowardEnd(fromX, fromY, toX, toY, pressedAt, duration), cancellationToken);
             }
 
-            await RunInPlayerLoopAsync(() => _operations.ReleaseMouseButton(toX, toY, button), cancellationToken);
+            await _runner.RunAsync(() => _operations.ReleaseMouseButton(toX, toY, button), cancellationToken);
 
-            // Wait one more frame so that the release is processed.
-            await RunInPlayerLoopAsync(() => { }, cancellationToken);
+            await _runner.WaitForInputProcessedAsync(cancellationToken);
 
             return new DragMouseResponse(true, fromX, fromY, toX, toY);
         }
@@ -69,23 +66,17 @@ namespace UniCortex.Editor.UseCases
         // returns whether it is the end.
         private bool MoveTowardEnd(float fromX, float fromY, float toX, float toY, double pressedAt, float duration)
         {
-            var t = duration <= 0f ? 1f : (float)Math.Min(1d, (_time.UnscaledTime - pressedAt) / duration);
-            _operations.MoveMouse(fromX + (toX - fromX) * t, fromY + (toY - fromY) * t);
-            return t >= 1f;
+            // Fraction of the drag done: 0 at the press, 1 after duration seconds.
+            var progress = duration <= 0f
+                ? 1f
+                : (float)Math.Min(1d, (_time.UnscaledTime - pressedAt) / duration);
+            _operations.MoveMouse(Lerp(fromX, toX, progress), Lerp(fromY, toY, progress));
+            return progress >= 1f;
         }
 
-        private async Task<T> RunInPlayerLoopAsync<T>(Func<T> func, CancellationToken cancellationToken)
+        private static float Lerp(float from, float to, float t)
         {
-            var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _playerLoopDispatcher.RunAsync(func, cancellationToken), cancellationToken);
-            return await task;
-        }
-
-        private async Task RunInPlayerLoopAsync(Action action, CancellationToken cancellationToken)
-        {
-            var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _playerLoopDispatcher.RunAsync(action, cancellationToken), cancellationToken);
-            await task;
+            return from + (to - from) * t;
         }
     }
 }

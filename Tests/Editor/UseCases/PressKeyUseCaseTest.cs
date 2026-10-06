@@ -17,7 +17,8 @@ namespace UniCortex.Editor.Tests.UseCases
         private static PressKeyUseCase CreateUseCase(FakePlayerLoopDispatcher playerLoopDispatcher,
             SpyInputOperations ops)
         {
-            return new PressKeyUseCase(new FakeMainThreadDispatcher(), playerLoopDispatcher, ops,
+            return new PressKeyUseCase(
+                new PlayerLoopRunner(new FakeMainThreadDispatcher(), playerLoopDispatcher), ops,
                 playerLoopDispatcher.Time);
         }
 
