@@ -13,48 +13,12 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
 {
     private const string KeysDescription =
         "Input System Key enum names of the keys to press together, e.g. [\"Space\"], or [\"LeftCtrl\", \"S\"] for Ctrl+S. " +
-        "Available keys: " +
-        // Letters
-        KeyName.A + ", " + KeyName.B + ", " + KeyName.C + ", " + KeyName.D + ", " +
-        KeyName.E + ", " + KeyName.F + ", " + KeyName.G + ", " + KeyName.H + ", " +
-        KeyName.I + ", " + KeyName.J + ", " + KeyName.K + ", " + KeyName.L + ", " +
-        KeyName.M + ", " + KeyName.N + ", " + KeyName.O + ", " + KeyName.P + ", " +
-        KeyName.Q + ", " + KeyName.R + ", " + KeyName.S + ", " + KeyName.T + ", " +
-        KeyName.U + ", " + KeyName.V + ", " + KeyName.W + ", " + KeyName.X + ", " +
-        KeyName.Y + ", " + KeyName.Z + ", " +
-        // Digits
-        KeyName.Digit0 + "-" + KeyName.Digit9 + ", " +
-        // Function keys
-        KeyName.F1 + "-" + KeyName.F12 + ", " +
-        // Editing
-        KeyName.Space + ", " + KeyName.Enter + ", " + KeyName.Tab + ", " +
-        KeyName.Backspace + ", " + KeyName.Delete + ", " + KeyName.Insert + ", " +
-        KeyName.Escape + ", " + KeyName.ContextMenu + ", " +
-        // Navigation
-        KeyName.LeftArrow + ", " + KeyName.RightArrow + ", " +
-        KeyName.UpArrow + ", " + KeyName.DownArrow + ", " +
-        KeyName.PageUp + ", " + KeyName.PageDown + ", " +
-        KeyName.Home + ", " + KeyName.End + ", " +
-        // Modifiers
-        KeyName.LeftShift + ", " + KeyName.RightShift + ", " +
-        KeyName.LeftCtrl + ", " + KeyName.RightCtrl + ", " +
-        KeyName.LeftAlt + ", " + KeyName.RightAlt + ", " +
-        KeyName.LeftMeta + ", " + KeyName.RightMeta + ", " +
-        // Punctuation and symbols
-        KeyName.Backquote + ", " + KeyName.Quote + ", " + KeyName.Semicolon + ", " +
-        KeyName.Comma + ", " + KeyName.Period + ", " + KeyName.Slash + ", " +
-        KeyName.Backslash + ", " + KeyName.LeftBracket + ", " + KeyName.RightBracket + ", " +
-        KeyName.Minus + ", " + KeyName.Equals + ", " +
-        // Lock and toggle keys
-        KeyName.CapsLock + ", " + KeyName.NumLock + ", " + KeyName.ScrollLock + ", " +
-        KeyName.PrintScreen + ", " + KeyName.Pause + ", " +
-        // Numpad
-        KeyName.Numpad0 + "-" + KeyName.Numpad9 + ", " +
-        KeyName.NumpadEnter + ", " + KeyName.NumpadDivide + ", " +
-        KeyName.NumpadMultiply + ", " + KeyName.NumpadPlus + ", " +
-        KeyName.NumpadMinus + ", " + KeyName.NumpadPeriod + ", " + KeyName.NumpadEquals + ", " +
-        // OEM and IME
-        KeyName.OEM1 + "-" + KeyName.OEM5 + ", " + KeyName.IMESelected;
+        "Available keys: A-Z, Digit0-Digit9, F1-F12, Space, Enter, Tab, Backspace, Delete, Insert, Escape, " +
+        "ContextMenu, LeftArrow, RightArrow, UpArrow, DownArrow, PageUp, PageDown, Home, End, " +
+        "LeftShift, RightShift, LeftCtrl, RightCtrl, LeftAlt, RightAlt, LeftMeta, RightMeta, " +
+        "Backquote, Quote, Semicolon, Comma, Period, Slash, Backslash, LeftBracket, RightBracket, Minus, Equals, " +
+        "CapsLock, NumLock, ScrollLock, PrintScreen, Pause, Numpad0-Numpad9, NumpadEnter, NumpadDivide, " +
+        "NumpadMultiply, NumpadPlus, NumpadMinus, NumpadPeriod, NumpadEquals, OEM1-OEM5, IMESelected.";
 
     [McpServerTool(Name = "press_key", ReadOnly = false),
      Description(
