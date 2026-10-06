@@ -11,16 +11,13 @@ namespace UniCortex.Editor.UseCases
     {
         internal const string KeysRequiredMessage = "keys is required.";
 
-        private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IPlayerLoopDispatcher _playerLoopDispatcher;
+        private readonly PlayerLoopRunner _runner;
         private readonly IInputOperations _operations;
         private readonly ITime _time;
 
-        public PressKeyUseCase(IMainThreadDispatcher dispatcher, IPlayerLoopDispatcher playerLoopDispatcher,
-            IInputOperations operations, ITime time)
+        public PressKeyUseCase(PlayerLoopRunner runner, IInputOperations operations, ITime time)
         {
-            _dispatcher = dispatcher;
-            _playerLoopDispatcher = playerLoopDispatcher;
+            _runner = runner;
             _operations = operations;
             _time = time;
         }
@@ -39,17 +36,16 @@ namespace UniCortex.Editor.UseCases
             }
 
             // Each step runs in a later frame than the previous one.
-            var pressedAt = await RunInPlayerLoopAsync(() => Press(keys), cancellationToken);
+            var pressedAt = await _runner.RunAsync(() => Press(keys), cancellationToken);
 
             var released = false;
             while (!released)
             {
-                released = await RunInPlayerLoopAsync(
+                released = await _runner.RunAsync(
                     () => ReleaseIfHeld(keys, pressedAt, holdDuration), cancellationToken);
             }
 
-            // Wait one more frame so that the release is processed.
-            await RunInPlayerLoopAsync(() => { }, cancellationToken);
+            await _runner.WaitForInputProcessedAsync(cancellationToken);
         }
 
         // Presses the keys and returns the time of the frame.
@@ -69,20 +65,6 @@ namespace UniCortex.Editor.UseCases
 
             _operations.ReleaseKeys(keys);
             return true;
-        }
-
-        private async Task<T> RunInPlayerLoopAsync<T>(Func<T> func, CancellationToken cancellationToken)
-        {
-            var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _playerLoopDispatcher.RunAsync(func, cancellationToken), cancellationToken);
-            return await task;
-        }
-
-        private async Task RunInPlayerLoopAsync(Action action, CancellationToken cancellationToken)
-        {
-            var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _playerLoopDispatcher.RunAsync(action, cancellationToken), cancellationToken);
-            await task;
         }
     }
 }

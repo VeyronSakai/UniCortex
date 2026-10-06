@@ -20,7 +20,8 @@ namespace UniCortex.Editor.Tests.UseCases
             var dispatcher = new FakeMainThreadDispatcher();
             var resolver = new PointerPositionResolver(dispatcher,
                 pointerTargetOps ?? new SpyPointerTargetOperations());
-            return new ClickMouseUseCase(dispatcher, playerLoopDispatcher, resolver, ops, playerLoopDispatcher.Time);
+            return new ClickMouseUseCase(new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver, ops,
+                playerLoopDispatcher.Time);
         }
 
         // Splits the sent mouse events by the frame they were sent in.

@@ -10,17 +10,15 @@ namespace UniCortex.Editor.UseCases
     // Completes after the release has been processed, so the next request sees the result.
     internal sealed class ClickMouseUseCase
     {
-        private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IPlayerLoopDispatcher _playerLoopDispatcher;
+        private readonly PlayerLoopRunner _runner;
         private readonly PointerPositionResolver _resolver;
         private readonly IInputOperations _operations;
         private readonly ITime _time;
 
-        public ClickMouseUseCase(IMainThreadDispatcher dispatcher, IPlayerLoopDispatcher playerLoopDispatcher,
-            PointerPositionResolver resolver, IInputOperations operations, ITime time)
+        public ClickMouseUseCase(PlayerLoopRunner runner, PointerPositionResolver resolver,
+            IInputOperations operations, ITime time)
         {
-            _dispatcher = dispatcher;
-            _playerLoopDispatcher = playerLoopDispatcher;
+            _runner = runner;
             _resolver = resolver;
             _operations = operations;
             _time = time;
@@ -37,17 +35,16 @@ namespace UniCortex.Editor.UseCases
             var (x, y) = await _resolver.ResolveAsync(position, cancellationToken);
 
             // Each step runs in a later frame than the previous one.
-            var pressedAt = await RunInPlayerLoopAsync(() => Press(x, y, button), cancellationToken);
+            var pressedAt = await _runner.RunAsync(() => Press(x, y, button), cancellationToken);
 
             var released = false;
             while (!released)
             {
-                released = await RunInPlayerLoopAsync(
+                released = await _runner.RunAsync(
                     () => ReleaseIfHeld(x, y, button, pressedAt, holdDuration), cancellationToken);
             }
 
-            // Wait one more frame so that the release is processed.
-            await RunInPlayerLoopAsync(() => { }, cancellationToken);
+            await _runner.WaitForInputProcessedAsync(cancellationToken);
 
             return new MouseResponse(true, x, y);
         }
@@ -69,20 +66,6 @@ namespace UniCortex.Editor.UseCases
 
             _operations.ReleaseMouseButton(x, y, button);
             return true;
-        }
-
-        private async Task<T> RunInPlayerLoopAsync<T>(Func<T> func, CancellationToken cancellationToken)
-        {
-            var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _playerLoopDispatcher.RunAsync(func, cancellationToken), cancellationToken);
-            return await task;
-        }
-
-        private async Task RunInPlayerLoopAsync(Action action, CancellationToken cancellationToken)
-        {
-            var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _playerLoopDispatcher.RunAsync(action, cancellationToken), cancellationToken);
-            await task;
         }
     }
 }

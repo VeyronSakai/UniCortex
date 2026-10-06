@@ -17,7 +17,8 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var ops = new SpyInputOperations();
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
-            var useCase = new PressKeyUseCase(new FakeMainThreadDispatcher(), playerLoopDispatcher, ops,
+            var useCase = new PressKeyUseCase(
+                new PlayerLoopRunner(new FakeMainThreadDispatcher(), playerLoopDispatcher), ops,
                 playerLoopDispatcher.Time);
             var handler = new PressKeyHandler(useCase);
 

@@ -917,7 +917,7 @@ Steps (run in the same way as the mouse click, see below):
 
 1. Press all the keys in one state event, so they are pressed in the same frame
 2. Release all the keys in one state event, in the first later frame at least `holdDuration` seconds after the press (the next frame with the default `0`)
-3. Wait one more frame so that the release is processed
+3. Wait one more frame (`PlayerLoopRunner.WaitForInputProcessedAsync`). Input queued in a frame is processed in the next frame, before `MonoBehaviour.Update` and the EventSystem, so the request returns after the game has reacted to the release (e.g. `wasReleasedThisFrame`, `Button.onClick`)
 
 There are no endpoints to press or release a key alone, so a key never stays pressed after a request. Holding a key while sending other input (e.g. Shift + click) is not supported.
 
@@ -936,7 +936,7 @@ With a target, the event still goes through the Input System and the EventSystem
 
 `button` is optional where it is taken: `"left"` (default), `"right"`, `"middle"`.
 
-Click and drag run as a series of steps, each through `IPlayerLoopDispatcher.RunAsync` (the use case awaits each step, then runs the next one). Each step runs inside the player loop in a later frame than the previous one; a frame may be skipped between steps, because each step goes back to the main thread through `MainThreadDispatcher`. The request returns after the release has been processed, so the next request sees the result. Times are given in seconds, not frames, because the frame rate depends on the environment. They are measured with unscaled time (`Time.unscaledTimeAsDouble`, through `ITime`, read inside the player loop), so `Time.timeScale` does not affect them. Like a target, click and drag return `400` while the Editor is paused.
+Click and drag run as a series of steps, each through `IPlayerLoopDispatcher.RunAsync` via `PlayerLoopRunner` (the use case awaits each step, then runs the next one). Each step runs inside the player loop in a later frame than the previous one; a frame may be skipped between steps, because each step goes back to the main thread through `MainThreadDispatcher`. The request returns after the release has been processed, so the next request sees the result. Times are given in seconds, not frames, because the frame rate depends on the environment. They are measured with unscaled time (`Time.unscaledTimeAsDouble`, through `ITime`, read inside the player loop), so `Time.timeScale` does not affect them. Like a target, click and drag return `400` while the Editor is paused.
 
 There are no endpoints to press or release a button alone, so a button never stays pressed after a request.
 
@@ -951,7 +951,7 @@ Steps:
 
 1. Press at the position
 2. Release in the first later frame at least `holdDuration` seconds after the press (the next frame with the default `0`)
-3. Wait one more frame so that the release is processed
+3. Wait one more frame (`PlayerLoopRunner.WaitForInputProcessedAsync`). Input queued in a frame is processed in the next frame, before `MonoBehaviour.Update` and the EventSystem, so the request returns after the game has reacted to the release (e.g. `wasReleasedThisFrame`, `Button.onClick`)
 
 Response: `{"success": true, "x": 100.0, "y": 200.0}` (`x`, `y`: the position the event was sent to)
 
@@ -979,7 +979,7 @@ Steps:
 1. Press at the start
 2. Move along a straight line toward the end, at most once per frame, by the time since the press, until `duration` seconds have passed (the last move is at the end)
 3. Release at the end
-4. Wait one more frame so that the release is processed
+4. Wait one more frame (`PlayerLoopRunner.WaitForInputProcessedAsync`). Input queued in a frame is processed in the next frame, before `MonoBehaviour.Update` and the EventSystem, so the request returns after the game has reacted to the release (e.g. `wasReleasedThisFrame`, `Button.onClick`)
 
 Because the movement is spread over frames, components that look at movement over frames (`ScrollRect` inertia, swipe detection, the `EventSystem` drag threshold) behave as with a real drag.
 
