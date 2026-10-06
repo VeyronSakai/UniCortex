@@ -17,7 +17,10 @@ public class InputCommands(InputUseCase inputUseCase)
         var message = await inputUseCase.SendKeyEventAsync(key, eventType, cancellationToken);
         Console.WriteLine(message);
     }
+}
 
+public class InputPointerCommands(InputUseCase inputUseCase)
+{
     /// <summary>Click (or tap) at a position: press, then release after one frame. Simulates the Input System Mouse device in Play Mode. Requires com.unity.inputsystem. Specify either --x and --y, or --instance-id (requires com.unity.ugui).</summary>
     /// <param name="x">X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view images are at the Game View resolution with a top-left origin, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py.</param>
     /// <param name="y">Y coordinate in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. This is the inverse of typical image coordinates where Y increases downward.</param>
@@ -85,8 +88,8 @@ public class InputCommands(InputUseCase inputUseCase)
     }
 
     /// <summary>List the uGUI objects in the Game View that can be pressed now, with their rects in Game View coordinates, in Play Mode. Requires com.unity.ugui.</summary>
-    [Command("pointer-targets")]
-    public async Task PointerTargets(CancellationToken cancellationToken = default)
+    [Command("targets")]
+    public async Task Targets(CancellationToken cancellationToken = default)
     {
         var json = await inputUseCase.GetPointerTargetsAsync(cancellationToken);
         Console.WriteLine(json);

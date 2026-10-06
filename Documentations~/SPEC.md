@@ -1572,7 +1572,8 @@ menu execute
 scene-view focus|capture
 game-view focus|capture
 game-view size get|list|set
-input send-key|click|drag|move|press|release|pointer-targets
+input send-key
+input pointer click|drag|move|press|release|targets
 timeline create|play|stop
 timeline track list|add|remove|bind
 timeline track property list|set

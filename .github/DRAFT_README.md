@@ -432,10 +432,10 @@ Component commands accept the fully-qualified component type name plus the defin
 | Command | Description |
 | --- | --- |
 | `input send-key` | Send an Input System key event. Requires `com.unity.inputsystem`; Play Mode only. |
-| `input click` | Click (or tap) at `--x`/`--y` or at a UI object (`--instance-id`). Requires `com.unity.inputsystem`; Play Mode only. |
-| `input drag` | Drag from a start to `--to-x`/`--to-y` or `--to-instance-id` over `--frames` frames in one call. |
-| `input move` / `input press` / `input release` | Move the pointer, or press / release a button, for full control. |
-| `input pointer-targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
+| `input pointer click` | Click (or tap) at `--x`/`--y` or at a UI object (`--instance-id`). Requires `com.unity.inputsystem`; Play Mode only. |
+| `input pointer drag` | Drag from a start to `--to-x`/`--to-y` or `--to-instance-id` over `--frames` frames in one call. |
+| `input pointer move` / `input pointer press` / `input pointer release` | Move the pointer, or press / release a button, for full control. |
+| `input pointer targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
 
 #### `recorder all`, `recorder movie`
 
