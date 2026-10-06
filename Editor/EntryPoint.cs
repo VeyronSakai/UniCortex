@@ -301,12 +301,10 @@ namespace UniCortex.Editor
 
 #if UNICORTEX_INPUT_SYSTEM
             var inputSimOps = new InputOperationsAdapter();
+            EditorApplication.playModeStateChanged += inputSimOps.OnPlayModeStateChanged;
 #else
             var inputSimOps = new InputNotSupportedAdapter();
 #endif
-
-            var sendKeyEventUseCase = new SendKeyEventUseCase(dispatcher, inputSimOps);
-            var sendKeyEventHandler = new SendKeyEventHandler(sendKeyEventUseCase);
 
 #if UNICORTEX_UGUI
             var pointerTargetOps = new PointerTargetOperationsAdapter(playerLoopDispatcher);
@@ -317,6 +315,9 @@ namespace UniCortex.Editor
             var pointerPositionResolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
 
             var time = new TimeAdapter();
+
+            var pressKeyUseCase = new PressKeyUseCase(dispatcher, playerLoopDispatcher, inputSimOps, time);
+            var pressKeyHandler = new PressKeyHandler(pressKeyUseCase);
 
             var clickMouseUseCase = new ClickMouseUseCase(dispatcher, playerLoopDispatcher,
                 pointerPositionResolver, inputSimOps, time);
@@ -437,7 +438,7 @@ namespace UniCortex.Editor
             startMovieRecorderHandler.Register(router);
             stopMovieRecorderHandler.Register(router);
 
-            sendKeyEventHandler.Register(router);
+            pressKeyHandler.Register(router);
             clickMouseHandler.Register(router);
             moveMouseHandler.Register(router);
             dragMouseHandler.Register(router);

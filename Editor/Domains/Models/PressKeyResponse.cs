@@ -3,11 +3,11 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class SendKeyEventResponse
+    public class PressKeyResponse
     {
         public bool success;
 
-        public SendKeyEventResponse(bool success)
+        public PressKeyResponse(bool success)
         {
             this.success = success;
         }

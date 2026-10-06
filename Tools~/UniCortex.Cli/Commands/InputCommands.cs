@@ -5,17 +5,16 @@ using UniCortex.Editor.Domains.Models;
 namespace UniCortex.Cli.Commands;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag
-public class InputCommands(InputUseCase inputUseCase)
+public class InputKeyCommands(InputUseCase inputUseCase)
 {
-    /// <summary>Send a keyboard event via Input System in Play Mode. Requires com.unity.inputsystem.</summary>
-    /// <param name="key">Input System Key enum name. Available keys: A-Z, Digit0-Digit9, F1-F12, Space, Enter, Tab, Backspace, Delete, Insert, Escape, ContextMenu, LeftArrow, RightArrow, UpArrow, DownArrow, PageUp, PageDown, Home, End, LeftShift, RightShift, LeftCtrl, RightCtrl, LeftAlt, RightAlt, LeftMeta, RightMeta, Backquote, Quote, Semicolon, Comma, Period, Slash, Backslash, LeftBracket, RightBracket, Minus, Equals, CapsLock, NumLock, ScrollLock, PrintScreen, Pause, Numpad0-Numpad9, NumpadEnter, NumpadDivide, NumpadMultiply, NumpadPlus, NumpadMinus, NumpadPeriod, NumpadEquals, OEM1-OEM5, IMESelected.</param>
-    /// <param name="eventType">Event type: "press" (default) or "release".</param>
-    [Command("send-key")]
-    public async Task SendKey([Argument] string key, string eventType = InputEventType.Press,
+    /// <summary>Press keys of the keyboard via Input System in Play Mode: press all the keys in the same frame, keep them pressed for --hold-duration seconds, and release them. Requires com.unity.inputsystem.</summary>
+    /// <param name="keys">Comma-separated Input System Key enum names of the keys to press together, e.g. Space, or LeftCtrl,S for Ctrl+S. Available keys: A-Z, Digit0-Digit9, F1-F12, Space, Enter, Tab, Backspace, Delete, Insert, Escape, ContextMenu, LeftArrow, RightArrow, UpArrow, DownArrow, PageUp, PageDown, Home, End, LeftShift, RightShift, LeftCtrl, RightCtrl, LeftAlt, RightAlt, LeftMeta, RightMeta, Backquote, Quote, Semicolon, Comma, Period, Slash, Backslash, LeftBracket, RightBracket, Minus, Equals, CapsLock, NumLock, ScrollLock, PrintScreen, Pause, Numpad0-Numpad9, NumpadEnter, NumpadDivide, NumpadMultiply, NumpadPlus, NumpadMinus, NumpadPeriod, NumpadEquals, OEM1-OEM5, IMESelected.</param>
+    /// <param name="holdDuration">Seconds to keep the keys pressed before releasing them (default 0: release in the next frame).</param>
+    [Command("press")]
+    public async Task Press([Argument] string[] keys, float? holdDuration = null,
         CancellationToken cancellationToken = default)
     {
-        var message = await inputUseCase.SendKeyEventAsync(key, eventType, cancellationToken);
-        Console.WriteLine(message);
+        Console.WriteLine(await inputUseCase.PressKeyAsync(keys, holdDuration, cancellationToken));
     }
 }
 

@@ -216,7 +216,7 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 
 | Tool | Description |
 |------|-------------|
-| `send_key_event` | Send a keyboard event via Input System in Play Mode (requires com.unity.inputsystem) |
+| `press_key` | Press keys via Input System in Play Mode (requires com.unity.inputsystem). Pass several keys for a combination such as Ctrl+S. Use holdDuration to keep them pressed |
 | `click_mouse` | Click (or tap) via Input System in Play Mode (requires com.unity.inputsystem). Accepts either x/y or the instanceId of a UI target (requires com.unity.ugui). Use holdDuration for a long press |
 | `drag_mouse` | Drag (or swipe) from a start to an end over a given time in one call |
 | `move_mouse` | Move the mouse without pressing a button, e.g. for hover |
@@ -429,7 +429,7 @@ Component commands accept the fully-qualified component type name plus the defin
 
 | Command | Description |
 | --- | --- |
-| `input send-key` | Send an Input System key event. Requires `com.unity.inputsystem`; Play Mode only. |
+| `input key press` | Press keys together (e.g. `LeftCtrl,S`), holding them for `--hold-duration` seconds. Requires `com.unity.inputsystem`; Play Mode only. |
 | `input mouse click` | Click (or tap) at `--x`/`--y` or at a UI object (`--instance-id`), holding the button for `--hold-duration` seconds. Requires `com.unity.inputsystem`; Play Mode only. |
 | `input mouse drag` | Drag from `--from-x`/`--from-y` or `--from-instance-id` to `--to-x`/`--to-y` or `--to-instance-id` over `--duration` seconds in one call. |
 | `input mouse move` | Move the mouse without pressing a button, e.g. for hover. |

@@ -20,13 +20,13 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask SendKeyEvent_ReturnsError_WhenNotInPlayMode()
+    public async ValueTask PressKey_ReturnsError_WhenNotInPlayMode()
     {
         // The error message varies depending on whether Input System is installed:
         // - "Play Mode" when installed but not in Play Mode
         // - "Input System package" when not installed
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.InputUseCase.SendKeyEventAsync(KeyName.Space, InputEventType.Press, CancellationToken.None));
+            await _fixture.InputUseCase.PressKeyAsync([KeyName.Space], null, CancellationToken.None));
 
         Assert.That(ex!.Message, Does.Contain("Play Mode").Or.Contain("Input System"));
     }
@@ -42,7 +42,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask SendKeyEvent_InPlayMode_TriggersKeyboardInput()
+    public async ValueTask PressKey_InPlayMode_TriggersKeyboardInput()
     {
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
@@ -50,10 +50,9 @@ public class InputUseCaseTest
         {
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
-            await _fixture.InputUseCase.SendKeyEventAsync(KeyName.A, InputEventType.Press, CancellationToken.None);
-            await Task.Delay(500);
-            await _fixture.InputUseCase.SendKeyEventAsync(KeyName.A, InputEventType.Release, CancellationToken.None);
-            await Task.Delay(500);
+            // No delay before reading the logs: the press returns after the release has been processed.
+            await _fixture.InputUseCase.PressKeyAsync([KeyName.LeftShift, KeyName.A], 0.2f,
+                CancellationToken.None);
 
             var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
                 cancellationToken: CancellationToken.None);

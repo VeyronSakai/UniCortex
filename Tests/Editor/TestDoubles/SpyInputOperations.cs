@@ -5,9 +5,25 @@ namespace UniCortex.Editor.Tests.TestDoubles
 {
     internal sealed class SpyInputOperations : IInputOperations
     {
-        public int SendKeyEventCallCount { get; private set; }
-        public string LastKey { get; private set; }
-        public string LastKeyEventType { get; private set; }
+        public enum KeyAction
+        {
+            Press,
+            Release,
+        }
+
+        public readonly struct KeyEventRecord
+        {
+            public readonly KeyAction Action;
+            public readonly string[] Keys;
+
+            public KeyEventRecord(KeyAction action, string[] keys)
+            {
+                Action = action;
+                Keys = keys;
+            }
+        }
+
+        public List<KeyEventRecord> KeyEventHistory { get; } = new();
 
         public enum MouseAction
         {
@@ -36,11 +52,14 @@ namespace UniCortex.Editor.Tests.TestDoubles
 
         public List<MouseEventRecord> MouseEventHistory { get; } = new();
 
-        public void SendKeyEvent(string key, string eventType)
+        public void PressKeys(string[] keys)
         {
-            SendKeyEventCallCount++;
-            LastKey = key;
-            LastKeyEventType = eventType;
+            KeyEventHistory.Add(new KeyEventRecord(KeyAction.Press, keys));
+        }
+
+        public void ReleaseKeys(string[] keys)
+        {
+            KeyEventHistory.Add(new KeyEventRecord(KeyAction.Release, keys));
         }
 
         public void PressMouseButton(float x, float y, string button)
