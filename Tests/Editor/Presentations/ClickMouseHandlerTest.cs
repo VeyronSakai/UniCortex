@@ -20,7 +20,9 @@ namespace UniCortex.Editor.Tests.Presentations
             var ops = new SpyInputOperations();
             var pointerTargetOps = new SpyPointerTargetOperations();
             var resolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
-            var useCase = new ClickMouseUseCase(dispatcher, new FakePlayerLoopDispatcher(), resolver, ops);
+            var playerLoopDispatcher = new FakePlayerLoopDispatcher();
+            var useCase = new ClickMouseUseCase(dispatcher, playerLoopDispatcher, resolver, ops,
+                playerLoopDispatcher.Time);
             var handler = new ClickMouseHandler(useCase);
 
             var router = new RequestRouter();
@@ -107,7 +109,7 @@ namespace UniCortex.Editor.Tests.Presentations
             };
             var resolver = new PointerPositionResolver(dispatcher, new SpyPointerTargetOperations());
             var handler = new ClickMouseHandler(new ClickMouseUseCase(dispatcher, playerLoopDispatcher,
-                resolver, ops));
+                resolver, ops, playerLoopDispatcher.Time));
             var router = new RequestRouter();
             handler.Register(router);
             var context = CreateContext("{\"x\":0.0,\"y\":0.0,\"holdDuration\":0.5}");

@@ -12,11 +12,10 @@ namespace UniCortex.Editor.Infrastructures
     {
         private readonly struct Request
         {
-            // Returns true to run again in the next frame.
-            public readonly Func<bool> Run;
+            public readonly Action Run;
             public readonly Action<Exception> Fail;
 
-            public Request(Func<bool> run, Action<Exception> fail)
+            public Request(Action run, Action<Exception> fail)
             {
                 Run = run;
                 Fail = fail;
@@ -25,51 +24,33 @@ namespace UniCortex.Editor.Infrastructures
 
         private readonly IEditorApplication _editorApplication;
         private readonly IPlayerLoop _playerLoop;
-        private readonly ITime _time;
         private readonly Queue<Request> _queue = new();
 
-        public PlayerLoopDispatcher(IEditorApplication editorApplication, IPlayerLoop playerLoop, ITime time)
+        public PlayerLoopDispatcher(IEditorApplication editorApplication, IPlayerLoop playerLoop)
         {
             _editorApplication = editorApplication;
             _playerLoop = playerLoop;
-            _time = time;
         }
 
         public Task<T> RunAsync<T>(Func<T> func, CancellationToken cancellationToken = default)
         {
             var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
-            Enqueue(tcs, () =>
-            {
-                tcs.TrySetResult(func());
-                return false;
-            }, cancellationToken);
+            Enqueue(tcs, () => tcs.TrySetResult(func()), cancellationToken);
             return tcs.Task;
         }
 
-        public Task RunEachFrameAsync(Func<int, double, bool> step, CancellationToken cancellationToken = default)
+        public Task RunAsync(Action action, CancellationToken cancellationToken = default)
         {
             var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var frame = 0;
-            var startTime = 0d;
             Enqueue(tcs, () =>
             {
-                if (frame == 0)
-                {
-                    startTime = _time.UnscaledTime;
-                }
-
-                if (step(frame++, _time.UnscaledTime - startTime))
-                {
-                    return true;
-                }
-
+                action();
                 tcs.TrySetResult(true);
-                return false;
             }, cancellationToken);
             return tcs.Task;
         }
 
-        private void Enqueue<T>(TaskCompletionSource<T> tcs, Func<bool> run, CancellationToken cancellationToken)
+        private void Enqueue<T>(TaskCompletionSource<T> tcs, Action run, CancellationToken cancellationToken)
         {
             if (!_editorApplication.IsPlaying)
             {
@@ -96,17 +77,16 @@ namespace UniCortex.Editor.Infrastructures
                     // Already canceled (see above), so do not run the function.
                     if (tcs.Task.IsCompleted)
                     {
-                        return false;
+                        return;
                     }
 
                     try
                     {
-                        return run();
+                        run();
                     }
                     catch (Exception ex)
                     {
                         tcs.TrySetException(ex);
-                        return false;
                     }
                 },
                 ex => tcs.TrySetException(ex)));
@@ -115,16 +95,12 @@ namespace UniCortex.Editor.Infrastructures
         // Called from the system inserted into the player loop.
         private void OnPlayerLoopUpdate()
         {
-            // Run only the requests queued before this update. Requests that run again, and requests queued by the
-            // functions run here, wait for the next frame.
+            // Run only the requests queued before this update, so that a request queued by a function run here waits
+            // for the next frame.
             var count = _queue.Count;
             for (var i = 0; i < count; i++)
             {
-                var request = _queue.Dequeue();
-                if (request.Run())
-                {
-                    _queue.Enqueue(request);
-                }
+                _queue.Dequeue().Run();
             }
         }
 

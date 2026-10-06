@@ -35,7 +35,7 @@ public class InputMouseCommands(InputUseCase inputUseCase)
             cancellationToken));
     }
 
-    /// <summary>Drag (or swipe) in one call: press at the start, move to the end over --duration seconds with one move per frame, and release. Simulates the Input System Mouse device in Play Mode. Requires com.unity.inputsystem. Specify the start with --from-x and --from-y, or --from-instance-id (requires com.unity.ugui), and the end with --to-x and --to-y, or --to-instance-id.</summary>
+    /// <summary>Drag (or swipe) in one call: press at the start, move to the end over --duration seconds (at most one move per frame), and release. Simulates the Input System Mouse device in Play Mode. Requires com.unity.inputsystem. Specify the start with --from-x and --from-y, or --from-instance-id (requires com.unity.ugui), and the end with --to-x and --to-y, or --to-instance-id.</summary>
     /// <param name="fromX">--from-x, Start X coordinate of the drag in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view images are at the Game View resolution with a top-left origin, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py. Must be given together with --from-y.</param>
     /// <param name="fromY">--from-y, Start Y coordinate of the drag in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. Must be given together with --from-x.</param>
     /// <param name="fromInstanceId">instanceId of the UI GameObject whose center is the start of the drag.</param>

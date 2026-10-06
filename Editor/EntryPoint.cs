@@ -47,7 +47,7 @@ namespace UniCortex.Editor
 
             var dispatcher = new MainThreadDispatcher();
             var playerLoopDispatcher = new PlayerLoopDispatcher(new EditorApplicationAdapter(),
-                new PlayerLoopAdapter(), new TimeAdapter());
+                new PlayerLoopAdapter());
             var compilationPipeline = new CompilationPipelineAdapter();
 
             var server = StartServer(dispatcher, playerLoopDispatcher, compilationPipeline);
@@ -316,15 +316,17 @@ namespace UniCortex.Editor
 
             var pointerPositionResolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
 
+            var time = new TimeAdapter();
+
             var clickMouseUseCase = new ClickMouseUseCase(dispatcher, playerLoopDispatcher,
-                pointerPositionResolver, inputSimOps);
+                pointerPositionResolver, inputSimOps, time);
             var clickMouseHandler = new ClickMouseHandler(clickMouseUseCase);
 
             var moveMouseUseCase = new MoveMouseUseCase(dispatcher, pointerPositionResolver, inputSimOps);
             var moveMouseHandler = new MoveMouseHandler(moveMouseUseCase);
 
             var dragMouseUseCase = new DragMouseUseCase(dispatcher, playerLoopDispatcher,
-                pointerPositionResolver, inputSimOps);
+                pointerPositionResolver, inputSimOps, time);
             var dragMouseHandler = new DragMouseHandler(dragMouseUseCase);
 
             var getPointerTargetsUseCase = new GetPointerTargetsUseCase(dispatcher, pointerTargetOps);

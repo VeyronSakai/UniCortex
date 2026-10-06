@@ -14,10 +14,10 @@ namespace UniCortex.Editor.Tests.Infrastructures
     internal sealed class PlayerLoopDispatcherTest
     {
         private static PlayerLoopDispatcher CreateDispatcher(SpyPlayerLoop playerLoop, bool isPlaying = true,
-            bool isPaused = false, FakeTime time = null)
+            bool isPaused = false)
         {
             var editorApplication = new SpyEditorApplication { IsPlaying = isPlaying, IsPaused = isPaused };
-            return new PlayerLoopDispatcher(editorApplication, playerLoop, time ?? new FakeTime());
+            return new PlayerLoopDispatcher(editorApplication, playerLoop);
         }
 
         [Test]
@@ -193,110 +193,39 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
-        public void RunEachFrameAsync_CallsStepOncePerUpdate_UntilItReturnsFalse()
+        public void RunAsync_WithAction_RunsAction_WhenPlayerLoopUpdates()
         {
             // Arrange
             var playerLoop = new SpyPlayerLoop();
             var dispatcher = CreateDispatcher(playerLoop);
-            var calledFrames = new List<int>();
+            var executed = false;
+            var task = dispatcher.RunAsync(() => { executed = true; });
+            var completedBeforeUpdate = task.IsCompleted;
 
             // Act
-            var task = dispatcher.RunEachFrameAsync((frame, _) =>
-            {
-                calledFrames.Add(frame);
-                return frame < 2;
-            });
-            var calledBeforeUpdate = calledFrames.Count;
-            playerLoop.Update();
-            playerLoop.Update();
-            var completedBeforeLastUpdate = task.IsCompleted;
-            playerLoop.Update();
             playerLoop.Update();
 
             // Assert
-            Assert.AreEqual(0, calledBeforeUpdate);
-            Assert.IsFalse(completedBeforeLastUpdate);
+            Assert.IsFalse(completedBeforeUpdate);
+            Assert.IsTrue(executed);
             Assert.IsTrue(task.IsCompleted);
             task.GetAwaiter().GetResult();
-            CollectionAssert.AreEqual(new[] { 0, 1, 2 }, calledFrames);
         }
 
         [Test]
-        public void RunEachFrameAsync_PassesSecondsSinceFirstCall()
-        {
-            // Arrange
-            var playerLoop = new SpyPlayerLoop();
-            var time = new FakeTime { UnscaledTime = 10d };
-            var dispatcher = CreateDispatcher(playerLoop, time: time);
-            var elapsedTimes = new List<double>();
-            dispatcher.RunEachFrameAsync((_, elapsed) =>
-            {
-                elapsedTimes.Add(elapsed);
-                return true;
-            });
-
-            // Act
-            playerLoop.Update();
-            time.UnscaledTime = 10.25d;
-            playerLoop.Update();
-            time.UnscaledTime = 10.5d;
-            playerLoop.Update();
-
-            // Assert
-            CollectionAssert.AreEqual(new[] { 0d, 0.25d, 0.5d }, elapsedTimes);
-        }
-
-        [Test]
-        public void RunEachFrameAsync_PassesException_ToTask_AndStops()
+        public void RunAsync_WithAction_PassesException_ToTask()
         {
             // Arrange
             var playerLoop = new SpyPlayerLoop();
             var dispatcher = CreateDispatcher(playerLoop);
-            var callCount = 0;
-            var task = dispatcher.RunEachFrameAsync((frame, _) =>
-            {
-                callCount++;
-                if (frame == 1)
-                {
-                    throw new ArgumentException("failed");
-                }
-
-                return true;
-            });
+            var task = dispatcher.RunAsync(() => throw new ArgumentException("failed"));
 
             // Act
-            playerLoop.Update();
-            playerLoop.Update();
             playerLoop.Update();
 
             // Assert
             var ex = Assert.Throws<ArgumentException>(() => task.GetAwaiter().GetResult());
             Assert.AreEqual("failed", ex.Message);
-            Assert.AreEqual(2, callCount);
-        }
-
-        [Test]
-        public void RunEachFrameAsync_StopsCallingStep_WhenCanceled()
-        {
-            // Arrange
-            var playerLoop = new SpyPlayerLoop();
-            var dispatcher = CreateDispatcher(playerLoop);
-            var callCount = 0;
-            using var cts = new CancellationTokenSource();
-            var task = dispatcher.RunEachFrameAsync((_, _) =>
-            {
-                callCount++;
-                return true;
-            }, cts.Token);
-            playerLoop.Update();
-
-            // Act
-            cts.Cancel();
-            playerLoop.Update();
-
-            // Assert
-            Assert.IsTrue(task.IsCanceled);
-            Assert.AreEqual(1, callCount);
         }
 
         [Test]
@@ -322,28 +251,5 @@ namespace UniCortex.Editor.Tests.Infrastructures
             Assert.AreEqual(2, inner.GetAwaiter().GetResult());
         }
 
-        [Test]
-        public void OnPlayModeStateChanged_FailsRunningRequest_WhenExitingPlayMode()
-        {
-            // Arrange
-            var playerLoop = new SpyPlayerLoop();
-            var dispatcher = CreateDispatcher(playerLoop);
-            var callCount = 0;
-            var task = dispatcher.RunEachFrameAsync((_, _) =>
-            {
-                callCount++;
-                return true;
-            });
-            playerLoop.Update();
-
-            // Act
-            dispatcher.OnPlayModeStateChanged(PlayModeStateChange.ExitingPlayMode);
-            playerLoop.Update();
-
-            // Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult());
-            StringAssert.Contains("Play Mode was exited", ex.Message);
-            Assert.AreEqual(1, callCount);
-        }
     }
 }

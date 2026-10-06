@@ -95,7 +95,7 @@ Unity APIs can only be called from the main thread. Since `HttpListener` callbac
 3. On the main thread (`EditorApplication.update`), dequeue → run `func()` → `tcs.SetResult()`
 4. The HTTP thread awaits completion → returns the response
 
-Some operations must run inside the player loop in Play Mode, because APIs such as `Screen.width` / `Screen.height` return Game View values only there (from `EditorApplication.update` they return the size of another view). For these, `PlayerLoopDispatcher` (`IPlayerLoopDispatcher`) inserts a system at the end of the `PostLateUpdate` phase (after Canvas layout updates and rendering, so that UI positions and raycasts match the frame shown in the Game View) through `IPlayerLoop` (implemented by `PlayerLoopAdapter`, so that tests do not change the real player loop) and runs queued functions there. It is called on the main thread (through `MainThreadDispatcher`) and returns a `Task` that completes in the next frame. `RunEachFrameAsync` instead calls a function once per frame, starting in the next frame, until it returns `false`, and passes it the frame number and the seconds since the first call (unscaled time, through `ITime`) (used for `POST /input/mouse/click` and `POST /input/mouse/drag`). Each update runs only the requests queued before it, so a request queued during an update runs in the next frame. It fails immediately outside Play Mode and while the Editor is paused (the player loop does not run then), and fails pending requests when Play Mode exits. `EntryPoint` creates it and subscribes it to `EditorApplication.playModeStateChanged`.
+Some operations must run inside the player loop in Play Mode, because APIs such as `Screen.width` / `Screen.height` return Game View values only there (from `EditorApplication.update` they return the size of another view). For these, `PlayerLoopDispatcher` (`IPlayerLoopDispatcher`) inserts a system at the end of the `PostLateUpdate` phase (after Canvas layout updates and rendering, so that UI positions and raycasts match the frame shown in the Game View) through `IPlayerLoop` (implemented by `PlayerLoopAdapter`, so that tests do not change the real player loop) and runs queued functions there. It is called on the main thread (through `MainThreadDispatcher`) and returns a `Task` that completes in the next frame. It takes a `Func<T>` (the task returns its result) or an `Action`. Each update runs only the requests queued before it, so a request queued during an update runs in the next frame. It fails immediately outside Play Mode and while the Editor is paused (the player loop does not run then), and fails pending requests when Play Mode exits. `EntryPoint` creates it and subscribes it to `EditorApplication.playModeStateChanged`.
 
 ---
 
@@ -928,7 +928,7 @@ With a target, the event still goes through the Input System and the EventSystem
 
 `button` is optional where it is taken: `"left"` (default), `"right"`, `"middle"`.
 
-Click and drag run inside the player loop (through `IPlayerLoopDispatcher.RunEachFrameAsync`), one step per frame, and the request returns after the release has been processed, so the next request sees the result. Times are given in seconds, not frames, because the frame rate depends on the environment. They are measured with unscaled time (`Time.unscaledTimeAsDouble`), so `Time.timeScale` does not affect them. Like a target, click and drag return `400` while the Editor is paused.
+Click and drag run as a series of steps, each through `IPlayerLoopDispatcher.RunAsync` (the use case awaits each step, then runs the next one). Each step runs inside the player loop in a later frame than the previous one; a frame may be skipped between steps, because each step goes back to the main thread through `MainThreadDispatcher`. The request returns after the release has been processed, so the next request sees the result. Times are given in seconds, not frames, because the frame rate depends on the environment. They are measured with unscaled time (`Time.unscaledTimeAsDouble`, through `ITime`, read inside the player loop), so `Time.timeScale` does not affect them. Like a target, click and drag return `400` while the Editor is paused.
 
 There are no endpoints to press or release a button alone, so a button never stays pressed after a request.
 
@@ -969,7 +969,7 @@ Request body:
 Steps:
 
 1. Press at the start
-2. Move along a straight line toward the end, once per frame, by the time since the press, until `duration` seconds have passed (the last move is at the end)
+2. Move along a straight line toward the end, at most once per frame, by the time since the press, until `duration` seconds have passed (the last move is at the end)
 3. Release at the end
 4. Wait one more frame so that the release is processed
 

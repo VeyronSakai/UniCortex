@@ -9,13 +9,10 @@ namespace UniCortex.Editor.Domains.Interfaces
     // the player loop runs; from EditorApplication.update they return the size of another view.
     internal interface IPlayerLoopDispatcher
     {
-        // Must be called on the main thread.
+        // Runs the function in the next frame. Must be called on the main thread.
         Task<T> RunAsync<T>(Func<T> func, CancellationToken cancellationToken = default);
 
-        // Calls step once per frame, starting in the next frame, until it returns false.
-        // The arguments are the number of frames since the first call (0 for the first call) and the seconds since
-        // the first call (unscaled time, 0 for the first call).
-        // Must be called on the main thread.
-        Task RunEachFrameAsync(Func<int, double, bool> step, CancellationToken cancellationToken = default);
+        // Runs the action in the next frame. Must be called on the main thread.
+        Task RunAsync(Action action, CancellationToken cancellationToken = default);
     }
 }

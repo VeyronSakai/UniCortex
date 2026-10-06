@@ -20,7 +20,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var dispatcher = new FakeMainThreadDispatcher();
             var resolver = new PointerPositionResolver(dispatcher,
                 pointerTargetOps ?? new SpyPointerTargetOperations());
-            return new ClickMouseUseCase(dispatcher, playerLoopDispatcher, resolver, ops);
+            return new ClickMouseUseCase(dispatcher, playerLoopDispatcher, resolver, ops, playerLoopDispatcher.Time);
         }
 
         // Splits the sent mouse events by the frame they were sent in.
@@ -133,7 +133,7 @@ namespace UniCortex.Editor.Tests.UseCases
                 new PointerPosition.Coordinates(0f, 0f), MouseButton.Left, -0.1f, CancellationToken.None)
                 .GetAwaiter().GetResult());
             StringAssert.StartsWith("holdDuration ", ex.Message);
-            Assert.AreEqual(0, playerLoopDispatcher.RunEachFrameCallCount);
+            Assert.AreEqual(0, playerLoopDispatcher.FrameCount);
             CollectionAssert.IsEmpty(ops.MouseEventHistory);
         }
     }

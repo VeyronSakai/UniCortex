@@ -113,7 +113,7 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
     [McpServerTool(Name = "drag_mouse", ReadOnly = false),
      Description(
          "Drag (or swipe) in one call: press at the start, move along a straight line to the end over duration seconds " +
-         "with one move per frame, and release at the end. Returns after the release has been processed. " +
+         "(at most one move per frame), and release at the end. Returns after the release has been processed. " +
          "Because the movement is spread over frames, ScrollRect inertia, swipe detection and the EventSystem drag threshold " +
          "behave as with a real drag. " + MouseToolDescription),
      UsedImplicitly]
