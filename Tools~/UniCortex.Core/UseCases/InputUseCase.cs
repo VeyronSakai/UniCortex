@@ -15,50 +15,58 @@ public class InputUseCase(IUnityEditorClient client)
         return $"Key event sent: {key} ({eventType})";
     }
 
-    public async ValueTask<string> SendMouseEventAsync(float x, float y, string button, string eventType,
+    public ValueTask<string> ClickPointerAsync(float? x, float? y, int? instanceId, string button,
         CancellationToken cancellationToken)
-    {
-        return await SendMouseEventAsync(x, y, null, button, eventType, cancellationToken);
-    }
-
-    public async ValueTask<string> SendMouseEventAsync(float? x, float? y, int? instanceId,
-        string button, string eventType, CancellationToken cancellationToken)
-    {
-        return await SendMouseEventAsync(x, y, instanceId, button, eventType, null, null, null, null, null,
+        => SendPointerButtonAsync(ApiRoutes.InputPointerClick, "Clicked", x, y, instanceId, button,
             cancellationToken);
-    }
 
-    public async ValueTask<string> SendMouseEventAsync(float? x, float? y, int? instanceId,
-        string button, string eventType, float? toX, float? toY, int? toInstanceId, int? frames, int? holdFrames,
+    public ValueTask<string> PressPointerAsync(float? x, float? y, int? instanceId, string button,
+        CancellationToken cancellationToken)
+        => SendPointerButtonAsync(ApiRoutes.InputPointerPress, "Pressed", x, y, instanceId, button,
+            cancellationToken);
+
+    public ValueTask<string> ReleasePointerAsync(float? x, float? y, int? instanceId, string button,
+        CancellationToken cancellationToken)
+        => SendPointerButtonAsync(ApiRoutes.InputPointerRelease, "Released", x, y, instanceId, button,
+            cancellationToken);
+
+    public async ValueTask<string> MovePointerAsync(float? x, float? y, int? instanceId,
         CancellationToken cancellationToken)
     {
-        var request = new SendMouseEventRequest
+        var request = new MovePointerRequest { x = x, y = y, instanceId = instanceId };
+        var response = await client.PostAsync<MovePointerRequest, PointerResponse>(ApiRoutes.InputPointerMove,
+            request, cancellationToken);
+        return $"Moved pointer to ({response.x}, {response.y})";
+    }
+
+    public async ValueTask<string> DragPointerAsync(float? x, float? y, int? instanceId,
+        float? toX, float? toY, int? toInstanceId, string button, int? frames, int? holdFrames,
+        CancellationToken cancellationToken)
+    {
+        var request = new DragPointerRequest
         {
             x = x,
             y = y,
             instanceId = instanceId,
-            button = button,
-            eventType = eventType,
             toX = toX,
             toY = toY,
             toInstanceId = toInstanceId,
+            button = button,
             frames = frames,
             holdFrames = holdFrames
         };
-        var response = await client.PostAsync<SendMouseEventRequest, SendMouseEventResponse>(ApiRoutes.InputMouse,
+        var response = await client.PostAsync<DragPointerRequest, DragPointerResponse>(ApiRoutes.InputPointerDrag,
             request, cancellationToken);
+        return $"Dragged pointer from ({response.x}, {response.y}) to ({response.toX}, {response.toY}) button={button}";
+    }
 
-        if (string.Equals(eventType, InputEventType.Drag, StringComparison.OrdinalIgnoreCase))
-        {
-            return $"Mouse dragged from ({response.x}, {response.y}) to ({response.toX}, {response.toY}) button={button}";
-        }
-
-        if (instanceId == null)
-        {
-            return $"Mouse event sent: ({response.x}, {response.y}) button={button} ({eventType})";
-        }
-
-        return $"Mouse event sent to instanceId {instanceId} at ({response.x}, {response.y}) button={button} ({eventType})";
+    private async ValueTask<string> SendPointerButtonAsync(string route, string verb, float? x, float? y,
+        int? instanceId, string button, CancellationToken cancellationToken)
+    {
+        var request = new PointerButtonRequest { x = x, y = y, instanceId = instanceId, button = button };
+        var response = await client.PostAsync<PointerButtonRequest, PointerResponse>(route, request,
+            cancellationToken);
+        return $"{verb} pointer at ({response.x}, {response.y}) button={button}";
     }
 
     public async ValueTask<string> GetPointerTargetsAsync(CancellationToken cancellationToken)

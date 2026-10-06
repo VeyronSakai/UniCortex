@@ -1,15 +1,15 @@
 namespace UniCortex.Editor.Domains.Models
 {
-    // Position of a mouse event: either Game View coordinates or the center of a UI object.
+    // Position of a pointer event: either Game View coordinates or the center of a UI object.
     // The constructor is private, so Coordinates and Target are the only kinds.
-    public abstract class MousePosition
+    public abstract class PointerPosition
     {
-        private MousePosition()
+        private PointerPosition()
         {
         }
 
         // Game View coordinates (origin at the bottom-left).
-        public sealed class Coordinates : MousePosition
+        public sealed class Coordinates : PointerPosition
         {
             public float X { get; }
             public float Y { get; }
@@ -22,7 +22,7 @@ namespace UniCortex.Editor.Domains.Models
         }
 
         // The center of the UI object with the given instanceId.
-        public sealed class Target : MousePosition
+        public sealed class Target : PointerPosition
         {
             public int InstanceId { get; }
 

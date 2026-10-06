@@ -70,47 +70,105 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => inputUseCase.SendKeyEventAsync(key, eventType, ct), cancellationToken);
 
-    [McpServerTool(Name = "send_mouse_event", ReadOnly = false),
-     Description(
-         "Send a mouse event via Unity Input System (com.unity.inputsystem) in Play Mode. " +
-         "Uses InputSystem.QueueEvent() to simulate device-level input. " +
-         "Triggers Input System actions (InputAction, PlayerInput) and Mouse.current states. " +
-         "Specify the position either with x and y, or with instanceId to send the event to the center of a UI element; " +
-         "exactly one of them is required. " +
-         "With a target, the event still goes through the EventSystem raycast like a real tap, " +
-         "so a target covered by other UI does not receive it. " +
-         $"With eventType \"{InputEventType.Drag}\", drags in one call: presses at the start (x/y or instanceId), " +
-         "moves along a straight line to the end (toX/toY or toInstanceId) with one move per frame, and releases at the end. " +
-         "The call returns after the release has been processed. " +
-         "Requires the Input System package to be installed (and com.unity.ugui for a target). " +
-         "Does NOT work with legacy UnityEngine.Input.GetMouseButton()."),
+    private const string PointerToolDescription =
+        "Uses InputSystem.QueueEvent() to simulate the Mouse device of Unity Input System (com.unity.inputsystem) " +
+        "in Play Mode, so uGUI (EventSystem) receives it as a pointer, the same as a tap on a touch screen. " +
+        "Triggers Input System actions (InputAction, PlayerInput) and Mouse.current states. " +
+        "Specify the position either with x and y, or with instanceId to use the center of a UI element; " +
+        "exactly one of them is required. " +
+        "With a target, the event still goes through the EventSystem raycast like a real tap, " +
+        "so a target covered by other UI does not receive it. " +
+        "Requires the Input System package to be installed (and com.unity.ugui for a target). " +
+        "Does NOT work with legacy UnityEngine.Input.GetMouseButton().";
+
+    private const string XDescription =
+        "X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view images are at the Game View resolution with a top-left origin, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py. Must be given together with y, and not with instanceId.";
+
+    private const string YDescription =
+        "Y coordinate in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. This is the inverse of typical image coordinates where Y increases downward. Must be given together with x, and not with instanceId.";
+
+    private const string InstanceIdDescription =
+        "instanceId of the UI GameObject (a RectTransform under a Canvas), e.g. from get_pointer_targets. Its center is used. Cannot be combined with x/y.";
+
+    private const string ButtonDescription =
+        $"Mouse button: \"{MouseButton.Left}\" (default), \"{MouseButton.Right}\", or \"{MouseButton.Middle}\". Use the default for a tap.";
+
+    [McpServerTool(Name = "click_pointer", ReadOnly = false),
+     Description("Click (or tap) at a position: press, then release after one frame. " + PointerToolDescription),
      UsedImplicitly]
-    public ValueTask<CallToolResult> SendMouseEventAsync(
-        [Description("X coordinate in screen pixels (Screen.width space). Origin (0,0) is at the bottom-left of the Game View. Increases to the right. Note: capture_game_view images are at the Game View resolution with a top-left origin, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py. Must be given together with y, and not with instanceId.")]
-        float? x = null,
-        [Description("Y coordinate in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. This is the inverse of typical image coordinates where Y increases downward. Must be given together with x, and not with instanceId.")]
-        float? y = null,
-        [Description("instanceId of the UI GameObject (a RectTransform under a Canvas) to send the event to, e.g. from get_pointer_targets. The event is sent to its center. Cannot be combined with x/y.")]
-        int? instanceId = null,
-        [Description($"Mouse button: \"{MouseButton.Left}\" (default), \"{MouseButton.Right}\", or \"{MouseButton.Middle}\".")]
-        string button = MouseButton.Left,
-        [Description($"Event type: \"{InputEventType.Click}\" (default, press then release after one frame), \"{InputEventType.Press}\", \"{InputEventType.Release}\", \"{InputEventType.Move}\" (position only, no button), or \"{InputEventType.Drag}\" (press, move over frames, and release in one call).")]
-        string eventType = InputEventType.Click,
-        [Description($"End X coordinate of a drag, in the same space as x. Only with eventType \"{InputEventType.Drag}\". Must be given together with toY, and not with toInstanceId.")]
+    public ValueTask<CallToolResult> ClickPointerAsync(
+        [Description(XDescription)] float? x = null,
+        [Description(YDescription)] float? y = null,
+        [Description(InstanceIdDescription)] int? instanceId = null,
+        [Description(ButtonDescription)] string button = MouseButton.Left,
+        CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => inputUseCase.ClickPointerAsync(x, y, instanceId, button, ct), cancellationToken);
+
+    [McpServerTool(Name = "drag_pointer", ReadOnly = false),
+     Description(
+         "Drag (or swipe) in one call: press at the start, move along a straight line to the end with one move per frame, " +
+         "and release at the end. Returns after the release has been processed. " +
+         "Because the movement is spread over frames, ScrollRect inertia, swipe detection and the EventSystem drag threshold " +
+         "behave as with a real drag. " + PointerToolDescription),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> DragPointerAsync(
+        [Description("Start of the drag. " + XDescription)] float? x = null,
+        [Description("Start of the drag. " + YDescription)] float? y = null,
+        [Description("Start of the drag. " + InstanceIdDescription)] int? instanceId = null,
+        [Description("End X coordinate of the drag, in the same space as x. Must be given together with toY, and not with toInstanceId.")]
         float? toX = null,
-        [Description($"End Y coordinate of a drag, in the same space as y. Only with eventType \"{InputEventType.Drag}\". Must be given together with toX, and not with toInstanceId.")]
+        [Description("End Y coordinate of the drag, in the same space as y. Must be given together with toX, and not with toInstanceId.")]
         float? toY = null,
-        [Description($"instanceId of the UI GameObject whose center is the end of a drag. Only with eventType \"{InputEventType.Drag}\". Cannot be combined with toX/toY.")]
+        [Description("instanceId of the UI GameObject whose center is the end of the drag. Cannot be combined with toX/toY.")]
         int? toInstanceId = null,
-        [Description($"Number of frames to move from the start to the end, with one move per frame (default 10, at least 1). Only with eventType \"{InputEventType.Drag}\".")]
+        [Description(ButtonDescription)] string button = MouseButton.Left,
+        [Description("Number of frames to move from the start to the end, with one move per frame (default 10, at least 1).")]
         int? frames = null,
-        [Description($"Number of frames to keep the button pressed at the start before moving, e.g. for long-press-then-drag (default 0). Only with eventType \"{InputEventType.Drag}\".")]
+        [Description("Number of frames to keep the button pressed at the start before moving, e.g. for long-press-then-drag (default 0).")]
         int? holdFrames = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => inputUseCase.SendMouseEventAsync(x, y, instanceId, button, eventType, toX, toY, toInstanceId,
-                frames, holdFrames, ct),
+            ct => inputUseCase.DragPointerAsync(x, y, instanceId, toX, toY, toInstanceId, button, frames,
+                holdFrames, ct),
             cancellationToken);
+
+    [McpServerTool(Name = "move_pointer", ReadOnly = false),
+     Description("Move the pointer to a position without changing the button state, e.g. for hover, " +
+                 "or to move while a button is pressed with press_pointer. " + PointerToolDescription),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> MovePointerAsync(
+        [Description(XDescription)] float? x = null,
+        [Description(YDescription)] float? y = null,
+        [Description(InstanceIdDescription)] int? instanceId = null,
+        CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => inputUseCase.MovePointerAsync(x, y, instanceId, ct), cancellationToken);
+
+    [McpServerTool(Name = "press_pointer", ReadOnly = false),
+     Description("Press a button at a position and keep it pressed until release_pointer. " +
+                 "Use click_pointer or drag_pointer unless you need full control. " + PointerToolDescription),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> PressPointerAsync(
+        [Description(XDescription)] float? x = null,
+        [Description(YDescription)] float? y = null,
+        [Description(InstanceIdDescription)] int? instanceId = null,
+        [Description(ButtonDescription)] string button = MouseButton.Left,
+        CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => inputUseCase.PressPointerAsync(x, y, instanceId, button, ct), cancellationToken);
+
+    [McpServerTool(Name = "release_pointer", ReadOnly = false),
+     Description("Release a button at a position, e.g. after press_pointer. " + PointerToolDescription),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> ReleasePointerAsync(
+        [Description(XDescription)] float? x = null,
+        [Description(YDescription)] float? y = null,
+        [Description(InstanceIdDescription)] int? instanceId = null,
+        [Description(ButtonDescription)] string button = MouseButton.Left,
+        CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => inputUseCase.ReleasePointerAsync(x, y, instanceId, button, ct), cancellationToken);
 
     [McpServerTool(Name = "get_pointer_targets", ReadOnly = true),
      Description(
@@ -119,8 +177,8 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
          "(e.g. Button, Toggle, Slider, ScrollRect, EventTrigger, custom drag or long-press components), " +
          "is interactable (Selectable.IsInteractable()), and is the topmost EventSystem raycast hit at its center " +
          "(not covered by other UI and not off-screen). " +
-         "Each item has the Hierarchy path, instanceId, and rect in Game View coordinates (same as send_mouse_event x/y). " +
-         "Pass instanceId to send_mouse_event to press one. " +
+         "Each item has the Hierarchy path, instanceId, and rect in Game View coordinates (same as x/y of the pointer tools). " +
+         "Pass instanceId to click_pointer (or the other pointer tools) to press one. " +
          "Requires the uGUI package (com.unity.ugui) and an EventSystem in the scene."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetPointerTargetsAsync(CancellationToken cancellationToken = default)

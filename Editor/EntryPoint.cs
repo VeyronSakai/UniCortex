@@ -1,4 +1,5 @@
 using UniCortex.Editor.Domains.Interfaces;
+using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Handlers.AnimationClip;
 using UniCortex.Editor.Handlers.Asset;
 using UniCortex.Editor.Handlers.Component;
@@ -313,9 +314,26 @@ namespace UniCortex.Editor
             var pointerTargetOps = new PointerTargetNotSupportedAdapter();
 #endif
 
-            var sendMouseEventUseCase = new SendMouseEventUseCase(dispatcher, playerLoopDispatcher, inputSimOps,
-                pointerTargetOps);
-            var sendMouseEventHandler = new SendMouseEventHandler(sendMouseEventUseCase);
+            var pointerPositionResolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
+
+            var clickPointerUseCase = new ClickPointerUseCase(dispatcher, pointerPositionResolver, inputSimOps);
+            var clickPointerHandler = new PointerButtonHandler(ApiRoutes.InputPointerClick,
+                clickPointerUseCase.ExecuteAsync);
+
+            var pressPointerUseCase = new PressPointerUseCase(dispatcher, pointerPositionResolver, inputSimOps);
+            var pressPointerHandler = new PointerButtonHandler(ApiRoutes.InputPointerPress,
+                pressPointerUseCase.ExecuteAsync);
+
+            var releasePointerUseCase = new ReleasePointerUseCase(dispatcher, pointerPositionResolver, inputSimOps);
+            var releasePointerHandler = new PointerButtonHandler(ApiRoutes.InputPointerRelease,
+                releasePointerUseCase.ExecuteAsync);
+
+            var movePointerUseCase = new MovePointerUseCase(dispatcher, pointerPositionResolver, inputSimOps);
+            var movePointerHandler = new MovePointerHandler(movePointerUseCase);
+
+            var dragPointerUseCase = new DragPointerUseCase(dispatcher, playerLoopDispatcher,
+                pointerPositionResolver, inputSimOps);
+            var dragPointerHandler = new DragPointerHandler(dragPointerUseCase);
 
             var getPointerTargetsUseCase = new GetPointerTargetsUseCase(dispatcher, pointerTargetOps);
             var getPointerTargetsHandler = new GetPointerTargetsHandler(getPointerTargetsUseCase);
@@ -426,7 +444,11 @@ namespace UniCortex.Editor
             stopMovieRecorderHandler.Register(router);
 
             sendKeyEventHandler.Register(router);
-            sendMouseEventHandler.Register(router);
+            clickPointerHandler.Register(router);
+            pressPointerHandler.Register(router);
+            releasePointerHandler.Register(router);
+            movePointerHandler.Register(router);
+            dragPointerHandler.Register(router);
             getPointerTargetsHandler.Register(router);
             createTimelineHandler.Register(router);
             addTimelineTrackHandler.Register(router);

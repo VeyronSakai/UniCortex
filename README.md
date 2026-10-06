@@ -205,7 +205,11 @@ Component type arguments are supplied as a fully-qualified type name plus the de
 | Tool | Description |
 |------|-------------|
 | `send_key_event` | Send a keyboard event via Input System in Play Mode (requires com.unity.inputsystem) |
-| `send_mouse_event` | Send a mouse event via Input System in Play Mode (requires com.unity.inputsystem). Supports click, press, release, move, and drag (press, move over frames, and release in one call). Accepts either x/y or the instanceId of a UI target (requires com.unity.ugui) |
+| `click_pointer` | Click (or tap) via Input System in Play Mode (requires com.unity.inputsystem). Accepts either x/y or the instanceId of a UI target (requires com.unity.ugui) |
+| `drag_pointer` | Drag (or swipe) from a start to an end over frames in one call |
+| `move_pointer` | Move the pointer without changing the button state |
+| `press_pointer` | Press a button and keep it pressed |
+| `release_pointer` | Release a button |
 | `get_pointer_targets` | List the uGUI objects that can be pressed now in Play Mode, with their rects in Game View coordinates (requires com.unity.ugui) |
 
 #### Timeline
@@ -395,7 +399,9 @@ Component commands accept the fully-qualified component type name plus the defin
 | Command | Description |
 | --- | --- |
 | `input send-key` | Send an Input System key event. Requires `com.unity.inputsystem`; Play Mode only. |
-| `input send-mouse` | Send an Input System mouse event to `--x`/`--y` or to a UI object (`--instance-id`). With `--event-type drag`, drags to `--to-x`/`--to-y` or `--to-instance-id` over `--frames` frames. Requires `com.unity.inputsystem`; Play Mode only. |
+| `input click` | Click (or tap) at `--x`/`--y` or at a UI object (`--instance-id`). Requires `com.unity.inputsystem`; Play Mode only. |
+| `input drag` | Drag from a start to `--to-x`/`--to-y` or `--to-instance-id` over `--frames` frames in one call. |
+| `input move` / `input press` / `input release` | Move the pointer, or press / release a button, for full control. |
 | `input pointer-targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
 
 #### `recorder all`, `recorder movie`

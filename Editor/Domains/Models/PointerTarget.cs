@@ -8,7 +8,7 @@ namespace UniCortex.Editor.Domains.Models
         public string path;
         public int instanceId;
 
-        // Game View coordinates (origin at the bottom-left), same as send_mouse_event.
+        // Game View coordinates (origin at the bottom-left), same as the pointer tools (click_pointer, etc.).
         public ScreenRect rect;
 
         public PointerTarget(string path, int instanceId, ScreenRect rect)
