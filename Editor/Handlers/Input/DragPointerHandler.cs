@@ -36,7 +36,6 @@ namespace UniCortex.Editor.Handlers.Input
             public int toInstanceId;
             public string button;
             public float duration;
-            public float holdDuration;
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -75,8 +74,7 @@ namespace UniCortex.Editor.Handlers.Input
             DragPointerResponse response;
             try
             {
-                response = await _useCase.ExecuteAsync(start, end, button, duration, request.holdDuration,
-                    cancellationToken);
+                response = await _useCase.ExecuteAsync(start, end, button, duration, cancellationToken);
             }
             catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException
                                            or ArgumentException)

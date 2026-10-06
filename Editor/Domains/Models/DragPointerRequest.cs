@@ -18,8 +18,5 @@ namespace UniCortex.Editor.Domains.Models
         public string button;
         // Seconds to move from the start to the end.
         public float? duration;
-
-        // Seconds to keep the button pressed at the start before moving.
-        public float? holdDuration;
     }
 }

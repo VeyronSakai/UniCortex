@@ -44,14 +44,13 @@ public class InputPointerCommands(InputUseCase inputUseCase)
     /// <param name="toInstanceId">instanceId of the UI GameObject whose center is the end of the drag.</param>
     /// <param name="button">Mouse button: "left" (default), "right", or "middle".</param>
     /// <param name="duration">Seconds to move from the start to the end (default 0.2).</param>
-    /// <param name="holdDuration">Seconds to keep the button pressed before moving (default 0).</param>
     [Command("drag")]
     public async Task Drag(float? fromX = null, float? fromY = null, int? fromInstanceId = null,
         float? toX = null, float? toY = null, int? toInstanceId = null, string button = MouseButton.Left,
-        float? duration = null, float? holdDuration = null, CancellationToken cancellationToken = default)
+        float? duration = null, CancellationToken cancellationToken = default)
     {
         Console.WriteLine(await inputUseCase.DragPointerAsync(fromX, fromY, fromInstanceId, toX, toY, toInstanceId,
-            button, duration, holdDuration, cancellationToken));
+            button, duration, cancellationToken));
     }
 
     /// <summary>Move the pointer to a position without pressing a button, e.g. for hover. Simulates the Input System Mouse device in Play Mode. Requires com.unity.inputsystem. Specify either --x and --y, or --instance-id (requires com.unity.ugui).</summary>

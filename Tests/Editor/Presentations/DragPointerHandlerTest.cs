@@ -71,8 +71,8 @@ namespace UniCortex.Editor.Tests.Presentations
 
             // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            // The default duration is shorter than a frame of FakePlayerLoopDispatcher (0.25s), and there is no
-            // hold, so it presses, moves to the end once in the next frame, and releases.
+            // The default duration is shorter than a frame of FakePlayerLoopDispatcher (0.25s), so it presses, moves
+            // to the end once in the next frame, and releases.
             Assert.Less(DragPointerUseCase.DefaultDuration, 0.25f);
             Assert.AreEqual(3, ops.MouseEventHistory.Count);
             Assert.AreEqual(MouseAction.Press, ops.MouseEventHistory[0].Action);
@@ -113,8 +113,6 @@ namespace UniCortex.Editor.Tests.Presentations
             "Specify either fromX and fromY, or fromInstanceId.")]
         [TestCase("{\"fromX\":0.0,\"fromY\":0.0,\"toX\":1.0,\"toY\":1.0,\"duration\":-1.0}",
             "duration must be 0 or greater.")]
-        [TestCase("{\"fromX\":0.0,\"fromY\":0.0,\"toX\":1.0,\"toY\":1.0,\"holdDuration\":-1.0}",
-            "holdDuration must be 0 or greater.")]
         public void Handle_Returns400_WhenParametersAreInvalid(string body, string expectedMessage)
         {
             // Arrange

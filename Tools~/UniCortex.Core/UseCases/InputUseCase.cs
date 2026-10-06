@@ -41,7 +41,7 @@ public class InputUseCase(IUnityEditorClient client)
     }
 
     public async ValueTask<string> DragPointerAsync(float? fromX, float? fromY, int? fromInstanceId,
-        float? toX, float? toY, int? toInstanceId, string button, float? duration, float? holdDuration,
+        float? toX, float? toY, int? toInstanceId, string button, float? duration,
         CancellationToken cancellationToken)
     {
         var request = new DragPointerRequest
@@ -53,8 +53,7 @@ public class InputUseCase(IUnityEditorClient client)
             toY = toY,
             toInstanceId = toInstanceId,
             button = button,
-            duration = duration,
-            holdDuration = holdDuration
+            duration = duration
         };
         var response = await client.PostAsync<DragPointerRequest, DragPointerResponse>(ApiRoutes.InputPointerDrag,
             request, cancellationToken);

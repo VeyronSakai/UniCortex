@@ -444,7 +444,7 @@ public class InputUseCaseTest
 
             // Act
             var message = await _fixture.InputUseCase.DragPointerAsync(10f, 20f, null, 110f, 70f, null,
-                MouseButton.Left, 0.2f, 0.1f, CancellationToken.None);
+                MouseButton.Left, 0.2f, CancellationToken.None);
 
             // Assert
             // No delay before reading the logs: the drag returns after the release has been processed.
@@ -505,7 +505,7 @@ public class InputUseCaseTest
 
             // Act
             var message = await _fixture.InputUseCase.DragPointerAsync(null, null, topLeft.instanceId,
-                null, null, bottomRight.instanceId, MouseButton.Left, 0.2f, null, CancellationToken.None);
+                null, null, bottomRight.instanceId, MouseButton.Left, 0.2f, CancellationToken.None);
 
             // Assert
             // No delay before reading the logs: the drag returns after the release has been processed.
@@ -529,7 +529,7 @@ public class InputUseCaseTest
         // Act & Assert
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
             await _fixture.InputUseCase.DragPointerAsync(100f, 200f, null, null, null, null,
-                MouseButton.Left, null, null, CancellationToken.None));
+                MouseButton.Left, null, CancellationToken.None));
 
         Assert.That(ex!.Message, Does.Contain("Specify either toX and toY"));
     }

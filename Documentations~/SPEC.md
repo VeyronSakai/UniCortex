@@ -959,21 +959,19 @@ Drags (or swipes) from the start to the end in one request.
 
 Request body:
 ```json
-{"fromX": 100.0, "fromY": 200.0, "toX": 300.0, "toY": 200.0, "button": "left", "duration": 0.2, "holdDuration": 0}
+{"fromX": 100.0, "fromY": 200.0, "toX": 300.0, "toY": 200.0, "button": "left", "duration": 0.2}
 ```
 
 - `fromX`, `fromY` / `fromInstanceId`: the start, in the same way as `x`, `y` / `instanceId` of the other endpoints. Exactly one of them is required
 - `toX`, `toY` / `toInstanceId`: the end, in the same way as the start. Exactly one of them is required
 - `duration`: optional. Seconds to move from the start to the end (default `0.2`, at least `0`; with `0`, it moves to the end in one frame)
-- `holdDuration`: optional. Seconds to keep the button pressed at the start before moving, e.g. for long-press-then-drag (default `0`, at least `0`)
 
 Steps:
 
 1. Press at the start
-2. Keep the button pressed until `holdDuration` seconds have passed
-3. Move along a straight line toward the end, once per frame, by the time since the hold ended, until `duration` seconds have passed (the last move is at the end)
-4. Release at the end
-5. Wait one more frame so that the release is processed
+2. Move along a straight line toward the end, once per frame, by the time since the press, until `duration` seconds have passed (the last move is at the end)
+3. Release at the end
+4. Wait one more frame so that the release is processed
 
 Because the movement is spread over frames, components that look at movement over frames (`ScrollRect` inertia, swipe detection, the `EventSystem` drag threshold) behave as with a real drag.
 

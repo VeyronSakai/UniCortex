@@ -132,12 +132,10 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         [Description(ButtonDescription)] string button = MouseButton.Left,
         [Description("Seconds to move from the start to the end (default 0.2). With 0, it moves to the end in one frame.")]
         float? duration = null,
-        [Description("Seconds to keep the button pressed at the start before moving, e.g. for long-press-then-drag (default 0).")]
-        float? holdDuration = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => inputUseCase.DragPointerAsync(fromX, fromY, fromInstanceId, toX, toY, toInstanceId, button, duration,
-                holdDuration, ct),
+                ct),
             cancellationToken);
 
     [McpServerTool(Name = "move_pointer", ReadOnly = false),

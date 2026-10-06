@@ -61,7 +61,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Act
             var frames = RecordFrames(playerLoopDispatcher, ops, () =>
                 response = useCase.ExecuteAsync(new PointerPosition.Coordinates(0f, 0f),
-                    new PointerPosition.Coordinates(100f, 50f), MouseButton.Left, 1f, 0f,
+                    new PointerPosition.Coordinates(100f, 50f), MouseButton.Left, 1f,
                     CancellationToken.None).GetAwaiter().GetResult());
 
             // Assert
@@ -84,36 +84,6 @@ namespace UniCortex.Editor.Tests.UseCases
         }
 
         [Test]
-        public void ExecuteAsync_KeepsPressed_ForHoldDuration_BeforeMoving()
-        {
-            // Arrange
-            // Frames are 0.25 seconds apart.
-            var playerLoopDispatcher = new FakePlayerLoopDispatcher();
-            var ops = new SpyInputOperations();
-            var useCase = CreateUseCase(playerLoopDispatcher, ops);
-
-            // Act
-            var frames = RecordFrames(playerLoopDispatcher, ops, () =>
-                useCase.ExecuteAsync(new PointerPosition.Coordinates(10f, 20f),
-                    new PointerPosition.Coordinates(30f, 40f), MouseButton.Right, 0.3f, 0.6f,
-                    CancellationToken.None).GetAwaiter().GetResult());
-
-            // Assert
-            // Pressed at 0s and held until 0.6s. Moved halfway at 0.75s (0.15s into the 0.3s move) and to the end
-            // at 1s.
-            Assert.AreEqual(7, frames.Count);
-            AssertEvent(frames[0].Single(), MouseAction.Press, 10f, 20f);
-            CollectionAssert.IsEmpty(frames[1]);
-            CollectionAssert.IsEmpty(frames[2]);
-            AssertEvent(frames[3].Single(), MouseAction.Move, 20f, 30f);
-            AssertEvent(frames[4].Single(), MouseAction.Move, 30f, 40f);
-            AssertEvent(frames[5].Single(), MouseAction.Release, 30f, 40f);
-            CollectionAssert.IsEmpty(frames[6]);
-            Assert.AreEqual(MouseButton.Right, frames[0].Single().Button);
-            Assert.AreEqual(MouseButton.Right, frames[5].Single().Button);
-        }
-
-        [Test]
         public void ExecuteAsync_MovesToEndInOneFrame_WhenDurationIsZero()
         {
             // Arrange
@@ -124,7 +94,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Act
             var frames = RecordFrames(playerLoopDispatcher, ops, () =>
                 useCase.ExecuteAsync(new PointerPosition.Coordinates(0f, 0f),
-                    new PointerPosition.Coordinates(100f, 0f), MouseButton.Left, 0f, 0f,
+                    new PointerPosition.Coordinates(100f, 0f), MouseButton.Left, 0f,
                     CancellationToken.None).GetAwaiter().GetResult());
 
             // Assert
@@ -148,7 +118,7 @@ namespace UniCortex.Editor.Tests.UseCases
 
             // Act
             var response = useCase.ExecuteAsync(new PointerPosition.Target(111), new PointerPosition.Target(222),
-                MouseButton.Left, 0.5f, 0f, CancellationToken.None).GetAwaiter().GetResult();
+                MouseButton.Left, 0.5f, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
             Assert.AreEqual(2, pointerTargetOps.GetTargetCenterCallCount);
@@ -163,10 +133,8 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(220f, response.toY);
         }
 
-        [TestCase(-0.1f, 0f, "duration")]
-        [TestCase(0.1f, -0.1f, "holdDuration")]
-        public void ExecuteAsync_Throws_WhenDurationIsNegative(float duration, float holdDuration,
-            string parameterName)
+        [Test]
+        public void ExecuteAsync_Throws_WhenDurationIsNegative()
         {
             // Arrange
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
@@ -176,8 +144,8 @@ namespace UniCortex.Editor.Tests.UseCases
             // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() => useCase.ExecuteAsync(
                 new PointerPosition.Coordinates(0f, 0f), new PointerPosition.Coordinates(1f, 1f),
-                MouseButton.Left, duration, holdDuration, CancellationToken.None).GetAwaiter().GetResult());
-            StringAssert.StartsWith(parameterName + " ", ex.Message);
+                MouseButton.Left, -0.1f, CancellationToken.None).GetAwaiter().GetResult());
+            StringAssert.StartsWith("duration ", ex.Message);
             Assert.AreEqual(0, playerLoopDispatcher.RunEachFrameCallCount);
             CollectionAssert.IsEmpty(ops.MouseEventHistory);
         }
