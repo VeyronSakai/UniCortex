@@ -38,7 +38,7 @@ app.Add<RecorderAllCommands>("recorder all");
 app.Add<MovieRecorderCommands>("recorder movie");
 app.Add<InputKeyCommands>("input key");
 app.Add<InputMouseCommands>("input mouse");
-app.Add<InputPointerCommands>("input pointer");
+app.Add<InputUiPointerCommands>("input ui-pointer");
 app.Add<TimelineCommands>("timeline");
 app.Add<TimelineTrackCommands>("timeline track");
 app.Add<TimelineTrackPropertyCommands>("timeline track property");

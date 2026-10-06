@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var resolver = new PointerPositionResolver(dispatcher, new SpyPointerTargetOperations());
+            var resolver = new PointerPositionResolver(dispatcher, new SpyUiPointerTargetOperations());
             var useCase = new MoveMouseUseCase(dispatcher, resolver, ops);
 
             // Act

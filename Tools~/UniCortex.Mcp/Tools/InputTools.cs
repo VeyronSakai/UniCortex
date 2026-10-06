@@ -59,7 +59,7 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         "Y coordinate in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. This is the inverse of typical image coordinates where Y increases downward. Must be given together with x, and not with instanceId.";
 
     private const string InstanceIdDescription =
-        "instanceId of the UI GameObject (a RectTransform under a Canvas), e.g. from get_pointer_targets. Its center is used. Cannot be combined with x/y.";
+        "instanceId of the UI GameObject (a RectTransform under a Canvas), e.g. from get_ui_pointer_targets. Its center is used. Cannot be combined with x/y.";
 
     private const string ButtonDescription =
         $"Mouse button: \"{MouseButton.Left}\" (default), \"{MouseButton.Right}\", or \"{MouseButton.Middle}\". Use the default for a tap.";
@@ -92,7 +92,7 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         float? fromX = null,
         [Description("Start Y coordinate of the drag, in screen pixels (Screen.height space). Origin (0,0) is at the bottom-left of the Game View. Increases upward. Must be given together with fromX, and not with fromInstanceId.")]
         float? fromY = null,
-        [Description("instanceId of the UI GameObject (a RectTransform under a Canvas) whose center is the start of the drag, e.g. from get_pointer_targets. Cannot be combined with fromX/fromY.")]
+        [Description("instanceId of the UI GameObject (a RectTransform under a Canvas) whose center is the start of the drag, e.g. from get_ui_pointer_targets. Cannot be combined with fromX/fromY.")]
         int? fromInstanceId = null,
         [Description("End X coordinate of the drag, in the same space as fromX. Must be given together with toY, and not with toInstanceId.")]
         float? toX = null,
@@ -121,7 +121,7 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => inputUseCase.MoveMouseAsync(x, y, instanceId, ct), cancellationToken);
 
-    [McpServerTool(Name = "get_pointer_targets", ReadOnly = true),
+    [McpServerTool(Name = "get_ui_pointer_targets", ReadOnly = true),
      Description(
          "List the uGUI objects in the Game View that can be pressed now, in Play Mode. " +
          "An object is listed when it is active, is under a Canvas, has an enabled component handling pointer events " +
@@ -132,7 +132,7 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
          "Pass instanceId to click_mouse (or the other mouse tools) to press one. " +
          "Requires the uGUI package (com.unity.ugui) and an EventSystem in the scene."),
      UsedImplicitly]
-    public ValueTask<CallToolResult> GetPointerTargetsAsync(CancellationToken cancellationToken = default)
+    public ValueTask<CallToolResult> GetUiPointerTargetsAsync(CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            inputUseCase.GetPointerTargetsAsync, cancellationToken);
+            inputUseCase.GetUiPointerTargetsAsync, cancellationToken);
 }

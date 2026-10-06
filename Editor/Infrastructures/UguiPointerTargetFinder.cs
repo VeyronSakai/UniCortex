@@ -2,11 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using UniCortex.Editor.Domains.Interfaces;
-using UniCortex.Editor.Domains.Models;
-using UnityEditor;
+using UniCortex.Editor.Testing;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Pool;
@@ -14,7 +10,11 @@ using UnityEngine.UI;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    internal sealed class PointerTargetOperationsAdapter : IPointerTargetOperations
+    // Finds uGUI objects that can be pressed now. Shared by get_ui_pointer_targets / the mouse tools and the public
+    // API for tests (UiPointerTargets), so that they agree on what "can be pressed" means.
+    // Must be called inside the player loop: GraphicRaycaster uses Screen.width / Screen.height, which return the
+    // Game View resolution only while the player loop runs.
+    internal static class UguiPointerTargetFinder
     {
         private static readonly Type[] s_pointerHandlerTypes =
         {
@@ -47,29 +47,11 @@ namespace UniCortex.Editor.Infrastructures
             EventTriggerType.Scroll,
         };
 
-        private readonly IPlayerLoopDispatcher _playerLoopDispatcher;
-
-        public PointerTargetOperationsAdapter(IPlayerLoopDispatcher playerLoopDispatcher)
-        {
-            _playerLoopDispatcher = playerLoopDispatcher;
-        }
-
-        public Task<List<PointerTarget>> GetPointerTargetsAsync(CancellationToken cancellationToken)
-        {
-            return _playerLoopDispatcher.RunAsync(GetPointerTargets, cancellationToken);
-        }
-
-        public Task<(float x, float y)> GetTargetCenterAsync(int instanceId,
-            CancellationToken cancellationToken)
-        {
-            return _playerLoopDispatcher.RunAsync(() => GetTargetCenter(instanceId), cancellationToken);
-        }
-
-        private static List<PointerTarget> GetPointerTargets()
+        public static List<UiPointerTarget> Find()
         {
             var eventSystem = GetEventSystem();
 
-            var targets = new List<PointerTarget>();
+            var targets = new List<UiPointerTarget>();
             foreach (var scene in LoadedScenes.Get())
             {
                 foreach (var root in scene.GetRootGameObjects())
@@ -81,9 +63,9 @@ namespace UniCortex.Editor.Infrastructures
             return targets;
         }
 
-        private static (float x, float y) GetTargetCenter(int instanceId)
+        // Returns the center of a uGUI object in Game View coordinates.
+        public static Vector2 GetCenter(GameObject gameObject)
         {
-            var gameObject = FindByInstanceId(instanceId);
             if (!(gameObject.transform is RectTransform rectTransform) || GetCanvas(rectTransform) == null)
             {
                 throw new ArgumentException(
@@ -91,14 +73,13 @@ namespace UniCortex.Editor.Infrastructures
                     "Only uGUI elements are supported for now.");
             }
 
-            var center = GetScreenCenter(rectTransform);
-            return (center.x, center.y);
+            return GetScreenCenter(rectTransform);
         }
 
         // Collects objects that can be pressed now: active, interactable, handling pointer events,
         // and hit first by the EventSystem raycast at their center.
         private static void CollectTargets(Transform transform, EventSystem eventSystem,
-            List<PointerTarget> targets)
+            List<UiPointerTarget> targets)
         {
             if (!transform.gameObject.activeInHierarchy)
             {
@@ -112,7 +93,7 @@ namespace UniCortex.Editor.Infrastructures
                 var center = GetScreenCenter(rectTransform);
                 if (ReceivesPointer(transform.gameObject, center, eventSystem))
                 {
-                    targets.Add(new PointerTarget(GetPath(transform), transform.gameObject.GetInstanceID(),
+                    targets.Add(new UiPointerTarget(transform.gameObject, GetPath(transform),
                         GetScreenRect(rectTransform)));
                 }
             }
@@ -166,7 +147,7 @@ namespace UniCortex.Editor.Infrastructures
                 rectTransform.TransformPoint(rectTransform.rect.center));
         }
 
-        private static ScreenRect GetScreenRect(RectTransform rectTransform)
+        private static Rect GetScreenRect(RectTransform rectTransform)
         {
             var camera = GetEventCamera(GetCanvas(rectTransform));
 
@@ -181,7 +162,7 @@ namespace UniCortex.Editor.Infrastructures
                 max = Vector2.Max(max, point);
             }
 
-            return new ScreenRect(min.x, min.y, max.x - min.x, max.y - min.y);
+            return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
         }
 
         // True when a pointer event at the position reaches the target, that is, when the topmost EventSystem
@@ -210,23 +191,6 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             return canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
-        }
-
-        private static GameObject FindByInstanceId(int instanceId)
-        {
-            var obj = EditorUtility.InstanceIDToObject(instanceId);
-            var gameObject = obj as GameObject;
-            if (gameObject == null && obj is Component component)
-            {
-                gameObject = component.gameObject;
-            }
-
-            if (gameObject == null)
-            {
-                throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
-            }
-
-            return gameObject;
         }
 
         private static string GetPath(Transform transform)

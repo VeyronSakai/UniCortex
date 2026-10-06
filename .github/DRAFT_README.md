@@ -220,7 +220,7 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | `click_mouse` | Click (or tap) via Input System in Play Mode (requires com.unity.inputsystem). Accepts either x/y or the instanceId of a UI target (requires com.unity.ugui). Use holdDuration for a long press |
 | `drag_mouse` | Drag (or swipe) from a start to an end over a given time in one call |
 | `move_mouse` | Move the mouse without pressing a button, e.g. for hover |
-| `get_pointer_targets` | List the uGUI objects that can be pressed now in Play Mode, with their rects in Game View coordinates (requires com.unity.ugui) |
+| `get_ui_pointer_targets` | List the uGUI objects that can be pressed now in Play Mode, with their rects in Game View coordinates (requires com.unity.ugui) |
 
 #### Timeline
 
@@ -433,7 +433,7 @@ Component commands accept the fully-qualified component type name plus the defin
 | `input mouse click` | Click (or tap) at `--x`/`--y` or at a UI object (`--instance-id`), holding the button for `--hold-duration` seconds. Requires `com.unity.inputsystem`; Play Mode only. |
 | `input mouse drag` | Drag from `--from-x`/`--from-y` or `--from-instance-id` to `--to-x`/`--to-y` or `--to-instance-id` over `--duration` seconds in one call. |
 | `input mouse move` | Move the mouse without pressing a button, e.g. for hover. |
-| `input pointer targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
+| `input ui-pointer targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
 
 #### `recorder all`, `recorder movie`
 
@@ -564,6 +564,49 @@ public class CountGameObjects : ExtensionHandler
 
 > [!NOTE]
 > After adding or removing extensions, restart the MCP client (e.g., Claude Code) to refresh the tool list.
+
+## Pressing UI from Play Mode Tests
+
+The logic behind `get_ui_pointer_targets` and `click_mouse` is also available as a C# API, so your Play Mode tests (e.g. a monkey test that keeps pressing random UI, or a scenario test that presses specific buttons) agree with the MCP tools on what "can be pressed" means.
+
+Reference `UniCortex.Editor` from your Play Mode test assembly. Tests that use this API run only in the Editor, since `UniCortex.Editor` is Editor-only.
+
+```csharp
+using System.Collections;
+using NUnit.Framework;
+using UniCortex.Editor.Testing;
+using UnityEngine;
+using UnityEngine.TestTools;
+
+public class MonkeyTest
+{
+    [UnityTest]
+    public IEnumerator PressRandomUi()
+    {
+        for (var i = 0; i < 100; i++)
+        {
+            var targets = UiPointerTargets.Find();
+            if (targets.Count > 0)
+            {
+                var target = targets[Random.Range(0, targets.Count)];
+                yield return PointerInput.Click(target.GameObject);
+            }
+            else
+            {
+                yield return null;
+            }
+        }
+    }
+}
+```
+
+| API | Description |
+|-----|-------------|
+| `UiPointerTargets.Find()` | The uGUI objects that can be pressed now, with the same rules as `get_ui_pointer_targets` (requires com.unity.ugui) |
+| `UiPointerTargets.GetCenter(GameObject)` | The center of a uGUI object in Game View coordinates, the position `click_mouse` uses for an `instanceId` |
+| `PointerInput.Click(GameObject)` / `PointerInput.Click(Vector2)` | Clicks through the Input System and the EventSystem raycast like a real tap, and completes after the game has processed the release (requires com.unity.inputsystem). Returns an `IEnumerator` to `yield return` from a `[UnityTest]` |
+
+Call them from the player loop (e.g. a `[UnityTest]` coroutine): the EventSystem raycast uses `Screen.width` / `Screen.height`, which return the Game View resolution only there. UI created in the current frame cannot be hit until the next frame, as with a real tap.
 
 ## Architecture
 

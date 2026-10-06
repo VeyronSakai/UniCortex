@@ -299,20 +299,15 @@ namespace UniCortex.Editor
             var stopMovieRecordingUseCase = new StopMovieRecordingUseCase(dispatcher, movieRecordingOps);
             var stopMovieRecorderHandler = new StopMovieRecorderHandler(stopMovieRecordingUseCase);
 
-#if UNICORTEX_INPUT_SYSTEM
-            var inputSimOps = new InputOperationsAdapter();
-            EditorApplication.playModeStateChanged += inputSimOps.OnPlayModeStateChanged;
-#else
-            var inputSimOps = new InputNotSupportedAdapter();
-#endif
+            var inputSimOps = SharedInputOperations.Instance;
 
 #if UNICORTEX_UGUI
-            var pointerTargetOps = new PointerTargetOperationsAdapter(playerLoopDispatcher);
+            var uiPointerTargetOps = new UiPointerTargetOperationsAdapter(playerLoopDispatcher);
 #else
-            var pointerTargetOps = new PointerTargetNotSupportedAdapter();
+            var uiPointerTargetOps = new UiPointerTargetNotSupportedAdapter();
 #endif
 
-            var pointerPositionResolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
+            var pointerPositionResolver = new PointerPositionResolver(dispatcher, uiPointerTargetOps);
 
             var time = new TimeAdapter();
             var playerLoopRunner = new PlayerLoopRunner(dispatcher, playerLoopDispatcher);
@@ -331,8 +326,8 @@ namespace UniCortex.Editor
                 time);
             var dragMouseHandler = new DragMouseHandler(dragMouseUseCase);
 
-            var getPointerTargetsUseCase = new GetPointerTargetsUseCase(dispatcher, pointerTargetOps);
-            var getPointerTargetsHandler = new GetPointerTargetsHandler(getPointerTargetsUseCase);
+            var getPointerTargetsUseCase = new GetUiPointerTargetsUseCase(dispatcher, uiPointerTargetOps);
+            var getPointerTargetsHandler = new GetUiPointerTargetsHandler(getPointerTargetsUseCase);
 
             var timelineOps = new TimelineOperationsAdapter();
 

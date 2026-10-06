@@ -62,10 +62,10 @@ public class InputUseCase(IUnityEditorClient client)
                $"to ({response.toX}, {response.toY}) button={button}";
     }
 
-    public async ValueTask<string> GetPointerTargetsAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> GetUiPointerTargetsAsync(CancellationToken cancellationToken)
     {
-        var response = await client.GetAsync<GetPointerTargetsRequest, GetPointerTargetsResponse>(
-            ApiRoutes.InputPointerTargets, cancellationToken: cancellationToken);
+        var response = await client.GetAsync<GetUiPointerTargetsRequest, GetUiPointerTargetsResponse>(
+            ApiRoutes.InputUiPointerTargets, cancellationToken: cancellationToken);
         return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 }

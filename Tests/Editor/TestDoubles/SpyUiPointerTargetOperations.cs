@@ -7,13 +7,13 @@ using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.Tests.TestDoubles
 {
-    internal sealed class SpyPointerTargetOperations : IPointerTargetOperations
+    internal sealed class SpyUiPointerTargetOperations : IUiPointerTargetOperations
     {
-        public int GetPointerTargetsCallCount { get; private set; }
+        public int GetUiPointerTargetsCallCount { get; private set; }
         public int GetTargetCenterCallCount { get; private set; }
         public int LastInstanceId { get; private set; }
 
-        public List<PointerTarget> PointerTargetsToReturn { get; set; } = new();
+        public List<UiPointerTargetEntry> UiPointerTargetsToReturn { get; set; } = new();
 
         public (float x, float y) TargetCenterToReturn { get; set; }
 
@@ -23,11 +23,11 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public Exception ExceptionToThrow { get; set; }
 
         // Returns completed tasks so that tests can block on them (see FakeMainThreadDispatcher).
-        public Task<List<PointerTarget>> GetPointerTargetsAsync(CancellationToken cancellationToken)
+        public Task<List<UiPointerTargetEntry>> GetUiPointerTargetsAsync(CancellationToken cancellationToken)
         {
-            GetPointerTargetsCallCount++;
+            GetUiPointerTargetsCallCount++;
             if (ExceptionToThrow != null) throw ExceptionToThrow;
-            return Task.FromResult(PointerTargetsToReturn);
+            return Task.FromResult(UiPointerTargetsToReturn);
         }
 
         public Task<(float x, float y)> GetTargetCenterAsync(int instanceId,

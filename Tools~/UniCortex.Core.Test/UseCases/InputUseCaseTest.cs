@@ -233,17 +233,17 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask GetPointerTargets_ReturnsError_WhenNotInPlayMode()
+    public async ValueTask GetUiPointerTargets_ReturnsError_WhenNotInPlayMode()
     {
         // Act & Assert
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.InputUseCase.GetPointerTargetsAsync(CancellationToken.None));
+            await _fixture.InputUseCase.GetUiPointerTargetsAsync(CancellationToken.None));
 
         Assert.That(ex!.Message, Does.Contain("Play Mode").Or.Contain("com.unity.ugui"));
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask GetPointerTargets_InPlayMode_ReturnsButtonsInGameViewCoordinates()
+    public async ValueTask GetUiPointerTargets_InPlayMode_ReturnsButtonsInGameViewCoordinates()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -253,7 +253,7 @@ public class InputUseCaseTest
             var size = await _fixture.GameViewUseCase.GetSizeResponseAsync(CancellationToken.None);
 
             // Act
-            var targets = await GetPointerTargetsAsync();
+            var targets = await GetUiPointerTargetsAsync();
 
             // Assert
             Assert.That(targets.Select(t => t.path),
@@ -279,7 +279,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask GetPointerTargets_InPlayMode_ExcludesButtonCoveredByOtherUI()
+    public async ValueTask GetUiPointerTargets_InPlayMode_ExcludesButtonCoveredByOtherUI()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -290,7 +290,7 @@ public class InputUseCaseTest
             await CreateOverlayAsync("Overlay");
 
             // Act
-            var targets = await GetPointerTargetsAsync();
+            var targets = await GetUiPointerTargetsAsync();
 
             // Assert
             Assert.That(targets.Select(t => t.path), Does.Not.Contain("Canvas/TestButton"));
@@ -303,14 +303,14 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask GetPointerTargets_InPlayMode_ExcludesInactiveAndNonInteractableButtons()
+    public async ValueTask GetUiPointerTargets_InPlayMode_ExcludesInactiveAndNonInteractableButtons()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var before = await GetPointerTargetsAsync();
+            var before = await GetUiPointerTargetsAsync();
             var topLeft = before.Single(t => t.path == "Canvas/TopLeftButton");
             var bottomRight = before.Single(t => t.path == "Canvas/BottomRightButton");
 
@@ -320,7 +320,7 @@ public class InputUseCaseTest
                 "UnityEngine.UI", "m_Interactable", "false", CancellationToken.None);
 
             // Act
-            var targets = await GetPointerTargetsAsync();
+            var targets = await GetUiPointerTargetsAsync();
 
             // Assert
             Assert.That(targets.Select(t => t.path), Is.EquivalentTo(new[] { "Canvas/TestButton" }));
@@ -339,7 +339,7 @@ public class InputUseCaseTest
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var targets = await GetPointerTargetsAsync();
+            var targets = await GetUiPointerTargetsAsync();
             var bottomRight = targets.Single(t => t.path == "Canvas/BottomRightButton");
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
@@ -367,7 +367,7 @@ public class InputUseCaseTest
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var targets = await GetPointerTargetsAsync();
+            var targets = await GetUiPointerTargetsAsync();
             var testButton = targets.Single(t => t.path == "Canvas/TestButton");
             await CreateOverlayAsync("Overlay");
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
@@ -467,7 +467,7 @@ public class InputUseCaseTest
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var targets = await GetPointerTargetsAsync();
+            var targets = await GetUiPointerTargetsAsync();
             var rect = targets.Single(t => t.path == "Canvas/TestButton").rect;
             var instanceId = targets.Single(t => t.path == "Canvas/TestButton").instanceId;
 
@@ -497,7 +497,7 @@ public class InputUseCaseTest
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
         {
-            var targets = await GetPointerTargetsAsync();
+            var targets = await GetUiPointerTargetsAsync();
             var topLeft = targets.Single(t => t.path == "Canvas/TopLeftButton");
             var bottomRight = targets.Single(t => t.path == "Canvas/BottomRightButton");
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
@@ -533,10 +533,10 @@ public class InputUseCaseTest
         Assert.That(ex!.Message, Does.Contain("Specify either toX and toY"));
     }
 
-    private async ValueTask<List<PointerTarget>> GetPointerTargetsAsync()
+    private async ValueTask<List<UiPointerTargetEntry>> GetUiPointerTargetsAsync()
     {
-        var json = await _fixture.InputUseCase.GetPointerTargetsAsync(CancellationToken.None);
-        return JsonSerializer.Deserialize<GetPointerTargetsResponse>(json, s_jsonOptions)!.targets;
+        var json = await _fixture.InputUseCase.GetUiPointerTargetsAsync(CancellationToken.None);
+        return JsonSerializer.Deserialize<GetUiPointerTargetsResponse>(json, s_jsonOptions)!.targets;
     }
 
     private async ValueTask CreateOverlayAsync(string name)

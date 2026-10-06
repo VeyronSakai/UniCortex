@@ -8,25 +8,25 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.UseCases
 {
     [TestFixture]
-    internal sealed class GetPointerTargetsUseCaseTest
+    internal sealed class GetUiPointerTargetsUseCaseTest
     {
         [Test]
-        public void ExecuteAsync_ReturnsPointerTargets_And_DispatchesToMainThread()
+        public void ExecuteAsync_ReturnsUiPointerTargets_And_DispatchesToMainThread()
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
-            var target = new PointerTarget("Canvas/Button", 100, new ScreenRect(50f, 180f, 100f, 40f));
-            var ops = new SpyPointerTargetOperations
+            var target = new UiPointerTargetEntry("Canvas/Button", 100, new ScreenRect(50f, 180f, 100f, 40f));
+            var ops = new SpyUiPointerTargetOperations
             {
-                PointerTargetsToReturn = new List<PointerTarget> { target }
+                UiPointerTargetsToReturn = new List<UiPointerTargetEntry> { target }
             };
-            var useCase = new GetPointerTargetsUseCase(dispatcher, ops);
+            var useCase = new GetUiPointerTargetsUseCase(dispatcher, ops);
 
             // Act
             var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.AreEqual(1, ops.GetPointerTargetsCallCount);
+            Assert.AreEqual(1, ops.GetUiPointerTargetsCallCount);
             Assert.AreEqual(1, dispatcher.CallCount);
             Assert.AreEqual(1, result.Count);
             Assert.AreSame(target, result[0]);

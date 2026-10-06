@@ -15,11 +15,11 @@ namespace UniCortex.Editor.Tests.UseCases
     internal sealed class ClickMouseUseCaseTest
     {
         private static ClickMouseUseCase CreateUseCase(FakePlayerLoopDispatcher playerLoopDispatcher,
-            SpyInputOperations ops, SpyPointerTargetOperations pointerTargetOps = null)
+            SpyInputOperations ops, SpyUiPointerTargetOperations uiPointerTargetOps = null)
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var resolver = new PointerPositionResolver(dispatcher,
-                pointerTargetOps ?? new SpyPointerTargetOperations());
+                uiPointerTargetOps ?? new SpyUiPointerTargetOperations());
             return new ClickMouseUseCase(new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver, ops,
                 playerLoopDispatcher.Time);
         }
@@ -105,15 +105,15 @@ namespace UniCortex.Editor.Tests.UseCases
             // Arrange
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
             var ops = new SpyInputOperations();
-            var pointerTargetOps = new SpyPointerTargetOperations { TargetCenterToReturn = (40f, 60f) };
-            var useCase = CreateUseCase(playerLoopDispatcher, ops, pointerTargetOps);
+            var uiPointerTargetOps = new SpyUiPointerTargetOperations { TargetCenterToReturn = (40f, 60f) };
+            var useCase = CreateUseCase(playerLoopDispatcher, ops, uiPointerTargetOps);
 
             // Act
             var response = useCase.ExecuteAsync(new PointerPosition.Target(12345), MouseButton.Left, 0f,
                 CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.AreEqual(12345, pointerTargetOps.LastInstanceId);
+            Assert.AreEqual(12345, uiPointerTargetOps.LastInstanceId);
             Assert.AreEqual(2, ops.MouseEventHistory.Count);
             Assert.AreEqual(40f, ops.MouseEventHistory[1].X);
             Assert.AreEqual(60f, ops.MouseEventHistory[1].Y);
