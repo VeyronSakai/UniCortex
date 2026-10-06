@@ -1,36 +1,49 @@
 using System.Text.RegularExpressions;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.Handlers.Input
 {
-    // Validation shared by the pointer and GameObject handlers.
-    // JsonUtility gives 0 for a missing number, and 0 is a valid coordinate, so the presence of a coordinate is
-    // checked by matching the body.
+    // JsonUtility does not support Nullable<T>, so the pointer handlers deserialize into non-nullable fields and
+    // detect the presence of a field by matching the body, because 0 is a valid coordinate.
     internal static class PointerRequestParser
     {
+        public const string PositionRequiredMessage = "Specify either x and y, or instanceId.";
+
         // Matches the key followed by a colon so that a string value such as "x" is not taken as the key.
         public static bool HasField(string body, string name)
         {
             return Regex.IsMatch(body, $"\"{name}\"\\s*:");
         }
 
-        // Returns an error message for the first of the given fields missing from the body, or null.
-        public static string FindMissingField(string body, params string[] names)
+        // Returns the position given by exactly one of the coordinates (xName and yName) or the target (targetName).
+        // Returns null and sets error when the fields are not given that way.
+        public static PointerPosition ParsePosition(string body, float x, float y, int instanceId,
+            string xName, string yName, string targetName, out string error)
         {
-            foreach (var name in names)
+            var hasX = HasField(body, xName);
+            var hasY = HasField(body, yName);
+            var hasTarget = HasField(body, targetName);
+
+            if (hasX != hasY)
             {
-                if (!HasField(body, name))
-                {
-                    return $"{name} is required.";
-                }
+                error = $"{xName} and {yName} must be specified together.";
+                return null;
             }
 
-            return null;
-        }
+            if (hasX == hasTarget)
+            {
+                error = $"Specify either {xName} and {yName}, or {targetName}.";
+                return null;
+            }
 
-        // Returns an error message when the instanceId is 0 (missing from the body, or invalid), or null.
-        public static string ValidateInstanceId(int instanceId, string name)
-        {
-            return instanceId == 0 ? $"{name} is required and must not be 0." : null;
+            if (hasTarget && instanceId == 0)
+            {
+                error = $"{targetName} must not be 0.";
+                return null;
+            }
+
+            error = null;
+            return hasTarget ? new PointerPosition.Target(instanceId) : new PointerPosition.Coordinates(x, y);
         }
     }
 }

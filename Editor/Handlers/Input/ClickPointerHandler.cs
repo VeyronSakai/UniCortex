@@ -8,58 +8,56 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Input
 {
-    internal sealed class DragGameObjectHandler
+    internal sealed class ClickPointerHandler
     {
-        private readonly DragPointerUseCase _useCase;
+        private readonly ClickPointerUseCase _useCase;
 
-        public DragGameObjectHandler(DragPointerUseCase useCase)
+        public ClickPointerHandler(ClickPointerUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Post, ApiRoutes.InputGameObjectDrag, HandleAsync);
+            router.Register(HttpMethodType.Post, ApiRoutes.InputPointerClick, HandleAsync);
         }
 
-        // JsonUtility does not support Nullable<T>, so frames and holdFrames are read into non-nullable fields.
+        // Non-nullable fields for JsonUtility (see PointerRequestParser).
         [Serializable]
-        private class RawDragGameObjectRequest
+        private class RawClickPointerRequest
         {
-            public int fromInstanceId;
-            public int toInstanceId;
+            public float x;
+            public float y;
+            public int instanceId;
             public string button;
-            public int frames;
-            public int holdFrames;
+            public float holdDuration;
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var body = await context.ReadBodyAsync();
 
-            var request = string.IsNullOrEmpty(body)
-                ? new RawDragGameObjectRequest()
-                : JsonUtility.FromJson<RawDragGameObjectRequest>(body);
-            var error = PointerRequestParser.ValidateInstanceId(request.fromInstanceId, "fromInstanceId")
-                        ?? PointerRequestParser.ValidateInstanceId(request.toInstanceId, "toInstanceId");
-            if (error != null)
+            if (string.IsNullOrEmpty(body))
+            {
+                await WriteErrorAsync(context, PointerRequestParser.PositionRequiredMessage);
+                return;
+            }
+
+            var request = JsonUtility.FromJson<RawClickPointerRequest>(body);
+            var position = PointerRequestParser.ParsePosition(body, request.x, request.y, request.instanceId,
+                "x", "y", "instanceId", out var error);
+            if (position == null)
             {
                 await WriteErrorAsync(context, error);
                 return;
             }
 
-            var start = new PointerPosition.Target(request.fromInstanceId);
-            var end = new PointerPosition.Target(request.toInstanceId);
             var button = string.IsNullOrEmpty(request.button) ? MouseButton.Left : request.button;
-            var frames = PointerRequestParser.HasField(body, "frames")
-                ? request.frames
-                : DragPointerUseCase.DefaultFrames;
 
-            DragPointerResponse response;
+            PointerResponse response;
             try
             {
-                response = await _useCase.ExecuteAsync(start, end, button, frames, request.holdFrames,
-                    cancellationToken);
+                response = await _useCase.ExecuteAsync(position, button, request.holdDuration, cancellationToken);
             }
             catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException
                                            or ArgumentException)

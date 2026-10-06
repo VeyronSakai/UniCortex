@@ -32,10 +32,10 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask PressPointer_ReturnsError_WhenNotInPlayMode()
+    public async ValueTask ClickPointer_ReturnsError_WhenNotInPlayMode()
     {
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-            await _fixture.InputUseCase.PressPointerAsync(100f, 200f, MouseButton.Left,
+            await _fixture.InputUseCase.ClickPointerAsync(100f, 200f, null, MouseButton.Left, null,
                 CancellationToken.None));
 
         Assert.That(ex!.Message, Does.Contain("Play Mode").Or.Contain("Input System"));
@@ -68,7 +68,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask PressAndReleasePointer_InPlayMode_TriggersMouseInput()
+    public async ValueTask ClickPointer_InPlayMode_TriggersMouseInput()
     {
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
@@ -76,12 +76,9 @@ public class InputUseCaseTest
         {
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
-            await _fixture.InputUseCase.PressPointerAsync(400f, 300f, MouseButton.Left,
+            // No delay before reading the logs: the click returns after the release has been processed.
+            await _fixture.InputUseCase.ClickPointerAsync(400f, 300f, null, MouseButton.Left, null,
                 CancellationToken.None);
-            await Task.Delay(500);
-            await _fixture.InputUseCase.ReleasePointerAsync(400f, 300f, MouseButton.Left,
-                CancellationToken.None);
-            await Task.Delay(500);
 
             var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
                 cancellationToken: CancellationToken.None);
@@ -96,10 +93,10 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask PressAndReleasePointer_InPlayMode_ClicksUIButton_WhenInsideButton()
+    public async ValueTask ClickPointer_InPlayMode_ClicksUIButton_WithHoldDuration()
     {
         // TestButton is 200x80, anchored at center of screen.
-        // Click at screen center which is inside the button regardless of Game View resolution.
+        // Long-press at screen center which is inside the button regardless of Game View resolution.
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
@@ -110,12 +107,8 @@ public class InputUseCaseTest
 
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
-            await _fixture.InputUseCase.PressPointerAsync(centerX, centerY, MouseButton.Left,
+            await _fixture.InputUseCase.ClickPointerAsync(centerX, centerY, null, MouseButton.Left, 0.3f,
                 CancellationToken.None);
-            await Task.Delay(100);
-            await _fixture.InputUseCase.ReleasePointerAsync(centerX, centerY, MouseButton.Left,
-                CancellationToken.None);
-            await Task.Delay(500);
 
             var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
                 cancellationToken: CancellationToken.None);
@@ -131,8 +124,6 @@ public class InputUseCaseTest
     [Test, CancelAfter(120_000)]
     public async ValueTask ClickPointer_InPlayMode_ClicksUIButton()
     {
-        // Same scenario as PressAndReleasePointer_InPlayMode_ClicksUIButton_WhenInsideButton,
-        // but using a single "click" eventType instead of separate press/release calls.
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
         try
@@ -143,7 +134,7 @@ public class InputUseCaseTest
 
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
-            await _fixture.InputUseCase.ClickPointerAsync(centerX, centerY, MouseButton.Left,
+            await _fixture.InputUseCase.ClickPointerAsync(centerX, centerY, null, MouseButton.Left, null,
                 CancellationToken.None);
             await Task.Delay(500);
 
@@ -159,7 +150,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask PressAndReleasePointer_InPlayMode_DoesNotClickUIButton_WhenOutsideButton()
+    public async ValueTask ClickPointer_InPlayMode_DoesNotClickUIButton_WhenOutsideButton()
     {
         // Click at top-left corner (10, 10) which is far outside the centered 200x80 button.
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -168,12 +159,8 @@ public class InputUseCaseTest
         {
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
-            await _fixture.InputUseCase.PressPointerAsync(10f, 10f, MouseButton.Left,
+            await _fixture.InputUseCase.ClickPointerAsync(10f, 10f, null, MouseButton.Left, null,
                 CancellationToken.None);
-            await Task.Delay(100);
-            await _fixture.InputUseCase.ReleasePointerAsync(10f, 10f, MouseButton.Left,
-                CancellationToken.None);
-            await Task.Delay(500);
 
             var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
                 cancellationToken: CancellationToken.None);
@@ -201,7 +188,7 @@ public class InputUseCaseTest
 
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
-            await _fixture.InputUseCase.ClickPointerAsync(x, y, MouseButton.Left,
+            await _fixture.InputUseCase.ClickPointerAsync(x, y, null, MouseButton.Left, null,
                 CancellationToken.None);
             await Task.Delay(500);
 
@@ -231,7 +218,7 @@ public class InputUseCaseTest
 
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
-            await _fixture.InputUseCase.ClickPointerAsync(x, y, MouseButton.Left,
+            await _fixture.InputUseCase.ClickPointerAsync(x, y, null, MouseButton.Left, null,
                 CancellationToken.None);
             await Task.Delay(500);
 
@@ -346,7 +333,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask ClickGameObject_InPlayMode_ClicksUIButton()
+    public async ValueTask ClickPointer_InPlayMode_ClicksUIButton_WithInstanceId()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -358,8 +345,8 @@ public class InputUseCaseTest
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
             // Act
-            await _fixture.InputUseCase.ClickGameObjectAsync(bottomRight.instanceId, MouseButton.Left,
-                CancellationToken.None);
+            await _fixture.InputUseCase.ClickPointerAsync(null, null, bottomRight.instanceId,
+                MouseButton.Left, null, CancellationToken.None);
             await Task.Delay(500);
 
             // Assert
@@ -374,7 +361,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask ClickGameObject_InPlayMode_DoesNotClick_WhenCovered()
+    public async ValueTask ClickPointer_InPlayMode_DoesNotClick_WhenTargetIsCovered()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -387,8 +374,8 @@ public class InputUseCaseTest
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
             // Act
-            await _fixture.InputUseCase.ClickGameObjectAsync(testButton.instanceId, MouseButton.Left,
-                CancellationToken.None);
+            await _fixture.InputUseCase.ClickPointerAsync(null, null, testButton.instanceId,
+                MouseButton.Left, null, CancellationToken.None);
             await Task.Delay(500);
 
             // Assert
@@ -403,7 +390,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask ClickGameObject_ReturnsError_WhenInstanceIdNotFound()
+    public async ValueTask ClickPointer_ReturnsError_WhenInstanceIdNotFound()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -412,8 +399,8 @@ public class InputUseCaseTest
         {
             // Act & Assert
             var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
-                await _fixture.InputUseCase.ClickGameObjectAsync(int.MaxValue, MouseButton.Left,
-                    CancellationToken.None));
+                await _fixture.InputUseCase.ClickPointerAsync(null, null, int.MaxValue,
+                    MouseButton.Left, null, CancellationToken.None));
 
             Assert.That(ex!.Message, Does.Contain("not found"));
         }
@@ -421,6 +408,28 @@ public class InputUseCaseTest
         {
             await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
         }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask ClickPointer_ReturnsError_WhenBothCoordinatesAndTargetAreGiven()
+    {
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.ClickPointerAsync(100f, 200f, 12345,
+                MouseButton.Left, null, CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Specify either x and y"));
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask ClickPointer_ReturnsError_WhenNeitherCoordinatesNorTargetAreGiven()
+    {
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.ClickPointerAsync(null, null, null,
+                MouseButton.Left, null, CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Specify either x and y"));
     }
 
     [Test, CancelAfter(120_000)]
@@ -434,8 +443,8 @@ public class InputUseCaseTest
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
             // Act
-            var message = await _fixture.InputUseCase.DragPointerAsync(10f, 20f, 110f, 70f, MouseButton.Left, 5, 2,
-                CancellationToken.None);
+            var message = await _fixture.InputUseCase.DragPointerAsync(10f, 20f, null, 110f, 70f, null,
+                MouseButton.Left, 0.2f, 0.1f, CancellationToken.None);
 
             // Assert
             // No delay before reading the logs: the drag returns after the release has been processed.
@@ -452,7 +461,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask MoveGameObject_InPlayMode_MovesToElementCenter()
+    public async ValueTask MovePointer_InPlayMode_MovesToTargetCenter()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -464,7 +473,8 @@ public class InputUseCaseTest
             var instanceId = targets.Single(t => t.path == "Canvas/TestButton").instanceId;
 
             // Act
-            var message = await _fixture.InputUseCase.MoveGameObjectAsync(instanceId, CancellationToken.None);
+            var message = await _fixture.InputUseCase.MovePointerAsync(null, null, instanceId,
+                CancellationToken.None);
 
             // Assert
             var match = Regex.Match(message, @"\((?<x>[-\d.]+), (?<y>[-\d.]+)\)");
@@ -481,7 +491,7 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
-    public async ValueTask DragGameObject_InPlayMode_PressesAtStartElementAndReleasesAtEndElement()
+    public async ValueTask DragPointer_InPlayMode_DragsBetweenTargets()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
@@ -494,8 +504,8 @@ public class InputUseCaseTest
             await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
 
             // Act
-            var message = await _fixture.InputUseCase.DragGameObjectAsync(topLeft.instanceId,
-                bottomRight.instanceId, MouseButton.Left, 3, null, CancellationToken.None);
+            var message = await _fixture.InputUseCase.DragPointerAsync(null, null, topLeft.instanceId,
+                null, null, bottomRight.instanceId, MouseButton.Left, 0.2f, null, CancellationToken.None);
 
             // Assert
             // No delay before reading the logs: the drag returns after the release has been processed.
@@ -511,6 +521,17 @@ public class InputUseCaseTest
         {
             await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
         }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask DragPointer_ReturnsError_WhenEndIsMissing()
+    {
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.DragPointerAsync(100f, 200f, null, null, null, null,
+                MouseButton.Left, null, null, CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Specify either toX and toY"));
     }
 
     private async ValueTask<List<PointerTarget>> GetPointerTargetsAsync()

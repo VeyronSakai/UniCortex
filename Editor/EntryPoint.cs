@@ -47,7 +47,7 @@ namespace UniCortex.Editor
 
             var dispatcher = new MainThreadDispatcher();
             var playerLoopDispatcher = new PlayerLoopDispatcher(new EditorApplicationAdapter(),
-                new PlayerLoopAdapter());
+                new PlayerLoopAdapter(), new TimeAdapter());
             var compilationPipeline = new CompilationPipelineAdapter();
 
             var server = StartServer(dispatcher, playerLoopDispatcher, compilationPipeline);
@@ -316,32 +316,16 @@ namespace UniCortex.Editor
 
             var pointerPositionResolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
 
-            // The pointer handlers take Game View coordinates, and the GameObject handlers take an instanceId.
-            // Both use the same use cases.
-            var clickPointerUseCase = new ClickPointerUseCase(dispatcher, pointerPositionResolver, inputSimOps);
-            var pressPointerUseCase = new PressPointerUseCase(dispatcher, pointerPositionResolver, inputSimOps);
-            var releasePointerUseCase = new ReleasePointerUseCase(dispatcher, pointerPositionResolver, inputSimOps);
+            var clickPointerUseCase = new ClickPointerUseCase(dispatcher, playerLoopDispatcher,
+                pointerPositionResolver, inputSimOps);
+            var clickPointerHandler = new ClickPointerHandler(clickPointerUseCase);
+
             var movePointerUseCase = new MovePointerUseCase(dispatcher, pointerPositionResolver, inputSimOps);
+            var movePointerHandler = new MovePointerHandler(movePointerUseCase);
+
             var dragPointerUseCase = new DragPointerUseCase(dispatcher, playerLoopDispatcher,
                 pointerPositionResolver, inputSimOps);
-
-            var clickPointerHandler = new PointerButtonHandler(ApiRoutes.InputPointerClick,
-                clickPointerUseCase.ExecuteAsync);
-            var pressPointerHandler = new PointerButtonHandler(ApiRoutes.InputPointerPress,
-                pressPointerUseCase.ExecuteAsync);
-            var releasePointerHandler = new PointerButtonHandler(ApiRoutes.InputPointerRelease,
-                releasePointerUseCase.ExecuteAsync);
-            var movePointerHandler = new MovePointerHandler(movePointerUseCase);
             var dragPointerHandler = new DragPointerHandler(dragPointerUseCase);
-
-            var clickGameObjectHandler = new GameObjectButtonHandler(ApiRoutes.InputGameObjectClick,
-                clickPointerUseCase.ExecuteAsync);
-            var pressGameObjectHandler = new GameObjectButtonHandler(ApiRoutes.InputGameObjectPress,
-                pressPointerUseCase.ExecuteAsync);
-            var releaseGameObjectHandler = new GameObjectButtonHandler(ApiRoutes.InputGameObjectRelease,
-                releasePointerUseCase.ExecuteAsync);
-            var moveGameObjectHandler = new MoveGameObjectHandler(movePointerUseCase);
-            var dragGameObjectHandler = new DragGameObjectHandler(dragPointerUseCase);
 
             var getPointerTargetsUseCase = new GetPointerTargetsUseCase(dispatcher, pointerTargetOps);
             var getPointerTargetsHandler = new GetPointerTargetsHandler(getPointerTargetsUseCase);
@@ -453,15 +437,8 @@ namespace UniCortex.Editor
 
             sendKeyEventHandler.Register(router);
             clickPointerHandler.Register(router);
-            pressPointerHandler.Register(router);
-            releasePointerHandler.Register(router);
             movePointerHandler.Register(router);
             dragPointerHandler.Register(router);
-            clickGameObjectHandler.Register(router);
-            pressGameObjectHandler.Register(router);
-            releaseGameObjectHandler.Register(router);
-            moveGameObjectHandler.Register(router);
-            dragGameObjectHandler.Register(router);
             getPointerTargetsHandler.Register(router);
             createTimelineHandler.Register(router);
             addTimelineTrackHandler.Register(router);

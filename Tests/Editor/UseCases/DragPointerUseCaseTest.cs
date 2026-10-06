@@ -24,15 +24,18 @@ namespace UniCortex.Editor.Tests.UseCases
         }
 
         // Splits the sent mouse events by the frame they were sent in.
-        // frameStarts holds the number of events sent before each frame.
-        private static List<List<MouseEventRecord>> SplitByFrame(List<MouseEventRecord> history,
-            List<int> frameStarts)
+        private static List<List<MouseEventRecord>> RecordFrames(FakePlayerLoopDispatcher playerLoopDispatcher,
+            SpyInputOperations ops, Action act)
         {
+            var frameStarts = new List<int>();
+            playerLoopDispatcher.OnFrame = _ => frameStarts.Add(ops.MouseEventHistory.Count);
+            act();
+
             var frames = new List<List<MouseEventRecord>>();
             for (var i = 0; i < frameStarts.Count; i++)
             {
-                var end = i + 1 < frameStarts.Count ? frameStarts[i + 1] : history.Count;
-                frames.Add(history.GetRange(frameStarts[i], end - frameStarts[i]));
+                var end = i + 1 < frameStarts.Count ? frameStarts[i + 1] : ops.MouseEventHistory.Count;
+                frames.Add(ops.MouseEventHistory.GetRange(frameStarts[i], end - frameStarts[i]));
             }
 
             return frames;
@@ -46,22 +49,22 @@ namespace UniCortex.Editor.Tests.UseCases
         }
 
         [Test]
-        public void ExecuteAsync_PressesMovesOncePerFrameAndReleases()
+        public void ExecuteAsync_PressesMovesOverDurationAndReleases()
         {
             // Arrange
+            // Frames are 0.25 seconds apart.
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
             var ops = new SpyInputOperations();
             var useCase = CreateUseCase(playerLoopDispatcher, ops);
-            var frameStarts = new List<int>();
-            playerLoopDispatcher.OnFrame = _ => frameStarts.Add(ops.MouseEventHistory.Count);
+            DragPointerResponse response = null;
 
             // Act
-            var response = useCase.ExecuteAsync(new PointerPosition.Coordinates(0f, 0f),
-                new PointerPosition.Coordinates(100f, 50f), MouseButton.Left, 4, 0, CancellationToken.None)
-                .GetAwaiter().GetResult();
+            var frames = RecordFrames(playerLoopDispatcher, ops, () =>
+                response = useCase.ExecuteAsync(new PointerPosition.Coordinates(0f, 0f),
+                    new PointerPosition.Coordinates(100f, 50f), MouseButton.Left, 1f, 0f,
+                    CancellationToken.None).GetAwaiter().GetResult());
 
             // Assert
-            var frames = SplitByFrame(ops.MouseEventHistory, frameStarts);
             Assert.AreEqual(1, playerLoopDispatcher.RunEachFrameCallCount);
             Assert.AreEqual(7, frames.Count);
             AssertEvent(frames[0].Single(), MouseAction.Press, 0f, 0f);
@@ -81,32 +84,55 @@ namespace UniCortex.Editor.Tests.UseCases
         }
 
         [Test]
-        public void ExecuteAsync_KeepsPressed_ForHoldFrames_BeforeMoving()
+        public void ExecuteAsync_KeepsPressed_ForHoldDuration_BeforeMoving()
         {
             // Arrange
+            // Frames are 0.25 seconds apart.
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
             var ops = new SpyInputOperations();
             var useCase = CreateUseCase(playerLoopDispatcher, ops);
-            var frameStarts = new List<int>();
-            playerLoopDispatcher.OnFrame = _ => frameStarts.Add(ops.MouseEventHistory.Count);
 
             // Act
-            useCase.ExecuteAsync(new PointerPosition.Coordinates(10f, 20f),
-                new PointerPosition.Coordinates(30f, 40f), MouseButton.Right, 1, 3, CancellationToken.None)
-                .GetAwaiter().GetResult();
+            var frames = RecordFrames(playerLoopDispatcher, ops, () =>
+                useCase.ExecuteAsync(new PointerPosition.Coordinates(10f, 20f),
+                    new PointerPosition.Coordinates(30f, 40f), MouseButton.Right, 0.3f, 0.6f,
+                    CancellationToken.None).GetAwaiter().GetResult());
 
             // Assert
-            var frames = SplitByFrame(ops.MouseEventHistory, frameStarts);
+            // Pressed at 0s and held until 0.6s. Moved halfway at 0.75s (0.15s into the 0.3s move) and to the end
+            // at 1s.
             Assert.AreEqual(7, frames.Count);
             AssertEvent(frames[0].Single(), MouseAction.Press, 10f, 20f);
             CollectionAssert.IsEmpty(frames[1]);
             CollectionAssert.IsEmpty(frames[2]);
-            CollectionAssert.IsEmpty(frames[3]);
+            AssertEvent(frames[3].Single(), MouseAction.Move, 20f, 30f);
             AssertEvent(frames[4].Single(), MouseAction.Move, 30f, 40f);
             AssertEvent(frames[5].Single(), MouseAction.Release, 30f, 40f);
             CollectionAssert.IsEmpty(frames[6]);
             Assert.AreEqual(MouseButton.Right, frames[0].Single().Button);
             Assert.AreEqual(MouseButton.Right, frames[5].Single().Button);
+        }
+
+        [Test]
+        public void ExecuteAsync_MovesToEndInOneFrame_WhenDurationIsZero()
+        {
+            // Arrange
+            var playerLoopDispatcher = new FakePlayerLoopDispatcher();
+            var ops = new SpyInputOperations();
+            var useCase = CreateUseCase(playerLoopDispatcher, ops);
+
+            // Act
+            var frames = RecordFrames(playerLoopDispatcher, ops, () =>
+                useCase.ExecuteAsync(new PointerPosition.Coordinates(0f, 0f),
+                    new PointerPosition.Coordinates(100f, 0f), MouseButton.Left, 0f, 0f,
+                    CancellationToken.None).GetAwaiter().GetResult());
+
+            // Assert
+            Assert.AreEqual(4, frames.Count);
+            AssertEvent(frames[0].Single(), MouseAction.Press, 0f, 0f);
+            AssertEvent(frames[1].Single(), MouseAction.Move, 100f, 0f);
+            AssertEvent(frames[2].Single(), MouseAction.Release, 100f, 0f);
+            CollectionAssert.IsEmpty(frames[3]);
         }
 
         [Test]
@@ -122,7 +148,7 @@ namespace UniCortex.Editor.Tests.UseCases
 
             // Act
             var response = useCase.ExecuteAsync(new PointerPosition.Target(111), new PointerPosition.Target(222),
-                MouseButton.Left, 2, 0, CancellationToken.None).GetAwaiter().GetResult();
+                MouseButton.Left, 0.5f, 0f, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
             Assert.AreEqual(2, pointerTargetOps.GetTargetCenterCallCount);
@@ -137,9 +163,10 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(220f, response.toY);
         }
 
-        [TestCase(0, 0, "frames")]
-        [TestCase(1, -1, "holdFrames")]
-        public void ExecuteAsync_Throws_WhenFrameCountIsInvalid(int frames, int holdFrames, string parameterName)
+        [TestCase(-0.1f, 0f, "duration")]
+        [TestCase(0.1f, -0.1f, "holdDuration")]
+        public void ExecuteAsync_Throws_WhenDurationIsNegative(float duration, float holdDuration,
+            string parameterName)
         {
             // Arrange
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
@@ -149,7 +176,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() => useCase.ExecuteAsync(
                 new PointerPosition.Coordinates(0f, 0f), new PointerPosition.Coordinates(1f, 1f),
-                MouseButton.Left, frames, holdFrames, CancellationToken.None).GetAwaiter().GetResult());
+                MouseButton.Left, duration, holdDuration, CancellationToken.None).GetAwaiter().GetResult());
             StringAssert.StartsWith(parameterName + " ", ex.Message);
             Assert.AreEqual(0, playerLoopDispatcher.RunEachFrameCallCount);
             CollectionAssert.IsEmpty(ops.MouseEventHistory);

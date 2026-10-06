@@ -95,7 +95,7 @@ Unity APIs can only be called from the main thread. Since `HttpListener` callbac
 3. On the main thread (`EditorApplication.update`), dequeue → run `func()` → `tcs.SetResult()`
 4. The HTTP thread awaits completion → returns the response
 
-Some operations must run inside the player loop in Play Mode, because APIs such as `Screen.width` / `Screen.height` return Game View values only there (from `EditorApplication.update` they return the size of another view). For these, `PlayerLoopDispatcher` (`IPlayerLoopDispatcher`) inserts a system at the end of the `PostLateUpdate` phase (after Canvas layout updates and rendering, so that UI positions and raycasts match the frame shown in the Game View) through `IPlayerLoop` (implemented by `PlayerLoopAdapter`, so that tests do not change the real player loop) and runs queued functions there. It is called on the main thread (through `MainThreadDispatcher`) and returns a `Task` that completes in the next frame. `RunEachFrameAsync` instead calls a function once per frame, starting in the next frame, until it returns `false` (used for `POST /input/pointer/drag`). Each update runs only the requests queued before it, so a request queued during an update runs in the next frame. It fails immediately outside Play Mode and while the Editor is paused (the player loop does not run then), and fails pending requests when Play Mode exits. `EntryPoint` creates it and subscribes it to `EditorApplication.playModeStateChanged`.
+Some operations must run inside the player loop in Play Mode, because APIs such as `Screen.width` / `Screen.height` return Game View values only there (from `EditorApplication.update` they return the size of another view). For these, `PlayerLoopDispatcher` (`IPlayerLoopDispatcher`) inserts a system at the end of the `PostLateUpdate` phase (after Canvas layout updates and rendering, so that UI positions and raycasts match the frame shown in the Game View) through `IPlayerLoop` (implemented by `PlayerLoopAdapter`, so that tests do not change the real player loop) and runs queued functions there. It is called on the main thread (through `MainThreadDispatcher`) and returns a `Task` that completes in the next frame. `RunEachFrameAsync` instead calls a function once per frame, starting in the next frame, until it returns `false`, and passes it the frame number and the seconds since the first call (unscaled time, through `ITime`) (used for `POST /input/pointer/click` and `POST /input/pointer/drag`). Each update runs only the requests queued before it, so a request queued during an update runs in the next frame. It fails immediately outside Play Mode and while the Editor is paused (the player loop does not run then), and fails pending requests when Play Mode exits. `EntryPoint` creates it and subscribes it to `EditorApplication.playModeStateChanged`.
 
 ---
 
@@ -915,49 +915,72 @@ Request body:
 
 Response: `{"success": true}`
 
-#### Pointer (`/input/pointer/*` and `/input/game-object/*`)
+#### Pointer (`/input/pointer/*`)
 Pointer operations through the Input System while in Play mode. They simulate the `Mouse` device, which uGUI (`InputSystemUIInputModule`) treats as a pointer the same as a touch, so UI of a touch-screen game can be operated too. A game that reads `Touchscreen` directly does not react to them (see #260).
 
-There are two sets of endpoints with the same operations (click, press, release, move, drag). They differ only in how the position is given:
+Every endpoint takes the position in one of two ways (`PointerPosition` in the Unity Editor side: `Coordinates` or `Target`):
 
-- `/input/pointer/*`: Game View coordinates. `x`, `y` are screen coordinates in pixels. The origin (0, 0) is the bottom-left of the screen. X increases to the right, Y increases upward. The value range depends on the Game View resolution (e.g. for 800x600: x: 0–800, y: 0–600). Same coordinate system as `Mouse.current.position.ReadValue()`. Note: images from `capture_game_view` are at the Game View resolution with a top-left origin and Y increasing downward, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py. Coordinates are required; a missing one returns `400`.
-- `/input/game-object/*`: the center of a GameObject given by `instanceId`, e.g. from `GET /input/pointer-targets`. Currently only uGUI elements (a `RectTransform` under a `Canvas`) are supported, and other GameObjects return `400`; 3D / 2D objects that receive pointer events through `PhysicsRaycaster` / `Physics2DRaycaster` are planned (see #261). Requires the uGUI package (`com.unity.ugui`). A missing or `0` instanceId returns `400`. The event still goes through the Input System and the EventSystem raycast like a real tap. `onClick.Invoke()` is intentionally not called, so a GameObject covered by other UI does not receive the event. Because the center is computed in the player loop, these return `400` while the Editor is paused.
+- `x`, `y`: screen coordinates in pixels. The origin (0, 0) is the bottom-left of the screen. X increases to the right, Y increases upward. The value range depends on the Game View resolution (e.g. for 800x600: x: 0–800, y: 0–600). Same coordinate system as `Mouse.current.position.ReadValue()`. Note: images from `capture_game_view` are at the Game View resolution with a top-left origin and Y increasing downward, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py.
+- `instanceId`: instanceId of a GameObject, e.g. from `GET /input/pointer-targets`. Its center is used. Currently only uGUI elements (a `RectTransform` under a `Canvas`) are supported, and other GameObjects return `400`; 3D / 2D objects that receive pointer events through `PhysicsRaycaster` / `Physics2DRaycaster` are planned (see #261). Requires the uGUI package (`com.unity.ugui`).
+- Exactly one of the coordinates (`x` and `y` together) or `instanceId` must be given. Otherwise `400` is returned.
 
-Both sets share the use cases in the Unity Editor side. The handlers create a `PointerPosition` (`Coordinates` for `/input/pointer/*`, `Target` for `/input/game-object/*`), and `PointerPositionResolver` converts it to Game View coordinates.
+With a target, the event still goes through the Input System and the EventSystem raycast like a real tap. `onClick.Invoke()` is intentionally not called, so a target covered by other UI does not receive the event.
 
-`button` is optional where it is taken: `"left"` (default), `"right"`, `"middle"`. Button states are tracked across requests, so `press`, `move` and `release` can be combined into a drag with full control.
+`button` is optional where it is taken: `"left"` (default), `"right"`, `"middle"`.
 
-| Operation | Coordinates | GameObject | Request body |
-|---|---|---|---|
-| Click: press, then release | POST `/input/pointer/click` | POST `/input/game-object/click` | `{"x": 100.0, "y": 200.0, "button": "left"}` / `{"instanceId": 12345, "button": "left"}` |
-| Press and keep it pressed | POST `/input/pointer/press` | POST `/input/game-object/press` | same as click |
-| Release | POST `/input/pointer/release` | POST `/input/game-object/release` | same as click |
-| Move without changing the button state | POST `/input/pointer/move` | POST `/input/game-object/move` | `{"x": 100.0, "y": 200.0}` / `{"instanceId": 12345}` |
-| Drag (see below) | POST `/input/pointer/drag` | POST `/input/game-object/drag` | `{"fromX": 100.0, "fromY": 200.0, "toX": 300.0, "toY": 200.0}` / `{"fromInstanceId": 111, "toInstanceId": 222}` |
+Click and drag run inside the player loop (through `IPlayerLoopDispatcher.RunEachFrameAsync`), one step per frame, and the request returns after the release has been processed, so the next request sees the result. Times are given in seconds, not frames, because the frame rate depends on the environment. They are measured with unscaled time (`Time.unscaledTimeAsDouble`), so `Time.timeScale` does not affect them. Like a target, click and drag return `400` while the Editor is paused.
 
-Response of click, press, release and move: `{"success": true, "x": 100.0, "y": 200.0}` (the position the event was sent to, in Game View coordinates)
+There are no endpoints to press or release a button alone, so a button never stays pressed after a request.
 
-##### Drag
-Drags from the start to the end in one request. Besides the start and the end, it takes:
+##### POST `/input/pointer/click`
+Clicks (or taps) at the position.
 
-- `button`: optional, as above
-- `frames`: optional. Number of frames to move from the start to the end (default `10`, at least `1`)
-- `holdFrames`: optional. Number of frames to keep the button pressed at the start before moving, e.g. for long-press-then-drag (default `0`)
+Request body: `{"x": 100.0, "y": 200.0, "button": "left", "holdDuration": 0.5}` or `{"instanceId": 12345}`
 
-It runs inside the player loop (through `IPlayerLoopDispatcher.RunEachFrameAsync`), one step per frame:
+- `holdDuration`: optional. Seconds to keep the button pressed before releasing it, e.g. for a long press (default `0`, at least `0`)
+
+Steps:
+
+1. Press at the position
+2. Release in the first later frame at least `holdDuration` seconds after the press (the next frame with the default `0`)
+3. Wait one more frame so that the release is processed
+
+Response: `{"success": true, "x": 100.0, "y": 200.0}` (`x`, `y`: the position the event was sent to)
+
+##### POST `/input/pointer/move`
+Moves the pointer to the position without pressing a button, e.g. for hover.
+
+Request body: `{"x": 100.0, "y": 200.0}` or `{"instanceId": 12345}`
+
+Response: same as `click`
+
+##### POST `/input/pointer/drag`
+Drags (or swipes) from the start to the end in one request.
+
+Request body:
+```json
+{"fromX": 100.0, "fromY": 200.0, "toX": 300.0, "toY": 200.0, "button": "left", "duration": 0.2, "holdDuration": 0}
+```
+
+- `fromX`, `fromY` / `fromInstanceId`: the start, in the same way as `x`, `y` / `instanceId` of the other endpoints. Exactly one of them is required
+- `toX`, `toY` / `toInstanceId`: the end, in the same way as the start. Exactly one of them is required
+- `duration`: optional. Seconds to move from the start to the end (default `0.2`, at least `0`; with `0`, it moves to the end in one frame)
+- `holdDuration`: optional. Seconds to keep the button pressed at the start before moving, e.g. for long-press-then-drag (default `0`, at least `0`)
+
+Steps:
 
 1. Press at the start
-2. Keep the button pressed for `holdFrames` frames
-3. Move along a straight line to the end, one move per frame for `frames` frames (the last move is at the end)
+2. Keep the button pressed until `holdDuration` seconds have passed
+3. Move along a straight line toward the end, once per frame, by the time since the hold ended, until `duration` seconds have passed (the last move is at the end)
 4. Release at the end
 5. Wait one more frame so that the release is processed
 
-The request returns after the last step, so the next request sees the result. Because the movement is spread over frames, components that look at movement over frames (`ScrollRect` inertia, swipe detection, the `EventSystem` drag threshold) behave as with a real drag. It returns `400` while the Editor is paused. To drag between coordinates and a GameObject, combine `press`, `move` and `release`, or use `GET /input/pointer-targets` to get the element's rect.
+Because the movement is spread over frames, components that look at movement over frames (`ScrollRect` inertia, swipe detection, the `EventSystem` drag threshold) behave as with a real drag.
 
-Response: `{"success": true, "fromX": 100.0, "fromY": 200.0, "toX": 300.0, "toY": 200.0}` (the start and the end, in Game View coordinates)
+Response: `{"success": true, "fromX": 100.0, "fromY": 200.0, "toX": 300.0, "toY": 200.0}` (the start and the end)
 
 #### GET `/input/pointer-targets`
-Lists the uGUI objects in the Game View that can be pressed now, so that an agent can find targets for the GameObject endpoints (`POST /input/game-object/*`). Play mode only. Requires the uGUI package (`com.unity.ugui`) and an active `EventSystem`.
+Lists the uGUI objects in the Game View that can be pressed now, so that an agent can find targets for the pointer endpoints (`POST /input/pointer/*`). Play mode only. Requires the uGUI package (`com.unity.ugui`) and an active `EventSystem`.
 
 **Optional dependency**: `UNICORTEX_UGUI` is defined via `versionDefines` in `UniCortex.Editor.asmdef` when `com.unity.ugui` is installed. When it is not installed, a fallback adapter throws `NotSupportedException`.
 
@@ -969,7 +992,7 @@ An object is listed when all of the following hold:
 
 Results are in Hierarchy order across every loaded scene (including `DontDestroyOnLoad`). Unlike `GET /gameobjects` ("what is in the Hierarchy"), this answers "what in the Game View can be pressed now", and has no query syntax.
 
-The positions and the raycast are computed inside the player loop: `GraphicRaycaster` uses `Screen.width` / `Screen.height`, which return the Game View resolution only while the player loop runs (from `EditorApplication.update` they return the size of another view). Because the player loop does not run while the Editor is paused, this endpoint (and the GameObject endpoints) returns `400` while paused.
+The positions and the raycast are computed inside the player loop: `GraphicRaycaster` uses `Screen.width` / `Screen.height`, which return the Game View resolution only while the player loop runs (from `EditorApplication.update` they return the size of another view). Because the player loop does not run while the Editor is paused, this endpoint (and the pointer endpoints with a target) returns `400` while paused.
 
 Response:
 ```json
@@ -985,7 +1008,7 @@ Response:
 ```
 
 - `path`: Hierarchy path (names from the scene root joined with `/`)
-- `rect`: bounding box in Game View coordinates (same as `x` / `y` of `/input/pointer/*`), computed with `RectTransformUtility.WorldToScreenPoint` and the event camera of the root Canvas's raycaster
+- `rect`: bounding box in Game View coordinates (same as `x` / `y` of the pointer endpoints), computed with `RectTransformUtility.WorldToScreenPoint` and the event camera of the root Canvas's raycaster
 
 ### Timeline
 
@@ -1439,16 +1462,9 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | Tool | API | Description |
 |------|-----|-------------|
 | `send_key_event` | POST `/input/key` | Send a key event through the Input System (requires com.unity.inputsystem) |
-| `click_pointer` | POST `/input/pointer/click` | Click (or tap) at Game View coordinates (requires com.unity.inputsystem) |
-| `drag_pointer` | POST `/input/pointer/drag` | Drag (or swipe) between Game View coordinates over frames in one call |
-| `move_pointer` | POST `/input/pointer/move` | Move the pointer to Game View coordinates without changing the button state |
-| `press_pointer` | POST `/input/pointer/press` | Press a button at Game View coordinates and keep it pressed |
-| `release_pointer` | POST `/input/pointer/release` | Release a button at Game View coordinates |
-| `click_game_object` | POST `/input/game-object/click` | Click (or tap) the center of a GameObject given by instanceId; currently uGUI elements only (requires com.unity.inputsystem and com.unity.ugui) |
-| `drag_game_object` | POST `/input/game-object/drag` | Drag (or swipe) between the centers of two GameObjects over frames in one call |
-| `move_game_object` | POST `/input/game-object/move` | Move the pointer to the center of a GameObject without changing the button state |
-| `press_game_object` | POST `/input/game-object/press` | Press a button at the center of a GameObject and keep it pressed |
-| `release_game_object` | POST `/input/game-object/release` | Release a button at the center of a GameObject |
+| `click_pointer` | POST `/input/pointer/click` | Click (or tap) at coordinates or at the center of a UI object given by instanceId, optionally holding the button for a given time (requires com.unity.inputsystem, and com.unity.ugui for a target) |
+| `drag_pointer` | POST `/input/pointer/drag` | Drag (or swipe) from a start to an end over a given time in one call |
+| `move_pointer` | POST `/input/pointer/move` | Move the pointer without pressing a button, e.g. for hover |
 | `get_pointer_targets` | GET `/input/pointer-targets` | List the uGUI objects that can be pressed now, with their rects in Game View coordinates (requires com.unity.ugui) |
 
 #### Timeline (15)
@@ -1561,8 +1577,7 @@ scene-view focus|capture
 game-view focus|capture
 game-view size get|list|set
 input send-key
-input pointer click|drag|move|press|release|targets
-input game-object click|drag|move|press|release
+input pointer click|drag|move|targets
 timeline create|play|stop
 timeline track list|add|remove|bind
 timeline track property list|set

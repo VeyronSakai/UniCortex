@@ -25,12 +25,14 @@ namespace UniCortex.Editor.Infrastructures
 
         private readonly IEditorApplication _editorApplication;
         private readonly IPlayerLoop _playerLoop;
+        private readonly ITime _time;
         private readonly Queue<Request> _queue = new();
 
-        public PlayerLoopDispatcher(IEditorApplication editorApplication, IPlayerLoop playerLoop)
+        public PlayerLoopDispatcher(IEditorApplication editorApplication, IPlayerLoop playerLoop, ITime time)
         {
             _editorApplication = editorApplication;
             _playerLoop = playerLoop;
+            _time = time;
         }
 
         public Task<T> RunAsync<T>(Func<T> func, CancellationToken cancellationToken = default)
@@ -44,13 +46,19 @@ namespace UniCortex.Editor.Infrastructures
             return tcs.Task;
         }
 
-        public Task RunEachFrameAsync(Func<int, bool> step, CancellationToken cancellationToken = default)
+        public Task RunEachFrameAsync(Func<int, double, bool> step, CancellationToken cancellationToken = default)
         {
             var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             var frame = 0;
+            var startTime = 0d;
             Enqueue(tcs, () =>
             {
-                if (step(frame++))
+                if (frame == 0)
+                {
+                    startTime = _time.UnscaledTime;
+                }
+
+                if (step(frame++, _time.UnscaledTime - startTime))
                 {
                     return true;
                 }

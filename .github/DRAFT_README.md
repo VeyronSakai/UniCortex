@@ -217,12 +217,9 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | Tool | Description |
 |------|-------------|
 | `send_key_event` | Send a keyboard event via Input System in Play Mode (requires com.unity.inputsystem) |
-| `click_pointer` | Click (or tap) at Game View coordinates via Input System in Play Mode (requires com.unity.inputsystem) |
-| `drag_pointer` | Drag (or swipe) between Game View coordinates over frames in one call |
-| `move_pointer` / `press_pointer` / `release_pointer` | Move the pointer, or press / release a button, at Game View coordinates for full control |
-| `click_game_object` | Click (or tap) the center of a GameObject given by instanceId (currently uGUI elements only; requires com.unity.ugui) |
-| `drag_game_object` | Drag (or swipe) between the centers of two GameObjects over frames in one call |
-| `move_game_object` / `press_game_object` / `release_game_object` | Move the pointer, or press / release a button, at the center of a GameObject for full control |
+| `click_pointer` | Click (or tap) via Input System in Play Mode (requires com.unity.inputsystem). Accepts either x/y or the instanceId of a UI target (requires com.unity.ugui). Use holdDuration for a long press |
+| `drag_pointer` | Drag (or swipe) from a start to an end over a given time in one call |
+| `move_pointer` | Move the pointer without pressing a button, e.g. for hover |
 | `get_pointer_targets` | List the uGUI objects that can be pressed now in Play Mode, with their rects in Game View coordinates (requires com.unity.ugui) |
 
 #### Timeline
@@ -433,12 +430,9 @@ Component commands accept the fully-qualified component type name plus the defin
 | Command | Description |
 | --- | --- |
 | `input send-key` | Send an Input System key event. Requires `com.unity.inputsystem`; Play Mode only. |
-| `input pointer click` | Click (or tap) at `--x`/`--y`. Requires `com.unity.inputsystem`; Play Mode only. |
-| `input pointer drag` | Drag from `--from-x`/`--from-y` to `--to-x`/`--to-y` over `--frames` frames in one call. |
-| `input pointer move` / `input pointer press` / `input pointer release` | Move the pointer, or press / release a button, at `--x`/`--y` for full control. |
-| `input game-object click` | Click (or tap) the center of a GameObject (`--instance-id`; currently uGUI elements only). Requires `com.unity.ugui`. |
-| `input game-object drag` | Drag from `--from-instance-id` to `--to-instance-id` over `--frames` frames in one call. |
-| `input game-object move` / `input game-object press` / `input game-object release` | Move the pointer, or press / release a button, at the center of a GameObject for full control. |
+| `input pointer click` | Click (or tap) at `--x`/`--y` or at a UI object (`--instance-id`), holding the button for `--hold-duration` seconds. Requires `com.unity.inputsystem`; Play Mode only. |
+| `input pointer drag` | Drag from `--from-x`/`--from-y` or `--from-instance-id` to `--to-x`/`--to-y` or `--to-instance-id` over `--duration` seconds in one call. |
+| `input pointer move` | Move the pointer without pressing a button, e.g. for hover. |
 | `input pointer targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
 
 #### `recorder all`, `recorder movie`

@@ -10,6 +10,10 @@ namespace UniCortex.Editor.Tests.TestDoubles
     {
         public int RunEachFrameCallCount { get; private set; }
 
+        // Seconds between frames passed to the steps of RunEachFrameAsync.
+        // 0.25 is exact in binary, so tests can compare times without rounding errors.
+        public double SecondsPerFrame { get; set; } = 0.25d;
+
         // Called with the frame number before each step of RunEachFrameAsync.
         public Action<int> OnFrame { get; set; }
 
@@ -20,7 +24,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
             return Task.FromResult(func());
         }
 
-        public Task RunEachFrameAsync(Func<int, bool> step, CancellationToken cancellationToken = default)
+        public Task RunEachFrameAsync(Func<int, double, bool> step, CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)
                 return Task.FromCanceled(cancellationToken);
@@ -31,7 +35,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
             do
             {
                 OnFrame?.Invoke(frame);
-                keepRunning = step(frame);
+                keepRunning = step(frame, frame * SecondsPerFrame);
                 frame++;
             } while (keepRunning);
 

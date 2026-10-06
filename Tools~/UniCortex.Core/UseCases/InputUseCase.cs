@@ -15,103 +15,49 @@ public class InputUseCase(IUnityEditorClient client)
         return $"Key event sent: {key} ({eventType})";
     }
 
-    public ValueTask<string> ClickPointerAsync(float x, float y, string button,
-        CancellationToken cancellationToken)
-        => SendPointerButtonAsync(ApiRoutes.InputPointerClick, "Clicked", x, y, button, cancellationToken);
-
-    public ValueTask<string> PressPointerAsync(float x, float y, string button,
-        CancellationToken cancellationToken)
-        => SendPointerButtonAsync(ApiRoutes.InputPointerPress, "Pressed", x, y, button, cancellationToken);
-
-    public ValueTask<string> ReleasePointerAsync(float x, float y, string button,
-        CancellationToken cancellationToken)
-        => SendPointerButtonAsync(ApiRoutes.InputPointerRelease, "Released", x, y, button, cancellationToken);
-
-    public async ValueTask<string> MovePointerAsync(float x, float y, CancellationToken cancellationToken)
+    public async ValueTask<string> ClickPointerAsync(float? x, float? y, int? instanceId, string button,
+        float? holdDuration, CancellationToken cancellationToken)
     {
-        var request = new MovePointerRequest { x = x, y = y };
+        var request = new ClickPointerRequest
+        {
+            x = x,
+            y = y,
+            instanceId = instanceId,
+            button = button,
+            holdDuration = holdDuration
+        };
+        var response = await client.PostAsync<ClickPointerRequest, PointerResponse>(ApiRoutes.InputPointerClick,
+            request, cancellationToken);
+        return $"Clicked pointer at ({response.x}, {response.y}) button={button}";
+    }
+
+    public async ValueTask<string> MovePointerAsync(float? x, float? y, int? instanceId,
+        CancellationToken cancellationToken)
+    {
+        var request = new MovePointerRequest { x = x, y = y, instanceId = instanceId };
         var response = await client.PostAsync<MovePointerRequest, PointerResponse>(ApiRoutes.InputPointerMove,
             request, cancellationToken);
         return $"Moved pointer to ({response.x}, {response.y})";
     }
 
-    public async ValueTask<string> DragPointerAsync(float fromX, float fromY, float toX, float toY, string button,
-        int? frames, int? holdFrames, CancellationToken cancellationToken)
+    public async ValueTask<string> DragPointerAsync(float? fromX, float? fromY, int? fromInstanceId,
+        float? toX, float? toY, int? toInstanceId, string button, float? duration, float? holdDuration,
+        CancellationToken cancellationToken)
     {
         var request = new DragPointerRequest
         {
             fromX = fromX,
             fromY = fromY,
+            fromInstanceId = fromInstanceId,
             toX = toX,
             toY = toY,
+            toInstanceId = toInstanceId,
             button = button,
-            frames = frames,
-            holdFrames = holdFrames
+            duration = duration,
+            holdDuration = holdDuration
         };
         var response = await client.PostAsync<DragPointerRequest, DragPointerResponse>(ApiRoutes.InputPointerDrag,
             request, cancellationToken);
-        return FormatDrag(response, button);
-    }
-
-    public ValueTask<string> ClickGameObjectAsync(int instanceId, string button,
-        CancellationToken cancellationToken)
-        => SendGameObjectButtonAsync(ApiRoutes.InputGameObjectClick, "Clicked", instanceId, button,
-            cancellationToken);
-
-    public ValueTask<string> PressGameObjectAsync(int instanceId, string button,
-        CancellationToken cancellationToken)
-        => SendGameObjectButtonAsync(ApiRoutes.InputGameObjectPress, "Pressed", instanceId, button,
-            cancellationToken);
-
-    public ValueTask<string> ReleaseGameObjectAsync(int instanceId, string button,
-        CancellationToken cancellationToken)
-        => SendGameObjectButtonAsync(ApiRoutes.InputGameObjectRelease, "Released", instanceId, button,
-            cancellationToken);
-
-    public async ValueTask<string> MoveGameObjectAsync(int instanceId, CancellationToken cancellationToken)
-    {
-        var request = new MoveGameObjectRequest { instanceId = instanceId };
-        var response = await client.PostAsync<MoveGameObjectRequest, PointerResponse>(ApiRoutes.InputGameObjectMove,
-            request, cancellationToken);
-        return $"Moved pointer to instanceId {instanceId} at ({response.x}, {response.y})";
-    }
-
-    public async ValueTask<string> DragGameObjectAsync(int fromInstanceId, int toInstanceId, string button,
-        int? frames, int? holdFrames, CancellationToken cancellationToken)
-    {
-        var request = new DragGameObjectRequest
-        {
-            fromInstanceId = fromInstanceId,
-            toInstanceId = toInstanceId,
-            button = button,
-            frames = frames,
-            holdFrames = holdFrames
-        };
-        var response = await client.PostAsync<DragGameObjectRequest, DragPointerResponse>(
-            ApiRoutes.InputGameObjectDrag, request, cancellationToken);
-        return FormatDrag(response, button);
-    }
-
-    private async ValueTask<string> SendPointerButtonAsync(string route, string verb, float x, float y,
-        string button, CancellationToken cancellationToken)
-    {
-        var request = new PointerButtonRequest { x = x, y = y, button = button };
-        var response = await client.PostAsync<PointerButtonRequest, PointerResponse>(route, request,
-            cancellationToken);
-        return $"{verb} pointer at ({response.x}, {response.y}) button={button}";
-    }
-
-    private async ValueTask<string> SendGameObjectButtonAsync(string route, string verb, int instanceId,
-        string button, CancellationToken cancellationToken)
-    {
-        var request = new GameObjectButtonRequest { instanceId = instanceId, button = button };
-        var response = await client.PostAsync<GameObjectButtonRequest, PointerResponse>(route, request,
-            cancellationToken);
-        return $"{verb} pointer on instanceId {instanceId} at ({response.x}, {response.y}) button={button}";
-    }
-
-    private static string FormatDrag(DragPointerResponse response, string button)
-    {
         return $"Dragged pointer from ({response.fromX}, {response.fromY}) " +
                $"to ({response.toX}, {response.toY}) button={button}";
     }

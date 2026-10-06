@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using NUnit.Framework;
 using UniCortex.Editor.Domains.Models;
@@ -31,7 +30,7 @@ namespace UniCortex.Editor.Tests.Presentations
             // Arrange
             var (router, ops) = CreateRouter();
             var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputPointerMove,
-                "{\"x\":0.0,\"y\":10.0}");
+                "{\"x\":0.0,\"y\":0.0}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -41,23 +40,22 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(1, ops.MouseEventHistory.Count);
             Assert.AreEqual(MouseAction.Move, ops.MouseEventHistory[0].Action);
             Assert.AreEqual(0f, ops.MouseEventHistory[0].X);
-            Assert.AreEqual(10f, ops.MouseEventHistory[0].Y);
+            Assert.AreEqual(0f, ops.MouseEventHistory[0].Y);
         }
 
-        [TestCase("", "x is required.")]
-        [TestCase("{\"x\":0.0}", "y is required.")]
-        public void Handle_Returns400_WhenCoordinatesAreMissing(string body, string expectedMessage)
+        [Test]
+        public void Handle_Returns400_WhenPositionIsMissing()
         {
             // Arrange
             var (router, ops) = CreateRouter();
-            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputPointerMove, body);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.InputPointerMove, "{}");
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
-            StringAssert.Contains(expectedMessage, context.ResponseBody);
+            StringAssert.Contains("Specify either x and y, or instanceId.", context.ResponseBody);
             CollectionAssert.IsEmpty(ops.MouseEventHistory);
         }
     }

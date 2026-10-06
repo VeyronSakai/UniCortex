@@ -10,6 +10,8 @@ namespace UniCortex.Editor.Handlers.Input
 {
     internal sealed class DragPointerHandler
     {
+        private const string StartRequiredMessage = "Specify either fromX and fromY, or fromInstanceId.";
+
         private readonly DragPointerUseCase _useCase;
 
         public DragPointerHandler(DragPointerUseCase useCase)
@@ -22,42 +24,58 @@ namespace UniCortex.Editor.Handlers.Input
             router.Register(HttpMethodType.Post, ApiRoutes.InputPointerDrag, HandleAsync);
         }
 
-        // JsonUtility does not support Nullable<T>, so frames and holdFrames are read into non-nullable fields.
+        // Non-nullable fields for JsonUtility (see PointerRequestParser).
         [Serializable]
         private class RawDragPointerRequest
         {
             public float fromX;
             public float fromY;
+            public int fromInstanceId;
             public float toX;
             public float toY;
+            public int toInstanceId;
             public string button;
-            public int frames;
-            public int holdFrames;
+            public float duration;
+            public float holdDuration;
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
             var body = await context.ReadBodyAsync();
 
-            var error = PointerRequestParser.FindMissingField(body ?? string.Empty, "fromX", "fromY", "toX", "toY");
-            if (error != null)
+            if (string.IsNullOrEmpty(body))
             {
-                await WriteErrorAsync(context, error);
+                await WriteErrorAsync(context, StartRequiredMessage);
                 return;
             }
 
             var request = JsonUtility.FromJson<RawDragPointerRequest>(body);
-            var start = new PointerPosition.Coordinates(request.fromX, request.fromY);
-            var end = new PointerPosition.Coordinates(request.toX, request.toY);
+
+            var start = PointerRequestParser.ParsePosition(body, request.fromX, request.fromY,
+                request.fromInstanceId, "fromX", "fromY", "fromInstanceId", out var startError);
+            if (start == null)
+            {
+                await WriteErrorAsync(context, startError);
+                return;
+            }
+
+            var end = PointerRequestParser.ParsePosition(body, request.toX, request.toY, request.toInstanceId,
+                "toX", "toY", "toInstanceId", out var endError);
+            if (end == null)
+            {
+                await WriteErrorAsync(context, endError);
+                return;
+            }
+
             var button = string.IsNullOrEmpty(request.button) ? MouseButton.Left : request.button;
-            var frames = PointerRequestParser.HasField(body, "frames")
-                ? request.frames
-                : DragPointerUseCase.DefaultFrames;
+            var duration = PointerRequestParser.HasField(body, "duration")
+                ? request.duration
+                : DragPointerUseCase.DefaultDuration;
 
             DragPointerResponse response;
             try
             {
-                response = await _useCase.ExecuteAsync(start, end, button, frames, request.holdFrames,
+                response = await _useCase.ExecuteAsync(start, end, button, duration, request.holdDuration,
                     cancellationToken);
             }
             catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException

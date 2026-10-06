@@ -14,10 +14,10 @@ namespace UniCortex.Editor.Tests.Infrastructures
     internal sealed class PlayerLoopDispatcherTest
     {
         private static PlayerLoopDispatcher CreateDispatcher(SpyPlayerLoop playerLoop, bool isPlaying = true,
-            bool isPaused = false)
+            bool isPaused = false, FakeTime time = null)
         {
             var editorApplication = new SpyEditorApplication { IsPlaying = isPlaying, IsPaused = isPaused };
-            return new PlayerLoopDispatcher(editorApplication, playerLoop);
+            return new PlayerLoopDispatcher(editorApplication, playerLoop, time ?? new FakeTime());
         }
 
         [Test]
@@ -201,7 +201,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             var calledFrames = new List<int>();
 
             // Act
-            var task = dispatcher.RunEachFrameAsync(frame =>
+            var task = dispatcher.RunEachFrameAsync((frame, _) =>
             {
                 calledFrames.Add(frame);
                 return frame < 2;
@@ -222,13 +222,38 @@ namespace UniCortex.Editor.Tests.Infrastructures
         }
 
         [Test]
+        public void RunEachFrameAsync_PassesSecondsSinceFirstCall()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var time = new FakeTime { UnscaledTime = 10d };
+            var dispatcher = CreateDispatcher(playerLoop, time: time);
+            var elapsedTimes = new List<double>();
+            dispatcher.RunEachFrameAsync((_, elapsed) =>
+            {
+                elapsedTimes.Add(elapsed);
+                return true;
+            });
+
+            // Act
+            playerLoop.Update();
+            time.UnscaledTime = 10.25d;
+            playerLoop.Update();
+            time.UnscaledTime = 10.5d;
+            playerLoop.Update();
+
+            // Assert
+            CollectionAssert.AreEqual(new[] { 0d, 0.25d, 0.5d }, elapsedTimes);
+        }
+
+        [Test]
         public void RunEachFrameAsync_PassesException_ToTask_AndStops()
         {
             // Arrange
             var playerLoop = new SpyPlayerLoop();
             var dispatcher = CreateDispatcher(playerLoop);
             var callCount = 0;
-            var task = dispatcher.RunEachFrameAsync(frame =>
+            var task = dispatcher.RunEachFrameAsync((frame, _) =>
             {
                 callCount++;
                 if (frame == 1)
@@ -258,7 +283,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             var dispatcher = CreateDispatcher(playerLoop);
             var callCount = 0;
             using var cts = new CancellationTokenSource();
-            var task = dispatcher.RunEachFrameAsync(_ =>
+            var task = dispatcher.RunEachFrameAsync((_, _) =>
             {
                 callCount++;
                 return true;
@@ -304,7 +329,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
             var playerLoop = new SpyPlayerLoop();
             var dispatcher = CreateDispatcher(playerLoop);
             var callCount = 0;
-            var task = dispatcher.RunEachFrameAsync(_ =>
+            var task = dispatcher.RunEachFrameAsync((_, _) =>
             {
                 callCount++;
                 return true;
