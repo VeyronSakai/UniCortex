@@ -34,36 +34,58 @@ namespace UniCortex.Editor.UseCases
 
             var (x, y) = await _resolver.ResolveAsync(position, cancellationToken);
 
+            var sequence = new ClickSequence(_operations, x, y, button, holdDuration);
+            var task = await _dispatcher.RunOnMainThreadAsync(
+                () => _playerLoopDispatcher.RunEachFrameAsync(sequence.Advance, cancellationToken),
+                cancellationToken);
+            await task;
+
+            return new MouseResponse(true, x, y);
+        }
+
+        // The steps of one click, run once per frame.
+        private sealed class ClickSequence
+        {
+            private readonly IInputOperations _operations;
+            private readonly float _x;
+            private readonly float _y;
+            private readonly string _button;
+            private readonly float _holdDuration;
+            private bool _released;
+
+            public ClickSequence(IInputOperations operations, float x, float y, string button, float holdDuration)
+            {
+                _operations = operations;
+                _x = x;
+                _y = y;
+                _button = button;
+                _holdDuration = holdDuration;
+            }
+
+            // Runs the step of the given frame and returns false when the click is done.
             // Frame 0 presses. The first later frame at least holdDuration seconds after the press releases, and
             // the next frame waits so that the release is processed in it.
-            var released = false;
-            bool Step(int frame, double elapsed)
+            public bool Advance(int frame, double elapsed)
             {
                 if (frame == 0)
                 {
-                    _operations.PressMouseButton(x, y, button);
+                    _operations.PressMouseButton(_x, _y, _button);
                     return true;
                 }
 
-                if (released)
+                if (_released)
                 {
                     return false;
                 }
 
-                if (elapsed >= holdDuration)
+                if (elapsed >= _holdDuration)
                 {
-                    _operations.ReleaseMouseButton(x, y, button);
-                    released = true;
+                    _operations.ReleaseMouseButton(_x, _y, _button);
+                    _released = true;
                 }
 
                 return true;
             }
-
-            var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _playerLoopDispatcher.RunEachFrameAsync(Step, cancellationToken), cancellationToken);
-            await task;
-
-            return new MouseResponse(true, x, y);
         }
     }
 }

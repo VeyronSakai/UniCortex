@@ -38,41 +38,68 @@ namespace UniCortex.Editor.UseCases
             var (fromX, fromY) = await _resolver.ResolveAsync(start, cancellationToken);
             var (toX, toY) = await _resolver.ResolveAsync(end, cancellationToken);
 
-            // Frame 0 presses. Later frames move toward the end by the time since the press, until the end is reached.
-            // The next frame releases, and the last frame waits so that the release is processed in it.
-            var reachedEnd = false;
-            var released = false;
-            bool Step(int frame, double elapsed)
+            var sequence = new DragSequence(_operations, fromX, fromY, toX, toY, button, duration);
+            var task = await _dispatcher.RunOnMainThreadAsync(
+                () => _playerLoopDispatcher.RunEachFrameAsync(sequence.Advance, cancellationToken),
+                cancellationToken);
+            await task;
+
+            return new DragMouseResponse(true, fromX, fromY, toX, toY);
+        }
+
+        // The steps of one drag, run once per frame.
+        private sealed class DragSequence
+        {
+            private readonly IInputOperations _operations;
+            private readonly float _fromX;
+            private readonly float _fromY;
+            private readonly float _toX;
+            private readonly float _toY;
+            private readonly string _button;
+            private readonly float _duration;
+            private bool _reachedEnd;
+            private bool _released;
+
+            public DragSequence(IInputOperations operations, float fromX, float fromY, float toX, float toY,
+                string button, float duration)
+            {
+                _operations = operations;
+                _fromX = fromX;
+                _fromY = fromY;
+                _toX = toX;
+                _toY = toY;
+                _button = button;
+                _duration = duration;
+            }
+
+            // Runs the step of the given frame and returns false when the drag is done.
+            // Frame 0 presses. Later frames move toward the end by the time since the press, until the end is
+            // reached. The next frame releases, and the last frame waits so that the release is processed in it.
+            public bool Advance(int frame, double elapsed)
             {
                 if (frame == 0)
                 {
-                    _operations.PressMouseButton(fromX, fromY, button);
+                    _operations.PressMouseButton(_fromX, _fromY, _button);
                     return true;
                 }
 
-                if (!reachedEnd)
+                if (!_reachedEnd)
                 {
-                    var t = duration <= 0f ? 1f : (float)Math.Min(1d, elapsed / duration);
-                    _operations.MoveMouse(fromX + (toX - fromX) * t, fromY + (toY - fromY) * t);
-                    reachedEnd = t >= 1f;
+                    var t = _duration <= 0f ? 1f : (float)Math.Min(1d, elapsed / _duration);
+                    _operations.MoveMouse(_fromX + (_toX - _fromX) * t, _fromY + (_toY - _fromY) * t);
+                    _reachedEnd = t >= 1f;
                     return true;
                 }
 
-                if (!released)
+                if (!_released)
                 {
-                    _operations.ReleaseMouseButton(toX, toY, button);
-                    released = true;
+                    _operations.ReleaseMouseButton(_toX, _toY, _button);
+                    _released = true;
                     return true;
                 }
 
                 return false;
             }
-
-            var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _playerLoopDispatcher.RunEachFrameAsync(Step, cancellationToken), cancellationToken);
-            await task;
-
-            return new DragMouseResponse(true, fromX, fromY, toX, toY);
         }
     }
 }
