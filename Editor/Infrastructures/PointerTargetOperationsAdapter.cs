@@ -87,7 +87,8 @@ namespace UniCortex.Editor.Infrastructures
             if (!(gameObject.transform is RectTransform rectTransform) || GetCanvas(rectTransform) == null)
             {
                 throw new ArgumentException(
-                    $"'{GetPath(gameObject.transform)}' is not a UI element (a RectTransform under a Canvas).");
+                    $"'{GetPath(gameObject.transform)}' is not a uGUI element (a RectTransform under a Canvas). " +
+                    "Only uGUI elements are supported for now.");
             }
 
             var center = GetScreenCenter(rectTransform);

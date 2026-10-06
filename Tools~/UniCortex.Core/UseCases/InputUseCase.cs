@@ -15,32 +15,50 @@ public class InputUseCase(IUnityEditorClient client)
         return $"Key event sent: {key} ({eventType})";
     }
 
-    public async ValueTask<string> SendMouseEventAsync(float x, float y, string button, string eventType,
-        CancellationToken cancellationToken)
+    public async ValueTask<string> ClickMouseAsync(float? x, float? y, int? instanceId, string button,
+        float? holdDuration, CancellationToken cancellationToken)
     {
-        return await SendMouseEventAsync(x, y, null, button, eventType, cancellationToken);
-    }
-
-    public async ValueTask<string> SendMouseEventAsync(float? x, float? y, int? instanceId,
-        string button, string eventType, CancellationToken cancellationToken)
-    {
-        var request = new SendMouseEventRequest
+        var request = new ClickMouseRequest
         {
             x = x,
             y = y,
             instanceId = instanceId,
             button = button,
-            eventType = eventType
+            holdDuration = holdDuration
         };
-        var response = await client.PostAsync<SendMouseEventRequest, SendMouseEventResponse>(ApiRoutes.InputMouse,
+        var response = await client.PostAsync<ClickMouseRequest, MouseResponse>(ApiRoutes.InputMouseClick,
             request, cancellationToken);
+        return $"Clicked pointer at ({response.x}, {response.y}) button={button}";
+    }
 
-        if (instanceId == null)
+    public async ValueTask<string> MoveMouseAsync(float? x, float? y, int? instanceId,
+        CancellationToken cancellationToken)
+    {
+        var request = new MoveMouseRequest { x = x, y = y, instanceId = instanceId };
+        var response = await client.PostAsync<MoveMouseRequest, MouseResponse>(ApiRoutes.InputMouseMove,
+            request, cancellationToken);
+        return $"Moved pointer to ({response.x}, {response.y})";
+    }
+
+    public async ValueTask<string> DragMouseAsync(float? fromX, float? fromY, int? fromInstanceId,
+        float? toX, float? toY, int? toInstanceId, string button, float? duration,
+        CancellationToken cancellationToken)
+    {
+        var request = new DragMouseRequest
         {
-            return $"Mouse event sent: ({response.x}, {response.y}) button={button} ({eventType})";
-        }
-
-        return $"Mouse event sent to instanceId {instanceId} at ({response.x}, {response.y}) button={button} ({eventType})";
+            fromX = fromX,
+            fromY = fromY,
+            fromInstanceId = fromInstanceId,
+            toX = toX,
+            toY = toY,
+            toInstanceId = toInstanceId,
+            button = button,
+            duration = duration
+        };
+        var response = await client.PostAsync<DragMouseRequest, DragMouseResponse>(ApiRoutes.InputMouseDrag,
+            request, cancellationToken);
+        return $"Dragged pointer from ({response.fromX}, {response.fromY}) " +
+               $"to ({response.toX}, {response.toY}) button={button}";
     }
 
     public async ValueTask<string> GetPointerTargetsAsync(CancellationToken cancellationToken)

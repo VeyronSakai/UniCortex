@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
@@ -190,5 +191,65 @@ namespace UniCortex.Editor.Tests.Infrastructures
             StringAssert.Contains("Play Mode was exited", ex.Message);
             Assert.IsFalse(executed);
         }
+
+        [Test]
+        public void RunAsync_WithAction_RunsAction_WhenPlayerLoopUpdates()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
+            var executed = false;
+            var task = dispatcher.RunAsync(() => { executed = true; });
+            var completedBeforeUpdate = task.IsCompleted;
+
+            // Act
+            playerLoop.Update();
+
+            // Assert
+            Assert.IsFalse(completedBeforeUpdate);
+            Assert.IsTrue(executed);
+            Assert.IsTrue(task.IsCompleted);
+            task.GetAwaiter().GetResult();
+        }
+
+        [Test]
+        public void RunAsync_WithAction_PassesException_ToTask()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
+            var task = dispatcher.RunAsync(() => throw new ArgumentException("failed"));
+
+            // Act
+            playerLoop.Update();
+
+            // Assert
+            var ex = Assert.Throws<ArgumentException>(() => task.GetAwaiter().GetResult());
+            Assert.AreEqual("failed", ex.Message);
+        }
+
+        [Test]
+        public void PlayerLoopUpdate_RunsRequestQueuedDuringUpdate_InNextFrame()
+        {
+            // Arrange
+            var playerLoop = new SpyPlayerLoop();
+            var dispatcher = CreateDispatcher(playerLoop);
+            Task<int> inner = null;
+            dispatcher.RunAsync(() =>
+            {
+                inner = dispatcher.RunAsync(() => 2);
+                return 1;
+            });
+
+            // Act
+            playerLoop.Update();
+            var completedInSameFrame = inner.IsCompleted;
+            playerLoop.Update();
+
+            // Assert
+            Assert.IsFalse(completedInSameFrame);
+            Assert.AreEqual(2, inner.GetAwaiter().GetResult());
+        }
+
     }
 }

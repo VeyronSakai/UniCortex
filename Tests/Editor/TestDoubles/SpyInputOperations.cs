@@ -9,25 +9,28 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string LastKey { get; private set; }
         public string LastKeyEventType { get; private set; }
 
-        public int SendMouseEventCallCount { get; private set; }
-        public float LastMouseX { get; private set; }
-        public float LastMouseY { get; private set; }
-        public string LastMouseButton { get; private set; }
-        public string LastMouseEventType { get; private set; }
+        public enum MouseAction
+        {
+            Press,
+            Release,
+            Move,
+        }
 
         public readonly struct MouseEventRecord
         {
+            public readonly MouseAction Action;
             public readonly float X;
             public readonly float Y;
-            public readonly string Button;
-            public readonly string EventType;
 
-            public MouseEventRecord(float x, float y, string button, string eventType)
+            // null for Move.
+            public readonly string Button;
+
+            public MouseEventRecord(MouseAction action, float x, float y, string button)
             {
+                Action = action;
                 X = x;
                 Y = y;
                 Button = button;
-                EventType = eventType;
             }
         }
 
@@ -40,14 +43,19 @@ namespace UniCortex.Editor.Tests.TestDoubles
             LastKeyEventType = eventType;
         }
 
-        public void SendMouseEvent(float x, float y, string button, string eventType)
+        public void PressMouseButton(float x, float y, string button)
         {
-            SendMouseEventCallCount++;
-            LastMouseX = x;
-            LastMouseY = y;
-            LastMouseButton = button;
-            LastMouseEventType = eventType;
-            MouseEventHistory.Add(new MouseEventRecord(x, y, button, eventType));
+            MouseEventHistory.Add(new MouseEventRecord(MouseAction.Press, x, y, button));
+        }
+
+        public void ReleaseMouseButton(float x, float y, string button)
+        {
+            MouseEventHistory.Add(new MouseEventRecord(MouseAction.Release, x, y, button));
+        }
+
+        public void MoveMouse(float x, float y)
+        {
+            MouseEventHistory.Add(new MouseEventRecord(MouseAction.Move, x, y, null));
         }
     }
 }

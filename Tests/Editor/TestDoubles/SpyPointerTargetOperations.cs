@@ -17,6 +17,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
 
         public (float x, float y) TargetCenterToReturn { get; set; }
 
+        // Centers by instanceId. TargetCenterToReturn is used for an instanceId not in it.
+        public Dictionary<int, (float x, float y)> TargetCentersToReturn { get; } = new();
+
         public Exception ExceptionToThrow { get; set; }
 
         // Returns completed tasks so that tests can block on them (see FakeMainThreadDispatcher).
@@ -33,7 +36,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
             GetTargetCenterCallCount++;
             LastInstanceId = instanceId;
             if (ExceptionToThrow != null) throw ExceptionToThrow;
-            return Task.FromResult(TargetCenterToReturn);
+            return Task.FromResult(TargetCentersToReturn.TryGetValue(instanceId, out var center)
+                ? center
+                : TargetCenterToReturn);
         }
     }
 }

@@ -16,7 +16,6 @@ namespace UniCortex.Editor.Infrastructures
     {
         Press,
         Release,
-        Move,
     }
 
     internal sealed class InputOperationsAdapter : IInputOperations
@@ -159,32 +158,28 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        public void SendMouseEvent(float x, float y, string button, string eventType)
+        public void PressMouseButton(float x, float y, string button)
         {
-            if (!EditorApplication.isPlaying)
-            {
-                throw new InvalidOperationException(
-                    "Input simulation is only available in Play Mode. Enter Play Mode first.");
-            }
+            SendMouseButton(x, y, button, true);
+        }
 
-            EnsureInputSettingsConfigured();
+        public void ReleaseMouseButton(float x, float y, string button)
+        {
+            SendMouseButton(x, y, button, false);
+        }
 
-            var mouse = Mouse.current;
-            if (mouse == null)
-            {
-                throw new InvalidOperationException("No Mouse device is available.");
-            }
+        public void MoveMouse(float x, float y)
+        {
+            var mouse = GetMouse();
+            InputSystem.QueueStateEvent(mouse, BuildMouseState(x, y));
+        }
 
-            var action = ParseMouseAction(eventType);
-            if (action == InputAction.Move)
-            {
-                InputSystem.QueueStateEvent(mouse, BuildMouseState(x, y));
-                return;
-            }
+        private static void SendMouseButton(float x, float y, string button, bool targetPressed)
+        {
+            var mouse = GetMouse();
 
             var buttonName = button ?? MouseButtonConst.Left;
             var buttonEnum = ToInputMouseButton(buttonName);
-            var targetPressed = action == InputAction.Press;
 
             // Track button state ourselves because isPressed only reflects
             // the last *processed* state, not events still sitting in the queue.
@@ -216,6 +211,25 @@ namespace UniCortex.Editor.Infrastructures
             {
                 s_pressedMouseButtons.Remove(buttonName);
             }
+        }
+
+        private static Mouse GetMouse()
+        {
+            if (!EditorApplication.isPlaying)
+            {
+                throw new InvalidOperationException(
+                    "Input simulation is only available in Play Mode. Enter Play Mode first.");
+            }
+
+            EnsureInputSettingsConfigured();
+
+            var mouse = Mouse.current;
+            if (mouse == null)
+            {
+                throw new InvalidOperationException("No Mouse device is available.");
+            }
+
+            return mouse;
         }
 
         /// <summary>
@@ -258,13 +272,6 @@ namespace UniCortex.Editor.Infrastructures
             return string.Equals(eventType, InputEventType.Release, StringComparison.OrdinalIgnoreCase)
                 ? InputAction.Release
                 : InputAction.Press;
-        }
-
-        private static InputAction ParseMouseAction(string eventType)
-        {
-            return string.Equals(eventType, InputEventType.Move, StringComparison.OrdinalIgnoreCase)
-                ? InputAction.Move
-                : ParseButtonAction(eventType);
         }
     }
 }

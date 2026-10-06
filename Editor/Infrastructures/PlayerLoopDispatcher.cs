@@ -34,6 +34,24 @@ namespace UniCortex.Editor.Infrastructures
 
         public Task<T> RunAsync<T>(Func<T> func, CancellationToken cancellationToken = default)
         {
+            var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Enqueue(tcs, () => tcs.TrySetResult(func()), cancellationToken);
+            return tcs.Task;
+        }
+
+        public Task RunAsync(Action action, CancellationToken cancellationToken = default)
+        {
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Enqueue(tcs, () =>
+            {
+                action();
+                tcs.TrySetResult(true);
+            }, cancellationToken);
+            return tcs.Task;
+        }
+
+        private void Enqueue<T>(TaskCompletionSource<T> tcs, Action run, CancellationToken cancellationToken)
+        {
             if (!_editorApplication.IsPlaying)
             {
                 throw new InvalidOperationException(
@@ -48,8 +66,6 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             EnsureInstalled();
-
-            var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // Cancel the task as soon as the token is canceled, without waiting for the next player loop update.
             // The token is canceled when the HTTP server stops (e.g. for a domain reload), and the request is then
@@ -66,7 +82,7 @@ namespace UniCortex.Editor.Infrastructures
 
                     try
                     {
-                        tcs.TrySetResult(func());
+                        run();
                     }
                     catch (Exception ex)
                     {
@@ -74,13 +90,15 @@ namespace UniCortex.Editor.Infrastructures
                     }
                 },
                 ex => tcs.TrySetException(ex)));
-            return tcs.Task;
         }
 
         // Called from the system inserted into the player loop.
         private void OnPlayerLoopUpdate()
         {
-            while (_queue.Count > 0)
+            // Run only the requests queued before this update, so that a request queued by a function run here waits
+            // for the next frame.
+            var count = _queue.Count;
+            for (var i = 0; i < count; i++)
             {
                 _queue.Dequeue().Run();
             }
@@ -97,7 +115,7 @@ namespace UniCortex.Editor.Infrastructures
             while (_queue.Count > 0)
             {
                 _queue.Dequeue().Fail(
-                    new InvalidOperationException("Play Mode was exited before the operation ran."));
+                    new InvalidOperationException("Play Mode was exited before the operation completed."));
             }
         }
 

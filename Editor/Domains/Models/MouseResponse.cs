@@ -3,7 +3,7 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class SendMouseEventResponse
+    public class MouseResponse
     {
         public bool success;
 
@@ -11,7 +11,7 @@ namespace UniCortex.Editor.Domains.Models
         public float x;
         public float y;
 
-        public SendMouseEventResponse(bool success, float x, float y)
+        public MouseResponse(bool success, float x, float y)
         {
             this.success = success;
             this.x = x;
