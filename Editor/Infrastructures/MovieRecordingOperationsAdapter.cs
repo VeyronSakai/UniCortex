@@ -21,11 +21,6 @@ namespace UniCortex.Editor.Infrastructures
         private FrameRatePlayback _savedFrameRatePlayback;
         private bool _savedCapFrameRate;
 
-        public MovieRecordingOperationsAdapter()
-        {
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-        }
-
         public string AddMovieRecorder(string name, string outputPath,
             string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
             string encodingQuality = MovieRecorderEncodingQuality.Low,
@@ -179,7 +174,8 @@ namespace UniCortex.Editor.Infrastructures
                 $"Unknown encoding quality: '{quality}'. Available: {MovieRecorderEncodingQuality.Low}, {MovieRecorderEncodingQuality.Medium}, {MovieRecorderEncodingQuality.High}");
         }
 
-        private void OnPlayModeStateChanged(PlayModeStateChange state)
+        // Registered to EditorApplication.playModeStateChanged by EntryPoint.
+        internal void OnPlayModeStateChanged(PlayModeStateChange state)
         {
             if (state == PlayModeStateChange.ExitingPlayMode && _controller != null)
             {

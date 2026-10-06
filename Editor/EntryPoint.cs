@@ -279,6 +279,7 @@ namespace UniCortex.Editor
 #if UNICORTEX_RECORDER
             var allRecorderOps = new AllRecorderOperationsAdapter();
             var movieRecordingOps = new MovieRecordingOperationsAdapter();
+            EditorApplication.playModeStateChanged += movieRecordingOps.OnPlayModeStateChanged;
 #else
             var allRecorderOps = new AllRecorderNotSupportedAdapter();
             var movieRecordingOps = new MovieRecordingNotSupportedAdapter();
