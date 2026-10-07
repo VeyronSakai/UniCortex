@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using UniCortex.Editor.Domains.Interfaces;
-using UniCortex.Editor.Domains.Models;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -19,8 +18,8 @@ namespace UniCortex.Editor.Infrastructures
     {
         // Names of the virtual devices. The devices are found by name, because the Input System keeps them over a
         // domain reload while this adapter is created again.
-        internal const string VirtualMouseName = "UniCortexMouse";
-        internal const string VirtualKeyboardName = "UniCortexKeyboard";
+        private const string VirtualMouseName = "UniCortexMouse";
+        private const string VirtualKeyboardName = "UniCortexKeyboard";
 
         // Track queued key/button state ourselves instead of calling InputSystem.Update()
         // between events. Forcing InputSystem.Update() from an HTTP handler would process
