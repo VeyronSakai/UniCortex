@@ -10,10 +10,10 @@ namespace UniCortex.Editor.UseCases
     internal sealed class PointerPositionResolver
     {
         private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IUiPointerTargetOperations _uiPointerTargetOperations;
+        private readonly IUIPointerTargetOperations _uiPointerTargetOperations;
 
         public PointerPositionResolver(IMainThreadDispatcher dispatcher,
-            IUiPointerTargetOperations uiPointerTargetOperations)
+            IUIPointerTargetOperations uiPointerTargetOperations)
         {
             _dispatcher = dispatcher;
             _uiPointerTargetOperations = uiPointerTargetOperations;

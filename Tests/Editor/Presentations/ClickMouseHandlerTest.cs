@@ -13,12 +13,12 @@ namespace UniCortex.Editor.Tests.Presentations
     [TestFixture]
     internal sealed class ClickMouseHandlerTest
     {
-        private static (RequestRouter router, SpyInputOperations ops, SpyUiPointerTargetOperations uiPointerTargetOps)
+        private static (RequestRouter router, SpyInputOperations ops, SpyUIPointerTargetOperations uiPointerTargetOps)
             CreateRouter()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var uiPointerTargetOps = new SpyUiPointerTargetOperations();
+            var uiPointerTargetOps = new SpyUIPointerTargetOperations();
             var resolver = new PointerPositionResolver(dispatcher, uiPointerTargetOps);
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
             var useCase = new ClickMouseUseCase(new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver,
@@ -107,7 +107,7 @@ namespace UniCortex.Editor.Tests.Presentations
                     releaseFrame = frame - 1;
                 }
             };
-            var resolver = new PointerPositionResolver(dispatcher, new SpyUiPointerTargetOperations());
+            var resolver = new PointerPositionResolver(dispatcher, new SpyUIPointerTargetOperations());
             var handler = new ClickMouseHandler(new ClickMouseUseCase(
                 new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver, ops, playerLoopDispatcher.Time));
             var router = new RequestRouter();

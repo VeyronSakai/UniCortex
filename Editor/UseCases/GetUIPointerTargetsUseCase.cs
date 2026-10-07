@@ -6,21 +6,21 @@ using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.UseCases
 {
-    internal sealed class GetUiPointerTargetsUseCase
+    internal sealed class GetUIPointerTargetsUseCase
     {
         private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IUiPointerTargetOperations _operations;
+        private readonly IUIPointerTargetOperations _operations;
 
-        public GetUiPointerTargetsUseCase(IMainThreadDispatcher dispatcher, IUiPointerTargetOperations operations)
+        public GetUIPointerTargetsUseCase(IMainThreadDispatcher dispatcher, IUIPointerTargetOperations operations)
         {
             _dispatcher = dispatcher;
             _operations = operations;
         }
 
-        public async Task<List<UiPointerTargetEntry>> ExecuteAsync(CancellationToken cancellationToken = default)
+        public async Task<List<UIPointerTargetEntry>> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             var task = await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.GetUiPointerTargetsAsync(cancellationToken), cancellationToken);
+                () => _operations.GetUIPointerTargetsAsync(cancellationToken), cancellationToken);
             return await task;
         }
     }

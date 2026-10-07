@@ -12,12 +12,12 @@ namespace UniCortex.Editor.Tests.Presentations
     [TestFixture]
     internal sealed class DragMouseHandlerTest
     {
-        private static (RequestRouter router, SpyInputOperations ops, SpyUiPointerTargetOperations uiPointerTargetOps)
+        private static (RequestRouter router, SpyInputOperations ops, SpyUIPointerTargetOperations uiPointerTargetOps)
             CreateRouter()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var uiPointerTargetOps = new SpyUiPointerTargetOperations();
+            var uiPointerTargetOps = new SpyUIPointerTargetOperations();
             var resolver = new PointerPositionResolver(dispatcher, uiPointerTargetOps);
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
             var useCase = new DragMouseUseCase(new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver,

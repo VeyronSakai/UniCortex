@@ -15,11 +15,11 @@ namespace UniCortex.Editor.Tests.UseCases
     internal sealed class ClickMouseUseCaseTest
     {
         private static ClickMouseUseCase CreateUseCase(FakePlayerLoopDispatcher playerLoopDispatcher,
-            SpyInputOperations ops, SpyUiPointerTargetOperations uiPointerTargetOps = null)
+            SpyInputOperations ops, SpyUIPointerTargetOperations uiPointerTargetOps = null)
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var resolver = new PointerPositionResolver(dispatcher,
-                uiPointerTargetOps ?? new SpyUiPointerTargetOperations());
+                uiPointerTargetOps ?? new SpyUIPointerTargetOperations());
             return new ClickMouseUseCase(new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver, ops,
                 playerLoopDispatcher.Time);
         }
@@ -105,7 +105,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Arrange
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
             var ops = new SpyInputOperations();
-            var uiPointerTargetOps = new SpyUiPointerTargetOperations { TargetCenterToReturn = (40f, 60f) };
+            var uiPointerTargetOps = new SpyUIPointerTargetOperations { TargetCenterToReturn = (40f, 60f) };
             var useCase = CreateUseCase(playerLoopDispatcher, ops, uiPointerTargetOps);
 
             // Act

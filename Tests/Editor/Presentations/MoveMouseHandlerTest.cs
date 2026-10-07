@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var resolver = new PointerPositionResolver(dispatcher, new SpyUiPointerTargetOperations());
+            var resolver = new PointerPositionResolver(dispatcher, new SpyUIPointerTargetOperations());
             var handler = new MoveMouseHandler(new MoveMouseUseCase(dispatcher, resolver, ops));
 
             var router = new RequestRouter();

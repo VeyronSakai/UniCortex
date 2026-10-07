@@ -14,7 +14,7 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
-            var uiPointerTargetOps = new SpyUiPointerTargetOperations();
+            var uiPointerTargetOps = new SpyUIPointerTargetOperations();
             var resolver = new PointerPositionResolver(dispatcher, uiPointerTargetOps);
 
             // Act
@@ -33,7 +33,7 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
-            var uiPointerTargetOps = new SpyUiPointerTargetOperations { TargetCenterToReturn = (320f, 180f) };
+            var uiPointerTargetOps = new SpyUIPointerTargetOperations { TargetCenterToReturn = (320f, 180f) };
             var resolver = new PointerPositionResolver(dispatcher, uiPointerTargetOps);
 
             // Act

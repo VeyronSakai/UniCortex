@@ -3,7 +3,7 @@ using System;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class GetUiPointerTargetsRequest
+    public class GetUIPointerTargetsRequest
     {
     }
 }

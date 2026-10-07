@@ -132,7 +132,7 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
          "Pass instanceId to click_mouse (or the other mouse tools) to press one. " +
          "Requires the uGUI package (com.unity.ugui) and an EventSystem in the scene."),
      UsedImplicitly]
-    public ValueTask<CallToolResult> GetUiPointerTargetsAsync(CancellationToken cancellationToken = default)
+    public ValueTask<CallToolResult> GetUIPointerTargetsAsync(CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            inputUseCase.GetUiPointerTargetsAsync, cancellationToken);
+            inputUseCase.GetUIPointerTargetsAsync, cancellationToken);
 }
