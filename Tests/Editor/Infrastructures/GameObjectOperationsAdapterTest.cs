@@ -14,10 +14,17 @@ namespace UniCortex.Editor.Tests.Infrastructures
         private GameObject _childA;
         private GameObject _childB;
         private GameObject _childC;
+        private int _undoGroup;
 
         [SetUp]
         public void SetUp()
         {
+            // Start a new Undo group so TearDown can revert everything the adapter records.
+            // Undo records left for objects in the Test Runner's temporary scene can trigger
+            // "Assertion failed on expression: 'targetScene != nullptr'" after that scene is closed.
+            Undo.IncrementCurrentGroup();
+            _undoGroup = Undo.GetCurrentGroup();
+
             _adapter = new GameObjectOperationsAdapter();
             _root = new GameObject("GameObjectOperationsAdapterTest");
             _childA = CreateChild("A", _root);
@@ -28,6 +35,7 @@ namespace UniCortex.Editor.Tests.Infrastructures
         [TearDown]
         public void TearDown()
         {
+            Undo.RevertAllDownToGroup(_undoGroup);
             UnityEngine.Object.DestroyImmediate(_root);
         }
 
