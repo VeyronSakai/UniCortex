@@ -77,7 +77,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public void ReleaseKeys(string[] keys)
         {
             if (ExceptionOnRelease != null)
+            {
                 throw ExceptionOnRelease;
+            }
 
             KeyEventHistory.Add(new KeyEventRecord(KeyAction.Release, keys, PhysicalKeyboardBlockCount > 0));
         }
@@ -90,7 +92,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public void ReleaseMouseButton(float x, float y, string button)
         {
             if (ExceptionOnRelease != null)
+            {
                 throw ExceptionOnRelease;
+            }
 
             MouseEventHistory.Add(
                 new MouseEventRecord(MouseAction.Release, x, y, button, PhysicalMouseBlockCount > 0));

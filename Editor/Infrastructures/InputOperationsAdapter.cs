@@ -74,7 +74,10 @@ namespace UniCortex.Editor.Infrastructures
         /// </summary>
         private static void ConfigureInputSettingsForSimulation()
         {
-            if (!EditorApplication.isPlaying) return;
+            if (!EditorApplication.isPlaying)
+            {
+                return;
+            }
 
             var settings = InputSystem.settings;
 
@@ -367,7 +370,10 @@ namespace UniCortex.Editor.Infrastructures
         {
             var state = new MouseState { position = new Vector2(x, y) };
             foreach (var btn in _pressedMouseButtons)
+            {
                 state = state.WithButton(ToInputMouseButton(btn));
+            }
+
             return state;
         }
 
@@ -379,18 +385,30 @@ namespace UniCortex.Editor.Infrastructures
         {
             var state = new KeyboardState();
             foreach (var key in _pressedKeys)
+            {
                 state.Set(key, true);
+            }
+
             foreach (var key in targetKeys)
+            {
                 state.Set(key, targetPressed);
+            }
+
             return state;
         }
 
         private static InputMouseButton ToInputMouseButton(string button)
         {
             if (string.Equals(button, MouseButtonConst.Right, StringComparison.OrdinalIgnoreCase))
+            {
                 return InputMouseButton.Right;
+            }
+
             if (string.Equals(button, MouseButtonConst.Middle, StringComparison.OrdinalIgnoreCase))
+            {
                 return InputMouseButton.Middle;
+            }
+
             return InputMouseButton.Left;
         }
     }
