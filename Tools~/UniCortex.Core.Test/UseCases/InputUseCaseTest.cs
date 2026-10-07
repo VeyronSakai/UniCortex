@@ -389,6 +389,38 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
+    public async ValueTask ClickMouse_InPlayMode_ClicksUIButton_AfterEventSystemIsRecreatedWithMouseAtSamePosition()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            var targets = await GetUiPointerTargetsAsync();
+            var testButton = targets.Single(t => t.path == "Canvas/TestButton");
+            // Leave the mouse at the button's center, then recreate the EventSystem as a scene load would.
+            await _fixture.InputUseCase.ClickMouseAsync(null, null, testButton.instanceId,
+                MouseButton.Left, null, CancellationToken.None);
+            await RecreateEventSystemAsync();
+            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
+
+            // Act
+            await _fixture.InputUseCase.ClickMouseAsync(null, null, testButton.instanceId,
+                MouseButton.Left, null, CancellationToken.None);
+            await Task.Delay(500);
+
+            // Assert
+            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
+                cancellationToken: CancellationToken.None);
+            Assert.That(logs, Does.Contain("[ButtonClickDebug] Button clicked: TestButton"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
     public async ValueTask ClickMouse_ReturnsError_WhenInstanceIdNotFound()
     {
         // Arrange
@@ -537,6 +569,24 @@ public class InputUseCaseTest
     {
         var json = await _fixture.InputUseCase.GetUiPointerTargetsAsync(CancellationToken.None);
         return JsonSerializer.Deserialize<GetUiPointerTargetsResponse>(json, s_jsonOptions)!.targets;
+    }
+
+    // Replaces the EventSystem with a copy, so that a new InputSystemUIInputModule handles the pointer.
+    // The copy is enabled while the original is still enabled, as with an additively loaded scene. The UI actions
+    // are then already enabled, so the copy does not get the current pointer position from their initial state
+    // check.
+    private async ValueTask RecreateEventSystemAsync()
+    {
+        var findJson = await _fixture.GameObjectUseCase.FindAsync("t:EventSystem", CancellationToken.None);
+        var original = JsonSerializer.Deserialize<FindGameObjectsResponse>(findJson, s_jsonOptions)!.gameObjects
+            .Single(g => g.name == "EventSystem");
+
+        await _fixture.GameObjectUseCase.DuplicateAsync(original.instanceId, "EventSystem (New)",
+            CancellationToken.None);
+        await _fixture.GameObjectUseCase.DeleteAsync(original.instanceId, CancellationToken.None);
+
+        // Wait for EventSystem.current to switch to the copy.
+        await Task.Delay(200);
     }
 
     private async ValueTask CreateOverlayAsync(string name)

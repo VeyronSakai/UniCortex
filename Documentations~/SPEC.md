@@ -32,7 +32,6 @@ UniCortex/
 │   │   └── Models/              ← DTOs and route constants (shared with Core)
 │   ├── Handlers/                ← HTTP request handlers
 │   ├── Infrastructures/         ← HttpListener, MainThreadDispatcher, etc.
-│   ├── Testing/                 ← Public API for Play Mode tests (UiPointerTargets, PointerInput)
 │   └── UseCases/                ← Business logic
 ├── Tools~/
 │   ├── UniCortex.sln            ← Solution file
@@ -47,11 +46,10 @@ UniCortex/
 │   ├── UniCortex.Cli/           ← CLI tool
 │   │   └── Commands/            ← CLI command definitions
 ├── Tests~/
-│   ├── Editor/
-│   │   ├── TestDoubles/         ← Fakes, spies, and other test doubles
-│   │   ├── UseCases/            ← UseCase unit tests
-│   │   └── Presentations/       ← Handler unit tests
-│   └── Runtime/                 ← Play Mode tests
+│   └── Editor/
+│       ├── TestDoubles/         ← Fakes, spies, and other test doubles
+│       ├── UseCases/            ← UseCase unit tests
+│       └── Presentations/       ← Handler unit tests
 └── Documentations~/
     └── SPEC.md                  ← This document
 ```
@@ -1017,17 +1015,6 @@ Response:
 
 - `path`: Hierarchy path (names from the scene root joined with `/`)
 - `rect`: bounding box in Game View coordinates (same as `x` / `y` of the mouse endpoints), computed with `RectTransformUtility.WorldToScreenPoint` and the event camera of the root Canvas's raycaster
-
-#### Public API for Play Mode tests (`UniCortex.Editor.Testing`)
-The lookup of `GET /input/ui-pointer-targets` and the click of `POST /input/mouse/click` are also exposed as a public C# API (`Editor/Testing/`), so that projects can press UI from their own Play Mode tests (e.g. a monkey test) with the same rules as the MCP tools. A Play Mode test assembly can reference `UniCortex.Editor` and still run as Play Mode in the Editor (the test mode is decided by the test assembly's own platforms), but cannot run in a player build.
-
-- `UiPointerTargets.Find()`: returns `IReadOnlyList<UiPointerTarget>` (`GameObject`, `Path`, `ScreenRect` as `UnityEngine.Rect` in Game View coordinates). Same rules and order as `GET /input/ui-pointer-targets`
-- `UiPointerTargets.GetCenter(GameObject)`: the center in Game View coordinates, the position the mouse endpoints use for an `instanceId`. Throws `ArgumentException` for an object that is not a `RectTransform` under a `Canvas`
-- `PointerInput.Click(GameObject)` / `PointerInput.Click(Vector2)`: returns an `IEnumerator` that presses the left button, releases it in the next frame, and waits one more frame, like `POST /input/mouse/click` with `holdDuration` `0`. It completes after the game has processed the release. An `IEnumerator` can be used both from a `[UnityTest]` coroutine and from async code (e.g. wrapped by UniTask) without adding a dependency
-
-The lookup is implemented once in `UguiPointerTargetFinder` and used by both `UiPointerTargetOperationsAdapter` and `UiPointerTargets`. The input goes through the same `IInputOperations` instance as the MCP handlers (`SharedInputOperations`), so they track the same pressed state and apply the same Input System settings (input goes to the game even when the Game View is not focused). Unity restores the settings when Play Mode exits.
-
-These are synchronous and must be called from the player loop (a `[UnityTest]` coroutine runs there), because `Screen.width` / `Screen.height` are wrong from `EditorApplication.update` (see above). Without the uGUI / Input System package they throw `NotSupportedException`.
 
 ### Timeline
 

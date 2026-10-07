@@ -299,7 +299,12 @@ namespace UniCortex.Editor
             var stopMovieRecordingUseCase = new StopMovieRecordingUseCase(dispatcher, movieRecordingOps);
             var stopMovieRecorderHandler = new StopMovieRecorderHandler(stopMovieRecordingUseCase);
 
-            var inputSimOps = SharedInputOperations.Instance;
+#if UNICORTEX_INPUT_SYSTEM
+            var inputSimOps = new InputOperationsAdapter();
+            EditorApplication.playModeStateChanged += inputSimOps.OnPlayModeStateChanged;
+#else
+            var inputSimOps = new InputNotSupportedAdapter();
+#endif
 
 #if UNICORTEX_UGUI
             var uiPointerTargetOps = new UiPointerTargetOperationsAdapter(playerLoopDispatcher);
@@ -326,8 +331,8 @@ namespace UniCortex.Editor
                 time);
             var dragMouseHandler = new DragMouseHandler(dragMouseUseCase);
 
-            var getPointerTargetsUseCase = new GetUiPointerTargetsUseCase(dispatcher, uiPointerTargetOps);
-            var getPointerTargetsHandler = new GetUiPointerTargetsHandler(getPointerTargetsUseCase);
+            var getUiPointerTargetsUseCase = new GetUiPointerTargetsUseCase(dispatcher, uiPointerTargetOps);
+            var getUiPointerTargetsHandler = new GetUiPointerTargetsHandler(getUiPointerTargetsUseCase);
 
             var timelineOps = new TimelineOperationsAdapter();
 
@@ -438,7 +443,7 @@ namespace UniCortex.Editor
             clickMouseHandler.Register(router);
             moveMouseHandler.Register(router);
             dragMouseHandler.Register(router);
-            getPointerTargetsHandler.Register(router);
+            getUiPointerTargetsHandler.Register(router);
             createTimelineHandler.Register(router);
             addTimelineTrackHandler.Register(router);
             removeTimelineTrackHandler.Register(router);

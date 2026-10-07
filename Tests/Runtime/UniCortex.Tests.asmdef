@@ -4,9 +4,7 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "UniCortex.Editor",
-        "Unity.InputSystem",
-        "UnityEngine.UI"
+        "UniCortex.Editor"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -19,17 +17,6 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": [
-        {
-            "name": "com.unity.inputsystem",
-            "expression": "1.0.0",
-            "define": "UNICORTEX_INPUT_SYSTEM"
-        },
-        {
-            "name": "com.unity.ugui",
-            "expression": "1.0.0",
-            "define": "UNICORTEX_UGUI"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }

@@ -204,11 +204,12 @@ namespace UniCortex.Editor.Infrastructures
                 InputSystem.QueueStateEvent(mouse, resetState);
             }
 
-            // UI input modules learn the pointer position only from changes of the position control (the
-            // "Point" action). An InputSystemUIInputModule created after the last mouse event (e.g. after a
-            // scene load) therefore never sees the position when the mouse is pressed where it already is, and
-            // the press hits nothing. Moving away and back within the same update guarantees a position change;
-            // both events are processed before the UI module runs, so it only sees the final position.
+            // UI input modules learn the pointer position from changes of the position control (the "Point"
+            // action). An InputSystemUIInputModule enabled while its actions are already enabled by another one
+            // (e.g. an EventSystem in an additively loaded scene) does not get the current position from the
+            // initial state check either, so a press where the mouse already is hits nothing. Moving away and
+            // back within the same update guarantees a position change; both events are processed before the UI
+            // module runs, so it only sees the final position.
             if (targetPressed)
             {
                 // Keep the button released here so that the press still happens at (x, y).
