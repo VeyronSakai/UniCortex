@@ -212,8 +212,10 @@ namespace UniCortex.Editor.Infrastructures
             // module runs, so it only sees the final position.
             if (targetPressed)
             {
+                // Nudge toward the inside of the screen: x - 1 is on the screen unless x is at the left edge.
+                var nudgeX = x >= 1f ? x - 1f : x + 1f;
                 // Keep the button released here so that the press still happens at (x, y).
-                var nudgeState = BuildMouseState(x + 1f, y).WithButton(buttonEnum, false);
+                var nudgeState = BuildMouseState(nudgeX, y).WithButton(buttonEnum, false);
                 InputSystem.QueueStateEvent(mouse, nudgeState);
             }
 
