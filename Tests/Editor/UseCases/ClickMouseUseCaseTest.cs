@@ -137,5 +137,43 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(0, playerLoopDispatcher.FrameCount);
             CollectionAssert.IsEmpty(ops.MouseEventHistory);
         }
+
+        [Test]
+        public void ExecuteAsync_BlocksPhysicalMouse_UntilReleaseIsProcessed()
+        {
+            // Arrange
+            var playerLoopDispatcher = new FakePlayerLoopDispatcher();
+            var ops = new SpyInputOperations();
+            var useCase = CreateUseCase(playerLoopDispatcher, ops);
+            var blockedInLastFrame = false;
+
+            // Act
+            playerLoopDispatcher.OnFrame = _ => blockedInLastFrame = ops.PhysicalMouseBlockCount > 0;
+            useCase.ExecuteAsync(new PointerPosition.Coordinates(0f, 0f), MouseButton.Left, 0f,
+                CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(2, ops.MouseEventHistory.Count);
+            Assert.IsTrue(ops.MouseEventHistory.All(record => record.PhysicalMouseBlocked));
+            Assert.IsTrue(blockedInLastFrame);
+            Assert.AreEqual(0, ops.PhysicalMouseBlockCount);
+        }
+
+        [Test]
+        public void ExecuteAsync_UnblocksPhysicalMouse_WhenReleaseFails()
+        {
+            // Arrange
+            var playerLoopDispatcher = new FakePlayerLoopDispatcher();
+            var ops = new SpyInputOperations { ExceptionOnRelease = new InvalidOperationException("failed") };
+            var useCase = CreateUseCase(playerLoopDispatcher, ops);
+
+            // Act
+            Assert.Throws<InvalidOperationException>(() => useCase.ExecuteAsync(
+                new PointerPosition.Coordinates(0f, 0f), MouseButton.Left, 0f, CancellationToken.None)
+                .GetAwaiter().GetResult());
+
+            // Assert
+            Assert.AreEqual(0, ops.PhysicalMouseBlockCount);
+        }
     }
 }

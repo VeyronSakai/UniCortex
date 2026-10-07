@@ -1,8 +1,8 @@
 #if UNICORTEX_INPUT_SYSTEM
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UniCortex.Editor.Domains.Interfaces;
-using UniCortex.Editor.Domains.Models;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,8 +12,15 @@ using MouseButtonConst = UniCortex.Editor.Domains.Models.MouseButton;
 
 namespace UniCortex.Editor.Infrastructures
 {
+    // Sends the simulated input to virtual devices instead of the physical ones, so that events from the physical
+    // devices do not overwrite the simulated state (see BlockPhysicalMouse / BlockPhysicalKeyboard).
     internal sealed class InputOperationsAdapter : IInputOperations
     {
+        // Names of the virtual devices. The devices are found by name, because the Input System keeps them over a
+        // domain reload while this adapter is created again.
+        private const string VirtualMouseName = "UniCortexMouse";
+        private const string VirtualKeyboardName = "UniCortexKeyboard";
+
         // Track queued key/button state ourselves instead of calling InputSystem.Update()
         // between events. Forcing InputSystem.Update() from an HTTP handler would process
         // all pending events outside the normal player loop, causing input to be consumed
@@ -21,6 +28,16 @@ namespace UniCortex.Editor.Infrastructures
         // wasPressedThisFrame / wasReleasedThisFrame in MonoBehaviour.Update().
         private readonly HashSet<Key> _pressedKeys = new();
         private readonly HashSet<string> _pressedMouseButtons = new(StringComparer.OrdinalIgnoreCase);
+
+        // Number of operations blocking the physical devices. Changed from any thread with Interlocked.
+        // Not kept over a domain reload, so the physical devices cannot stay blocked after one.
+        private int _physicalKeyboardBlockCount;
+        private int _physicalMouseBlockCount;
+
+        public InputOperationsAdapter()
+        {
+            InputSystem.onEvent += OnInputEvent;
+        }
 
         // Registered to EditorApplication.playModeStateChanged by EntryPoint.
         internal void OnPlayModeStateChanged(PlayModeStateChange state)
@@ -31,6 +48,8 @@ namespace UniCortex.Editor.Infrastructures
                     // Unity resets device state on exit, so clear our tracking to match.
                     _pressedKeys.Clear();
                     _pressedMouseButtons.Clear();
+                    RemoveVirtualDevice<Keyboard>(VirtualKeyboardName);
+                    RemoveVirtualDevice<Mouse>(VirtualMouseName);
                     break;
 
                 case PlayModeStateChange.EnteredPlayMode:
@@ -55,7 +74,10 @@ namespace UniCortex.Editor.Infrastructures
         /// </summary>
         private static void ConfigureInputSettingsForSimulation()
         {
-            if (!EditorApplication.isPlaying) return;
+            if (!EditorApplication.isPlaying)
+            {
+                return;
+            }
 
             var settings = InputSystem.settings;
 
@@ -117,11 +139,7 @@ namespace UniCortex.Editor.Infrastructures
 
             EnsureInputSettingsConfigured();
 
-            var keyboard = Keyboard.current;
-            if (keyboard == null)
-            {
-                throw new InvalidOperationException("No Keyboard device is available.");
-            }
+            var keyboard = GetOrAddVirtualDevice<Keyboard>(VirtualKeyboardName);
 
             // Parse all the keys first, so that nothing is sent when one of them is invalid.
             var keyEnums = new List<Key>(keys.Length);
@@ -243,25 +261,122 @@ namespace UniCortex.Editor.Infrastructures
 
             EnsureInputSettingsConfigured();
 
-            var mouse = Mouse.current;
-            if (mouse == null)
+            return GetOrAddVirtualDevice<Mouse>(VirtualMouseName);
+        }
+
+        public void BlockPhysicalKeyboard()
+        {
+            Interlocked.Increment(ref _physicalKeyboardBlockCount);
+        }
+
+        public void UnblockPhysicalKeyboard()
+        {
+            Interlocked.Decrement(ref _physicalKeyboardBlockCount);
+        }
+
+        public void BlockPhysicalMouse()
+        {
+            Interlocked.Increment(ref _physicalMouseBlockCount);
+        }
+
+        public void UnblockPhysicalMouse()
+        {
+            Interlocked.Decrement(ref _physicalMouseBlockCount);
+        }
+
+        // Drops the events of the physical devices while they are blocked.
+        //
+        // The Input System calls InputSystem.onEvent listeners for each event before it applies the event to the
+        // device. When a listener marks the event as handled, the Input System skips the event: the state of the
+        // device (e.g. the position and the buttons of the mouse) is not changed, so actions and uGUI never see it.
+        // Without this, an event of the physical mouse such as "at (-799, 252), no button pressed" would move the
+        // simulated pointer and release the simulated button.
+        //
+        // The physical devices are not disabled with InputSystem.DisableDevice, because a disabled device would
+        // stay disabled when a domain reload happens before it is enabled again.
+        private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
+        {
+            // Devices added by code (our virtual devices, and those of the game such as VirtualMouseInput) are
+            // not native.
+            if (device == null || !device.native)
             {
-                throw new InvalidOperationException("No Mouse device is available.");
+                return;
             }
 
-            return mouse;
+            // Marking the event as handled makes the Input System skip it (see above).
+            // Pen and Touchscreen are dropped too: uGUI treats them as the same pointer as the mouse by default
+            // (UIPointerBehavior.SingleMouseOrPenButMultiTouchAndTrack).
+            if (device is Pointer && Volatile.Read(ref _physicalMouseBlockCount) > 0
+                && IsStateEvent(eventPtr))
+            {
+                eventPtr.handled = true;
+            }
+
+            // Text input is dropped too, so that typing on the physical keyboard does not enter text in the game.
+            if (device is Keyboard && Volatile.Read(ref _physicalKeyboardBlockCount) > 0
+                && (IsStateEvent(eventPtr) || eventPtr.IsA<TextEvent>()))
+            {
+                eventPtr.handled = true;
+            }
+        }
+
+        // Whether the event writes to the state of the device, which is what overwrites the simulated state.
+        // The state of a device is a block of memory with a fixed layout (e.g. MouseState: position at bytes 0-7,
+        // buttons at bytes 24-25, ...).
+        // - StateEvent: writes the whole block (e.g. the position and all the buttons of a mouse)
+        // - DeltaStateEvent: writes only a range of the block, given by an offset and the bytes to write
+        //   (e.g. only the position). Both have to be dropped, since either can overwrite the simulated state.
+        // Other events are not about the state (e.g. DeviceRemoveEvent when a device is unplugged, or
+        // DeviceConfigurationEvent when the keyboard layout changes). They are not dropped, because the Input
+        // System would otherwise miss changes of the devices themselves.
+        private static bool IsStateEvent(InputEventPtr eventPtr)
+        {
+            return eventPtr.IsA<StateEvent>() || eventPtr.IsA<DeltaStateEvent>();
+        }
+
+        // Returns the virtual device, adding it when it does not exist yet, and makes it current so that code
+        // reading Mouse.current / Keyboard.current sees the simulated state.
+        private static TDevice GetOrAddVirtualDevice<TDevice>(string name) where TDevice : InputDevice
+        {
+            var device = FindVirtualDevice<TDevice>(name) ?? InputSystem.AddDevice<TDevice>(name);
+            device.MakeCurrent();
+            return device;
+        }
+
+        private static void RemoveVirtualDevice<TDevice>(string name) where TDevice : InputDevice
+        {
+            var device = FindVirtualDevice<TDevice>(name);
+            if (device != null)
+            {
+                InputSystem.RemoveDevice(device);
+            }
+        }
+
+        private static TDevice FindVirtualDevice<TDevice>(string name) where TDevice : InputDevice
+        {
+            foreach (var device in InputSystem.devices)
+            {
+                if (device is TDevice typed && !device.native && device.name == name)
+                {
+                    return typed;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Builds a MouseState from scratch with the given position and all tracked
-        /// button states. Because the state is constructed rather than copied from the
-        /// physical device, no physical mouse state can leak into simulated events.
+        /// button states.
         /// </summary>
         private MouseState BuildMouseState(float x, float y)
         {
             var state = new MouseState { position = new Vector2(x, y) };
             foreach (var btn in _pressedMouseButtons)
+            {
                 state = state.WithButton(ToInputMouseButton(btn));
+            }
+
             return state;
         }
 
@@ -273,18 +388,30 @@ namespace UniCortex.Editor.Infrastructures
         {
             var state = new KeyboardState();
             foreach (var key in _pressedKeys)
+            {
                 state.Set(key, true);
+            }
+
             foreach (var key in targetKeys)
+            {
                 state.Set(key, targetPressed);
+            }
+
             return state;
         }
 
         private static InputMouseButton ToInputMouseButton(string button)
         {
             if (string.Equals(button, MouseButtonConst.Right, StringComparison.OrdinalIgnoreCase))
+            {
                 return InputMouseButton.Right;
+            }
+
             if (string.Equals(button, MouseButtonConst.Middle, StringComparison.OrdinalIgnoreCase))
+            {
                 return InputMouseButton.Middle;
+            }
+
             return InputMouseButton.Left;
         }
     }

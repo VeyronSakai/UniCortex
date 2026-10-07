@@ -136,5 +136,41 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(0, playerLoopDispatcher.FrameCount);
             CollectionAssert.IsEmpty(ops.KeyEventHistory);
         }
+
+        [Test]
+        public void ExecuteAsync_BlocksPhysicalKeyboard_UntilReleaseIsProcessed()
+        {
+            // Arrange
+            var playerLoopDispatcher = new FakePlayerLoopDispatcher();
+            var ops = new SpyInputOperations();
+            var useCase = CreateUseCase(playerLoopDispatcher, ops);
+            var blockedInLastFrame = false;
+
+            // Act
+            playerLoopDispatcher.OnFrame = _ => blockedInLastFrame = ops.PhysicalKeyboardBlockCount > 0;
+            useCase.ExecuteAsync(new[] { KeyName.A }, 0f, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(2, ops.KeyEventHistory.Count);
+            Assert.IsTrue(ops.KeyEventHistory.All(record => record.PhysicalKeyboardBlocked));
+            Assert.IsTrue(blockedInLastFrame);
+            Assert.AreEqual(0, ops.PhysicalKeyboardBlockCount);
+        }
+
+        [Test]
+        public void ExecuteAsync_UnblocksPhysicalKeyboard_WhenReleaseFails()
+        {
+            // Arrange
+            var playerLoopDispatcher = new FakePlayerLoopDispatcher();
+            var ops = new SpyInputOperations { ExceptionOnRelease = new InvalidOperationException("failed") };
+            var useCase = CreateUseCase(playerLoopDispatcher, ops);
+
+            // Act
+            Assert.Throws<InvalidOperationException>(() => useCase.ExecuteAsync(
+                new[] { KeyName.A }, 0f, CancellationToken.None).GetAwaiter().GetResult());
+
+            // Assert
+            Assert.AreEqual(0, ops.PhysicalKeyboardBlockCount);
+        }
     }
 }
