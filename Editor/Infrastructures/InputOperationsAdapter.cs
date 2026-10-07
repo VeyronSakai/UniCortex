@@ -281,9 +281,16 @@ namespace UniCortex.Editor.Infrastructures
             Interlocked.Decrement(ref _physicalMouseBlockCount);
         }
 
-        // Drops the state events of the physical devices while they are blocked. The physical devices are not
-        // disabled with InputSystem.DisableDevice, because a disabled device would stay disabled when a domain
-        // reload happens before it is enabled again.
+        // Drops the events of the physical devices while they are blocked.
+        //
+        // The Input System calls InputSystem.onEvent listeners for each event before it applies the event to the
+        // device. When a listener marks the event as handled, the Input System skips the event: the state of the
+        // device (e.g. the position and the buttons of the mouse) is not changed, so actions and uGUI never see it.
+        // Without this, an event of the physical mouse such as "at (-799, 252), no button pressed" would move the
+        // simulated pointer and release the simulated button.
+        //
+        // The physical devices are not disabled with InputSystem.DisableDevice, because a disabled device would
+        // stay disabled when a domain reload happens before it is enabled again.
         private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
         {
             // Devices added by code (our virtual devices, and those of the game such as VirtualMouseInput) are
@@ -293,18 +300,32 @@ namespace UniCortex.Editor.Infrastructures
                 return;
             }
 
-            if (!eventPtr.IsA<StateEvent>() && !eventPtr.IsA<DeltaStateEvent>())
-            {
-                return;
-            }
-
+            // Marking the event as handled makes the Input System skip it (see above).
             // Pen and Touchscreen are dropped too: uGUI treats them as the same pointer as the mouse by default
             // (UIPointerBehavior.SingleMouseOrPenButMultiTouchAndTrack).
             if (device is Pointer && Volatile.Read(ref _physicalMouseBlockCount) > 0
-                || device is Keyboard && Volatile.Read(ref _physicalKeyboardBlockCount) > 0)
+                && IsStateEvent(eventPtr))
             {
                 eventPtr.handled = true;
             }
+
+            // Text input is dropped too, so that typing on the physical keyboard does not enter text in the game.
+            if (device is Keyboard && Volatile.Read(ref _physicalKeyboardBlockCount) > 0
+                && (IsStateEvent(eventPtr) || eventPtr.IsA<TextEvent>()))
+            {
+                eventPtr.handled = true;
+            }
+        }
+
+        // Whether the event changes the state of the device, which is what overwrites the simulated state:
+        // - StateEvent: the whole state of the device (e.g. the position and all the buttons of a mouse)
+        // - DeltaStateEvent: a part of the state (e.g. only the position)
+        // Other events are not about the state (e.g. DeviceRemoveEvent when a device is unplugged, or
+        // DeviceConfigurationEvent when the keyboard layout changes). They are not dropped, because the Input
+        // System would otherwise miss changes of the devices themselves.
+        private static bool IsStateEvent(InputEventPtr eventPtr)
+        {
+            return eventPtr.IsA<StateEvent>() || eventPtr.IsA<DeltaStateEvent>();
         }
 
         // Returns the virtual device, adding it when it does not exist yet, and makes it current so that code
