@@ -16,6 +16,20 @@ namespace UniCortex.Editor.Infrastructures
 
         public void MoveMouse(float x, float y) => throw CreateException();
 
+        public void BlockPhysicalKeyboard() => throw CreateException();
+
+        // Does nothing so that it can be called after a failed operation.
+        public void UnblockPhysicalKeyboard()
+        {
+        }
+
+        public void BlockPhysicalMouse() => throw CreateException();
+
+        // Does nothing so that it can be called after a failed operation.
+        public void UnblockPhysicalMouse()
+        {
+        }
+
         private static NotSupportedException CreateException()
         {
             return new NotSupportedException(

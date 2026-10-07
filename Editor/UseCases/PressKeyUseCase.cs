@@ -35,17 +35,26 @@ namespace UniCortex.Editor.UseCases
                 throw new ArgumentException("holdDuration must be 0 or greater.");
             }
 
-            // Each step runs in a later frame than the previous one.
-            var pressedAt = await _runner.RunAsync(() => Press(keys), cancellationToken);
-
-            var released = false;
-            while (!released)
+            // Keep the physical keyboard from changing the keys until the release has been processed.
+            _operations.BlockPhysicalKeyboard();
+            try
             {
-                released = await _runner.RunAsync(
-                    () => ReleaseIfHeld(keys, pressedAt, holdDuration), cancellationToken);
-            }
+                // Each step runs in a later frame than the previous one.
+                var pressedAt = await _runner.RunAsync(() => Press(keys), cancellationToken);
 
-            await _runner.WaitForInputProcessedAsync(cancellationToken);
+                var released = false;
+                while (!released)
+                {
+                    released = await _runner.RunAsync(
+                        () => ReleaseIfHeld(keys, pressedAt, holdDuration), cancellationToken);
+                }
+
+                await _runner.WaitForInputProcessedAsync(cancellationToken);
+            }
+            finally
+            {
+                _operations.UnblockPhysicalKeyboard();
+            }
         }
 
         // Presses the keys and returns the time of the frame.

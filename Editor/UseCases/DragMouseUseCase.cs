@@ -38,19 +38,29 @@ namespace UniCortex.Editor.UseCases
             var (fromX, fromY) = await _resolver.ResolveAsync(start, cancellationToken);
             var (toX, toY) = await _resolver.ResolveAsync(end, cancellationToken);
 
-            // Each step runs in a later frame than the previous one.
-            var pressedAt = await _runner.RunAsync(() => Press(fromX, fromY, button), cancellationToken);
-
-            var reachedEnd = false;
-            while (!reachedEnd)
+            // Keep the physical mouse from moving the pointer until the release has been processed.
+            _operations.BlockPhysicalMouse();
+            try
             {
-                reachedEnd = await _runner.RunAsync(
-                    () => MoveTowardEnd(fromX, fromY, toX, toY, pressedAt, duration), cancellationToken);
+                // Each step runs in a later frame than the previous one.
+                var pressedAt = await _runner.RunAsync(() => Press(fromX, fromY, button), cancellationToken);
+
+                var reachedEnd = false;
+                while (!reachedEnd)
+                {
+                    reachedEnd = await _runner.RunAsync(
+                        () => MoveTowardEnd(fromX, fromY, toX, toY, pressedAt, duration), cancellationToken);
+                }
+
+                await _runner.RunAsync(() => _operations.ReleaseMouseButton(toX, toY, button),
+                    cancellationToken);
+
+                await _runner.WaitForInputProcessedAsync(cancellationToken);
             }
-
-            await _runner.RunAsync(() => _operations.ReleaseMouseButton(toX, toY, button), cancellationToken);
-
-            await _runner.WaitForInputProcessedAsync(cancellationToken);
+            finally
+            {
+                _operations.UnblockPhysicalMouse();
+            }
 
             return new DragMouseResponse(true, fromX, fromY, toX, toY);
         }

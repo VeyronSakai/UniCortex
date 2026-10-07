@@ -34,17 +34,26 @@ namespace UniCortex.Editor.UseCases
 
             var (x, y) = await _resolver.ResolveAsync(position, cancellationToken);
 
-            // Each step runs in a later frame than the previous one.
-            var pressedAt = await _runner.RunAsync(() => Press(x, y, button), cancellationToken);
-
-            var released = false;
-            while (!released)
+            // Keep the physical mouse from moving the pointer until the release has been processed.
+            _operations.BlockPhysicalMouse();
+            try
             {
-                released = await _runner.RunAsync(
-                    () => ReleaseIfHeld(x, y, button, pressedAt, holdDuration), cancellationToken);
-            }
+                // Each step runs in a later frame than the previous one.
+                var pressedAt = await _runner.RunAsync(() => Press(x, y, button), cancellationToken);
 
-            await _runner.WaitForInputProcessedAsync(cancellationToken);
+                var released = false;
+                while (!released)
+                {
+                    released = await _runner.RunAsync(
+                        () => ReleaseIfHeld(x, y, button, pressedAt, holdDuration), cancellationToken);
+                }
+
+                await _runner.WaitForInputProcessedAsync(cancellationToken);
+            }
+            finally
+            {
+                _operations.UnblockPhysicalMouse();
+            }
 
             return new MouseResponse(true, x, y);
         }
