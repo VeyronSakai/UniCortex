@@ -15,11 +15,11 @@ namespace UniCortex.Editor.Tests.UseCases
     internal sealed class DragMouseUseCaseTest
     {
         private static DragMouseUseCase CreateUseCase(FakePlayerLoopDispatcher playerLoopDispatcher,
-            SpyInputOperations ops, SpyPointerTargetOperations pointerTargetOps = null)
+            SpyInputOperations ops, SpyUIPointerTargetOperations uiPointerTargetOps = null)
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var resolver = new PointerPositionResolver(dispatcher,
-                pointerTargetOps ?? new SpyPointerTargetOperations());
+                uiPointerTargetOps ?? new SpyUIPointerTargetOperations());
             return new DragMouseUseCase(new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver, ops,
                 playerLoopDispatcher.Time);
         }
@@ -111,17 +111,17 @@ namespace UniCortex.Editor.Tests.UseCases
             // Arrange
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
             var ops = new SpyInputOperations();
-            var pointerTargetOps = new SpyPointerTargetOperations();
-            pointerTargetOps.TargetCentersToReturn[111] = (10f, 20f);
-            pointerTargetOps.TargetCentersToReturn[222] = (110f, 220f);
-            var useCase = CreateUseCase(playerLoopDispatcher, ops, pointerTargetOps);
+            var uiPointerTargetOps = new SpyUIPointerTargetOperations();
+            uiPointerTargetOps.TargetCentersToReturn[111] = (10f, 20f);
+            uiPointerTargetOps.TargetCentersToReturn[222] = (110f, 220f);
+            var useCase = CreateUseCase(playerLoopDispatcher, ops, uiPointerTargetOps);
 
             // Act
             var response = useCase.ExecuteAsync(new PointerPosition.Target(111), new PointerPosition.Target(222),
                 MouseButton.Left, 0.5f, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.AreEqual(2, pointerTargetOps.GetTargetCenterCallCount);
+            Assert.AreEqual(2, uiPointerTargetOps.GetTargetCenterCallCount);
             Assert.AreEqual(4, ops.MouseEventHistory.Count);
             AssertEvent(ops.MouseEventHistory[0], MouseAction.Press, 10f, 20f);
             AssertEvent(ops.MouseEventHistory[1], MouseAction.Move, 60f, 120f);

@@ -12,13 +12,13 @@ namespace UniCortex.Editor.Tests.Presentations
     [TestFixture]
     internal sealed class DragMouseHandlerTest
     {
-        private static (RequestRouter router, SpyInputOperations ops, SpyPointerTargetOperations pointerTargetOps)
+        private static (RequestRouter router, SpyInputOperations ops, SpyUIPointerTargetOperations uiPointerTargetOps)
             CreateRouter()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var pointerTargetOps = new SpyPointerTargetOperations();
-            var resolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
+            var uiPointerTargetOps = new SpyUIPointerTargetOperations();
+            var resolver = new PointerPositionResolver(dispatcher, uiPointerTargetOps);
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
             var useCase = new DragMouseUseCase(new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver,
                 ops, playerLoopDispatcher.Time);
@@ -26,7 +26,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             var router = new RequestRouter();
             handler.Register(router);
-            return (router, ops, pointerTargetOps);
+            return (router, ops, uiPointerTargetOps);
         }
 
         private static FakeRequestContext CreateContext(string body)
@@ -88,9 +88,9 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns200_WithTargets()
         {
             // Arrange
-            var (router, ops, pointerTargetOps) = CreateRouter();
-            pointerTargetOps.TargetCentersToReturn[111] = (10f, 20f);
-            pointerTargetOps.TargetCentersToReturn[222] = (30f, 40f);
+            var (router, ops, uiPointerTargetOps) = CreateRouter();
+            uiPointerTargetOps.TargetCentersToReturn[111] = (10f, 20f);
+            uiPointerTargetOps.TargetCentersToReturn[222] = (30f, 40f);
             var context = CreateContext("{\"fromInstanceId\":111,\"toInstanceId\":222,\"duration\":0.5}");
 
             // Act
@@ -98,7 +98,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual(2, pointerTargetOps.GetTargetCenterCallCount);
+            Assert.AreEqual(2, uiPointerTargetOps.GetTargetCenterCallCount);
             Assert.AreEqual(10f, ops.MouseEventHistory[0].X);
             Assert.AreEqual(20f, ops.MouseEventHistory[0].Y);
             Assert.AreEqual(30f, ops.MouseEventHistory[^1].X);

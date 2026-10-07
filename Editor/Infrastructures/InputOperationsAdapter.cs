@@ -204,6 +204,21 @@ namespace UniCortex.Editor.Infrastructures
                 InputSystem.QueueStateEvent(mouse, resetState);
             }
 
+            // UI input modules learn the pointer position from changes of the position control (the "Point"
+            // action). An InputSystemUIInputModule enabled while its actions are already enabled by another one
+            // (e.g. an EventSystem in an additively loaded scene) does not get the current position from the
+            // initial state check either, so a press where the mouse already is hits nothing. Moving away and
+            // back within the same update guarantees a position change; both events are processed before the UI
+            // module runs, so it only sees the final position.
+            if (targetPressed)
+            {
+                // Nudge toward the inside of the screen: x - 1 is on the screen unless x is at the left edge.
+                var nudgeX = x >= 1f ? x - 1f : x + 1f;
+                // Keep the button released here so that the press still happens at (x, y).
+                var nudgeState = BuildMouseState(nudgeX, y).WithButton(buttonEnum, false);
+                InputSystem.QueueStateEvent(mouse, nudgeState);
+            }
+
             var mainState = BuildMouseState(x, y);
             mainState = mainState.WithButton(buttonEnum, targetPressed);
             InputSystem.QueueStateEvent(mouse, mainState);

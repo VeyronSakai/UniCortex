@@ -64,13 +64,13 @@ public class InputMouseCommands(InputUseCase inputUseCase)
     }
 }
 
-public class InputPointerCommands(InputUseCase inputUseCase)
+public class InputUIPointerCommands(InputUseCase inputUseCase)
 {
     /// <summary>List the uGUI objects in the Game View that can be pressed now, with their rects in Game View coordinates, in Play Mode. Requires com.unity.ugui.</summary>
     [Command("targets")]
     public async Task Targets(CancellationToken cancellationToken = default)
     {
-        var json = await inputUseCase.GetPointerTargetsAsync(cancellationToken);
+        var json = await inputUseCase.GetUIPointerTargetsAsync(cancellationToken);
         Console.WriteLine(json);
     }
 }

@@ -14,8 +14,8 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
-            var pointerTargetOps = new SpyPointerTargetOperations();
-            var resolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
+            var uiPointerTargetOps = new SpyUIPointerTargetOperations();
+            var resolver = new PointerPositionResolver(dispatcher, uiPointerTargetOps);
 
             // Act
             var (x, y) = resolver.ResolveAsync(new PointerPosition.Coordinates(100f, 200f), CancellationToken.None)
@@ -24,7 +24,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Assert
             Assert.AreEqual(100f, x);
             Assert.AreEqual(200f, y);
-            Assert.AreEqual(0, pointerTargetOps.GetTargetCenterCallCount);
+            Assert.AreEqual(0, uiPointerTargetOps.GetTargetCenterCallCount);
             Assert.AreEqual(0, dispatcher.CallCount);
         }
 
@@ -33,8 +33,8 @@ namespace UniCortex.Editor.Tests.UseCases
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
-            var pointerTargetOps = new SpyPointerTargetOperations { TargetCenterToReturn = (320f, 180f) };
-            var resolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
+            var uiPointerTargetOps = new SpyUIPointerTargetOperations { TargetCenterToReturn = (320f, 180f) };
+            var resolver = new PointerPositionResolver(dispatcher, uiPointerTargetOps);
 
             // Act
             var (x, y) = resolver.ResolveAsync(new PointerPosition.Target(12345), CancellationToken.None)
@@ -43,7 +43,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Assert
             Assert.AreEqual(320f, x);
             Assert.AreEqual(180f, y);
-            Assert.AreEqual(12345, pointerTargetOps.LastInstanceId);
+            Assert.AreEqual(12345, uiPointerTargetOps.LastInstanceId);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
     }

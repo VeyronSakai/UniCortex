@@ -4,11 +4,11 @@ using System.Collections.Generic;
 namespace UniCortex.Editor.Domains.Models
 {
     [Serializable]
-    public class GetPointerTargetsResponse
+    public class GetUIPointerTargetsResponse
     {
-        public List<PointerTarget> targets;
+        public List<UIPointerTargetEntry> targets;
 
-        public GetPointerTargetsResponse(List<PointerTarget> targets)
+        public GetUIPointerTargetsResponse(List<UIPointerTargetEntry> targets)
         {
             this.targets = targets;
         }

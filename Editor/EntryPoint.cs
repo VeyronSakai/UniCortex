@@ -308,12 +308,12 @@ namespace UniCortex.Editor
 #endif
 
 #if UNICORTEX_UGUI
-            var pointerTargetOps = new PointerTargetOperationsAdapter(playerLoopDispatcher);
+            var uiPointerTargetOps = new UIPointerTargetOperationsAdapter(playerLoopDispatcher);
 #else
-            var pointerTargetOps = new PointerTargetNotSupportedAdapter();
+            var uiPointerTargetOps = new UIPointerTargetNotSupportedAdapter();
 #endif
 
-            var pointerPositionResolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
+            var pointerPositionResolver = new PointerPositionResolver(dispatcher, uiPointerTargetOps);
 
             var time = new TimeAdapter();
             var playerLoopRunner = new PlayerLoopRunner(dispatcher, playerLoopDispatcher);
@@ -332,8 +332,8 @@ namespace UniCortex.Editor
                 time);
             var dragMouseHandler = new DragMouseHandler(dragMouseUseCase);
 
-            var getPointerTargetsUseCase = new GetPointerTargetsUseCase(dispatcher, pointerTargetOps);
-            var getPointerTargetsHandler = new GetPointerTargetsHandler(getPointerTargetsUseCase);
+            var getUIPointerTargetsUseCase = new GetUIPointerTargetsUseCase(dispatcher, uiPointerTargetOps);
+            var getUIPointerTargetsHandler = new GetUIPointerTargetsHandler(getUIPointerTargetsUseCase);
 
             var timelineOps = new TimelineOperationsAdapter();
 
@@ -444,7 +444,7 @@ namespace UniCortex.Editor
             clickMouseHandler.Register(router);
             moveMouseHandler.Register(router);
             dragMouseHandler.Register(router);
-            getPointerTargetsHandler.Register(router);
+            getUIPointerTargetsHandler.Register(router);
             createTimelineHandler.Register(router);
             addTimelineTrackHandler.Register(router);
             removeTimelineTrackHandler.Register(router);

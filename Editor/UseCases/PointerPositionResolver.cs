@@ -10,13 +10,13 @@ namespace UniCortex.Editor.UseCases
     internal sealed class PointerPositionResolver
     {
         private readonly IMainThreadDispatcher _dispatcher;
-        private readonly IPointerTargetOperations _pointerTargetOperations;
+        private readonly IUIPointerTargetOperations _uiPointerTargetOperations;
 
         public PointerPositionResolver(IMainThreadDispatcher dispatcher,
-            IPointerTargetOperations pointerTargetOperations)
+            IUIPointerTargetOperations uiPointerTargetOperations)
         {
             _dispatcher = dispatcher;
-            _pointerTargetOperations = pointerTargetOperations;
+            _uiPointerTargetOperations = uiPointerTargetOperations;
         }
 
         public async Task<(float x, float y)> ResolveAsync(PointerPosition position,
@@ -29,7 +29,7 @@ namespace UniCortex.Editor.UseCases
 
                 case PointerPosition.Target target:
                     var task = await _dispatcher.RunOnMainThreadAsync(
-                        () => _pointerTargetOperations.GetTargetCenterAsync(target.InstanceId, cancellationToken),
+                        () => _uiPointerTargetOperations.GetTargetCenterAsync(target.InstanceId, cancellationToken),
                         cancellationToken);
                     return await task;
 

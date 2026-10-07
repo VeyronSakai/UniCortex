@@ -8,18 +8,18 @@ using UnityEngine;
 
 namespace UniCortex.Editor.Handlers.Input
 {
-    internal sealed class GetPointerTargetsHandler
+    internal sealed class GetUIPointerTargetsHandler
     {
-        private readonly GetPointerTargetsUseCase _useCase;
+        private readonly GetUIPointerTargetsUseCase _useCase;
 
-        public GetPointerTargetsHandler(GetPointerTargetsUseCase useCase)
+        public GetUIPointerTargetsHandler(GetUIPointerTargetsUseCase useCase)
         {
             _useCase = useCase;
         }
 
         public void Register(IRequestRouter router)
         {
-            router.Register(HttpMethodType.Get, ApiRoutes.InputPointerTargets, HandleAsync);
+            router.Register(HttpMethodType.Get, ApiRoutes.InputUIPointerTargets, HandleAsync);
         }
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Handlers.Input
             try
             {
                 var targets = await _useCase.ExecuteAsync(cancellationToken);
-                var json = JsonUtility.ToJson(new GetPointerTargetsResponse(targets));
+                var json = JsonUtility.ToJson(new GetUIPointerTargetsResponse(targets));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }
             catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException)

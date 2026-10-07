@@ -8,9 +8,9 @@ using UniCortex.Editor.Domains.Models;
 namespace UniCortex.Editor.Infrastructures
 {
     // Fallback used when the uGUI package (com.unity.ugui) is not installed.
-    internal sealed class PointerTargetNotSupportedAdapter : IPointerTargetOperations
+    internal sealed class UIPointerTargetNotSupportedAdapter : IUIPointerTargetOperations
     {
-        public Task<List<PointerTarget>> GetPointerTargetsAsync(CancellationToken cancellationToken)
+        public Task<List<UIPointerTargetEntry>> GetUIPointerTargetsAsync(CancellationToken cancellationToken)
         {
             throw CreateException();
         }

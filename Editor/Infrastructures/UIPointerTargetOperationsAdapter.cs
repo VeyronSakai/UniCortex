@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace UniCortex.Editor.Infrastructures
 {
-    internal sealed class PointerTargetOperationsAdapter : IPointerTargetOperations
+    internal sealed class UIPointerTargetOperationsAdapter : IUIPointerTargetOperations
     {
         private static readonly Type[] s_pointerHandlerTypes =
         {
@@ -49,14 +49,14 @@ namespace UniCortex.Editor.Infrastructures
 
         private readonly IPlayerLoopDispatcher _playerLoopDispatcher;
 
-        public PointerTargetOperationsAdapter(IPlayerLoopDispatcher playerLoopDispatcher)
+        public UIPointerTargetOperationsAdapter(IPlayerLoopDispatcher playerLoopDispatcher)
         {
             _playerLoopDispatcher = playerLoopDispatcher;
         }
 
-        public Task<List<PointerTarget>> GetPointerTargetsAsync(CancellationToken cancellationToken)
+        public Task<List<UIPointerTargetEntry>> GetUIPointerTargetsAsync(CancellationToken cancellationToken)
         {
-            return _playerLoopDispatcher.RunAsync(GetPointerTargets, cancellationToken);
+            return _playerLoopDispatcher.RunAsync(GetUIPointerTargets, cancellationToken);
         }
 
         public Task<(float x, float y)> GetTargetCenterAsync(int instanceId,
@@ -65,11 +65,11 @@ namespace UniCortex.Editor.Infrastructures
             return _playerLoopDispatcher.RunAsync(() => GetTargetCenter(instanceId), cancellationToken);
         }
 
-        private static List<PointerTarget> GetPointerTargets()
+        private static List<UIPointerTargetEntry> GetUIPointerTargets()
         {
             var eventSystem = GetEventSystem();
 
-            var targets = new List<PointerTarget>();
+            var targets = new List<UIPointerTargetEntry>();
             foreach (var scene in LoadedScenes.Get())
             {
                 foreach (var root in scene.GetRootGameObjects())
@@ -98,7 +98,7 @@ namespace UniCortex.Editor.Infrastructures
         // Collects objects that can be pressed now: active, interactable, handling pointer events,
         // and hit first by the EventSystem raycast at their center.
         private static void CollectTargets(Transform transform, EventSystem eventSystem,
-            List<PointerTarget> targets)
+            List<UIPointerTargetEntry> targets)
         {
             if (!transform.gameObject.activeInHierarchy)
             {
@@ -112,7 +112,7 @@ namespace UniCortex.Editor.Infrastructures
                 var center = GetScreenCenter(rectTransform);
                 if (ReceivesPointer(transform.gameObject, center, eventSystem))
                 {
-                    targets.Add(new PointerTarget(GetPath(transform), transform.gameObject.GetInstanceID(),
+                    targets.Add(new UIPointerTargetEntry(GetPath(transform), transform.gameObject.GetInstanceID(),
                         GetScreenRect(rectTransform)));
                 }
             }

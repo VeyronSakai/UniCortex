@@ -13,13 +13,13 @@ namespace UniCortex.Editor.Tests.Presentations
     [TestFixture]
     internal sealed class ClickMouseHandlerTest
     {
-        private static (RequestRouter router, SpyInputOperations ops, SpyPointerTargetOperations pointerTargetOps)
+        private static (RequestRouter router, SpyInputOperations ops, SpyUIPointerTargetOperations uiPointerTargetOps)
             CreateRouter()
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var ops = new SpyInputOperations();
-            var pointerTargetOps = new SpyPointerTargetOperations();
-            var resolver = new PointerPositionResolver(dispatcher, pointerTargetOps);
+            var uiPointerTargetOps = new SpyUIPointerTargetOperations();
+            var resolver = new PointerPositionResolver(dispatcher, uiPointerTargetOps);
             var playerLoopDispatcher = new FakePlayerLoopDispatcher();
             var useCase = new ClickMouseUseCase(new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver,
                 ops, playerLoopDispatcher.Time);
@@ -27,7 +27,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             var router = new RequestRouter();
             handler.Register(router);
-            return (router, ops, pointerTargetOps);
+            return (router, ops, uiPointerTargetOps);
         }
 
         private static FakeRequestContext CreateContext(string body)
@@ -39,7 +39,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns200_WithCoordinates()
         {
             // Arrange
-            var (router, ops, pointerTargetOps) = CreateRouter();
+            var (router, ops, uiPointerTargetOps) = CreateRouter();
             var context = CreateContext($"{{\"x\":100.0,\"y\":200.0,\"button\":\"{MouseButton.Right}\"}}");
 
             // Act
@@ -52,7 +52,7 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(100f, ops.MouseEventHistory[0].X);
             Assert.AreEqual(200f, ops.MouseEventHistory[0].Y);
             Assert.AreEqual(MouseButton.Right, ops.MouseEventHistory[0].Button);
-            Assert.AreEqual(0, pointerTargetOps.GetTargetCenterCallCount);
+            Assert.AreEqual(0, uiPointerTargetOps.GetTargetCenterCallCount);
             StringAssert.Contains("\"x\":100.0", context.ResponseBody);
             StringAssert.Contains("\"y\":200.0", context.ResponseBody);
         }
@@ -76,8 +76,8 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns200_WithInstanceId()
         {
             // Arrange
-            var (router, ops, pointerTargetOps) = CreateRouter();
-            pointerTargetOps.TargetCenterToReturn = (320f, 180f);
+            var (router, ops, uiPointerTargetOps) = CreateRouter();
+            uiPointerTargetOps.TargetCenterToReturn = (320f, 180f);
             var context = CreateContext("{\"instanceId\":12345}");
 
             // Act
@@ -85,7 +85,7 @@ namespace UniCortex.Editor.Tests.Presentations
 
             // Assert
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
-            Assert.AreEqual(12345, pointerTargetOps.LastInstanceId);
+            Assert.AreEqual(12345, uiPointerTargetOps.LastInstanceId);
             Assert.AreEqual(320f, ops.MouseEventHistory[0].X);
             Assert.AreEqual(180f, ops.MouseEventHistory[0].Y);
             StringAssert.Contains("\"x\":320.0", context.ResponseBody);
@@ -107,7 +107,7 @@ namespace UniCortex.Editor.Tests.Presentations
                     releaseFrame = frame - 1;
                 }
             };
-            var resolver = new PointerPositionResolver(dispatcher, new SpyPointerTargetOperations());
+            var resolver = new PointerPositionResolver(dispatcher, new SpyUIPointerTargetOperations());
             var handler = new ClickMouseHandler(new ClickMouseUseCase(
                 new PlayerLoopRunner(dispatcher, playerLoopDispatcher), resolver, ops, playerLoopDispatcher.Time));
             var router = new RequestRouter();
@@ -147,7 +147,7 @@ namespace UniCortex.Editor.Tests.Presentations
         public void Handle_Returns400_WhenPositionIsInvalid(string body, string expectedMessage)
         {
             // Arrange
-            var (router, ops, pointerTargetOps) = CreateRouter();
+            var (router, ops, uiPointerTargetOps) = CreateRouter();
             var context = CreateContext(body);
 
             // Act
@@ -157,15 +157,15 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains(expectedMessage, context.ResponseBody);
             CollectionAssert.IsEmpty(ops.MouseEventHistory);
-            Assert.AreEqual(0, pointerTargetOps.GetTargetCenterCallCount);
+            Assert.AreEqual(0, uiPointerTargetOps.GetTargetCenterCallCount);
         }
 
         [Test]
         public void Handle_Returns400_WhenTargetNotFound()
         {
             // Arrange
-            var (router, ops, pointerTargetOps) = CreateRouter();
-            pointerTargetOps.ExceptionToThrow = new ArgumentException("GameObject with instanceId 999 not found.");
+            var (router, ops, uiPointerTargetOps) = CreateRouter();
+            uiPointerTargetOps.ExceptionToThrow = new ArgumentException("GameObject with instanceId 999 not found.");
             var context = CreateContext("{\"instanceId\":999}");
 
             // Act

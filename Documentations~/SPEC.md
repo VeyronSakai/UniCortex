@@ -929,7 +929,7 @@ Mouse operations through the Input System while in Play mode. They simulate the 
 Every endpoint takes the position in one of two ways (`PointerPosition` in the Unity Editor side: `Coordinates` or `Target`):
 
 - `x`, `y`: screen coordinates in pixels. The origin (0, 0) is the bottom-left of the screen. X increases to the right, Y increases upward. The value range depends on the Game View resolution (e.g. for 800x600: x: 0–800, y: 0–600). Same coordinate system as `Mouse.current.position.ReadValue()`. Note: images from `capture_game_view` are at the Game View resolution with a top-left origin and Y increasing downward, so a pixel (px, py) in the image corresponds to x = px, y = imageHeight - py.
-- `instanceId`: instanceId of a GameObject, e.g. from `GET /input/pointer-targets`. Its center is used. Currently only uGUI elements (a `RectTransform` under a `Canvas`) are supported, and other GameObjects return `400`; 3D / 2D objects that receive pointer events through `PhysicsRaycaster` / `Physics2DRaycaster` are planned (see #261). Requires the uGUI package (`com.unity.ugui`).
+- `instanceId`: instanceId of a GameObject, e.g. from `GET /input/ui-pointer-targets`. Its center is used. Currently only uGUI elements (a `RectTransform` under a `Canvas`) are supported, and other GameObjects return `400`; 3D / 2D objects that receive pointer events through `PhysicsRaycaster` / `Physics2DRaycaster` are planned (see #261). Requires the uGUI package (`com.unity.ugui`).
 - Exactly one of the coordinates (`x` and `y` together) or `instanceId` must be given. Otherwise `400` is returned.
 
 With a target, the event still goes through the Input System and the EventSystem raycast like a real tap. `onClick.Invoke()` is intentionally not called, so a target covered by other UI does not receive the event.
@@ -985,7 +985,7 @@ Because the movement is spread over frames, components that look at movement ove
 
 Response: `{"success": true, "fromX": 100.0, "fromY": 200.0, "toX": 300.0, "toY": 200.0}` (the start and the end)
 
-#### GET `/input/pointer-targets`
+#### GET `/input/ui-pointer-targets`
 Lists the uGUI objects in the Game View that can be pressed now, so that an agent can find targets for the mouse endpoints (`POST /input/mouse/*`). Play mode only. Requires the uGUI package (`com.unity.ugui`) and an active `EventSystem`.
 
 **Optional dependency**: `UNICORTEX_UGUI` is defined via `versionDefines` in `UniCortex.Editor.asmdef` when `com.unity.ugui` is installed. When it is not installed, a fallback adapter throws `NotSupportedException`.
@@ -1471,7 +1471,7 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `click_mouse` | POST `/input/mouse/click` | Click (or tap) at coordinates or at the center of a UI object given by instanceId, optionally holding the button for a given time (requires com.unity.inputsystem, and com.unity.ugui for a target) |
 | `drag_mouse` | POST `/input/mouse/drag` | Drag (or swipe) from a start to an end over a given time in one call |
 | `move_mouse` | POST `/input/mouse/move` | Move the mouse without pressing a button, e.g. for hover |
-| `get_pointer_targets` | GET `/input/pointer-targets` | List the uGUI objects that can be pressed now, with their rects in Game View coordinates (requires com.unity.ugui) |
+| `get_ui_pointer_targets` | GET `/input/ui-pointer-targets` | List the uGUI objects that can be pressed now, with their rects in Game View coordinates (requires com.unity.ugui) |
 
 #### Timeline (15)
 
@@ -1584,7 +1584,7 @@ game-view focus|capture
 game-view size get|list|set
 input key press
 input mouse click|drag|move
-input pointer targets
+input ui-pointer targets
 timeline create|play|stop
 timeline track list|add|remove|bind
 timeline track property list|set

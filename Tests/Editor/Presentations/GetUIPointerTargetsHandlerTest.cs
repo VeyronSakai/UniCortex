@@ -11,24 +11,24 @@ using NUnit.Framework;
 namespace UniCortex.Editor.Tests.Presentations
 {
     [TestFixture]
-    internal sealed class GetPointerTargetsHandlerTest
+    internal sealed class GetUIPointerTargetsHandlerTest
     {
         [Test]
         public void Handle_Returns200_WithTargets()
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyPointerTargetOperations
+            var ops = new SpyUIPointerTargetOperations
             {
-                PointerTargetsToReturn = new List<PointerTarget>
+                UIPointerTargetsToReturn = new List<UIPointerTargetEntry>
                 {
-                    new PointerTarget("Canvas/Button", 100, new ScreenRect(50f, 180f, 100f, 40f))
+                    new UIPointerTargetEntry("Canvas/Button", 100, new ScreenRect(50f, 180f, 100f, 40f))
                 }
             };
-            var handler = new GetPointerTargetsHandler(new GetPointerTargetsUseCase(dispatcher, ops));
+            var handler = new GetUIPointerTargetsHandler(new GetUIPointerTargetsUseCase(dispatcher, ops));
             var router = new RequestRouter();
             handler.Register(router);
-            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.InputPointerTargets);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.InputUIPointerTargets);
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -47,14 +47,14 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new SpyPointerTargetOperations
+            var ops = new SpyUIPointerTargetOperations
             {
                 ExceptionToThrow = new InvalidOperationException("Pointer targets are only available in Play Mode.")
             };
-            var handler = new GetPointerTargetsHandler(new GetPointerTargetsUseCase(dispatcher, ops));
+            var handler = new GetUIPointerTargetsHandler(new GetUIPointerTargetsUseCase(dispatcher, ops));
             var router = new RequestRouter();
             handler.Register(router);
-            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.InputPointerTargets);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.InputUIPointerTargets);
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
@@ -69,11 +69,11 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             // Arrange
             var dispatcher = new FakeMainThreadDispatcher();
-            var ops = new PointerTargetNotSupportedAdapter();
-            var handler = new GetPointerTargetsHandler(new GetPointerTargetsUseCase(dispatcher, ops));
+            var ops = new UIPointerTargetNotSupportedAdapter();
+            var handler = new GetUIPointerTargetsHandler(new GetUIPointerTargetsUseCase(dispatcher, ops));
             var router = new RequestRouter();
             handler.Register(router);
-            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.InputPointerTargets);
+            var context = new FakeRequestContext(HttpMethodType.Get, ApiRoutes.InputUIPointerTargets);
 
             // Act
             router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();

@@ -220,7 +220,7 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | `click_mouse` | Click (or tap) via Input System in Play Mode (requires com.unity.inputsystem). Accepts either x/y or the instanceId of a UI target (requires com.unity.ugui). Use holdDuration for a long press |
 | `drag_mouse` | Drag (or swipe) from a start to an end over a given time in one call |
 | `move_mouse` | Move the mouse without pressing a button, e.g. for hover |
-| `get_pointer_targets` | List the uGUI objects that can be pressed now in Play Mode, with their rects in Game View coordinates (requires com.unity.ugui) |
+| `get_ui_pointer_targets` | List the uGUI objects that can be pressed now in Play Mode, with their rects in Game View coordinates (requires com.unity.ugui) |
 
 #### Timeline
 
@@ -433,7 +433,7 @@ Component commands accept the fully-qualified component type name plus the defin
 | `input mouse click` | Click (or tap) at `--x`/`--y` or at a UI object (`--instance-id`), holding the button for `--hold-duration` seconds. Requires `com.unity.inputsystem`; Play Mode only. |
 | `input mouse drag` | Drag from `--from-x`/`--from-y` or `--from-instance-id` to `--to-x`/`--to-y` or `--to-instance-id` over `--duration` seconds in one call. |
 | `input mouse move` | Move the mouse without pressing a button, e.g. for hover. |
-| `input pointer targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
+| `input ui-pointer targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
 
 #### `recorder all`, `recorder movie`
 
