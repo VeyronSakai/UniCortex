@@ -320,9 +320,12 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        // Whether the event changes the state of the device, which is what overwrites the simulated state:
-        // - StateEvent: the whole state of the device (e.g. the position and all the buttons of a mouse)
-        // - DeltaStateEvent: a part of the state (e.g. only the position)
+        // Whether the event writes to the state of the device, which is what overwrites the simulated state.
+        // The state of a device is a block of memory with a fixed layout (e.g. MouseState: position at bytes 0-7,
+        // buttons at bytes 24-25, ...).
+        // - StateEvent: writes the whole block (e.g. the position and all the buttons of a mouse)
+        // - DeltaStateEvent: writes only a range of the block, given by an offset and the bytes to write
+        //   (e.g. only the position). Both have to be dropped, since either can overwrite the simulated state.
         // Other events are not about the state (e.g. DeviceRemoveEvent when a device is unplugged, or
         // DeviceConfigurationEvent when the keyboard layout changes). They are not dropped, because the Input
         // System would otherwise miss changes of the devices themselves.
