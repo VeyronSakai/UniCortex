@@ -18,6 +18,17 @@ public class InputKeyCommands(InputUseCase inputUseCase)
     }
 }
 
+public class InputTextCommands(InputUseCase inputUseCase)
+{
+    /// <summary>Type text into the focused text field in Play Mode (uGUI InputField, TMP_InputField, UI Toolkit TextField). Focus the field first, e.g. with input mouse click. Also raises Keyboard.onTextInput. Requires com.unity.inputsystem.</summary>
+    /// <param name="text">Text to type, e.g. Hello. Any characters, including symbols and Japanese.</param>
+    [Command("type")]
+    public async Task Type([Argument] string text, CancellationToken cancellationToken = default)
+    {
+        Console.WriteLine(await inputUseCase.TypeTextAsync(text, cancellationToken));
+    }
+}
+
 public class InputMouseCommands(InputUseCase inputUseCase)
 {
     /// <summary>Click (or tap) at a position: press, keep it pressed for --hold-duration seconds, and release. Simulates the Input System Mouse device in Play Mode. Requires com.unity.inputsystem. Specify either --x and --y, or --instance-id (requires com.unity.ugui).</summary>

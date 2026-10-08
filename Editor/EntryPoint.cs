@@ -321,6 +321,9 @@ namespace UniCortex.Editor
             var pressKeyUseCase = new PressKeyUseCase(playerLoopRunner, inputSimOps, time);
             var pressKeyHandler = new PressKeyHandler(pressKeyUseCase);
 
+            var typeTextUseCase = new TypeTextUseCase(playerLoopRunner, inputSimOps);
+            var typeTextHandler = new TypeTextHandler(typeTextUseCase);
+
             var clickMouseUseCase = new ClickMouseUseCase(playerLoopRunner, pointerPositionResolver, inputSimOps,
                 time);
             var clickMouseHandler = new ClickMouseHandler(clickMouseUseCase);
@@ -441,6 +444,7 @@ namespace UniCortex.Editor
             stopMovieRecorderHandler.Register(router);
 
             pressKeyHandler.Register(router);
+            typeTextHandler.Register(router);
             clickMouseHandler.Register(router);
             moveMouseHandler.Register(router);
             dragMouseHandler.Register(router);

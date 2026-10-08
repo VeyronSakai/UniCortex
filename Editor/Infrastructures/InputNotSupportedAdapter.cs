@@ -10,6 +10,8 @@ namespace UniCortex.Editor.Infrastructures
 
         public void ReleaseKeys(string[] keys) => throw CreateException();
 
+        public void TypeText(string text) => throw CreateException();
+
         public void PressMouseButton(float x, float y, string button) => throw CreateException();
 
         public void ReleaseMouseButton(float x, float y, string button) => throw CreateException();

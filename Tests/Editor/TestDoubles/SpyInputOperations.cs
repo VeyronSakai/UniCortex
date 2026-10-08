@@ -30,6 +30,22 @@ namespace UniCortex.Editor.Tests.TestDoubles
 
         public List<KeyEventRecord> KeyEventHistory { get; } = new();
 
+        public readonly struct TextEventRecord
+        {
+            public readonly string Text;
+
+            // Whether the physical keyboard was blocked when the text was sent.
+            public readonly bool PhysicalKeyboardBlocked;
+
+            public TextEventRecord(string text, bool physicalKeyboardBlocked)
+            {
+                Text = text;
+                PhysicalKeyboardBlocked = physicalKeyboardBlocked;
+            }
+        }
+
+        public List<TextEventRecord> TextEventHistory { get; } = new();
+
         public enum MouseAction
         {
             Press,
@@ -69,6 +85,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
         // after a failure.
         public Exception ExceptionOnRelease { get; set; }
 
+        // When set, TypeText throws it.
+        public Exception ExceptionOnTypeText { get; set; }
+
         public void PressKeys(string[] keys)
         {
             KeyEventHistory.Add(new KeyEventRecord(KeyAction.Press, keys, PhysicalKeyboardBlockCount > 0));
@@ -82,6 +101,16 @@ namespace UniCortex.Editor.Tests.TestDoubles
             }
 
             KeyEventHistory.Add(new KeyEventRecord(KeyAction.Release, keys, PhysicalKeyboardBlockCount > 0));
+        }
+
+        public void TypeText(string text)
+        {
+            if (ExceptionOnTypeText != null)
+            {
+                throw ExceptionOnTypeText;
+            }
+
+            TextEventHistory.Add(new TextEventRecord(text, PhysicalKeyboardBlockCount > 0));
         }
 
         public void PressMouseButton(float x, float y, string button)

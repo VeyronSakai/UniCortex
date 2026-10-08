@@ -45,6 +45,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string MenuItemExecute = "/menu-item/execute";
 
         public const string InputKeyPress = "/input/key/press";
+        public const string InputTextType = "/input/text/type";
         public const string InputMouseClick = "/input/mouse/click";
         public const string InputMouseMove = "/input/mouse/move";
         public const string InputMouseDrag = "/input/mouse/drag";
