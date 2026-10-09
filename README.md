@@ -102,16 +102,17 @@ The MCP server exposes the following built-in tools.
 |------|-------------|
 | `create_scene` | Create a new empty scene and save it at the specified asset path |
 | `open_scene` | Open a scene by path |
-| `get_hierarchy` | Get the GameObject hierarchy tree of the current scene or Prefab |
+| `get_hierarchy` | Get the GameObject hierarchy tree of every loaded scene or the Prefab |
 
 #### GameObject
 
 | Tool | Description |
 |------|-------------|
-| `find_game_objects` | Search GameObjects by name, tag, component type, instanceId, layer, path, or state |
-| `create_game_object` | Create a new empty GameObject |
+| `find_game_objects` | Search GameObjects in every loaded scene by name or component type, using the Hierarchy window's search syntax |
+| `create_game_object` | Create a new empty GameObject, optionally under a parent at a given sibling index (with RectTransform support for UI) |
 | `delete_game_object` | Delete a GameObject (supports Undo) |
-| `modify_game_object` | Modify name, active state, tag, layer, or parent |
+| `modify_game_object` | Modify name, active state, tag, layer, parent, or sibling order |
+| `duplicate_game_object` | Duplicate a GameObject including children and components (supports Undo) |
 
 #### Component
 
@@ -124,6 +125,8 @@ The MCP server exposes the following built-in tools.
 
 Component type arguments are supplied as a fully-qualified type name plus the defining assembly name (e.g. `UnityEngine.Rigidbody` + `UnityEngine.PhysicsModule`).
 
+Object reference properties (e.g. `PlayableDirector.m_PlayableAsset` or a `[SerializeField]` component field) accept an asset path (`Assets/Timelines/Intro.playable`), an asset GUID, an instanceId, or `null`. If the object does not match the field type, a matching component on the GameObject or a matching sub-asset in the same file is assigned instead, and an error is returned when nothing matches.
+
 #### ScriptableObject
 
 | Tool | Description |
@@ -133,6 +136,17 @@ Component type arguments are supplied as a fully-qualified type name plus the de
 | `set_scriptable_object_property` | Set a serialized property on an existing `.asset` file |
 
 `create_scriptable_object` takes the ScriptableObject subclass name plus the defining assembly name (e.g. `MyNamespace.MyData` + `Assembly-CSharp`). Property paths and value formats match `set_component_property`.
+
+#### AnimationClip
+
+| Tool | Description |
+|------|-------------|
+| `create_animation_clip` | Create a new empty AnimationClip `.anim` file (Loop Time and frame rate configurable) |
+| `get_animation_curves` | Get the settings and all float curves (with keys) of an AnimationClip |
+| `set_animation_curve` | Replace one float curve of an AnimationClip with the given keys (supports Undo) |
+| `remove_animation_curve` | Remove one float curve from an AnimationClip (supports Undo) |
+
+A curve is identified by `animatorRelativePath` (path relative to the Animator root, e.g. `Root/Child`), the component type plus its assembly name (e.g. `UnityEngine.UI.Image` + `UnityEngine.UI`), and `propertyName` (e.g. `m_Color.a`). Each key takes `time` / `value` and an optional `tangentMode` (`Free`, `Auto`, `ClampedAuto`, `Linear`, `Constant`).
 
 #### Prefab
 
@@ -174,21 +188,19 @@ Component type arguments are supplied as a fully-qualified type name plus the de
 |------|-------------|
 | `execute_menu_item` | Execute a Unity Editor menu item by path |
 
-#### Screenshot
-
-| Tool | Description |
-|------|-------------|
-| `capture_screenshot` | Capture a screenshot of the current Unity rendering output (Play Mode only) |
-
 #### View
 
 | Tool | Description |
 |------|-------------|
 | `focus_scene_view` | Switch focus to the Scene View window |
+| `capture_scene_view` | Capture the Scene View as a PNG image. Works in both Edit Mode and Play Mode, and captures the Prefab contents in Prefab Mode (gizmos and Screen Space - Overlay UI are not included) |
 | `focus_game_view` | Switch focus to the Game View window |
+| `capture_game_view` | Capture the Game View as a PNG at the Game View resolution (Play Mode only) |
 | `get_game_view_size` | Get the current Game View size (width and height in pixels) |
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
+| `get_game_view_scale` | Get the current Game View scale (zoom factor) and its valid range |
+| `set_game_view_scale` | Set the Game View scale (zoom factor); clamped to the valid range |
 
 #### Recorder
 
@@ -204,22 +216,31 @@ Component type arguments are supplied as a fully-qualified type name plus the de
 
 | Tool | Description |
 |------|-------------|
-| `send_key_event` | Send a keyboard event via Input System in Play Mode (requires com.unity.inputsystem) |
-| `send_mouse_event` | Send a mouse event via Input System in Play Mode (requires com.unity.inputsystem). Supports press, release, and move for drag simulation. Accepts either x/y or the instanceId of a UI target (requires com.unity.ugui) |
-| `get_pointer_targets` | List the uGUI objects that can be pressed now in Play Mode, with their rects in Game View coordinates (requires com.unity.ugui) |
+| `press_key` | Press keys via Input System in Play Mode (requires com.unity.inputsystem). Pass several keys for a combination such as Ctrl+S. Use holdDuration to keep them pressed |
+| `click_mouse` | Click (or tap) via Input System in Play Mode (requires com.unity.inputsystem). Accepts either x/y or the instanceId of a UI target (requires com.unity.ugui). Use holdDuration for a long press |
+| `drag_mouse` | Drag (or swipe) from a start to an end over a given time in one call |
+| `move_mouse` | Move the mouse without pressing a button, e.g. for hover |
+| `get_ui_pointer_targets` | List the uGUI objects that can be pressed now in Play Mode, with their rects in Game View coordinates (requires com.unity.ugui) |
 
 #### Timeline
 
 | Tool | Description |
 |------|-------------|
 | `create_timeline` | Create a new TimelineAsset (.playable file) at the specified asset path (requires com.unity.timeline) |
+| `get_timeline_tracks` | Get an overview of the tracks and clips of a Timeline (types, timing, extrapolation, bindings, AnimationClips) by PlayableDirector or asset path (requires com.unity.timeline) |
+| `get_timeline_track_properties` | Get the serialized properties of a Timeline track (requires com.unity.timeline) |
+| `get_timeline_clip_properties` | Get the serialized properties of a clip's PlayableAsset (requires com.unity.timeline) |
 | `add_timeline_track` | Add a track to a TimelineAsset (requires com.unity.timeline) |
 | `remove_timeline_track` | Remove a track from a TimelineAsset by index (requires com.unity.timeline) |
 | `bind_timeline_track` | Set the binding of a Timeline track on a PlayableDirector (requires com.unity.timeline) |
 | `add_timeline_clip` | Add a default clip to a Timeline track (requires com.unity.timeline) |
 | `remove_timeline_clip` | Remove a clip from a Timeline track by index (requires com.unity.timeline) |
+| `modify_timeline_clip` | Change a clip's start, duration, timeScale, clipIn, ease in/out, and pre/post extrapolation (requires com.unity.timeline) |
+| `set_timeline_clip_property` | Set a serialized property on a clip's PlayableAsset, e.g. its AnimationClip (`m_Clip`) or the settings of a custom clip (requires com.unity.timeline) |
+| `set_timeline_track_property` | Set a serialized property on a track, e.g. Track Offsets or mute (requires com.unity.timeline) |
 | `play_timeline` | Start playback of a Timeline on a PlayableDirector (requires com.unity.timeline) |
 | `stop_timeline` | Stop playback of a Timeline on a PlayableDirector and reset to the beginning (requires com.unity.timeline) |
+| `evaluate_timeline` | Evaluate a Timeline at the specified time without playing it, e.g. to inspect an intermediate state. Works in Edit Mode (including Prefab Mode) via the Timeline window preview (requires com.unity.timeline) |
 
 #### Extensions
 
@@ -251,7 +272,7 @@ export UNICORTEX_CLI_PROJECT=$(echo "${UNICORTEX_PROJECT_PATH}"/Library/PackageC
 
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- editor ping
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scene hierarchy
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject find "t:Camera"
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- game-object find "t:Camera"
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property list 1234 UnityEngine.Transform UnityEngine.CoreModule
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- test run --test-mode EditMode
 ```
@@ -288,10 +309,11 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 ### Argument and output conventions
 
 - Required parameters are positional arguments, for example `scene open Assets/Scenes/Main.unity`.
-- Optional parameters with defaults become named options, for example `gameobject modify 1234 --name CameraRig --active-self true`.
-- Read/query commands usually print JSON, such as `scene hierarchy`, `gameobject find`, `component property list`, and `recorder all list`.
+- Optional parameters with defaults become named options, for example `game-object modify 1234 --name CameraRig --tag Player`.
+- Boolean options are flags that take no value, for example `game-object modify 1234 --deactivate`.
+- Read/query commands usually print JSON, such as `scene hierarchy`, `game-object find`, `component property list`, and `recorder all list`.
 - State-changing commands usually print a short status message, such as `editor play`, `scene open`, `component add`, and `timeline track bind`.
-- `screenshot capture` writes a file to the path you pass, and recorder commands create media files in the configured output path.
+- `game-view capture` and `scene-view capture` write a PNG file to the path you pass, and recorder commands create media files in the configured output path.
 
 ### Available CLI Commands
 
@@ -319,14 +341,15 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `scene open` | Open a scene by asset path. |
 | `scene hierarchy` | Print the current scene hierarchy as JSON. |
 
-#### `gameobject`
+#### `game-object`
 
 | Command | Description |
 | --- | --- |
-| `gameobject find` | Search GameObjects by Unity Search query. |
-| `gameobject create` | Create a new empty GameObject with the specified name. |
-| `gameobject delete` | Delete a GameObject by `instanceId`. |
-| `gameobject modify` | Rename, reparent, or change active state, tag, or layer. |
+| `game-object find` | Search GameObjects with the Hierarchy window's search syntax. |
+| `game-object create` | Create a new empty GameObject, optionally under a parent at a given sibling index. |
+| `game-object delete` | Delete a GameObject by `instanceId`. |
+| `game-object modify` | Rename, reparent, reorder, or change active state, tag, or layer. |
+| `game-object duplicate` | Duplicate a GameObject (deep copy of children and components). |
 
 #### `component`
 
@@ -349,6 +372,15 @@ Component commands accept the fully-qualified component type name plus the defin
 
 `scriptable-object create` accepts the fully-qualified ScriptableObject subclass name plus the defining assembly name (e.g. `MyNamespace.MyData Assembly-CSharp`).
 
+#### `animation-clip`
+
+| Command | Description |
+| --- | --- |
+| `animation-clip create` | Create a new empty AnimationClip `.anim` file. Supports `--loop` and `--frame-rate`. |
+| `animation-clip curve list` | Print the settings and all float curves of an AnimationClip as JSON. |
+| `animation-clip curve set` | Replace one float curve with keys given as a JSON array. Use `--animator-relative-path` for the path relative to the Animator root. |
+| `animation-clip curve remove` | Remove one float curve. |
+
 #### `prefab`
 
 | Command | Description |
@@ -368,35 +400,40 @@ Component commands accept the fully-qualified component type name plus the defin
 
 | Command | Description |
 | --- | --- |
-| `console logs` | Read Unity Editor console logs. |
+| `console logs` | Read Unity Editor console logs. Fetches every level by default; pass `--info`, `--warning`, and/or `--error` to fetch only those levels (e.g. `console logs --error`). Add `--stack-trace` to include stack traces. |
 | `console clear` | Clear Unity Editor console logs. |
 
-#### `asset`, `project-window`, `menu`, `screenshot`
+#### `asset`, `project-window`, `menu`
 
 | Command | Description |
 | --- | --- |
 | `asset refresh` | Refresh the Unity Asset Database. |
 | `project-window select` | Select and ping an asset in the Project Window. |
 | `menu execute` | Execute a Unity menu item by path. |
-| `screenshot capture` | Capture a PNG screenshot. Play Mode only. |
 
-#### `scene-view`, `game-view`, `game-view size`
+#### `scene-view`, `game-view`, `game-view size`, `game-view scale`
 
 | Command | Description |
 | --- | --- |
 | `scene-view focus` | Focus the Scene View window. |
+| `scene-view capture` | Capture the Scene View as a PNG file. Works in Edit Mode and Play Mode, including Prefab Mode. |
 | `game-view focus` | Focus the Game View window. |
+| `game-view capture` | Capture the Game View as a PNG file at the Game View resolution. Play Mode only. |
 | `game-view size get` | Show the current Game View size. |
 | `game-view size list` | List available Game View sizes. |
 | `game-view size set` | Set the Game View size by index. |
+| `game-view scale get` | Show the current Game View scale and its valid range. |
+| `game-view scale set` | Set the Game View scale (zoom factor). |
 
 #### `input`
 
 | Command | Description |
 | --- | --- |
-| `input send-key` | Send an Input System key event. Requires `com.unity.inputsystem`; Play Mode only. |
-| `input send-mouse` | Send an Input System mouse event to `--x`/`--y` or to a UI object (`--instance-id`). Requires `com.unity.inputsystem`; Play Mode only. |
-| `input pointer-targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
+| `input key press` | Press keys together (e.g. `LeftCtrl,S`), holding them for `--hold-duration` seconds. Requires `com.unity.inputsystem`; Play Mode only. |
+| `input mouse click` | Click (or tap) at `--x`/`--y` or at a UI object (`--instance-id`), holding the button for `--hold-duration` seconds. Requires `com.unity.inputsystem`; Play Mode only. |
+| `input mouse drag` | Drag from `--from-x`/`--from-y` or `--from-instance-id` to `--to-x`/`--to-y` or `--to-instance-id` over `--duration` seconds in one call. |
+| `input mouse move` | Move the mouse without pressing a button, e.g. for hover. |
+| `input ui-pointer targets` | List the uGUI objects that can be pressed now. Requires `com.unity.ugui`; Play Mode only. |
 
 #### `recorder all`, `recorder movie`
 
@@ -408,18 +445,25 @@ Component commands accept the fully-qualified component type name plus the defin
 | `recorder movie start` | Start movie recording. Play Mode only; requires `com.unity.recorder`. |
 | `recorder movie stop` | Stop movie recording and save the output file. |
 
-#### `timeline`, `timeline track`, `timeline clip`
+#### `timeline`, `timeline track`, `timeline track property`, `timeline clip`, `timeline clip property`
 
 | Command | Description |
 | --- | --- |
 | `timeline create` | Create a Timeline asset. Requires `com.unity.timeline`. |
 | `timeline play` | Start Timeline playback on a PlayableDirector. Requires `com.unity.timeline`. |
 | `timeline stop` | Stop Timeline playback and reset to the beginning. Requires `com.unity.timeline`. |
+| `timeline evaluate` | Evaluate a Timeline at the specified time without playing it, e.g. to inspect an intermediate state. Works in Edit Mode (including Prefab Mode) via the Timeline window preview, so animated values are reverted when the preview ends. Requires `com.unity.timeline`. |
+| `timeline track list` | Print the tracks and clips of a Timeline as JSON. Requires `com.unity.timeline`. |
 | `timeline track add` | Add a Timeline track. Requires `com.unity.timeline`. |
 | `timeline track remove` | Remove a Timeline track by index. Requires `com.unity.timeline`. |
 | `timeline track bind` | Bind a Timeline track to a target object. Requires `com.unity.timeline`. |
+| `timeline track property list` | Print the serialized properties of a Timeline track as JSON. Requires `com.unity.timeline`. |
+| `timeline track property set` | Set a serialized property on a Timeline track. Requires `com.unity.timeline`. |
 | `timeline clip add` | Add a clip to a Timeline track. Requires `com.unity.timeline`. |
 | `timeline clip remove` | Remove a clip from a Timeline track. Requires `com.unity.timeline`. |
+| `timeline clip modify` | Change the timing, ease, and extrapolation of a Timeline clip. Requires `com.unity.timeline`. |
+| `timeline clip property list` | Print the serialized properties of a clip's PlayableAsset as JSON. Requires `com.unity.timeline`. |
+| `timeline clip property set` | Set a serialized property on a clip's PlayableAsset. Requires `com.unity.timeline`. |
 
 #### `extension`
 
@@ -432,11 +476,11 @@ Component commands accept the fully-qualified component type name plus the defin
 
 ```bash
 # Find cameras and inspect a component
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject find "t:Camera"
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- game-object find "t:Camera"
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property list 1234 UnityEngine.Transform UnityEngine.CoreModule
 
 # Rename and reparent a GameObject
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- gameobject modify 1234 --name CameraRig --parent-instance-id 5678
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- game-object modify 1234 --name CameraRig --parent-instance-id 5678
 
 # Set a serialized property
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property set 1234 UnityEngine.Transform UnityEngine.CoreModule m_LocalPosition.x 1.5
@@ -445,8 +489,13 @@ dotnet run --project "$UNICORTEX_CLI_PROJECT" -- component property set 1234 Uni
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scriptable-object create MyNamespace.MyData Assembly-CSharp Assets/Data/MyData.asset
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scriptable-object property set Assets/Data/MyData.asset m_Speed 1.5
 
-# Capture a screenshot
-dotnet run --project "$UNICORTEX_CLI_PROJECT" -- screenshot capture ./Artifacts/gameview.png
+# Create an AnimationClip and key an Image fade-in
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- animation-clip create Assets/Animations/FadeIn.anim
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- animation-clip curve set Assets/Animations/FadeIn.anim UnityEngine.UI.Image UnityEngine.UI m_Color.a '[{"time":0,"value":0},{"time":0.5,"value":1}]' --animator-relative-path Root/Child
+
+# Capture the Scene View (Edit Mode) and the Game View (Play Mode)
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- scene-view capture ./Artifacts/sceneview.png
+dotnet run --project "$UNICORTEX_CLI_PROJECT" -- game-view capture ./Artifacts/gameview.png
 
 # Discover and run a custom extension
 dotnet run --project "$UNICORTEX_CLI_PROJECT" -- extension list
