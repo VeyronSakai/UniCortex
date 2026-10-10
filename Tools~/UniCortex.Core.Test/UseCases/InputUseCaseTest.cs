@@ -89,8 +89,8 @@ public class InputUseCaseTest
             // Assert
             var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
                 cancellationToken: CancellationToken.None);
-            Assert.That(logs, Does.Contain("[InputSystemDebug] Text input: A"));
-            Assert.That(logs, Does.Contain("[InputSystemDebug] Text input: b"));
+            Assert.That(logs, Does.Contain("[TextInputDebug] Text input: A"));
+            Assert.That(logs, Does.Contain("[TextInputDebug] Text input: b"));
         }
         finally
         {
