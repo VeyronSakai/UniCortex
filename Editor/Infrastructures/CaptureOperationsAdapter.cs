@@ -1,23 +1,28 @@
 using System;
 using System.Reflection;
 using UniCortex.Editor.Domains.Interfaces;
+using UniCortex.Editor.Domains.Models;
 using UnityEditor;
 using UnityEngine;
+
+#nullable enable
 
 namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class CaptureOperationsAdapter : ICaptureOperations
     {
-        private static readonly Type s_gameViewType =
-            typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView");
-
         // PlayModeView.m_TargetTexture holds the rendered game image at the Game View resolution.
-        private static readonly FieldInfo s_targetTextureField =
-            typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.PlayModeView")
+        private static readonly FieldInfo? s_targetTextureField =
+            PlayModeViewUtility.PlayModeViewType
                 ?.GetField("m_TargetTexture", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        public byte[] CaptureGameView()
+        // Same color as the safe area highlight of the Simulator view.
+        private static readonly Color s_safeAreaColor = new Color(0.95f, 1f, 0f);
+        private static readonly Color s_cutoutColor = new Color(1f, 0f, 0f, 0.5f);
+
+        public byte[] CaptureGameView(GetScreenSafeAreaResponse? safeAreaToDraw, bool drawDeviceFrame)
         {
+            var deviceFrame = drawDeviceFrame ? PlayModeViewUtility.GetDeviceFrame() : null;
             var targetTexture = GetGameViewTargetTexture();
             if (targetTexture == null)
             {
@@ -29,7 +34,7 @@ namespace UniCortex.Editor.Infrastructures
             // Overlay UI) is captured at the Game View resolution, without the surrounding editor window.
             // On graphics APIs whose UV origin is at the top (Metal, Direct3D, Vulkan), the target is stored
             // upside down, so flip it back.
-            return EncodeToPng(targetTexture, SystemInfo.graphicsUVStartsAtTop);
+            return EncodeToPng(targetTexture, SystemInfo.graphicsUVStartsAtTop, safeAreaToDraw, deviceFrame);
         }
 
         public byte[] CaptureSceneView()
@@ -59,7 +64,7 @@ namespace UniCortex.Editor.Infrastructures
             {
                 camera.targetTexture = renderTexture;
                 camera.Render();
-                return EncodeToPng(renderTexture, false);
+                return EncodeToPng(renderTexture, false, null, null);
             }
             finally
             {
@@ -70,32 +75,27 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        private static RenderTexture GetGameViewTargetTexture()
+        private static RenderTexture? GetGameViewTargetTexture()
         {
-            if (s_gameViewType == null || s_targetTextureField == null)
+            if (s_targetTextureField == null)
             {
                 throw new InvalidOperationException(
                     "GameView internals not found. This Unity version may not be supported.");
             }
 
-            // Prefer the focused Game View, which the capture use case has just opened or focused.
-            var focusedWindow = EditorWindow.focusedWindow;
-            if (focusedWindow != null && s_gameViewType.IsInstanceOfType(focusedWindow))
-            {
-                return s_targetTextureField.GetValue(focusedWindow) as RenderTexture;
-            }
-
-            // Editor windows are UnityEngine.Objects, so every open Game View can be found this way.
-            var gameViews = Resources.FindObjectsOfTypeAll(s_gameViewType);
-            if (gameViews.Length == 0)
+            // The main Play Mode view is the Game view or the Simulator view that the game renders to.
+            // The capture use case has just opened or focused it.
+            var playModeView = PlayModeViewUtility.GetMainPlayModeView();
+            if (playModeView == null)
             {
                 throw new InvalidOperationException("Game View is not open. Open a Game View first.");
             }
 
-            return s_targetTextureField.GetValue(gameViews[0]) as RenderTexture;
+            return s_targetTextureField.GetValue(playModeView) as RenderTexture;
         }
 
-        private static byte[] EncodeToPng(RenderTexture source, bool flipVertically)
+        private static byte[] EncodeToPng(RenderTexture source, bool flipVertically,
+            GetScreenSafeAreaResponse? safeAreaToDraw, DeviceFrame? deviceFrame)
         {
             var width = source.width;
             var height = source.height;
@@ -113,6 +113,24 @@ namespace UniCortex.Editor.Infrastructures
 
                 RenderTexture.active = flipped != null ? flipped : source;
                 texture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                if (safeAreaToDraw != null)
+                {
+                    DrawSafeArea(texture, safeAreaToDraw);
+                }
+
+                if (deviceFrame != null)
+                {
+                    var framed = DeviceFrameRenderer.Render(texture, deviceFrame);
+                    try
+                    {
+                        return framed.EncodeToPNG();
+                    }
+                    finally
+                    {
+                        UnityEngine.Object.DestroyImmediate(framed);
+                    }
+                }
+
                 texture.Apply();
                 return texture.EncodeToPNG();
             }
@@ -126,6 +144,61 @@ namespace UniCortex.Editor.Infrastructures
 
                 UnityEngine.Object.DestroyImmediate(texture);
             }
+        }
+
+        // Draws the cutouts filled with translucent red and the outline of the safe area onto the texture.
+        // Both are in screen coordinates (origin at the bottom-left), the same as the texture's pixel coordinates.
+        private static void DrawSafeArea(Texture2D texture, GetScreenSafeAreaResponse safeArea)
+        {
+            // The screen size may differ slightly from the texture size (e.g. fractional Game View sizes).
+            var scaleX = safeArea.screenWidth > 0 ? (float)texture.width / safeArea.screenWidth : 1f;
+            var scaleY = safeArea.screenHeight > 0 ? (float)texture.height / safeArea.screenHeight : 1f;
+
+            foreach (var cutout in safeArea.cutouts)
+            {
+                var rect = ToPixelRect(texture, cutout, scaleX, scaleY);
+                BlendRect(texture, rect, s_cutoutColor);
+            }
+
+            var area = ToPixelRect(texture, safeArea.safeArea, scaleX, scaleY);
+            var thickness = Mathf.Max(2, Mathf.RoundToInt(Mathf.Min(texture.width, texture.height) / 200f));
+            BlendRect(texture, new RectInt(area.xMin, area.yMin, area.width, thickness), s_safeAreaColor);
+            BlendRect(texture, new RectInt(area.xMin, area.yMax - thickness, area.width, thickness),
+                s_safeAreaColor);
+            BlendRect(texture, new RectInt(area.xMin, area.yMin, thickness, area.height), s_safeAreaColor);
+            BlendRect(texture, new RectInt(area.xMax - thickness, area.yMin, thickness, area.height),
+                s_safeAreaColor);
+        }
+
+        private static RectInt ToPixelRect(Texture2D texture, ScreenRect rect, float scaleX, float scaleY)
+        {
+            var xMin = Mathf.Clamp(Mathf.RoundToInt(rect.x * scaleX), 0, texture.width);
+            var yMin = Mathf.Clamp(Mathf.RoundToInt(rect.y * scaleY), 0, texture.height);
+            var xMax = Mathf.Clamp(Mathf.RoundToInt((rect.x + rect.width) * scaleX), 0, texture.width);
+            var yMax = Mathf.Clamp(Mathf.RoundToInt((rect.y + rect.height) * scaleY), 0, texture.height);
+            return new RectInt(xMin, yMin, xMax - xMin, yMax - yMin);
+        }
+
+        private static void BlendRect(Texture2D texture, RectInt rect, Color color)
+        {
+            var xMin = Mathf.Clamp(rect.xMin, 0, texture.width);
+            var yMin = Mathf.Clamp(rect.yMin, 0, texture.height);
+            var xMax = Mathf.Clamp(rect.xMax, 0, texture.width);
+            var yMax = Mathf.Clamp(rect.yMax, 0, texture.height);
+            if (xMax <= xMin || yMax <= yMin)
+            {
+                return;
+            }
+
+            var blockWidth = xMax - xMin;
+            var blockHeight = yMax - yMin;
+            var pixels = texture.GetPixels(xMin, yMin, blockWidth, blockHeight);
+            for (var i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = Color.Lerp(pixels[i], color, color.a);
+            }
+
+            texture.SetPixels(xMin, yMin, blockWidth, blockHeight, pixels);
         }
     }
 }

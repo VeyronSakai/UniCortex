@@ -197,12 +197,17 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | `focus_scene_view` | Switch focus to the Scene View window |
 | `capture_scene_view` | Capture the Scene View as a PNG image. Works in both Edit Mode and Play Mode, and captures the Prefab contents in Prefab Mode (gizmos and Screen Space - Overlay UI are not included) |
 | `focus_game_view` | Switch focus to the Game View window |
-| `capture_game_view` | Capture the Game View as a PNG at the Game View resolution (Play Mode only) |
+| `capture_game_view` | Capture the Game View (or the Simulator view) as a PNG at its resolution (Play Mode only), with the device frame in the Simulator view by default, optionally drawing the safe area and cutouts |
 | `get_game_view_size` | Get the current Game View size (width and height in pixels) |
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
 | `get_game_view_scale` | Get the current Game View scale (zoom factor) and its valid range |
 | `set_game_view_scale` | Set the Game View scale (zoom factor); clamped to the valid range |
+| `get_play_mode_view_type` | Get whether the Play Mode window shows the Game view or the Device Simulator view |
+| `set_play_mode_view_type` | Switch the Play Mode window between the Game view and the Device Simulator view |
+| `get_simulator_device_list` | List the devices of the Simulator view with the selected device and rotation |
+| `set_simulator_device` | Select the simulated device and/or its rotation in the Simulator view |
+| `get_screen_safe_area` | Get the screen size, safe area and cutouts (notch) of the Game view or the Simulator view |
 
 #### Recorder
 
@@ -416,19 +421,24 @@ Component commands accept the fully-qualified component type name plus the defin
 | `project-window select` | Select and ping an asset in the Project Window. |
 | `menu execute` | Execute a Unity menu item by path. |
 
-#### `scene-view`, `game-view`, `game-view size`, `game-view scale`
+#### `scene-view`, `game-view`, `game-view size`, `game-view scale`, `game-view view-type`, `game-view simulator device`
 
 | Command | Description |
 | --- | --- |
 | `scene-view focus` | Focus the Scene View window. |
 | `scene-view capture` | Capture the Scene View as a PNG file. Works in Edit Mode and Play Mode, including Prefab Mode. |
 | `game-view focus` | Focus the Game View window. |
-| `game-view capture` | Capture the Game View as a PNG file at the Game View resolution. Play Mode only. |
+| `game-view capture` | Capture the Game View (or the Simulator view) as a PNG file at its resolution. Play Mode only. In the Simulator view the device frame is drawn by default (`--no-device-frame` to omit it). `--draw-safe-area` draws the safe area and cutouts. |
+| `game-view safe-area` | Show the screen size, safe area and cutouts of the Game view or the Simulator view. |
 | `game-view size get` | Show the current Game View size. |
 | `game-view size list` | List available Game View sizes. |
 | `game-view size set` | Set the Game View size by index. |
 | `game-view scale get` | Show the current Game View scale and its valid range. |
 | `game-view scale set` | Set the Game View scale (zoom factor). |
+| `game-view view-type get` | Show whether the Play Mode window shows the Game view or the Simulator view. |
+| `game-view view-type set` | Switch the Play Mode window to `GameView` or `SimulatorView`. |
+| `game-view simulator device list` | List the devices of the Simulator view. |
+| `game-view simulator device set` | Select the simulated device (`--index`) and/or its rotation (`--rotation`). |
 
 #### `input`
 

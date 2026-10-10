@@ -48,6 +48,14 @@ namespace UniCortex.Editor.Infrastructures
                     "GameView type not found. This Unity version may not be supported.");
             }
 
+            // Focus the main Play Mode view, which may be the Simulator view instead of the Game view.
+            var playModeView = PlayModeViewUtility.GetMainPlayModeView();
+            if (playModeView != null)
+            {
+                playModeView.Focus();
+                return;
+            }
+
             EditorWindow.FocusWindowIfItsOpen(s_gameViewType);
         }
 
@@ -59,7 +67,15 @@ namespace UniCortex.Editor.Infrastructures
                     "GameView type not found. This Unity version may not be supported.");
             }
 
+            // Bring the main Play Mode view (the Game view or the Simulator view) to the front.
             // Unlike FocusGameView, this opens a new Game View when none is open.
+            var playModeView = PlayModeViewUtility.GetMainPlayModeView();
+            if (playModeView != null)
+            {
+                playModeView.Focus();
+                return;
+            }
+
             EditorWindow.GetWindow(s_gameViewType).Focus();
         }
 

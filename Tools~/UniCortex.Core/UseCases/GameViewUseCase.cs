@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -13,10 +15,13 @@ public class GameViewUseCase(IUnityEditorClient client)
         return "Game View focused successfully.";
     }
 
-    public async ValueTask<byte[]> CaptureAsync(CancellationToken cancellationToken)
+    // deviceFrame: null draws the device frame in the Simulator view only.
+    public async ValueTask<byte[]> CaptureAsync(bool drawSafeArea, bool? deviceFrame,
+        CancellationToken cancellationToken)
     {
+        var request = new CaptureGameViewRequest { drawSafeArea = drawSafeArea, deviceFrame = deviceFrame };
         var response = await client.GetAsync<CaptureGameViewRequest, CaptureGameViewResponse>(
-            ApiRoutes.GameViewCapture, cancellationToken: cancellationToken);
+            ApiRoutes.GameViewCapture, request, cancellationToken);
         return Convert.FromBase64String(response.pngDataBase64);
     }
 
@@ -79,5 +84,63 @@ public class GameViewUseCase(IUnityEditorClient client)
             ApiRoutes.GameViewScale, new SetGameViewScaleRequest { scale = scale },
             cancellationToken);
         return $"Game View scale set to {response.scale} successfully.";
+    }
+
+    public async ValueTask<string> GetViewTypeAsync(CancellationToken cancellationToken)
+    {
+        var response = await client.GetAsync<GetPlayModeViewTypeRequest, GetPlayModeViewTypeResponse>(
+            ApiRoutes.GameViewViewType, cancellationToken: cancellationToken);
+        return $"Play Mode view type: {response.viewType}";
+    }
+
+    public async ValueTask<string> SetViewTypeAsync(string viewType, CancellationToken cancellationToken)
+    {
+        var response = await client.PostAsync<SetPlayModeViewTypeRequest, SetPlayModeViewTypeResponse>(
+            ApiRoutes.GameViewViewType, new SetPlayModeViewTypeRequest { viewType = viewType },
+            cancellationToken);
+        return $"Play Mode view type set to {response.viewType} successfully.";
+    }
+
+    public async ValueTask<string> GetSimulatorDeviceListAsync(CancellationToken cancellationToken)
+    {
+        var response = await GetSimulatorDeviceListResponseAsync(cancellationToken);
+        var sb = new StringBuilder();
+        sb.AppendLine($"Simulator devices (selected: {response.selectedIndex}, rotation: {response.rotation}):");
+        foreach (var device in response.devices)
+        {
+            var marker = device.index == response.selectedIndex ? " *" : "";
+            sb.AppendLine($"  [{device.index}] {device.name} ({device.screenWidth}x{device.screenHeight}){marker}");
+        }
+
+        return sb.ToString().TrimEnd();
+    }
+
+    public async ValueTask<GetSimulatorDeviceListResponse> GetSimulatorDeviceListResponseAsync(
+        CancellationToken cancellationToken)
+    {
+        return await client.GetAsync<GetSimulatorDeviceListRequest, GetSimulatorDeviceListResponse>(
+            ApiRoutes.SimulatorDevices, cancellationToken: cancellationToken);
+    }
+
+    public async ValueTask<string> SetSimulatorDeviceAsync(int? index, int? rotation,
+        CancellationToken cancellationToken)
+    {
+        // -1 keeps the current device or rotation.
+        var request = new SetSimulatorDeviceRequest { index = index ?? -1, rotation = rotation ?? -1 };
+        var response = await client.PostAsync<SetSimulatorDeviceRequest, SetSimulatorDeviceResponse>(
+            ApiRoutes.SimulatorDevice, request, cancellationToken);
+        return $"Simulator device set to {response.deviceName} (rotation: {response.rotation}) successfully.";
+    }
+
+    public async ValueTask<string> GetSafeAreaAsync(CancellationToken cancellationToken)
+    {
+        var response = await GetSafeAreaResponseAsync(cancellationToken);
+        return JsonSerializer.Serialize(response, JsonOptions.Default);
+    }
+
+    public async ValueTask<GetScreenSafeAreaResponse> GetSafeAreaResponseAsync(CancellationToken cancellationToken)
+    {
+        return await client.GetAsync<GetScreenSafeAreaRequest, GetScreenSafeAreaResponse>(
+            ApiRoutes.GameViewSafeArea, cancellationToken: cancellationToken);
     }
 }
