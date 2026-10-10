@@ -35,6 +35,8 @@ app.Add<SceneViewCommands>("scene-view");
 app.Add<GameViewCommands>("game-view");
 app.Add<GameViewSizeCommands>("game-view size");
 app.Add<GameViewScaleCommands>("game-view scale");
+app.Add<GameViewViewTypeCommands>("game-view view-type");
+app.Add<SimulatorDeviceCommands>("game-view simulator device");
 app.Add<RecorderAllCommands>("recorder all");
 app.Add<MovieRecorderCommands>("recorder movie");
 app.Add<InputKeyCommands>("input key");

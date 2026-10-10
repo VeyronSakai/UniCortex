@@ -26,7 +26,11 @@ namespace UniCortex.Editor.Handlers.GameView
         {
             try
             {
-                var pngData = await _useCase.ExecuteAsync(cancellationToken);
+                var drawSafeArea = ParseBool(
+                    context.GetQueryParameter(nameof(CaptureGameViewRequest.drawSafeArea))) ?? false;
+                var deviceFrame = ParseBool(
+                    context.GetQueryParameter(nameof(CaptureGameViewRequest.deviceFrame)));
+                var pngData = await _useCase.ExecuteAsync(drawSafeArea, deviceFrame, cancellationToken);
                 var json = JsonUtility.ToJson(new CaptureGameViewResponse(Convert.ToBase64String(pngData)));
                 await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
             }
@@ -35,6 +39,11 @@ namespace UniCortex.Editor.Handlers.GameView
                 var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
                 await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
             }
+        }
+
+        private static bool? ParseBool(string value)
+        {
+            return bool.TryParse(value, out var parsed) ? parsed : (bool?)null;
         }
     }
 }

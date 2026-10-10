@@ -255,9 +255,10 @@ namespace UniCortex.Editor
             var executeMenuItemHandler = new ExecuteMenuItemHandler(executeMenuItemUseCase);
 
             var editorWindowOps = new EditorWindowOperationsAdapter();
+            var playModeViewOps = new PlayModeViewOperationsAdapter();
 
-            var captureGameViewUseCase =
-                new CaptureGameViewUseCase(dispatcher, editorApplication, editorWindowOps, captureOps);
+            var captureGameViewUseCase = new CaptureGameViewUseCase(dispatcher, editorApplication, editorWindowOps,
+                captureOps, playModeViewOps);
             var captureGameViewHandler = new CaptureGameViewHandler(captureGameViewUseCase);
 
             var captureSceneViewUseCase = new CaptureSceneViewUseCase(dispatcher, editorWindowOps, captureOps);
@@ -283,6 +284,21 @@ namespace UniCortex.Editor
 
             var setGameViewScaleUseCase = new SetGameViewScaleUseCase(dispatcher, editorWindowOps);
             var setGameViewScaleHandler = new SetGameViewScaleHandler(setGameViewScaleUseCase);
+
+            var getPlayModeViewTypeUseCase = new GetPlayModeViewTypeUseCase(dispatcher, playModeViewOps);
+            var getPlayModeViewTypeHandler = new GetPlayModeViewTypeHandler(getPlayModeViewTypeUseCase);
+
+            var setPlayModeViewTypeUseCase = new SetPlayModeViewTypeUseCase(dispatcher, playModeViewOps);
+            var setPlayModeViewTypeHandler = new SetPlayModeViewTypeHandler(setPlayModeViewTypeUseCase);
+
+            var getSimulatorDeviceListUseCase = new GetSimulatorDeviceListUseCase(dispatcher, playModeViewOps);
+            var getSimulatorDeviceListHandler = new GetSimulatorDeviceListHandler(getSimulatorDeviceListUseCase);
+
+            var setSimulatorDeviceUseCase = new SetSimulatorDeviceUseCase(dispatcher, playModeViewOps);
+            var setSimulatorDeviceHandler = new SetSimulatorDeviceHandler(setSimulatorDeviceUseCase);
+
+            var getScreenSafeAreaUseCase = new GetScreenSafeAreaUseCase(dispatcher, playModeViewOps);
+            var getScreenSafeAreaHandler = new GetScreenSafeAreaHandler(getScreenSafeAreaUseCase);
 
 #if UNICORTEX_RECORDER
             var allRecorderOps = new AllRecorderOperationsAdapter();
@@ -447,6 +463,11 @@ namespace UniCortex.Editor
             setGameViewSizeHandler.Register(router);
             getGameViewScaleHandler.Register(router);
             setGameViewScaleHandler.Register(router);
+            getPlayModeViewTypeHandler.Register(router);
+            setPlayModeViewTypeHandler.Register(router);
+            getSimulatorDeviceListHandler.Register(router);
+            setSimulatorDeviceHandler.Register(router);
+            getScreenSafeAreaHandler.Register(router);
             addMovieRecorderHandler.Register(router);
             getRecorderListHandler.Register(router);
             removeMovieRecorderHandler.Register(router);

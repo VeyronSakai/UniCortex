@@ -777,16 +777,21 @@ Captures the Scene View as a PNG image. Available in both Edit Mode and Play Mod
 Response: `{ "pngDataBase64": "<base64>" }` (`Content-Type: application/json`)
 
 #### POST `/game-view/focus`
-Switches focus to the Game View.
+Switches focus to the Game View. When the Play Mode window is in the Simulator view, the Simulator view (the main Play Mode view, `PlayModeView.GetMainPlayModeView`) is focused instead.
 
 Response: `{"success": true}`
 
 #### GET `/game-view/capture`
 Captures the Game View as a PNG image. Play Mode only.
 
+Query parameters:
+- `drawSafeArea` (optional, default `false`): when `true`, draws the outline of the safe area (`Screen.safeArea`, yellow) and fills the cutouts (`Screen.cutouts`, translucent red) on the image, using the values of `GET /game-view/safe-area`. Useful with the Simulator view to check whether UI overlaps the notch or the camera hole
+- `deviceFrame` (optional): in the Simulator view, draws the device frame of the Simulator view (bezel, rounded corners, notch, camera hole) around the image, the way the Simulator view draws it (`DeviceView`): the game image is placed on the device screen in portrait layout according to the screen orientation (excluding the screen insets, e.g. the Android navigation bar), the frame image of the device (`DeviceLoader.LoadOverlay`, accessed via reflection; a plain border when the device has none) is drawn over it, and the whole device is rotated by the device rotation. The image is larger than the screen by the frame thickness (e.g. 1200x2460 for Google Pixel 5) and its pixels no longer match screen coordinates. When omitted, the frame is drawn in the Simulator view (so that UI overlapping the notch or the rounded corners is noticed early) and not in the Game view. `false` captures only the screen. `true` returns 400 in the Game view. Can be combined with `drawSafeArea`
+
 - Returns 400 in Edit Mode (use `GET /scene-view/capture` instead). The Game View is not opened or focused in that case
 - Captures only the game image at the Game View resolution (e.g. 1920x1080), including Screen Space - Overlay UI and without the editor chrome
-- Opens the Game View if none is open (`EditorWindow.GetWindow`) and focuses it first (it only renders while visible), then on a later main thread tick reads the focused Game View's render target (`PlayModeView.m_TargetTexture`, accessed via reflection)
+- Targets the main Play Mode view (`PlayModeView.GetMainPlayModeView`, accessed via reflection), which is the Game view or the Simulator view. In the Simulator view, the simulated device screen is captured at the device resolution in the current orientation (with the device frame unless `deviceFrame` is `false`)
+- Opens the Game View if no Play Mode view is open (`EditorWindow.GetWindow`) and focuses the main Play Mode view first (it only renders while visible), then on a later main thread tick reads its render target (`PlayModeView.m_TargetTexture`, accessed via reflection)
 - On graphics APIs whose UV origin is at the top (`SystemInfo.graphicsUVStartsAtTop`, e.g. Metal / Direct3D / Vulkan), the render target is stored upside down, so it is flipped vertically before encoding
 - Returns 400 if the Game View is not open or has not been rendered yet
 
@@ -841,6 +846,77 @@ Request body:
 ```
 
 Response: `{"success": true, "scale": 2.0}`
+
+#### GET `/game-view/view-type`
+Gets whether the Play Mode window shows the Game view or the Device Simulator view (`PlayModeWindow.GetViewType`). Opens a Game View if no Play Mode view is open.
+
+Response: `{"viewType": "GameView"}` (`"GameView"` or `"SimulatorView"`)
+
+#### POST `/game-view/view-type`
+Switches the Play Mode window between the Game view and the Device Simulator view (`PlayModeWindow.SetViewType`). The Game view does not simulate `Screen.safeArea` / `Screen.cutouts`, so switch to the Simulator view to check how UI looks on a device with a notch.
+
+Request body:
+```json
+{"viewType": "SimulatorView"}
+```
+
+Response: `{"viewType": "SimulatorView"}` (the view type after switching)
+
+- Returns 400 if `viewType` is missing or is not `"GameView"` / `"SimulatorView"`
+
+#### GET `/game-view/simulator/devices`
+Returns the devices available in the Simulator view, with the selected device and its rotation. Read from the Simulator view's internal `DeviceSimulatorMain` (via reflection).
+
+Response:
+```json
+{
+  "devices": [
+    {"index": 0, "name": "Apple iPad Mini 4", "screenWidth": 1536, "screenHeight": 2048},
+    {"index": 6, "name": "Google Pixel 5", "screenWidth": 1080, "screenHeight": 2340}
+  ],
+  "selectedIndex": 6,
+  "rotation": 0
+}
+```
+
+- `screenWidth` / `screenHeight`: the native resolution of the device's (first) screen in portrait orientation
+- `rotation`: clockwise rotation of the device in degrees (0, 90, 180 or 270), the value the rotate buttons of the Simulator toolbar change
+- Returns 400 if the Play Mode window is not in the Simulator view
+
+#### POST `/game-view/simulator/device`
+Selects the simulated device and/or its rotation in the Simulator view. Same as choosing a device from the device list popup (`DeviceSimulatorMain.deviceIndex`) and pressing the rotate buttons (`UserInterfaceController.Rotation`), accessed via reflection.
+
+Request body:
+```json
+{"index": 6, "rotation": 90}
+```
+
+- `index`: index from `GET /game-view/simulator/devices`. `-1` keeps the current device
+- `rotation`: clockwise rotation in degrees (0, 90, 180 or 270). `-1` keeps the current rotation. Whether the screen orientation follows the rotation depends on the Player Settings (auto rotation and allowed orientations)
+
+Response: `{"deviceName": "Google Pixel 5", "rotation": 90}`
+
+- Returns 400 if both are `-1`, if `index` is out of range, if `rotation` is not one of the allowed values, or if the Play Mode window is not in the Simulator view
+
+#### GET `/game-view/safe-area`
+Gets the screen size, the safe area and the cutouts of the main Play Mode view. Available in Edit Mode and Play Mode.
+
+- Simulator view: the values of the simulated screen (`Screen.width` / `height` / `safeArea` / `cutouts` / `orientation` of the internal `ScreenSimulation`). Pending orientation changes are applied first (`ScreenSimulation.ApplyChanges`), so the result reflects a rotation that has just been set
+- Game view: the Game view does not simulate a safe area, so the safe area is the whole screen (`Handles.GetMainGameViewSize`), `cutouts` is empty, and `deviceName` / `orientation` are empty
+- Rects are in screen coordinates (origin at the bottom-left), the same as `GET /input/ui-pointer-targets` and the mouse input endpoints
+
+Response:
+```json
+{
+  "viewType": "SimulatorView",
+  "deviceName": "Google Pixel 5",
+  "orientation": "Portrait",
+  "screenWidth": 1080,
+  "screenHeight": 2340,
+  "safeArea": {"x": 0.0, "y": 0.0, "width": 1080.0, "height": 2204.0},
+  "cutouts": [{"x": 0.0, "y": 2204.0, "width": 136.0, "height": 136.0}]
+}
+```
 
 ### Recording
 
@@ -1416,7 +1492,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
   3. Exits with an error if neither is set
 - Logs go to stderr (stdout is reserved for the MCP protocol)
 
-### MCP Tools (49 tools total)
+### MCP Tools (54 tools total)
 
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
@@ -1517,17 +1593,22 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 |------|-----|-------------|
 | `execute_menu_item` | POST `/menu-item/execute` | Execute a Unity menu item by path |
 
-#### View (7)
+#### View (12)
 
 | Tool | API | Description |
 |------|-----|-------------|
 | `focus_scene_view` | POST `/scene-view/focus` | Switch focus to the Scene View |
 | `capture_scene_view` | GET `/scene-view/capture` | Capture the Scene View (Edit Mode and Play Mode, including Prefab Mode) |
 | `focus_game_view` | POST `/game-view/focus` | Switch focus to the Game View |
-| `capture_game_view` | GET `/game-view/capture` | Capture the Game View (Play Mode only) |
+| `capture_game_view` | GET `/game-view/capture` | Capture the Game View or the Simulator view (Play Mode only), optionally drawing the safe area and cutouts and the device frame |
 | `get_game_view_size` | GET `/game-view/size` | Get the current Game View size |
 | `get_game_view_size_list` | GET `/game-view/size/list` | Get the list of available Game View sizes |
 | `set_game_view_size` | POST `/game-view/size` | Set the Game View resolution by index |
+| `get_play_mode_view_type` | GET `/game-view/view-type` | Get whether the Play Mode window shows the Game view or the Simulator view |
+| `set_play_mode_view_type` | POST `/game-view/view-type` | Switch the Play Mode window between the Game view and the Simulator view |
+| `get_simulator_device_list` | GET `/game-view/simulator/devices` | Get the devices of the Simulator view with the selected device and rotation |
+| `set_simulator_device` | POST `/game-view/simulator/device` | Select the simulated device and/or its rotation |
+| `get_screen_safe_area` | GET `/game-view/safe-area` | Get the screen size, safe area and cutouts of the Game view or the Simulator view |
 
 #### Input (6)
 
@@ -1648,8 +1729,11 @@ asset refresh
 project-window select
 menu execute
 scene-view focus|capture
-game-view focus|capture
+game-view focus|capture|safe-area
 game-view size get|list|set
+game-view scale get|set
+game-view view-type get|set
+game-view simulator device list|set
 input key press
 input text type
 input mouse click|drag|move
