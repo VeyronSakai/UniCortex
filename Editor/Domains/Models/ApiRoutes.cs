@@ -13,6 +13,8 @@ namespace UniCortex.Editor.Domains.Models
         public const string EditorSave = "/editor/save";        
         public const string Undo = "/editor/undo";
         public const string Redo = "/editor/redo";
+        public const string Platform = "/editor/platform";
+        public const string PlatformSwitch = "/editor/platform/switch";
         public const string GameObjects = "/gameobjects";
         public const string GameObjectCreate = "/gameobject/create";
         public const string GameObjectDelete = "/gameobject/delete";

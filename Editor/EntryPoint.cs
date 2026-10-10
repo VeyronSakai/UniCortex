@@ -109,6 +109,14 @@ namespace UniCortex.Editor
                 editorApplication);
             var requestDomainReloadHandler = new DomainReloadHandler(requestDomainReloadUseCase);
 
+            var buildTargetOps = new BuildTargetOperationsAdapter();
+
+            var getActivePlatformUseCase = new GetActivePlatformUseCase(dispatcher, buildTargetOps);
+            var getActivePlatformHandler = new GetActivePlatformHandler(getActivePlatformUseCase);
+
+            var switchPlatformUseCase = new SwitchPlatformUseCase(dispatcher, buildTargetOps, editorApplication);
+            var switchPlatformHandler = new SwitchPlatformHandler(switchPlatformUseCase);
+
             var getEditorStatusUseCase = new GetEditorStatusUseCase(dispatcher, editorApplication);
             var editorStatusHandler = new EditorStatusHandler(getEditorStatusUseCase);
 
@@ -391,6 +399,8 @@ namespace UniCortex.Editor
             playHandler.Register(router);
             stopHandler.Register(router);
             requestDomainReloadHandler.Register(router);
+            getActivePlatformHandler.Register(router);
+            switchPlatformHandler.Register(router);
             editorStatusHandler.Register(router);
             pauseHandler.Register(router);
             unpauseHandler.Register(router);

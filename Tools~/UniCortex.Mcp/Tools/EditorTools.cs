@@ -67,4 +67,25 @@ public class EditorTools(EditorUseCase editorUseCase, IAsyncOperationSequencer s
      Description("Request a domain reload (script recompilation) in the Unity Editor."), UsedImplicitly]
     public ValueTask<CallToolResult> ReloadDomainAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.ReloadDomainAsync, cancellationToken);
+
+    [McpServerTool(Name = "get_active_platform", ReadOnly = true),
+     Description("Get the active build target platform (e.g. StandaloneOSX, Android, iOS) of the Unity Editor."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> GetActivePlatformAsync(CancellationToken cancellationToken)
+        => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.GetActivePlatformAsync, cancellationToken);
+
+    [McpServerTool(Name = "switch_platform", ReadOnly = false),
+     Description(
+         "Switch the active build target platform of the Unity Editor (File > Build Settings > Switch Platform). " +
+         "Assets are reimported and scripts are recompiled, which can take several minutes. " +
+         "Not available in Play Mode. The platform module must be installed."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> SwitchPlatformAsync(
+        [Description(
+            "Build target name of the UnityEditor.BuildTarget enum (case-insensitive), " +
+            "e.g. StandaloneOSX, StandaloneWindows64, StandaloneLinux64, Android, iOS, WebGL.")]
+        string buildTarget,
+        CancellationToken cancellationToken)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => editorUseCase.SwitchPlatformAsync(buildTarget, ct), cancellationToken);
 }

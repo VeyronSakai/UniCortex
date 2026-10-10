@@ -128,6 +128,34 @@ public class EditorUseCase(IUnityEditorClient client)
         return "Domain reload completed successfully.";
     }
 
+    public async ValueTask<string> GetActivePlatformAsync(CancellationToken cancellationToken)
+    {
+        var response = await client.GetAsync<GetActivePlatformRequest, GetActivePlatformResponse>(
+            ApiRoutes.Platform, cancellationToken: cancellationToken);
+        return $"Active platform: {response.activeBuildTarget}";
+    }
+
+    public async ValueTask<string> SwitchPlatformAsync(string buildTarget, CancellationToken cancellationToken)
+    {
+        // Same as ReloadDomainAsync: avoid starting a switch while Unity is recompiling.
+        await client.WaitForServerAsync(cancellationToken);
+
+        // The server responds after assets have been reimported and scripts recompiled for the new platform,
+        // right before the domain reload starts.
+        var response = await client.PostAsync<SwitchPlatformRequest, SwitchPlatformResponse>(
+            ApiRoutes.PlatformSwitch, new SwitchPlatformRequest { buildTarget = buildTarget }, cancellationToken);
+
+        if (response.previousBuildTarget == response.activeBuildTarget)
+        {
+            return $"Platform is already {response.activeBuildTarget}.";
+        }
+
+        // Wait until the server of the new domain answers, as ReloadDomainAsync does.
+        await GetStatusAsync(cancellationToken);
+
+        return $"Platform switched from {response.previousBuildTarget} to {response.activeBuildTarget} successfully.";
+    }
+
     private async ValueTask<bool> GetIsPlayingAsync(CancellationToken cancellationToken)
     {
         var status = await GetStatusAsync(cancellationToken);
