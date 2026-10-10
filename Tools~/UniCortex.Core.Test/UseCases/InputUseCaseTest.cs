@@ -32,6 +32,73 @@ public class InputUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
+    public async ValueTask TypeText_ReturnsError_WhenNotInPlayMode()
+    {
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.InputUseCase.TypeTextAsync("a", CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Play Mode").Or.Contain("Input System"));
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask TypeText_InPlayMode_TypesIntoFocusedInputField()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            // The InputField is created in Play Mode, so the scene is not changed.
+            await _fixture.MenuItemUseCase.ExecuteAsync("GameObject/UI/Legacy/Input Field", CancellationToken.None);
+            var targets = await GetUIPointerTargetsAsync();
+            var inputField = targets.Single(t => t.path == "Canvas/InputField (Legacy)");
+            await _fixture.InputUseCase.ClickMouseAsync(null, null, inputField.instanceId, MouseButton.Left, null,
+                CancellationToken.None);
+
+            // Act
+            // No delay before reading the text: typing returns after the text has been processed.
+            await _fixture.InputUseCase.TypeTextAsync("Hello, World! あ", CancellationToken.None);
+
+            // Assert
+            var json = await _fixture.ComponentUseCase.GetPropertiesAsync(inputField.instanceId,
+                "UnityEngine.UI.InputField", "UnityEngine.UI", cancellationToken: CancellationToken.None);
+            var properties = JsonSerializer.Deserialize<GetComponentPropertiesResponse>(json, s_jsonOptions)!
+                .properties;
+            Assert.That(properties.Single(p => p.path == "m_Text").value, Is.EqualTo("Hello, World! あ"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask TypeText_InPlayMode_RaisesKeyboardTextInput()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.EditorUseCase.EnterPlayModeAsync(CancellationToken.None);
+        try
+        {
+            await _fixture.ConsoleUseCase.ClearAsync(CancellationToken.None);
+
+            // Act
+            await _fixture.InputUseCase.TypeTextAsync("Ab", CancellationToken.None);
+
+            // Assert
+            var logs = await _fixture.ConsoleUseCase.GetLogsAsync(log: true, warning: false, error: false,
+                cancellationToken: CancellationToken.None);
+            Assert.That(logs, Does.Contain("[TextInputDebug] Text input: A"));
+            Assert.That(logs, Does.Contain("[TextInputDebug] Text input: b"));
+        }
+        finally
+        {
+            await _fixture.EditorUseCase.ExitPlayModeAsync(CancellationToken.None);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
     public async ValueTask ClickMouse_ReturnsError_WhenNotInPlayMode()
     {
         var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>

@@ -927,6 +927,32 @@ Steps (run in the same way as the mouse click, see below):
 
 There are no endpoints to press or release a key alone, so a key never stays pressed after a request. Holding a key while sending other input (e.g. Shift + click) is not supported.
 
+Pressing keys does not type text into text fields (see `/input/text/type`).
+
+Response: `{"success": true}`
+
+#### POST `/input/text/type`
+Types text into the focused text field while in Play mode. Focus the field first, e.g. with `/input/mouse/click`.
+
+Request body:
+```json
+{"text": "Hello あ"}
+```
+
+- `text`: required, not empty. Any characters, including upper and lower case letters, symbols and Japanese. A character outside the BMP (e.g. an emoji) is sent as its two UTF-16 surrogates
+
+Text fields do not read typed characters from key states. uGUI `InputField`, TextMeshPro `TMP_InputField` and UI Toolkit `TextField` read them from IMGUI events with `Event.PopEvent`. So each character is sent in two ways:
+
+1. An IMGUI `KeyDown` event with the character (`keyCode` is `None`), queued to the game with the internal `EditorGUIUtility.QueueGameViewInputEvent` (called through reflection), which the Game View uses to pass the events of the Editor to the game
+2. A `TextEvent` to the virtual keyboard (`InputSystem.QueueTextEvent`), for code reading `Keyboard.onTextInput`
+
+The two do not reach the same reader, so a character is not typed twice. Key states (`Keyboard.current`, `InputAction`) are not changed; use `/input/key/press` for them. Editing and submitting keys such as Backspace and Enter are not supported, because `/input/key/press` does not send IMGUI events.
+
+Steps:
+
+1. Send all the characters in one frame, while the physical keyboard is blocked (see above)
+2. Wait one more frame (`PlayerLoopRunner.WaitForInputProcessedAsync`), so the request returns after the text field has received the text
+
 Response: `{"success": true}`
 
 #### Mouse (`/input/mouse/*`)
@@ -1358,7 +1384,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
   3. Exits with an error if neither is set
 - Logs go to stderr (stdout is reserved for the MCP protocol)
 
-### MCP Tools (46 tools total)
+### MCP Tools (47 tools total)
 
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
@@ -1469,11 +1495,12 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `get_game_view_size_list` | GET `/game-view/size/list` | Get the list of available Game View sizes |
 | `set_game_view_size` | POST `/game-view/size` | Set the Game View resolution by index |
 
-#### Input (3)
+#### Input (6)
 
 | Tool | API | Description |
 |------|-----|-------------|
 | `press_key` | POST `/input/key/press` | Press keys together, optionally holding them for a given time, and release them (requires com.unity.inputsystem) |
+| `type_text` | POST `/input/text/type` | Type text into the focused text field (requires com.unity.inputsystem) |
 | `click_mouse` | POST `/input/mouse/click` | Click (or tap) at coordinates or at the center of a UI object given by instanceId, optionally holding the button for a given time (requires com.unity.inputsystem, and com.unity.ugui for a target) |
 | `drag_mouse` | POST `/input/mouse/drag` | Drag (or swipe) from a start to an end over a given time in one call |
 | `move_mouse` | POST `/input/mouse/move` | Move the mouse without pressing a button, e.g. for hover |
@@ -1589,6 +1616,7 @@ scene-view focus|capture
 game-view focus|capture
 game-view size get|list|set
 input key press
+input text type
 input mouse click|drag|move
 input ui-pointer targets
 timeline create|play|stop

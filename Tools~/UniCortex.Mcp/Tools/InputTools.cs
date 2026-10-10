@@ -29,6 +29,9 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
          "Returns after the release has been processed. " +
          "Uses InputSystem.QueueEvent() to simulate device-level input. " +
          "Triggers Input System actions (InputAction, PlayerInput) and Keyboard.current key states. " +
+         "Does NOT type text or edit text fields (InputField, TMP_InputField, UI Toolkit TextField), " +
+         "because they read typed characters and editing keys from IMGUI events, not from key states; " +
+         "use type_text to type text. " +
          "Requires the Input System package to be installed. " +
          "Does NOT work with legacy UnityEngine.Input.GetKey()."),
      UsedImplicitly]
@@ -39,6 +42,23 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => inputUseCase.PressKeyAsync(keys, holdDuration, ct), cancellationToken);
+
+    [McpServerTool(Name = "type_text", ReadOnly = false),
+     Description(
+         "Type text into the focused text field in Play Mode, e.g. a uGUI InputField, a TextMeshPro TMP_InputField " +
+         "or a UI Toolkit TextField. Focus the field first, e.g. with click_mouse. " +
+         "Any characters can be typed, including upper and lower case letters, symbols and Japanese. " +
+         "All the characters are typed in the same frame. Returns after they have been processed. " +
+         "Also raises Keyboard.onTextInput of Unity Input System for each character. " +
+         "Does not change key states (Keyboard.current, InputAction); use press_key for that. " +
+         "Editing and submitting keys such as Backspace and Enter are not supported. " +
+         "Requires the Input System package to be installed."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> TypeTextAsync(
+        [Description("Text to type, e.g. \"Hello\" or \"こんにちは\".")] string text,
+        CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => inputUseCase.TypeTextAsync(text, ct), cancellationToken);
 
     private const string MouseToolDescription =
         "Uses InputSystem.QueueEvent() to simulate the Mouse device of Unity Input System (com.unity.inputsystem) " +

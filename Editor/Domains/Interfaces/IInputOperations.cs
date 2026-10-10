@@ -8,6 +8,10 @@ namespace UniCortex.Editor.Domains.Interfaces
         // Releases all the keys in one event, so they are released in the same frame.
         void ReleaseKeys(string[] keys);
 
+        // Types the characters into the focused text field. Unlike PressKeys, this produces text input, not key
+        // states.
+        void TypeText(string text);
+
         void PressMouseButton(float x, float y, string button);
         void ReleaseMouseButton(float x, float y, string button);
         void MoveMouse(float x, float y);

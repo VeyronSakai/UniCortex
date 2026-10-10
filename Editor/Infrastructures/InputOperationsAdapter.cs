@@ -7,7 +7,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
+using BindingFlags = System.Reflection.BindingFlags;
 using InputMouseButton = UnityEngine.InputSystem.LowLevel.MouseButton;
+using MethodInfo = System.Reflection.MethodInfo;
 using MouseButtonConst = UniCortex.Editor.Domains.Models.MouseButton;
 
 namespace UniCortex.Editor.Infrastructures
@@ -20,6 +22,11 @@ namespace UniCortex.Editor.Infrastructures
         // domain reload while this adapter is created again.
         private const string VirtualMouseName = "UniCortexMouse";
         private const string VirtualKeyboardName = "UniCortexKeyboard";
+
+        // EditorGUIUtility.QueueGameViewInputEvent(Event), internal. See QueueGameViewInputEvent.
+        private static readonly MethodInfo s_queueGameViewInputEvent = typeof(EditorGUIUtility).GetMethod(
+            "QueueGameViewInputEvent", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public, null,
+            new[] { typeof(Event) }, null);
 
         // Track queued key/button state ourselves instead of calling InputSystem.Update()
         // between events. Forcing InputSystem.Update() from an HTTP handler would process
@@ -179,6 +186,44 @@ namespace UniCortex.Editor.Infrastructures
                     _pressedKeys.Remove(key);
                 }
             }
+        }
+
+        // Sends each character in two ways, because text fields do not read it from the Input System:
+        // - An IMGUI KeyDown event with the character, queued to the game through the Game View. uGUI InputField,
+        //   TextMeshPro TMP_InputField and UI Toolkit TextField read characters with Event.PopEvent.
+        // - A TextEvent to the virtual keyboard, for code reading Keyboard.onTextInput.
+        // The two do not reach the same reader, so a character is not typed twice.
+        public void TypeText(string text)
+        {
+            if (!EditorApplication.isPlaying)
+            {
+                throw new InvalidOperationException(
+                    "Input simulation is only available in Play Mode. Enter Play Mode first.");
+            }
+
+            EnsureInputSettingsConfigured();
+
+            var keyboard = GetOrAddVirtualDevice<Keyboard>(VirtualKeyboardName);
+
+            // A character outside the BMP (e.g. an emoji) is sent as its two UTF-16 surrogates.
+            foreach (var character in text)
+            {
+                QueueGameViewInputEvent(new Event { type = EventType.KeyDown, character = character });
+                InputSystem.QueueTextEvent(keyboard, character);
+            }
+        }
+
+        // EditorGUIUtility.QueueGameViewInputEvent is internal. The Game View uses it to pass the IMGUI events of
+        // the Editor to the game, where Event.PopEvent returns them.
+        private static void QueueGameViewInputEvent(Event evt)
+        {
+            if (s_queueGameViewInputEvent == null)
+            {
+                throw new NotSupportedException(
+                    "EditorGUIUtility.QueueGameViewInputEvent is not found in this Unity version.");
+            }
+
+            s_queueGameViewInputEvent.Invoke(null, new object[] { evt });
         }
 
         public void PressMouseButton(float x, float y, string button)

@@ -16,6 +16,14 @@ public class InputUseCase(IUnityEditorClient client)
         return $"Pressed keys: {string.Join("+", keys)}";
     }
 
+    public async ValueTask<string> TypeTextAsync(string text, CancellationToken cancellationToken)
+    {
+        var request = new TypeTextRequest { text = text };
+        await client.PostAsync<TypeTextRequest, TypeTextResponse>(ApiRoutes.InputTextType, request,
+            cancellationToken);
+        return $"Typed text: {text}";
+    }
+
     public async ValueTask<string> ClickMouseAsync(float? x, float? y, int? instanceId, string button,
         float? holdDuration, CancellationToken cancellationToken)
     {
