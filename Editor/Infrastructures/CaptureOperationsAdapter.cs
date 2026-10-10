@@ -5,12 +5,14 @@ using UniCortex.Editor.Domains.Models;
 using UnityEditor;
 using UnityEngine;
 
+#nullable enable
+
 namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class CaptureOperationsAdapter : ICaptureOperations
     {
         // PlayModeView.m_TargetTexture holds the rendered game image at the Game View resolution.
-        private static readonly FieldInfo s_targetTextureField =
+        private static readonly FieldInfo? s_targetTextureField =
             PlayModeViewUtility.PlayModeViewType
                 ?.GetField("m_TargetTexture", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -18,7 +20,7 @@ namespace UniCortex.Editor.Infrastructures
         private static readonly Color s_safeAreaColor = new Color(0.95f, 1f, 0f);
         private static readonly Color s_cutoutColor = new Color(1f, 0f, 0f, 0.5f);
 
-        public byte[] CaptureGameView(GetScreenSafeAreaResponse safeAreaToDraw, bool drawDeviceFrame)
+        public byte[] CaptureGameView(GetScreenSafeAreaResponse? safeAreaToDraw, bool drawDeviceFrame)
         {
             var deviceFrame = drawDeviceFrame ? PlayModeViewUtility.GetDeviceFrame() : null;
             var targetTexture = GetGameViewTargetTexture();
@@ -73,7 +75,7 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        private static RenderTexture GetGameViewTargetTexture()
+        private static RenderTexture? GetGameViewTargetTexture()
         {
             if (s_targetTextureField == null)
             {
@@ -93,7 +95,7 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         private static byte[] EncodeToPng(RenderTexture source, bool flipVertically,
-            GetScreenSafeAreaResponse safeAreaToDraw, DeviceFrame deviceFrame)
+            GetScreenSafeAreaResponse? safeAreaToDraw, DeviceFrame? deviceFrame)
         {
             var width = source.width;
             var height = source.height;
