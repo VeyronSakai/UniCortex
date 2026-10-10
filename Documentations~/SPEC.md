@@ -165,6 +165,38 @@ The response is held until the compilation finishes:
 
 After a successful response, the client waits for `GET /editor/status` to succeed. It runs on the main thread, which is busy with the reload until the old server has stopped, so the answer comes from the new domain.
 
+#### GET `/editor/platform`
+Returns the active build target platform. `EditorUserBuildSettings.activeBuildTarget`
+
+Response:
+```json
+{"activeBuildTarget": "StandaloneOSX"}
+```
+
+Build targets are named by the non-obsolete names of the `UnityEditor.BuildTarget` enum (an obsolete alias such as `iPhone` shares its value with `iOS`).
+
+#### POST `/editor/platform/switch`
+Switches the active build target platform. `EditorUserBuildSettings.SwitchActiveBuildTarget()`
+
+Request body:
+```json
+{"buildTarget": "Android"}
+```
+
+- `buildTarget`: required. Name of the `UnityEditor.BuildTarget` enum, case-insensitive
+
+Response:
+```json
+{"previousBuildTarget": "StandaloneOSX", "activeBuildTarget": "Android"}
+```
+
+- The switch runs synchronously on the main thread: assets are reimported and scripts are recompiled before the response, which can take several minutes. The domain reload starts after the call returns, and the server writes the response before it stops for the reload (same as `/editor/domain-reload`)
+- Switching to the active build target does nothing and returns the same name in both fields. This also makes a request resent after a lost response harmless
+- Unknown build target, or a build target whose platform module is not installed (`BuildPipeline.IsBuildTargetSupported`): `400 Bad Request`. The error lists the supported build targets
+- In play mode, or when the switch fails: `400 Bad Request`
+
+After a switch, the client waits for `GET /editor/status` to succeed, so that the answer comes from the new domain (see `/editor/domain-reload`).
+
 #### POST `/editor/undo`
 Undoes the most recent operation. `Undo.PerformUndo()`
 
@@ -1384,13 +1416,13 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
   3. Exits with an error if neither is set
 - Logs go to stderr (stdout is reserved for the MCP protocol)
 
-### MCP Tools (47 tools total)
+### MCP Tools (49 tools total)
 
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
 The tool receives the corresponding Core service via constructor DI and wraps the result in a `CallToolResult`.
 
-#### Editor Control (11)
+#### Editor Control (13)
 
 | Tool | API | Description |
 |------|-----|-------------|
@@ -1405,6 +1437,8 @@ The tool receives the corresponding Core service via constructor DI and wraps th
 | `undo` | POST `/editor/undo` | Undo the most recent operation |
 | `redo` | POST `/editor/redo` | Redo the most recently undone operation |
 | `save` | POST `/editor/save` | Execute File/Save and save the currently active stage (scenes, Prefabs, Timeline, etc.) |
+| `get_active_platform` | GET `/editor/platform` | Get the active build target platform |
+| `switch_platform` | POST `/editor/platform/switch` | Switch the active build target platform (reimports assets and recompiles scripts) |
 
 #### Scene (3)
 
@@ -1600,6 +1634,7 @@ A CLI tool for operating the Unity Editor from a terminal. Uses Core services di
 
 ```
 editor ping|play|stop|status|pause|unpause|step|undo|redo|reload-domain
+editor platform get|switch
 scene create|open|save|hierarchy
 game-object find|create|delete|modify
 component add|remove

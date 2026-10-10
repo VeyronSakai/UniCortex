@@ -96,6 +96,8 @@ The MCP server exposes the following built-in tools.
 | `undo` | Undo the last operation |
 | `redo` | Redo an undone operation |
 | `save` | Save the currently active stage (Scene, Prefab, Timeline, etc.) |
+| `get_active_platform` | Get the active build target platform |
+| `switch_platform` | Switch the active build target platform (reimports assets and recompiles scripts) |
 #### Scene
 
 | Tool | Description |
@@ -333,6 +335,8 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `editor redo` | Perform Redo. |
 | `editor save` | Save the active stage. |
 | `editor reload-domain` | Request script recompilation. |
+| `editor platform get` | Show the active build target platform. |
+| `editor platform switch <buildTarget>` | Switch the active build target platform (e.g. `Android`, `iOS`). |
 
 #### `scene`
 

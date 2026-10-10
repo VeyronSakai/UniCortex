@@ -46,6 +46,36 @@ public class EditorUseCaseTest
         Assert.That(message, Does.Contain("completed"));
     }
 
+    [Test, CancelAfter(120_000)]
+    public async ValueTask GetActivePlatform_ReturnsActiveBuildTarget()
+    {
+        var message = await _fixture.EditorUseCase.GetActivePlatformAsync(CancellationToken.None);
+
+        Assert.That(message, Does.StartWith("Active platform: "));
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask SwitchPlatform_ReturnsAlreadyActive_WhenSwitchingToActivePlatform()
+    {
+        // Switching to another platform reimports assets, which is too slow for a test,
+        // so switch to the active platform, which does nothing.
+        var activePlatform = (await _fixture.EditorUseCase.GetActivePlatformAsync(CancellationToken.None))
+            ["Active platform: ".Length..];
+
+        var message = await _fixture.EditorUseCase.SwitchPlatformAsync(activePlatform, CancellationToken.None);
+
+        Assert.That(message, Is.EqualTo($"Platform is already {activePlatform}."));
+    }
+
+    [Test, CancelAfter(120_000)]
+    public void SwitchPlatform_Throws_WhenBuildTargetIsUnknown()
+    {
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.EditorUseCase.SwitchPlatformAsync("UnknownPlatform", CancellationToken.None));
+
+        Assert.That(ex!.Message, Does.Contain("Unknown build target"));
+    }
+
     [Test, CancelAfter(120_000), Order(2)]
     public async ValueTask Ping_SucceedsAfterDomainReload()
     {

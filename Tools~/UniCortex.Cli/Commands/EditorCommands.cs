@@ -93,3 +93,23 @@ public class EditorCommands(EditorUseCase editorUseCase)
         Console.WriteLine(message);
     }
 }
+
+public class EditorPlatformCommands(EditorUseCase editorUseCase)
+{
+    /// <summary>Get the active build target platform of the Unity Editor.</summary>
+    [Command("get")]
+    public async Task Get(CancellationToken cancellationToken)
+    {
+        var message = await editorUseCase.GetActivePlatformAsync(cancellationToken);
+        Console.WriteLine(message);
+    }
+
+    /// <summary>Switch the active build target platform of the Unity Editor. Assets are reimported and scripts are recompiled.</summary>
+    /// <param name="buildTarget">Build target name of the UnityEditor.BuildTarget enum (e.g. StandaloneOSX, Android, iOS).</param>
+    [Command("switch")]
+    public async Task Switch([Argument] string buildTarget, CancellationToken cancellationToken)
+    {
+        var message = await editorUseCase.SwitchPlatformAsync(buildTarget, cancellationToken);
+        Console.WriteLine(message);
+    }
+}

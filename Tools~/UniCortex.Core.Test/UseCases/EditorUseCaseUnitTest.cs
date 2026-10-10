@@ -44,9 +44,57 @@ public class EditorUseCaseUnitTest
         Assert.That(client.Calls, Is.EqualTo(new[] { ApiRoutes.DomainReload }));
     }
 
+    [Test]
+    public async ValueTask GetActivePlatformAsync_ReturnsActiveBuildTarget()
+    {
+        // Arrange
+        var client = new FakeUnityEditorClient { ActiveBuildTarget = "Android" };
+        var useCase = new EditorUseCase(client);
+
+        // Act
+        var message = await useCase.GetActivePlatformAsync(CancellationToken.None);
+
+        // Assert
+        Assert.That(message, Is.EqualTo("Active platform: Android"));
+        Assert.That(client.Calls, Is.EqualTo(new[] { ApiRoutes.Platform }));
+    }
+
+    [Test]
+    public async ValueTask SwitchPlatformAsync_WaitsForStatusAfterSwitch()
+    {
+        // Arrange
+        var client = new FakeUnityEditorClient { ActiveBuildTarget = "StandaloneOSX" };
+        var useCase = new EditorUseCase(client);
+
+        // Act
+        var message = await useCase.SwitchPlatformAsync("Android", CancellationToken.None);
+
+        // Assert
+        Assert.That(message, Does.Contain("from StandaloneOSX to Android"));
+        Assert.That(client.LastSwitchPlatformRequest?.buildTarget, Is.EqualTo("Android"));
+        Assert.That(client.Calls, Is.EqualTo(new[] { ApiRoutes.PlatformSwitch, ApiRoutes.Status }));
+    }
+
+    [Test]
+    public async ValueTask SwitchPlatformAsync_DoesNotWaitForStatus_WhenPlatformIsAlreadyActive()
+    {
+        // Arrange
+        var client = new FakeUnityEditorClient { ActiveBuildTarget = "Android" };
+        var useCase = new EditorUseCase(client);
+
+        // Act
+        var message = await useCase.SwitchPlatformAsync("Android", CancellationToken.None);
+
+        // Assert
+        Assert.That(message, Does.Contain("already Android"));
+        Assert.That(client.Calls, Is.EqualTo(new[] { ApiRoutes.PlatformSwitch }));
+    }
+
     private sealed class FakeUnityEditorClient : IUnityEditorClient
     {
         public Exception? DomainReloadException { get; init; }
+        public string ActiveBuildTarget { get; set; } = "StandaloneOSX";
+        public SwitchPlatformRequest? LastSwitchPlatformRequest { get; private set; }
         public List<string> Calls { get; } = [];
 
         public ValueTask WaitForServerAsync(CancellationToken cancellationToken = default)
@@ -58,6 +106,15 @@ public class EditorUseCaseUnitTest
             CancellationToken cancellationToken = default) where TReq : class
         {
             Calls.Add(route);
+            if (route == ApiRoutes.PlatformSwitch)
+            {
+                LastSwitchPlatformRequest = request as SwitchPlatformRequest;
+                var previousBuildTarget = ActiveBuildTarget;
+                ActiveBuildTarget = LastSwitchPlatformRequest!.buildTarget;
+                object switchResponse = new SwitchPlatformResponse(previousBuildTarget, ActiveBuildTarget);
+                return new ValueTask<TRes>((TRes)switchResponse);
+            }
+
             if (route != ApiRoutes.DomainReload)
             {
                 throw new InvalidOperationException("Unexpected PostAsync call.");
@@ -76,6 +133,12 @@ public class EditorUseCaseUnitTest
             CancellationToken cancellationToken = default) where TReq : class
         {
             Calls.Add(route);
+            if (route == ApiRoutes.Platform)
+            {
+                object platformResponse = new GetActivePlatformResponse(ActiveBuildTarget);
+                return new ValueTask<TRes>((TRes)platformResponse);
+            }
+
             if (route != ApiRoutes.Status)
             {
                 throw new InvalidOperationException("Unexpected GetAsync call.");
