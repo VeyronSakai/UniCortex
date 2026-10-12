@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEngine;
@@ -46,6 +47,12 @@ namespace UniCortex.Editor.Infrastructures
             catch (OperationCanceledException)
             {
                 throw;
+            }
+            catch (MainThreadNotRespondingException ex)
+            {
+                // Not logged: the client resends the request every second while the Editor is busy.
+                await context.WriteResponseAsync(HttpStatusCodes.GatewayTimeout,
+                    JsonUtility.ToJson(new ErrorResponse(ex.Message)));
             }
             catch (Exception ex)
             {

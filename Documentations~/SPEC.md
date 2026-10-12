@@ -95,6 +95,8 @@ Unity APIs can only be called from the main thread. Since `HttpListener` callbac
 3. On the main thread (`EditorApplication.update`), dequeue → run `func()` → `tcs.SetResult()`
 4. The HTTP thread awaits completion → returns the response
 
+`EditorApplication.update` does not run while a modal dialog (e.g. a scene reload confirmation) is open or while the main thread is busy, so a queued request would wait until the client times out. `MainThreadDispatcher` records when `OnUpdate` last ran (at its start and end). A request fails with `MainThreadNotRespondingException` without running when `OnUpdate` has not run for 5 seconds at the time it is queued, or when it has not started within 5 seconds after being queued (an abandoned request is never run, even after the main thread resumes). The router answers it with `504 Gateway Timeout`.
+
 Some operations must run inside the player loop in Play Mode, because APIs such as `Screen.width` / `Screen.height` return Game View values only there (from `EditorApplication.update` they return the size of another view). For these, `PlayerLoopDispatcher` (`IPlayerLoopDispatcher`) inserts a system at the end of the `PostLateUpdate` phase (after Canvas layout updates and rendering, so that UI positions and raycasts match the frame shown in the Game View) through `IPlayerLoop` (implemented by `PlayerLoopAdapter`, so that tests do not change the real player loop) and runs queued functions there. It is called on the main thread (through `MainThreadDispatcher`) and returns a `Task` that completes in the next frame. It takes a `Func<T>` (the task returns its result) or an `Action`. Each update runs only the requests queued before it, so a request queued during an update runs in the next frame. It fails immediately outside Play Mode and while the Editor is paused (the player loop does not run then), and fails pending requests when Play Mode exits. `EntryPoint` creates it and subscribes it to `EditorApplication.playModeStateChanged`.
 
 ---
@@ -118,6 +120,7 @@ Responses are always `application/json; charset=utf-8`.
 On error: an HTTP status code plus `{"error": "message"}`.
 If the server is stopped while handling a request (e.g. by a domain reload), it answers `503 Service Unavailable`. The request has not been run in that case: requests and the server stop both run on the main thread, and the server waits (up to 10 seconds) for the response of a request that has run to be written before it closes.
 The client resends a request until the server answers: on a refused connection, a 503, a dropped connection, an empty response, or a response that is not JSON (every response written by a request handler is JSON; a non-JSON one, such as a `400` written by the listener itself while it is closing, means the request never reached a handler).
+If the main thread does not run a request in time, the server answers `504 Gateway Timeout` (see Main-thread Dispatch); the request has not been run then either. The client reads the Editor's modal dialogs with the OS window APIs (see Editor Dialog). If one is open, the request fails at once with the dialog's title, message, and buttons, and tells the caller to close it with `click_editor_dialog_button`. Otherwise the Editor is busy (e.g. importing assets), and the request is resent. When the dialogs cannot be read (on Linux, or without the Accessibility permission on macOS), the request is resent as well. A request that runs several steps on the main thread (e.g. a click) can have run its earlier steps before a `504`, so resending it repeats them; this needs the main thread to stop for 5 seconds between the steps.
 All scene-mutating operations support Undo.
 Endpoints that save a new asset at a given path (`/scene/create`, `/scriptable-object/create`, `/animation-clip/create`, `/prefab/create`, `/timeline/create`) create any missing parent folders under `Assets/` first. A path outside `Assets/` or an asset that still cannot be saved returns `400 Bad Request` with the reason.
 
@@ -1531,6 +1534,7 @@ While a modal dialog (e.g. "Saving failed", a scene reload confirmation) is open
 - Linux: not supported (the tools return an error)
 - Button labels are matched ignoring case and surrounding spaces
 - The MCP tools are not serialized with the other tools by `IAsyncOperationSequencer`, so they run while another tool call waits for the blocked Editor
+- Other tools also read the dialogs when the Editor answers `504` (see API Endpoints), and fail with the dialog's contents instead of waiting. A dialog shown while a request is running on the main thread (e.g. "Saving failed" shown by `File/Save`) blocks that request itself, so the request does not return until the dialog is closed; read and close it with these tools from another call
 
 Output of `get_editor_dialogs`:
 
