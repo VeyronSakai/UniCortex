@@ -98,6 +98,16 @@ The MCP server exposes the following built-in tools.
 | `save` | Save the currently active stage (Scene, Prefab, Timeline, etc.) |
 | `get_active_platform` | Get the active build target platform |
 | `switch_platform` | Switch the active build target platform (reimports assets and recompiles scripts) |
+
+#### Editor Dialog
+
+| Tool | Description |
+|------|-------------|
+| `get_editor_dialogs` | Get the modal dialogs that the Unity Editor itself shows (e.g. "Saving failed"), not the game's UI, with their title, message, and button labels |
+| `click_editor_dialog_button` | Click a button of an open Editor dialog by its label to close it |
+
+While a modal dialog is open, the Unity Editor cannot answer the other tools. These tools read the dialog with the OS window APIs instead, so they work while the Editor is blocked. They need `UNICORTEX_PROJECT_PATH` and support macOS and Windows. On macOS, allow the app that runs the MCP server (e.g. your terminal or AI agent app) in **System Settings > Privacy & Security > Accessibility**.
+
 #### Scene
 
 | Tool | Description |
@@ -342,6 +352,8 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `editor reload-domain` | Request script recompilation. |
 | `editor platform get` | Show the active build target platform. |
 | `editor platform switch <buildTarget>` | Switch the active build target platform (e.g. `Android`, `iOS`). |
+| `editor dialog list` | List the modal dialogs open in the Unity Editor with their title, message, and button labels. |
+| `editor dialog click <button>` | Click a button of an open modal dialog by its label (e.g. `OK`). |
 
 #### `scene`
 

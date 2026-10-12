@@ -16,6 +16,7 @@ var app = ConsoleApp.Create()
 
 app.Add<EditorCommands>("editor");
 app.Add<EditorPlatformCommands>("editor platform");
+app.Add<EditorDialogCommands>("editor dialog");
 app.Add<SceneCommands>("scene");
 app.Add<GameObjectCommands>("game-object");
 app.Add<ComponentCommands>("component");

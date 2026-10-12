@@ -35,6 +35,22 @@ internal static class McpToolExecution
         return ExecuteAsync(sequencer, async ct => CreateTextResult(await operation(ct)), cancellationToken);
     }
 
+    // For tools that do not talk to the Unity Editor's HTTP server, so they must not wait behind tool calls that
+    // the blocked Editor does not answer.
+    internal static async ValueTask<CallToolResult> ExecuteTextWithoutSequencingAsync(
+        Func<CancellationToken, ValueTask<string>> operation,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return CreateTextResult(await operation(cancellationToken));
+        }
+        catch (Exception ex)
+        {
+            return ToolErrorHandling.CreateErrorResult(ex);
+        }
+    }
+
     internal static CallToolResult CreateTextResult(string text)
     {
         return new CallToolResult { Content = [new TextContentBlock { Text = text }] };
