@@ -16,7 +16,6 @@ public sealed class WindowsEditorDialogAccessor : IEditorDialogAccessor
 {
     private const string DialogClassName = "#32770";
     private const uint WmCommand = 0x0111;
-    private const int BnClicked = 0;
 
     public IReadOnlyList<EditorDialog> GetDialogs(int processId)
     {
@@ -36,8 +35,10 @@ public sealed class WindowsEditorDialogAccessor : IEditorDialogAccessor
 
                 // Notify the dialog as if the button were clicked. Unlike BM_CLICK, this works while the dialog is
                 // not the active window. PostMessage does not wait for the dialog to handle it.
+                // The low word of wParam is the button's control ID, and the high word is the notification code
+                // BN_CLICKED, which is 0.
                 var button = found.ButtonHandles[i];
-                var wParam = (IntPtr)((BnClicked << 16) | (GetDlgCtrlID(button) & 0xFFFF));
+                var wParam = (IntPtr)(GetDlgCtrlID(button) & 0xFFFF);
                 if (!PostMessage(found.Handle, WmCommand, wParam, button))
                 {
                     throw new InvalidOperationException(
