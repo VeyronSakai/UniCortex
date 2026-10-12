@@ -80,8 +80,17 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
                 $"Failed to read the windows of the Unity Editor process {processId} (AXError {error}).");
         }
 
+        // AXWindows lists only the windows in the current Space. While a modal dialog is open, it is the focused
+        // window of the application, which is returned even when the Editor is in another Space.
+        var candidates = ToElements(windows);
+        CopyAttribute(application, "AXFocusedWindow", scope, out var focusedWindow);
+        if (focusedWindow != IntPtr.Zero && !candidates.Any(window => CFEqual(window, focusedWindow)))
+        {
+            candidates.Add(focusedWindow);
+        }
+
         var dialogs = new List<FoundDialog>();
-        foreach (var window in ToElements(windows))
+        foreach (var window in candidates)
         {
             if (IsDialog(window, scope))
             {
@@ -323,6 +332,10 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
     [DllImport(CoreFoundation)]
     [return: MarshalAs(UnmanagedType.I1)]
     private static extern bool CFBooleanGetValue(IntPtr boolean);
+
+    [DllImport(CoreFoundation)]
+    [return: MarshalAs(UnmanagedType.I1)]
+    private static extern bool CFEqual(IntPtr cf1, IntPtr cf2);
 
     [DllImport(CoreFoundation)]
     private static extern void CFRelease(IntPtr cf);
