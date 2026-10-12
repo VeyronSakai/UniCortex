@@ -22,6 +22,8 @@ public static class ServiceCollectionExtensions
             .AddHttpMessageHandler<HttpRequestHandler>();
 
         services.AddTransient<IUnityEditorClient, UnityEditorClient>();
+        services.AddTransient<IUnityEditorProcessProvider, UnityEditorProcessProvider>();
+        services.AddTransient<IModalDialogAccessor>(_ => CreateModalDialogAccessor());
 
         services.AddTransient<EditorUseCase>();
         services.AddTransient<GameObjectUseCase>();
@@ -42,7 +44,23 @@ public static class ServiceCollectionExtensions
         services.AddTransient<InputUseCase>();
         services.AddTransient<TimelineUseCase>();
         services.AddTransient<ExtensionUseCase>();
+        services.AddTransient<ModalDialogUseCase>();
 
         return services;
+    }
+
+    private static IModalDialogAccessor CreateModalDialogAccessor()
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            return new MacModalDialogAccessor();
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            return new WindowsModalDialogAccessor();
+        }
+
+        return new UnsupportedModalDialogAccessor();
     }
 }

@@ -1461,8 +1461,8 @@ The MCP server and CLI share their common HTTP communication logic and service l
 
 The use case layer and HTTP infrastructure shared between the MCP server and CLI.
 
-- **Use case layer**: `EditorUseCase`, `GameObjectUseCase`, `ComponentUseCase`, `SceneUseCase`, `PrefabUseCase`, `TestUseCase`, `ConsoleUseCase`, `AssetUseCase`, `MenuItemUseCase`, `SceneViewUseCase`, `GameViewUseCase`, `InputUseCase`, `TimelineUseCase`
-- **Infrastructure**: `HttpRequestHandler`, `UnityServerUrlProvider`, `HttpResponseMessageExtensions`
+- **Use case layer**: `EditorUseCase`, `GameObjectUseCase`, `ComponentUseCase`, `SceneUseCase`, `PrefabUseCase`, `TestUseCase`, `ConsoleUseCase`, `AssetUseCase`, `MenuItemUseCase`, `SceneViewUseCase`, `GameViewUseCase`, `InputUseCase`, `TimelineUseCase`, `ModalDialogUseCase`
+- **Infrastructure**: `HttpRequestHandler`, `UnityServerUrlProvider`, `HttpResponseMessageExtensions`, `UnityEditorProcessProvider`, `MacModalDialogAccessor`, `WindowsModalDialogAccessor`
 - **DI extension**: `ServiceCollectionExtensions.AddUniCortexCore()` registers all use cases and infrastructure in one call
 
 Each use case receives `IHttpClientFactory` and `IUnityServerUrlProvider` via constructor DI and communicates with the Unity Editor HTTP server. Return values are `string` (JSON or message) or `byte[]` (captured images). Exceptions propagate to the caller as-is.
@@ -1492,7 +1492,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
   3. Exits with an error if neither is set
 - Logs go to stderr (stdout is reserved for the MCP protocol)
 
-### MCP Tools (54 tools total)
+### MCP Tools (56 tools total)
 
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
@@ -1515,6 +1515,36 @@ The tool receives the corresponding Core service via constructor DI and wraps th
 | `save` | POST `/editor/save` | Execute File/Save and save the currently active stage (scenes, Prefabs, Timeline, etc.) |
 | `get_active_platform` | GET `/editor/platform` | Get the active build target platform |
 | `switch_platform` | POST `/editor/platform/switch` | Switch the active build target platform (reimports assets and recompiles scripts) |
+
+#### Modal Dialog (2)
+
+| Tool | API | Description |
+|------|-----|-------------|
+| `get_modal_dialogs` | — (OS window API) | Get the modal dialogs open in the Unity Editor with their title, message, and button labels |
+| `click_modal_dialog_button` | — (OS window API) | Click a button of an open modal dialog by its label |
+
+While a modal dialog (e.g. "Saving failed", a scene reload confirmation) is open, `EditorApplication.update` does not run, so the Editor's HTTP server cannot answer any request. These tools therefore do not use the HTTP server. They read and operate the dialog from the MCP server / CLI process with the OS window APIs:
+
+- The Unity Editor process is found from `process_id` in `Library/EditorInstance.json` under `UNICORTEX_PROJECT_PATH` (written by Unity while the project is open). `UNICORTEX_PROJECT_PATH` is required even when `UNICORTEX_URL` is set
+- macOS: the Accessibility API (`AXUIElement`). Windows whose subrole is `AXDialog` / `AXSystemDialog` or whose `AXModal` is true, and sheets, are reported. An NSAlert has no window title, so its first text is reported as `title` and the rest as `message`, which matches `EditorUtility.DisplayDialog(title, message, ...)`. Buttons are pressed with `AXPress`. The process that runs the MCP server / CLI (e.g. the terminal or the AI agent app) needs the Accessibility permission (System Settings > Privacy & Security > Accessibility)
+- Windows: visible top-level windows of the standard dialog class (`#32770`) owned by the Editor process. `Static` children are the message and `Button` children are the buttons (`&` mnemonics removed). A button is pressed by posting `WM_COMMAND` (`BN_CLICKED`) to the dialog
+- Linux: not supported (the tools return an error)
+- Button labels are matched ignoring case and surrounding spaces
+- The MCP tools are not serialized with the other tools by `IAsyncOperationSequencer`, so they run while another tool call waits for the blocked Editor
+
+Output of `get_modal_dialogs`:
+
+```json
+{
+  "dialogs": [
+    {
+      "title": "Saving failed",
+      "message": "Check the Console window to get more insight into what needs to be fixed.\n\nAuto Save has been temporarily disabled.",
+      "buttons": ["OK"]
+    }
+  ]
+}
+```
 
 #### Scene (3)
 
@@ -1716,6 +1746,7 @@ A CLI tool for operating the Unity Editor from a terminal. Uses Core services di
 ```
 editor ping|play|stop|status|pause|unpause|step|undo|redo|reload-domain
 editor platform get|switch
+editor dialog list|click
 scene create|open|save|hierarchy
 game-object find|create|delete|modify
 component add|remove
