@@ -12,24 +12,24 @@ namespace UniCortex.Core.Infrastructures;
 /// Only dialogs of the standard dialog class (#32770), such as message boxes, are found.
 /// </summary>
 [SupportedOSPlatform("windows")]
-public sealed class WindowsModalDialogAccessor : IModalDialogAccessor
+public sealed class WindowsEditorDialogAccessor : IEditorDialogAccessor
 {
     private const string DialogClassName = "#32770";
     private const uint WmCommand = 0x0111;
     private const int BnClicked = 0;
 
-    public IReadOnlyList<ModalDialog> GetDialogs(int processId)
+    public IReadOnlyList<EditorDialog> GetDialogs(int processId)
     {
         return FindDialogs(processId).Select(found => found.Dialog).ToList();
     }
 
-    public ModalDialog? ClickButton(int processId, string buttonLabel)
+    public EditorDialog? ClickButton(int processId, string buttonLabel)
     {
         foreach (var found in FindDialogs(processId))
         {
             for (var i = 0; i < found.Dialog.buttons.Count; i++)
             {
-                if (!ModalDialogButtonLabel.Matches(found.Dialog.buttons[i], buttonLabel))
+                if (!EditorDialogButtonLabel.Matches(found.Dialog.buttons[i], buttonLabel))
                 {
                     continue;
                 }
@@ -175,7 +175,7 @@ public sealed class WindowsModalDialogAccessor : IModalDialogAccessor
     private sealed class FoundDialog(IntPtr handle)
     {
         public readonly IntPtr Handle = handle;
-        public readonly ModalDialog Dialog = new();
+        public readonly EditorDialog Dialog = new();
         public readonly List<IntPtr> ButtonHandles = new();
     }
 

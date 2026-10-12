@@ -23,7 +23,7 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<IUnityEditorClient, UnityEditorClient>();
         services.AddTransient<IUnityEditorProcessProvider, UnityEditorProcessProvider>();
-        services.AddTransient<IModalDialogAccessor>(_ => CreateModalDialogAccessor());
+        services.AddTransient<IEditorDialogAccessor>(_ => CreateEditorDialogAccessor());
 
         services.AddTransient<EditorUseCase>();
         services.AddTransient<GameObjectUseCase>();
@@ -44,23 +44,23 @@ public static class ServiceCollectionExtensions
         services.AddTransient<InputUseCase>();
         services.AddTransient<TimelineUseCase>();
         services.AddTransient<ExtensionUseCase>();
-        services.AddTransient<ModalDialogUseCase>();
+        services.AddTransient<EditorDialogUseCase>();
 
         return services;
     }
 
-    private static IModalDialogAccessor CreateModalDialogAccessor()
+    private static IEditorDialogAccessor CreateEditorDialogAccessor()
     {
         if (OperatingSystem.IsMacOS())
         {
-            return new MacModalDialogAccessor();
+            return new MacEditorDialogAccessor();
         }
 
         if (OperatingSystem.IsWindows())
         {
-            return new WindowsModalDialogAccessor();
+            return new WindowsEditorDialogAccessor();
         }
 
-        return new UnsupportedModalDialogAccessor();
+        return new UnsupportedEditorDialogAccessor();
     }
 }

@@ -99,12 +99,12 @@ The MCP server exposes the following built-in tools.
 | `get_active_platform` | Get the active build target platform |
 | `switch_platform` | Switch the active build target platform (reimports assets and recompiles scripts) |
 
-#### Modal Dialog
+#### Editor Dialog
 
 | Tool | Description |
 |------|-------------|
-| `get_modal_dialogs` | Get the modal dialogs open in the Unity Editor (e.g. "Saving failed") with their title, message, and button labels |
-| `click_modal_dialog_button` | Click a button of an open modal dialog by its label to close it |
+| `get_editor_dialogs` | Get the modal dialogs that the Unity Editor itself shows (e.g. "Saving failed"), not the game's UI, with their title, message, and button labels |
+| `click_editor_dialog_button` | Click a button of an open Editor dialog by its label to close it |
 
 While a modal dialog is open, the Unity Editor cannot answer the other tools. These tools read the dialog with the OS window APIs instead, so they work while the Editor is blocked. They need `UNICORTEX_PROJECT_PATH` and support macOS and Windows. On macOS, allow the app that runs the MCP server (e.g. your terminal or AI agent app) in **System Settings > Privacy & Security > Accessibility**.
 

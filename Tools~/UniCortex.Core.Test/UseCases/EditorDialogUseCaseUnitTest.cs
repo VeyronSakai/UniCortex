@@ -6,7 +6,7 @@ using UniCortex.Core.UseCases;
 namespace UniCortex.Core.Test.UseCases;
 
 [TestFixture]
-public class ModalDialogUseCaseUnitTest
+public class EditorDialogUseCaseUnitTest
 {
     private const int ProcessId = 1234;
 
@@ -14,14 +14,14 @@ public class ModalDialogUseCaseUnitTest
     public async ValueTask GetDialogsAsync_ReturnsDialogsAsJson()
     {
         // Arrange
-        var accessor = new FakeModalDialogAccessor();
-        accessor.Dialogs.Add(new ModalDialog
+        var accessor = new FakeEditorDialogAccessor();
+        accessor.Dialogs.Add(new EditorDialog
         {
             title = "Saving failed",
             message = "Auto Save has been temporarily disabled.",
             buttons = ["OK"]
         });
-        var useCase = new ModalDialogUseCase(new StubProcessProvider(), accessor);
+        var useCase = new EditorDialogUseCase(new StubProcessProvider(), accessor);
 
         // Act
         var json = await useCase.GetDialogsAsync(CancellationToken.None);
@@ -37,9 +37,9 @@ public class ModalDialogUseCaseUnitTest
     public async ValueTask GetDialogsAsync_DoesNotEscapeNonAsciiCharacters()
     {
         // Arrange
-        var accessor = new FakeModalDialogAccessor();
-        accessor.Dialogs.Add(new ModalDialog { title = "保存に失敗しました", buttons = ["Don't Save"] });
-        var useCase = new ModalDialogUseCase(new StubProcessProvider(), accessor);
+        var accessor = new FakeEditorDialogAccessor();
+        accessor.Dialogs.Add(new EditorDialog { title = "保存に失敗しました", buttons = ["Don't Save"] });
+        var useCase = new EditorDialogUseCase(new StubProcessProvider(), accessor);
 
         // Act
         var json = await useCase.GetDialogsAsync(CancellationToken.None);
@@ -53,7 +53,7 @@ public class ModalDialogUseCaseUnitTest
     public async ValueTask GetDialogsAsync_ReturnsEmptyList_WhenNoDialogIsOpen()
     {
         // Arrange
-        var useCase = new ModalDialogUseCase(new StubProcessProvider(), new FakeModalDialogAccessor());
+        var useCase = new EditorDialogUseCase(new StubProcessProvider(), new FakeEditorDialogAccessor());
 
         // Act
         var json = await useCase.GetDialogsAsync(CancellationToken.None);
@@ -66,9 +66,9 @@ public class ModalDialogUseCaseUnitTest
     public async ValueTask ClickButtonAsync_ClicksButtonOfEditorProcess()
     {
         // Arrange
-        var accessor = new FakeModalDialogAccessor();
-        accessor.Dialogs.Add(new ModalDialog { title = "Saving failed", buttons = ["OK"] });
-        var useCase = new ModalDialogUseCase(new StubProcessProvider(), accessor);
+        var accessor = new FakeEditorDialogAccessor();
+        accessor.Dialogs.Add(new EditorDialog { title = "Saving failed", buttons = ["OK"] });
+        var useCase = new EditorDialogUseCase(new StubProcessProvider(), accessor);
 
         // Act
         var message = await useCase.ClickButtonAsync("ok", CancellationToken.None);
@@ -83,7 +83,7 @@ public class ModalDialogUseCaseUnitTest
     public void ClickButtonAsync_Throws_WhenNoDialogIsOpen()
     {
         // Arrange
-        var useCase = new ModalDialogUseCase(new StubProcessProvider(), new FakeModalDialogAccessor());
+        var useCase = new EditorDialogUseCase(new StubProcessProvider(), new FakeEditorDialogAccessor());
 
         // Act
         var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -97,9 +97,9 @@ public class ModalDialogUseCaseUnitTest
     public void ClickButtonAsync_ThrowsWithAvailableButtons_WhenButtonIsNotFound()
     {
         // Arrange
-        var accessor = new FakeModalDialogAccessor();
-        accessor.Dialogs.Add(new ModalDialog { title = "Scene(s) Have Been Modified", buttons = ["Save", "Cancel"] });
-        var useCase = new ModalDialogUseCase(new StubProcessProvider(), accessor);
+        var accessor = new FakeEditorDialogAccessor();
+        accessor.Dialogs.Add(new EditorDialog { title = "Scene(s) Have Been Modified", buttons = ["Save", "Cancel"] });
+        var useCase = new EditorDialogUseCase(new StubProcessProvider(), accessor);
 
         // Act
         var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -118,19 +118,19 @@ public class ModalDialogUseCaseUnitTest
         }
     }
 
-    private sealed class FakeModalDialogAccessor : IModalDialogAccessor
+    private sealed class FakeEditorDialogAccessor : IEditorDialogAccessor
     {
-        public List<ModalDialog> Dialogs { get; } = [];
+        public List<EditorDialog> Dialogs { get; } = [];
         public List<int> ProcessIds { get; } = [];
         public List<string> ClickedButtons { get; } = [];
 
-        public IReadOnlyList<ModalDialog> GetDialogs(int processId)
+        public IReadOnlyList<EditorDialog> GetDialogs(int processId)
         {
             ProcessIds.Add(processId);
             return Dialogs;
         }
 
-        public ModalDialog? ClickButton(int processId, string buttonLabel)
+        public EditorDialog? ClickButton(int processId, string buttonLabel)
         {
             ProcessIds.Add(processId);
             var dialog = Dialogs.FirstOrDefault(d =>

@@ -10,7 +10,7 @@ namespace UniCortex.Core.UseCases;
 /// Reads and closes the Unity Editor's modal dialogs through the OS window APIs instead of the Editor's HTTP server,
 /// which does not respond while a modal dialog blocks the Editor's main thread.
 /// </summary>
-public class ModalDialogUseCase(IUnityEditorProcessProvider processProvider, IModalDialogAccessor dialogAccessor)
+public class EditorDialogUseCase(IUnityEditorProcessProvider processProvider, IEditorDialogAccessor dialogAccessor)
 {
     // Dialog texts are shown as they are, e.g. in Japanese, instead of escaping non-ASCII characters.
     private static readonly JsonSerializerOptions s_jsonOptions = new(JsonOptions.Default)
@@ -21,7 +21,7 @@ public class ModalDialogUseCase(IUnityEditorProcessProvider processProvider, IMo
     public ValueTask<string> GetDialogsAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var response = new GetModalDialogsResponse
+        var response = new GetEditorDialogsResponse
         {
             dialogs = dialogAccessor.GetDialogs(processProvider.GetProcessId()).ToList()
         };
@@ -35,7 +35,7 @@ public class ModalDialogUseCase(IUnityEditorProcessProvider processProvider, IMo
         var dialog = dialogAccessor.ClickButton(processId, buttonLabel);
         if (dialog != null)
         {
-            var clicked = dialog.buttons.FirstOrDefault(b => ModalDialogButtonLabel.Matches(b, buttonLabel)) ?? buttonLabel;
+            var clicked = dialog.buttons.FirstOrDefault(b => EditorDialogButtonLabel.Matches(b, buttonLabel)) ?? buttonLabel;
             return ValueTask.FromResult($"Clicked \"{clicked}\" in the dialog \"{dialog.title}\".");
         }
 

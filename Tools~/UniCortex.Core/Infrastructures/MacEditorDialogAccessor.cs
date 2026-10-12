@@ -11,7 +11,7 @@ namespace UniCortex.Core.Infrastructures;
 /// The process that runs this code needs the Accessibility permission.
 /// </summary>
 [SupportedOSPlatform("macos")]
-public sealed class MacModalDialogAccessor : IModalDialogAccessor
+public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
 {
     // Subroles of the windows that macOS treats as dialogs, e.g. the NSAlert window shown by
     // EditorUtility.DisplayDialog.
@@ -28,20 +28,20 @@ public sealed class MacModalDialogAccessor : IModalDialogAccessor
     private const int AXErrorNoValue = -25212;
     private const int AXErrorAttributeUnsupported = -25205;
 
-    public IReadOnlyList<ModalDialog> GetDialogs(int processId)
+    public IReadOnlyList<EditorDialog> GetDialogs(int processId)
     {
         using var scope = new CFScope();
         return FindDialogs(processId, scope).Select(found => found.Dialog).ToList();
     }
 
-    public ModalDialog? ClickButton(int processId, string buttonLabel)
+    public EditorDialog? ClickButton(int processId, string buttonLabel)
     {
         using var scope = new CFScope();
         foreach (var found in FindDialogs(processId, scope))
         {
             for (var i = 0; i < found.Dialog.buttons.Count; i++)
             {
-                if (!ModalDialogButtonLabel.Matches(found.Dialog.buttons[i], buttonLabel))
+                if (!EditorDialogButtonLabel.Matches(found.Dialog.buttons[i], buttonLabel))
                 {
                     continue;
                 }
@@ -227,7 +227,7 @@ public sealed class MacModalDialogAccessor : IModalDialogAccessor
 
     private sealed class FoundDialog
     {
-        public readonly ModalDialog Dialog = new();
+        public readonly EditorDialog Dialog = new();
         public readonly List<IntPtr> ButtonElements = new();
     }
 

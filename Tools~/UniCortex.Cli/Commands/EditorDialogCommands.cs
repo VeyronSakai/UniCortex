@@ -3,13 +3,13 @@ using UniCortex.Core.UseCases;
 
 namespace UniCortex.Cli.Commands;
 
-public class EditorDialogCommands(ModalDialogUseCase modalDialogUseCase)
+public class EditorDialogCommands(EditorDialogUseCase editorDialogUseCase)
 {
     /// <summary>List the modal dialogs open in the Unity Editor with their title, message, and button labels. Works while the Editor is blocked by a dialog.</summary>
     [Command("list")]
     public async Task List(CancellationToken cancellationToken)
     {
-        var json = await modalDialogUseCase.GetDialogsAsync(cancellationToken);
+        var json = await editorDialogUseCase.GetDialogsAsync(cancellationToken);
         Console.WriteLine(json);
     }
 
@@ -18,7 +18,7 @@ public class EditorDialogCommands(ModalDialogUseCase modalDialogUseCase)
     [Command("click")]
     public async Task Click([Argument] string button, CancellationToken cancellationToken)
     {
-        var message = await modalDialogUseCase.ClickButtonAsync(button, cancellationToken);
+        var message = await editorDialogUseCase.ClickButtonAsync(button, cancellationToken);
         Console.WriteLine(message);
     }
 }

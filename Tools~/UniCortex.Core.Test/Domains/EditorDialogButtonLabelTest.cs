@@ -4,7 +4,7 @@ using UniCortex.Core.Domains;
 namespace UniCortex.Core.Test.Domains;
 
 [TestFixture]
-public class ModalDialogButtonLabelTest
+public class EditorDialogButtonLabelTest
 {
     [TestCase("OK", "OK", ExpectedResult = true)]
     [TestCase("Don't Save", "don't save", ExpectedResult = true)]
@@ -14,6 +14,6 @@ public class ModalDialogButtonLabelTest
     public bool Matches_IgnoresCaseAndSurroundingSpaces(string label, string requested)
     {
         // Act
-        return ModalDialogButtonLabel.Matches(label, requested);
+        return EditorDialogButtonLabel.Matches(label, requested);
     }
 }

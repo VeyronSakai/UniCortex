@@ -1461,8 +1461,8 @@ The MCP server and CLI share their common HTTP communication logic and service l
 
 The use case layer and HTTP infrastructure shared between the MCP server and CLI.
 
-- **Use case layer**: `EditorUseCase`, `GameObjectUseCase`, `ComponentUseCase`, `SceneUseCase`, `PrefabUseCase`, `TestUseCase`, `ConsoleUseCase`, `AssetUseCase`, `MenuItemUseCase`, `SceneViewUseCase`, `GameViewUseCase`, `InputUseCase`, `TimelineUseCase`, `ModalDialogUseCase`
-- **Infrastructure**: `HttpRequestHandler`, `UnityServerUrlProvider`, `HttpResponseMessageExtensions`, `UnityEditorProcessProvider`, `MacModalDialogAccessor`, `WindowsModalDialogAccessor`
+- **Use case layer**: `EditorUseCase`, `GameObjectUseCase`, `ComponentUseCase`, `SceneUseCase`, `PrefabUseCase`, `TestUseCase`, `ConsoleUseCase`, `AssetUseCase`, `MenuItemUseCase`, `SceneViewUseCase`, `GameViewUseCase`, `InputUseCase`, `TimelineUseCase`, `EditorDialogUseCase`
+- **Infrastructure**: `HttpRequestHandler`, `UnityServerUrlProvider`, `HttpResponseMessageExtensions`, `UnityEditorProcessProvider`, `MacEditorDialogAccessor`, `WindowsEditorDialogAccessor`
 - **DI extension**: `ServiceCollectionExtensions.AddUniCortexCore()` registers all use cases and infrastructure in one call
 
 Each use case receives `IHttpClientFactory` and `IUnityServerUrlProvider` via constructor DI and communicates with the Unity Editor HTTP server. Return values are `string` (JSON or message) or `byte[]` (captured images). Exceptions propagate to the caller as-is.
@@ -1516,12 +1516,12 @@ The tool receives the corresponding Core service via constructor DI and wraps th
 | `get_active_platform` | GET `/editor/platform` | Get the active build target platform |
 | `switch_platform` | POST `/editor/platform/switch` | Switch the active build target platform (reimports assets and recompiles scripts) |
 
-#### Modal Dialog (2)
+#### Editor Dialog (2)
 
 | Tool | API | Description |
 |------|-----|-------------|
-| `get_modal_dialogs` | — (OS window API) | Get the modal dialogs open in the Unity Editor with their title, message, and button labels |
-| `click_modal_dialog_button` | — (OS window API) | Click a button of an open modal dialog by its label |
+| `get_editor_dialogs` | — (OS window API) | Get the modal dialogs that the Unity Editor itself shows (not the game's UI) with their title, message, and button labels |
+| `click_editor_dialog_button` | — (OS window API) | Click a button of an open Editor dialog by its label |
 
 While a modal dialog (e.g. "Saving failed", a scene reload confirmation) is open, `EditorApplication.update` does not run, so the Editor's HTTP server cannot answer any request. These tools therefore do not use the HTTP server. They read and operate the dialog from the MCP server / CLI process with the OS window APIs:
 
@@ -1532,7 +1532,7 @@ While a modal dialog (e.g. "Saving failed", a scene reload confirmation) is open
 - Button labels are matched ignoring case and surrounding spaces
 - The MCP tools are not serialized with the other tools by `IAsyncOperationSequencer`, so they run while another tool call waits for the blocked Editor
 
-Output of `get_modal_dialogs`:
+Output of `get_editor_dialogs`:
 
 ```json
 {

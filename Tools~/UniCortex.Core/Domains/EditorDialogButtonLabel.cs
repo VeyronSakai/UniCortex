@@ -1,6 +1,6 @@
 namespace UniCortex.Core.Domains;
 
-internal static class ModalDialogButtonLabel
+internal static class EditorDialogButtonLabel
 {
     /// <summary>
     /// Whether the label of a dialog button matches the requested label, ignoring case and surrounding spaces.

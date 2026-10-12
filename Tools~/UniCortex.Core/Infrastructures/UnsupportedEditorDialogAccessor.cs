@@ -3,14 +3,14 @@ using UniCortex.Core.Domains.Models;
 
 namespace UniCortex.Core.Infrastructures;
 
-public sealed class UnsupportedModalDialogAccessor : IModalDialogAccessor
+public sealed class UnsupportedEditorDialogAccessor : IEditorDialogAccessor
 {
-    public IReadOnlyList<ModalDialog> GetDialogs(int processId)
+    public IReadOnlyList<EditorDialog> GetDialogs(int processId)
     {
         throw CreateException();
     }
 
-    public ModalDialog? ClickButton(int processId, string buttonLabel)
+    public EditorDialog? ClickButton(int processId, string buttonLabel)
     {
         throw CreateException();
     }
