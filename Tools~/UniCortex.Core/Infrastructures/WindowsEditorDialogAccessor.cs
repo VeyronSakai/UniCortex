@@ -9,13 +9,18 @@ namespace UniCortex.Core.Infrastructures;
 
 /// <summary>
 /// Reads and operates modal dialogs with Win32 window messages.
-/// Only dialogs of the standard dialog class (#32770), such as message boxes, are found.
+/// Only dialogs of the standard dialog class (#32770), such as message boxes, are found. Progress windows and windows
+/// whose thread does not process messages are excluded, so that a busy Editor is not taken for a blocked one.
 /// </summary>
 [SupportedOSPlatform("windows")]
 public sealed class WindowsEditorDialogAccessor : IEditorDialogAccessor
 {
     private const string DialogClassName = "#32770";
+    private const string ProgressBarClassName = "msctls_progress32";
+    private const uint WmNull = 0x0000;
     private const uint WmCommand = 0x0111;
+    private const uint SmtoAbortIfHung = 0x0002;
+    private const uint ResponseTimeoutMilliseconds = 2000;
 
     public IReadOnlyList<EditorDialog> GetDialogs(int processId)
     {
@@ -64,13 +69,27 @@ public sealed class WindowsEditorDialogAccessor : IEditorDialogAccessor
                 continue;
             }
 
-            dialogs.Add(ReadDialog(window));
+            // A modal dialog runs its own message loop, so it answers at once. A window of a main thread that is
+            // busy (e.g. showing a progress bar while compiling) does not.
+            if (SendMessageTimeout(window, WmNull, IntPtr.Zero, IntPtr.Zero, SmtoAbortIfHung,
+                    ResponseTimeoutMilliseconds, out _) == IntPtr.Zero)
+            {
+                continue;
+            }
+
+            var found = ReadDialog(window);
+            if (found != null)
+            {
+                dialogs.Add(found);
+            }
         }
 
         return dialogs;
     }
 
-    private static FoundDialog ReadDialog(IntPtr window)
+    // Returns null for a progress window (e.g. EditorUtility.DisplayCancelableProgressBar), which has a Cancel button
+    // but does not wait for a choice.
+    private static FoundDialog? ReadDialog(IntPtr window)
     {
         var found = new FoundDialog(window);
         found.Dialog.title = GetWindowText(window);
@@ -84,6 +103,11 @@ public sealed class WindowsEditorDialogAccessor : IEditorDialogAccessor
             }
 
             var className = GetClassName(child);
+            if (className == ProgressBarClassName)
+            {
+                return null;
+            }
+
             var text = GetWindowText(child);
             if (text.Length == 0)
             {
@@ -209,6 +233,10 @@ public sealed class WindowsEditorDialogAccessor : IEditorDialogAccessor
 
     [DllImport("user32.dll")]
     private static extern int GetDlgCtrlID(IntPtr window);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SendMessageTimeout(IntPtr window, uint message, IntPtr wParam, IntPtr lParam,
+        uint flags, uint timeoutMilliseconds, out IntPtr result);
 
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "PostMessageW")]
     [return: MarshalAs(UnmanagedType.Bool)]

@@ -107,7 +107,9 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
             }
         }
 
-        return dialogs;
+        // A progress window (e.g. EditorUtility.DisplayCancelableProgressBar) has a Cancel button but does not wait
+        // for a choice, so it is not reported as a dialog that blocks the Editor.
+        return dialogs.Where(found => !found.HasProgressIndicator).ToList();
     }
 
     private static bool IsDialog(IntPtr window, CFScope scope)
@@ -153,7 +155,11 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         foreach (var child in GetElements(element, "AXChildren", scope))
         {
             var role = GetString(child, "AXRole", scope);
-            if (role == "AXStaticText")
+            if (role == "AXProgressIndicator")
+            {
+                found.HasProgressIndicator = true;
+            }
+            else if (role == "AXStaticText")
             {
                 var text = GetString(child, "AXValue", scope);
                 if (!string.IsNullOrEmpty(text))
@@ -238,6 +244,7 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
     {
         public readonly EditorDialog Dialog = new();
         public readonly List<IntPtr> ButtonElements = new();
+        public bool HasProgressIndicator;
     }
 
     /// <summary>
