@@ -11,6 +11,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddUniCortexCore(this IServiceCollection services)
     {
         services.AddSingleton<IAsyncOperationSequencer, AsyncOperationSequencer>();
+        services.AddTransient<EditorDialogWatchHandler>();
         services.AddTransient<HttpRequestHandler>();
         services.AddTransient<IUnityServerUrlProvider, UnityServerUrlProvider>();
         services.AddHttpClient(HttpClientNames.UniCortex, client =>
@@ -19,6 +20,8 @@ public static class ServiceCollectionExtensions
                 // HttpRequestHandler retries during reloads, so this must exceed the max retry window.
                 client.Timeout = TimeSpan.FromMinutes(10);
             })
+            // The dialog watch is outside the retries, so that it also covers the time spent resending a request.
+            .AddHttpMessageHandler<EditorDialogWatchHandler>()
             .AddHttpMessageHandler<HttpRequestHandler>();
 
         services.AddTransient<IUnityEditorClient, UnityEditorClient>();
