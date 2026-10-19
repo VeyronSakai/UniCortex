@@ -4,8 +4,6 @@ using System.Net.Sockets;
 using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using UniCortex.Core.Domains.Interfaces;
-using UniCortex.Core.Domains.Models;
 using UniCortex.Core.Infrastructures;
 
 namespace UniCortex.Core.Test.Infrastructures;
@@ -112,69 +110,9 @@ public class HttpRequestHandlerTest
         Assert.That(inner.CallCount, Is.EqualTo(1));
     }
 
-    [Test]
-    public void SendAsync_MainThreadNotRespondingWithDialog_FailsWithDialogContents()
+    private static HttpClient CreateClient(HttpMessageHandler inner)
     {
-        // Arrange
-        var inner = new ScriptedHandler(GatewayTimeout(), Ok());
-        var dialog = new EditorDialog
-        {
-            title = "Saving failed",
-            message = "Could not save the scene.",
-            buttons = ["Try Again", "Cancel"]
-        };
-        using var client = CreateClient(inner, new FakeEditorDialogAccessor(dialog));
-
-        // Act
-        var exception = Assert.ThrowsAsync<InvalidOperationException>(() =>
-            client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/")));
-
-        // Assert
-        Assert.That(exception!.Message, Does.Contain("Saving failed"));
-        Assert.That(exception.Message, Does.Contain("Could not save the scene."));
-        Assert.That(exception.Message, Does.Contain("\"Try Again\", \"Cancel\""));
-        Assert.That(exception.Message, Does.Contain("click_editor_dialog_button"));
-        Assert.That(inner.CallCount, Is.EqualTo(1));
-    }
-
-    [Test]
-    public async ValueTask SendAsync_MainThreadNotRespondingWithoutDialog_Retries()
-    {
-        // Arrange
-        var inner = new ScriptedHandler(GatewayTimeout(), Ok());
-        using var client = CreateClient(inner, new FakeEditorDialogAccessor());
-
-        // Act
-        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/"));
-
-        // Assert
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-        Assert.That(inner.CallCount, Is.EqualTo(2));
-    }
-
-    [Test]
-    public async ValueTask SendAsync_MainThreadNotRespondingAndDialogsUnreadable_Retries()
-    {
-        // Arrange
-        var inner = new ScriptedHandler(GatewayTimeout(), Ok());
-        using var client = CreateClient(inner, new FakeEditorDialogAccessor { ThrowsOnRead = true });
-
-        // Act
-        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/"));
-
-        // Assert
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-        Assert.That(inner.CallCount, Is.EqualTo(2));
-    }
-
-    private static HttpClient CreateClient(HttpMessageHandler inner, IEditorDialogAccessor? dialogAccessor = null)
-    {
-        var handler = new HttpRequestHandler(NullLogger<HttpRequestHandler>.Instance, new FakeProcessProvider(),
-            dialogAccessor ?? new FakeEditorDialogAccessor())
-        {
-            InnerHandler = inner
-        };
-        return new HttpClient(handler);
+        return new HttpClient(new HttpRequestHandler(NullLogger<HttpRequestHandler>.Instance) { InnerHandler = inner });
     }
 
     private static HttpResponseMessage Ok()
@@ -187,14 +125,6 @@ public class HttpRequestHandlerTest
         return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
         {
             Content = Json("{\"error\":\"The server was stopped.\"}")
-        };
-    }
-
-    private static HttpResponseMessage GatewayTimeout()
-    {
-        return new HttpResponseMessage(HttpStatusCode.GatewayTimeout)
-        {
-            Content = Json("{\"error\":\"The Unity Editor's main thread has not responded.\"}")
         };
     }
 
@@ -215,34 +145,6 @@ public class HttpRequestHandlerTest
             return outcome is Exception exception
                 ? Task.FromException<HttpResponseMessage>(exception)
                 : Task.FromResult((HttpResponseMessage)outcome);
-        }
-    }
-
-    private sealed class FakeProcessProvider : IUnityEditorProcessProvider
-    {
-        public int GetProcessId()
-        {
-            return 1234;
-        }
-    }
-
-    private sealed class FakeEditorDialogAccessor(params EditorDialog[] dialogs) : IEditorDialogAccessor
-    {
-        public bool ThrowsOnRead { get; init; }
-
-        public IReadOnlyList<EditorDialog> GetDialogs(int processId)
-        {
-            if (ThrowsOnRead)
-            {
-                throw new PlatformNotSupportedException("Not supported.");
-            }
-
-            return dialogs;
-        }
-
-        public EditorDialog? ClickButton(int processId, string buttonLabel)
-        {
-            throw new NotSupportedException();
         }
     }
 }

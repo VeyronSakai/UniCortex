@@ -1,16 +1,10 @@
 using System.Net;
 using System.Net.Mime;
-using System.Text;
 using Microsoft.Extensions.Logging;
-using UniCortex.Core.Domains.Interfaces;
-using UniCortex.Core.Domains.Models;
 
 namespace UniCortex.Core.Infrastructures;
 
-public class HttpRequestHandler(
-    ILogger<HttpRequestHandler> logger,
-    IUnityEditorProcessProvider processProvider,
-    IEditorDialogAccessor dialogAccessor) : DelegatingHandler
+public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : DelegatingHandler
 {
     private static readonly TimeSpan s_maxWait = TimeSpan.FromHours(1);
 
@@ -27,15 +21,11 @@ public class HttpRequestHandler(
     //   the Editor crashes, or when a request still queued in the listener is dropped without running; resending
     //   is right in both cases. Only a response not written within the server's stop timeout can make a request
     //   run twice.
-    // - 504: the Editor's main thread did not run the request in time, so it has not run. If a modal dialog of the
-    //   Editor is open, the main thread does not run until the dialog is closed, so the request fails at once with
-    //   the dialog's contents. Otherwise the Editor is busy (e.g. importing assets), and the request is resent.
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var startTime = DateTime.UtcNow;
         var logged = false;
-        var dialogCheckFailureLogged = false;
 
         while (true)
         {
@@ -54,18 +44,6 @@ public class HttpRequestHandler(
                     throw new HttpRequestException();
                 }
 
-                if (response.StatusCode == HttpStatusCode.GatewayTimeout)
-                {
-                    response.Dispose();
-                    var dialogs = GetOpenDialogs(ref dialogCheckFailureLogged);
-                    if (dialogs.Count > 0)
-                    {
-                        throw new InvalidOperationException(CreateBlockedByDialogMessage(dialogs));
-                    }
-
-                    throw new HttpRequestException();
-                }
-
                 if (logged)
                 {
                     logger.LogInformation("Unity Editor is ready.");
@@ -78,57 +56,12 @@ public class HttpRequestHandler(
                 if (!logged)
                 {
                     logger.LogInformation(
-                        "Unity Editor is not responding (e.g. reloading the domain or busy). Waiting...");
+                        "Unity Editor is not responding. Waiting for domain reload to complete...");
                     logged = true;
                 }
 
                 await Task.Delay(1000, cancellationToken);
             }
         }
-    }
-
-    private IReadOnlyList<EditorDialog> GetOpenDialogs(ref bool failureLogged)
-    {
-        try
-        {
-            return dialogAccessor.GetDialogs(processProvider.GetProcessId());
-        }
-        catch (Exception ex)
-        {
-            // Without the dialogs (e.g. on Linux, or without the Accessibility permission on macOS), the request is
-            // resent as before, because a busy Editor cannot be told apart from a blocked one.
-            if (!failureLogged)
-            {
-                logger.LogWarning("Could not check the Unity Editor's modal dialogs: {Message}", ex.Message);
-                failureLogged = true;
-            }
-
-            return [];
-        }
-    }
-
-    private static string CreateBlockedByDialogMessage(IReadOnlyList<EditorDialog> dialogs)
-    {
-        var builder = new StringBuilder();
-        builder.AppendLine(
-            "The Unity Editor is blocked by a modal dialog and cannot handle requests until it is closed. " +
-            "The request was not run.");
-        foreach (var dialog in dialogs)
-        {
-            builder.AppendLine();
-            builder.AppendLine($"Title: {dialog.title}");
-            if (dialog.message.Length > 0)
-            {
-                builder.AppendLine($"Message: {dialog.message}");
-            }
-
-            builder.AppendLine($"Buttons: {string.Join(", ", dialog.buttons.Select(b => $"\"{b}\""))}");
-        }
-
-        builder.AppendLine();
-        builder.Append(
-            "Close the dialog with click_editor_dialog_button (CLI: editor dialog click <button>), " +
-            "or ask the user to close it, then retry the request.");
-        return builder.ToString();
     }
 }

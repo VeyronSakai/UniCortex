@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Infrastructures;
 using NUnit.Framework;
 
@@ -48,59 +46,6 @@ namespace UniCortex.Editor.Tests.Infrastructures
 
             Assert.IsFalse(executed);
             Assert.Throws<TaskCanceledException>(() => task.GetAwaiter().GetResult());
-        }
-
-        [Test]
-        public void RunOnMainThreadAsync_AfterUpdateStopped_FailsWithoutRunningAction()
-        {
-            // Arrange
-            var dispatcher = new MainThreadDispatcher(TimeSpan.FromMilliseconds(50));
-            var executed = false;
-            Thread.Sleep(100);
-
-            // Act
-            var task = dispatcher.RunOnMainThreadAsync(() => executed = true);
-            dispatcher.OnUpdate();
-
-            // Assert
-            Assert.IsTrue(task.IsFaulted);
-            Assert.IsInstanceOf<MainThreadNotRespondingException>(task.Exception.InnerException);
-            Assert.IsFalse(executed);
-        }
-
-        [Test]
-        public void RunOnMainThreadAsync_NotStartedWithinThreshold_FailsAndNeverRunsAction()
-        {
-            // Arrange
-            var dispatcher = new MainThreadDispatcher(TimeSpan.FromMilliseconds(200));
-            var executed = false;
-
-            // Act
-            var task = dispatcher.RunOnMainThreadAsync(() => executed = true);
-            var completed = ((Task)task).ContinueWith(_ => { }).Wait(TimeSpan.FromSeconds(5));
-            dispatcher.OnUpdate();
-
-            // Assert
-            Assert.IsTrue(completed);
-            Assert.IsTrue(task.IsFaulted);
-            Assert.IsInstanceOf<MainThreadNotRespondingException>(task.Exception.InnerException);
-            Assert.IsFalse(executed);
-        }
-
-        [Test]
-        public void RunOnMainThreadAsync_StartedWithinThreshold_ReturnsResult()
-        {
-            // Arrange
-            var dispatcher = new MainThreadDispatcher(TimeSpan.FromMilliseconds(200));
-
-            // Act
-            var task = dispatcher.RunOnMainThreadAsync(() => 42);
-            dispatcher.OnUpdate();
-            Thread.Sleep(400);
-
-            // Assert
-            Assert.IsTrue(task.IsCompletedSuccessfully);
-            Assert.AreEqual(42, task.Result);
         }
     }
 }
