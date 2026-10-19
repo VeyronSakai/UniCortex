@@ -54,7 +54,7 @@ public class EditorDialogWatchHandler(
 
             if (dialogs.Count > 0)
             {
-                sendCts.Cancel();
+                await sendCts.CancelAsync();
                 _ = sendTask.ContinueWith(t => t.Exception, TaskContinuationOptions.OnlyOnFaulted);
                 throw new InvalidOperationException(CreateBlockedByDialogMessage(dialogs));
             }
