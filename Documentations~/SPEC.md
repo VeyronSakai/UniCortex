@@ -120,7 +120,7 @@ If the server is stopped while handling a request (e.g. by a domain reload), it 
 The client resends a request until the server answers: on a refused connection, a 503, a dropped connection, an empty response, or a response that is not JSON (every response written by a request handler is JSON; a non-JSON one, such as a `400` written by the listener itself while it is closing, means the request never reached a handler).
 While a request waits for its response (including the time spent resending it), the client reads the Editor's modal dialogs with the OS window APIs (see Editor Dialog), first after 5 seconds and then every 2 seconds. If one is open, the Editor cannot respond until it is closed, so the request fails at once with the dialog's title, message, and buttons, and tells the caller to close it with `click_editor_dialog_button`. This covers both a dialog shown while the request waits in the queue (e.g. a scene reload confirmation) and one shown by the request itself (e.g. "Saving failed", or the save panel of an untitled scene). The request is not cancelled in the Editor, so it may still run after the dialog is closed. When the dialogs cannot be read (on Linux, or without the Accessibility permission on macOS), the request keeps waiting.
 All scene-mutating operations support Undo.
-Endpoints that save a new asset at a given path (`/scene/create`, `/scriptable-object/create`, `/animation-clip/create`, `/prefab/create`, `/timeline/create`) create any missing parent folders under `Assets/` first. A path outside `Assets/` or an asset that still cannot be saved returns `400 Bad Request` with the reason.
+Endpoints that save a new asset at a given path (`/scene/create`, `/scriptable-object/create`, `/animation-clip/create`, `/audio-mixer/create`, `/prefab/create`, `/timeline/create`) create any missing parent folders under `Assets/` first. A path outside `Assets/` or an asset that still cannot be saved returns `400 Bad Request` with the reason.
 
 ### Editor Control
 
@@ -619,6 +619,66 @@ Request body:
 ```json
 {"assetPath": "Assets/Animations/FadeIn.anim", "animatorRelativePath": "Root/Child", "componentType": "UnityEngine.UI.Image", "assemblyName": "UnityEngine.UI", "propertyName": "m_Color.a"}
 ```
+
+Response: `{"success": true}`
+
+### AudioMixer
+
+Create AudioMixer (`.mixer`) assets, add groups, expose group parameters, and route AudioSources to groups. Unity has no public Editor API for editing mixers (`AudioMixerController`, `AudioMixerGroupController`, `CreateNewGroup`, `AddChildToParent`, `AddExposedParameter` are `internal`), so `AudioMixerControllerReflection` calls the same internal members the Audio Mixer window uses through reflection. The members were checked on Unity 2022.3 and 6000.3; if one is missing, the request fails with a "not supported" error.
+
+Groups are identified by `group`: either a path from the master group (e.g. `Master/Music`) or a group name (e.g. `Music`). A path match is tried first; a name that matches several groups is rejected with the list of their paths.
+
+Edits to the mixer are Undo-supported, followed by `EditorUtility.SetDirty` + `AssetDatabase.SaveAssets`.
+
+#### POST `/audio-mixer/create`
+Creates a mixer with a `Master` group and one snapshot (`AudioMixerController.CreateMixerControllerAtPath`, the same as Assets > Create > Audio Mixer). Missing parent folders are created. Returns 400 when the path does not end with `.mixer` or an asset already exists there.
+
+Request body: `{"assetPath": "Assets/Audio/Main.mixer"}`
+
+Response: `{"success": true, "assetPath": "Assets/Audio/Main.mixer"}`
+
+#### GET `/audio-mixer?assetPath=Assets/Audio/Main.mixer`
+Returns the groups (depth-first from the master group), snapshots and exposed parameters.
+
+Response:
+```json
+{
+  "groups": [
+    {"name": "Master", "path": "Master"},
+    {"name": "Music", "path": "Master/Music"}
+  ],
+  "snapshots": [{"name": "Snapshot", "isStartSnapshot": true}],
+  "exposedParameters": [{"name": "MusicVolume", "groupPath": "Master/Music", "parameter": "volume"}]
+}
+```
+
+- `exposedParameters[].parameter`: `volume`, `pitch`, or `other` (e.g. an effect parameter exposed in the Audio Mixer window; `groupPath` is empty then)
+
+#### POST `/audio-mixer/group/add`
+Adds a child group with an Attenuation effect (`CreateNewGroup` + `AddChildToParent`). When the mixer has been opened in the Audio Mixer window, the group is also added to the current view; a mixer that has never been opened has no views yet, and the window shows every group when it creates them.
+
+Request body: `{"assetPath": "Assets/Audio/Main.mixer", "groupName": "Music", "parentGroup": "Master"}`
+
+- `groupName`: required. Must not contain `/` and must be unique among its siblings (so paths stay unique)
+- `parentGroup`: optional, default is the master group
+
+Response: `{"success": true, "path": "Master/Music"}`
+
+#### POST `/audio-mixer/parameter/expose`
+Exposes a group's volume or pitch (`AddExposedParameter`) and names it, so runtime code can use `AudioMixer.SetFloat` / `GetFloat`. If the parameter is already exposed, it is renamed. Exposing and renaming are one Undo step. Returns 400 when another parameter already uses the name.
+
+Request body: `{"assetPath": "Assets/Audio/Main.mixer", "group": "Master/Music", "parameter": "volume", "exposedName": "MusicVolume"}`
+
+- `parameter`: `volume` or `pitch` (case-insensitive)
+
+Response: `{"success": true}`
+
+#### POST `/audio-source/output/set`
+Sets `AudioSource.outputAudioMixerGroup` (Undo-supported via `Undo.RecordObject`; recorded as a prefab override for prefab instances). Works for objects in scenes and in Prefab Mode.
+
+Request body: `{"instanceId": 12345, "componentIndex": 0, "assetPath": "Assets/Audio/Main.mixer", "group": "Master/Music"}`
+
+- `componentIndex`: index used when the GameObject has several AudioSources (default: 0)
 
 Response: `{"success": true}`
 
@@ -1493,7 +1553,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
   3. Exits with an error if neither is set
 - Logs go to stderr (stdout is reserved for the MCP protocol)
 
-### MCP Tools (56 tools total)
+### MCP Tools (61 tools total)
 
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
@@ -1585,6 +1645,16 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `create_scriptable_object` | POST `/scriptable-object/create` | Create a new `.asset` from `typeName` + `assemblyName` |
 | `get_scriptable_object_properties` | GET `/scriptable-object/properties` | Get the top-level property list of an `.asset` file |
 | `set_scriptable_object_property` | POST `/scriptable-object/property` | Modify a specific property on an `.asset` file |
+
+#### AudioMixer (5)
+
+| Tool | API | Description |
+|------|-----|-------------|
+| `create_audio_mixer` | POST `/audio-mixer/create` | Create a `.mixer` asset with a Master group and one snapshot |
+| `get_audio_mixer` | GET `/audio-mixer` | Get the groups, snapshots and exposed parameters of a mixer |
+| `add_audio_mixer_group` | POST `/audio-mixer/group/add` | Add a child group to a mixer |
+| `expose_audio_mixer_parameter` | POST `/audio-mixer/parameter/expose` | Expose a group's volume or pitch under a given name |
+| `set_audio_source_output` | POST `/audio-source/output/set` | Route an AudioSource to a mixer group |
 
 #### Prefab (4)
 
@@ -1757,6 +1827,10 @@ component property list|set
 prefab create|instantiate|open|close|save
 scriptable-object create
 scriptable-object property list|set
+audio-mixer create|get
+audio-mixer group add
+audio-mixer parameter expose
+audio-source set-output
 test run
 console logs|clear
 asset refresh
