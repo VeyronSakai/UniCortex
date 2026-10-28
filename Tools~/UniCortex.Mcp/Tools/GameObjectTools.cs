@@ -97,8 +97,9 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
 
     [McpServerTool(Name = "duplicate_game_object", ReadOnly = false),
      Description(
-         "Duplicate a GameObject in the current scene, deep-copying its children and components and placing the " +
-         "copy as a sibling right after the original. Supports Undo."),
+         "Duplicate a GameObject in the current scene, the same as the Editor's Duplicate command (Ctrl+D). " +
+         "Children and components are copied, prefab instances (including nested ones) stay linked to their " +
+         "prefab with their overrides, and the copy is placed as a sibling right after the original. Supports Undo."),
      UsedImplicitly]
     public ValueTask<CallToolResult> DuplicateGameObjectAsync(
         [Description("The instance ID of the GameObject to duplicate.")]

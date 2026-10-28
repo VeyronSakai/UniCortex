@@ -379,7 +379,7 @@ All fields other than `instanceId` are optional. Setting `parentInstanceId` to `
 Response: `{"success": true}`
 
 #### POST `/gameobject/duplicate`
-Duplicates a GameObject, deep-copying its children and components. The copy is placed under the same parent, directly after the original (mirroring the Editor's "Duplicate" command). Undo-supported via `Undo.RegisterCreatedObjectUndo`.
+Duplicates a GameObject with the Editor's own "Duplicate" command (Ctrl+D, `Unsupported.DuplicateGameObjectsUsingPasteboard()`). Children and components are copied, and prefab instances (including nested ones) stay linked to their prefab with their overrides; `Object.Instantiate` is not used because it would unpack them. The copy is placed under the same parent, directly after the original. The command works on the selection, so the selection is set to the source and restored afterwards. Undo-supported: the duplicate and the optional rename are collapsed into one Undo step.
 
 Request body:
 ```json
@@ -390,7 +390,7 @@ Request body:
 ```
 
 - `instanceId`: instance ID of the GameObject to duplicate (required)
-- `name`: name for the duplicate (optional). If omitted, a Unity-style unique sibling name (e.g. `Cube (1)`) is assigned via `GameObjectUtility.GetUniqueNameForSibling`.
+- `name`: name for the duplicate (optional). If omitted, the Editor's unique sibling name (e.g. `Cube (1)`) is kept.
 
 Response:
 ```json
@@ -1565,7 +1565,7 @@ Output of `get_editor_dialogs`:
 | `create_gameobject` | POST `/gameobject/create` | Create a GameObject (parent, sibling index, and RectTransform specification supported) |
 | `delete_gameobject` | POST `/gameobject/delete` | Delete a GameObject |
 | `modify_gameobject` | POST `/gameobject/modify` | Rename, enable/disable, reparent, reorder siblings, change tag/layer |
-| `duplicate_game_object` | POST `/gameobject/duplicate` | Duplicate a GameObject (deep copy of children and components) |
+| `duplicate_game_object` | POST `/gameobject/duplicate` | Duplicate a GameObject like the Editor's Duplicate command (keeps prefab instance links) |
 
 #### Component (4)
 

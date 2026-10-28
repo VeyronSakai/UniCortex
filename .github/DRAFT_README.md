@@ -124,7 +124,7 @@ While a modal dialog is open, the Unity Editor cannot answer the other tools. Th
 | `create_game_object` | Create a new empty GameObject, optionally under a parent at a given sibling index (with RectTransform support for UI) |
 | `delete_game_object` | Delete a GameObject (supports Undo) |
 | `modify_game_object` | Modify name, active state, tag, layer, parent, or sibling order |
-| `duplicate_game_object` | Duplicate a GameObject including children and components (supports Undo) |
+| `duplicate_game_object` | Duplicate a GameObject like the Editor's Duplicate command, keeping prefab instance links (supports Undo) |
 
 #### Component
 
@@ -371,7 +371,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `game-object create` | Create a new empty GameObject, optionally under a parent at a given sibling index. |
 | `game-object delete` | Delete a GameObject by `instanceId`. |
 | `game-object modify` | Rename, reparent, reorder, or change active state, tag, or layer. |
-| `game-object duplicate` | Duplicate a GameObject (deep copy of children and components). |
+| `game-object duplicate` | Duplicate a GameObject like the Editor's Duplicate command, keeping prefab instance links. |
 
 #### `component`
 

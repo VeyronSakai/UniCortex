@@ -168,20 +168,50 @@ namespace UniCortex.Editor.Infrastructures
                 throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
             }
 
-            // Deep copy including children and components, placed under the same parent.
-            var parent = source.transform.parent;
-            var clone = UnityEngine.Object.Instantiate(source, parent);
+            // Group the duplicate and the rename so a single Undo reverts both.
+            Undo.IncrementCurrentGroup();
+            var undoGroup = Undo.GetCurrentGroup();
 
-            // Use the supplied name, or a Unity-style unique sibling name (e.g. "Foo (1)").
-            clone.name = string.IsNullOrEmpty(name)
-                ? GameObjectUtility.GetUniqueNameForSibling(parent, source.name)
-                : name;
+            var clone = DuplicateLikeEditor(source);
 
-            // Place the clone right after the source to mirror Editor "Duplicate" behavior.
-            clone.transform.SetSiblingIndex(source.transform.GetSiblingIndex() + 1);
+            // The Editor already gave the clone a unique sibling name (e.g. "Foo (1)").
+            if (!string.IsNullOrEmpty(name))
+            {
+                Undo.RecordObject(clone, "Duplicate GameObject");
+                clone.name = name;
+            }
 
-            Undo.RegisterCreatedObjectUndo(clone, "Duplicate GameObject");
+            Undo.SetCurrentGroupName("Duplicate GameObject");
+            Undo.CollapseUndoOperations(undoGroup);
+
             return new DuplicateGameObjectResponse(clone.name, clone.GetInstanceID());
+        }
+
+        // Runs the Editor's own "Duplicate" command (Ctrl+D). Unlike Object.Instantiate, it keeps
+        // prefab instances (including nested ones) linked to their prefab, with their overrides.
+        // It also places the clone right after the source, names it, and registers Undo.
+        // The command works on the selection, so the caller's selection is restored afterwards.
+        private static GameObject DuplicateLikeEditor(GameObject source)
+        {
+            var previousSelection = Selection.objects;
+            GameObject clone;
+            try
+            {
+                Selection.objects = new UnityEngine.Object[] { source };
+                Unsupported.DuplicateGameObjectsUsingPasteboard();
+                clone = Selection.activeGameObject;
+            }
+            finally
+            {
+                Selection.objects = previousSelection;
+            }
+
+            if (clone == null || clone == source)
+            {
+                throw new InvalidOperationException($"Failed to duplicate GameObject '{source.name}'.");
+            }
+
+            return clone;
         }
     }
 }
