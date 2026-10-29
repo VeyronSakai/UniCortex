@@ -64,7 +64,7 @@ public class GameObjectCommands(GameObjectUseCase gameObjectUseCase)
         Console.WriteLine(message);
     }
 
-    /// <summary>Duplicate a GameObject, deep-copying its children and components.</summary>
+    /// <summary>Duplicate a GameObject like the Editor's Duplicate command, keeping prefab instance links.</summary>
     /// <param name="instanceId">Instance ID of the GameObject to duplicate.</param>
     /// <param name="name">Optional name for the duplicate. If omitted, a Unity-style unique name like "Foo (1)" is assigned.</param>
     [Command("duplicate")]
