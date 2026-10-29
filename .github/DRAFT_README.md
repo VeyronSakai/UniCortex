@@ -149,6 +149,18 @@ Object reference properties (e.g. `PlayableDirector.m_PlayableAsset` or a `[Seri
 
 `create_scriptable_object` takes the ScriptableObject subclass name plus the defining assembly name (e.g. `MyNamespace.MyData` + `Assembly-CSharp`). Property paths and value formats match `set_component_property`.
 
+#### AudioMixer
+
+| Tool | Description |
+|------|-------------|
+| `create_audio_mixer` | Create a new AudioMixer `.mixer` asset with a Master group and one snapshot |
+| `get_audio_mixer` | Get the groups (with paths like `Master/Music`), snapshots and exposed parameters of an AudioMixer |
+| `add_audio_mixer_group` | Add a child group to an AudioMixer (supports Undo) |
+| `expose_audio_mixer_parameter` | Expose a group's volume or pitch under a given name for `AudioMixer.SetFloat` (supports Undo) |
+| `set_audio_source_output` | Route an AudioSource to an AudioMixer group (supports Undo) |
+
+Groups are given as a path from the master group (e.g. `Master/Music`) or as a group name. Unity has no public API for editing mixers, so these tools call Unity's internal AudioMixer editor API (checked on Unity 2022.3 and 6000.3).
+
 #### AnimationClip
 
 | Tool | Description |
@@ -402,6 +414,16 @@ Component commands accept the fully-qualified component type name plus the defin
 | `animation-clip curve list` | Print the settings and all float curves of an AnimationClip as JSON. |
 | `animation-clip curve set` | Replace one float curve with keys given as a JSON array. Use `--animator-relative-path` for the path relative to the Animator root. |
 | `animation-clip curve remove` | Remove one float curve. |
+
+#### `audio-mixer` / `audio-source`
+
+| Command | Description |
+| --- | --- |
+| `audio-mixer create` | Create a new AudioMixer `.mixer` asset with a Master group. |
+| `audio-mixer get` | Print the groups, snapshots and exposed parameters of an AudioMixer as JSON. |
+| `audio-mixer group add` | Add a child group. Use `--parent` to choose the parent group (default: Master). |
+| `audio-mixer parameter expose` | Expose a group's `volume` or `pitch` under a given name. |
+| `audio-source set-output` | Route an AudioSource to a mixer group. Use `--component-index` when the GameObject has several AudioSources. |
 
 #### `prefab`
 
