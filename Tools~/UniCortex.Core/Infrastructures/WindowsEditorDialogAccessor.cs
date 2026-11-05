@@ -18,6 +18,8 @@ public sealed class WindowsEditorDialogAccessor : IEditorDialogAccessor
     private const string DialogClassName = "#32770";
     private const string ProgressBarClassName = "msctls_progress32";
     private const uint WmNull = 0x0000;
+    private const uint WmGetText = 0x000D;
+    private const uint WmGetTextLength = 0x000E;
     private const uint WmCommand = 0x0111;
     private const uint SmtoAbortIfHung = 0x0002;
     private const uint ResponseTimeoutMilliseconds = 2000;
@@ -108,25 +110,72 @@ public sealed class WindowsEditorDialogAccessor : IEditorDialogAccessor
                 return null;
             }
 
-            var text = GetWindowText(child);
-            if (text.Length == 0)
+            switch (className)
             {
-                continue;
-            }
+                case "Static":
+                {
+                    var text = GetWindowText(child);
+                    if (text.Length > 0)
+                    {
+                        texts.Add(text);
+                    }
 
-            if (className == "Static")
-            {
-                texts.Add(text);
-            }
-            else if (className == "Button")
-            {
-                found.Dialog.buttons.Add(RemoveMnemonic(text));
-                found.ButtonHandles.Add(child);
+                    break;
+                }
+                // Unity's dialog (EditorUtility.DisplayDialog) shows the message in an edit control.
+                // GetWindowText does not send WM_GETTEXT to a window of another process, so it returns the window
+                // name from the dialog template instead of the message. Ask the control for its text instead.
+                case "Edit":
+                {
+                    var text = GetControlText(child);
+                    if (text.Length > 0)
+                    {
+                        texts.Add(text.Replace("\r\n", "\n"));
+                    }
+
+                    break;
+                }
+                case "Button":
+                {
+                    var text = GetWindowText(child);
+                    if (text.Length > 0)
+                    {
+                        found.Dialog.buttons.Add(RemoveMnemonic(text));
+                        found.ButtonHandles.Add(child);
+                    }
+
+                    break;
+                }
             }
         }
 
         found.Dialog.message = string.Join("\n", texts);
         return found;
+    }
+
+    // Reads the text of a control in another process with WM_GETTEXT. Returns "" if the control does not answer.
+    private static string GetControlText(IntPtr control)
+    {
+        if (SendMessageTimeout(control, WmGetTextLength, IntPtr.Zero, IntPtr.Zero, SmtoAbortIfHung,
+                ResponseTimeoutMilliseconds, out var lengthResult) == IntPtr.Zero)
+        {
+            return "";
+        }
+
+        var length = (int)lengthResult;
+        if (length <= 0)
+        {
+            return "";
+        }
+
+        var buffer = new StringBuilder(length + 1);
+        if (SendMessageTimeout(control, WmGetText, (IntPtr)buffer.Capacity, buffer, SmtoAbortIfHung,
+                ResponseTimeoutMilliseconds, out _) == IntPtr.Zero)
+        {
+            return "";
+        }
+
+        return buffer.ToString();
     }
 
     // "&Save" is shown as "Save" with an underlined S, and "&&" is shown as "&".
@@ -236,6 +285,11 @@ public sealed class WindowsEditorDialogAccessor : IEditorDialogAccessor
 
     [DllImport("user32.dll")]
     private static extern IntPtr SendMessageTimeout(IntPtr window, uint message, IntPtr wParam, IntPtr lParam,
+        uint flags, uint timeoutMilliseconds, out IntPtr result);
+
+    // The W version, so that WM_GETTEXT fills the buffer with UTF-16 text.
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "SendMessageTimeoutW")]
+    private static extern IntPtr SendMessageTimeout(IntPtr window, uint message, IntPtr wParam, StringBuilder lParam,
         uint flags, uint timeoutMilliseconds, out IntPtr result);
 
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "PostMessageW")]
