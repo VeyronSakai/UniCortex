@@ -24,9 +24,19 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
     private const int MaxDepth = 6;
     private const float MessagingTimeoutSeconds = 2f;
 
+    // Element ids are given in order, about one for each new window: the Editor used about 40 while it started,
+    // and none for a domain reload. The ids of closed windows have no element, so the scan goes on past them and
+    // stops only after this many ids in a row without an element. Each id takes less than 0.1 milliseconds, so the
+    // scan of a newly opened Editor took about 60 milliseconds.
+    private const long MaxIdsWithoutElement = 1000;
+
     private const int AXErrorSuccess = 0;
+    private const int AXErrorInvalidUIElement = -25202;
+    private const int AXErrorCannotComplete = -25204;
     private const int AXErrorNoValue = -25212;
     private const int AXErrorAttributeUnsupported = -25205;
+
+    private static bool s_canCreateElementFromRemoteToken = true;
 
     public IReadOnlyList<EditorDialog> GetDialogs(int processId)
     {
@@ -80,17 +90,32 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
                 $"Failed to read the windows of the Unity Editor process {processId} (AXError {error}).");
         }
 
-        // AXWindows lists only the windows in the current Space. While a modal dialog is open, it is the focused
-        // window of the application, which is returned even when the Editor is in another Space.
+        // AXWindows lists only the windows in the current Space. A modal dialog is usually the focused window of the
+        // application, which is returned even when the Editor is in another Space.
         var candidates = ToElements(windows);
         CopyAttribute(application, "AXFocusedWindow", scope, out var focusedWindow);
-        if (focusedWindow != IntPtr.Zero && !candidates.Any(window => CFEqual(window, focusedWindow)))
+        var isInOtherSpace = focusedWindow == IntPtr.Zero || !candidates.Any(window => CFEqual(window, focusedWindow));
+        if (focusedWindow != IntPtr.Zero && isInOtherSpace)
         {
             candidates.Add(focusedWindow);
         }
 
+        var dialogs = ReadDialogs(candidates, scope);
+
+        // A dialog opened while the Editor is not the active application (e.g. the save panel of an untitled scene)
+        // may not become the focused window, so it can be in neither attribute while the Editor is in another Space.
+        if (dialogs.Count == 0 && isInOtherSpace)
+        {
+            dialogs = ReadDialogs(FindWindowsByElementId(processId, scope), scope);
+        }
+
+        return dialogs;
+    }
+
+    private static List<FoundDialog> ReadDialogs(List<IntPtr> windows, CFScope scope)
+    {
         var dialogs = new List<FoundDialog>();
-        foreach (var window in candidates)
+        foreach (var window in windows)
         {
             if (IsDialog(window, scope))
             {
@@ -110,6 +135,79 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         // A progress window (e.g. EditorUtility.DisplayCancelableProgressBar) has a Cancel button but does not wait
         // for a choice, so it is not reported as a dialog that blocks the Editor.
         return dialogs.Where(found => !found.HasProgressIndicator).ToList();
+    }
+
+    // Finds the windows of the process in every Space by creating its AX elements from their ids with the private
+    // _AXUIElementCreateWithRemoteToken, as window switchers do. No public attribute of the application leads to a
+    // window that is in another Space and is not the focused window.
+    private static List<IntPtr> FindWindowsByElementId(int processId, CFScope scope)
+    {
+        var windows = new List<IntPtr>();
+        if (!s_canCreateElementFromRemoteToken)
+        {
+            return windows;
+        }
+
+        var roleAttribute = scope.CreateString("AXRole");
+        var windowRole = scope.CreateString("AXWindow");
+        var token = new RemoteToken(processId);
+        var lastElementId = 0L;
+        for (var id = 0L; id - lastElementId <= MaxIdsWithoutElement; id++)
+        {
+            token.ElementId = id;
+            var data = CFDataCreate(IntPtr.Zero, ref token, Marshal.SizeOf<RemoteToken>());
+            IntPtr element;
+            try
+            {
+                element = _AXUIElementCreateWithRemoteToken(data);
+            }
+            catch (EntryPointNotFoundException)
+            {
+                // Removed in this version of macOS: the windows in other Spaces cannot be found.
+                s_canCreateElementFromRemoteToken = false;
+                return windows;
+            }
+            finally
+            {
+                CFRelease(data);
+            }
+
+            if (element == IntPtr.Zero)
+            {
+                continue;
+            }
+
+            // An id without an element returns kAXErrorInvalidUIElement at once.
+            AXUIElementSetMessagingTimeout(element, MessagingTimeoutSeconds);
+            var error = AXUIElementCopyAttributeValue(element, roleAttribute, out var role);
+            if (error != AXErrorInvalidUIElement)
+            {
+                lastElementId = id;
+            }
+
+            var isWindow = false;
+            if (error == AXErrorSuccess && role != IntPtr.Zero)
+            {
+                isWindow = CFEqual(role, windowRole);
+                CFRelease(role);
+            }
+
+            if (isWindow)
+            {
+                windows.Add(scope.Own(element));
+                continue;
+            }
+
+            CFRelease(element);
+
+            // The Editor does not answer (its main thread is busy), so the other ids would time out as well.
+            if (error == AXErrorCannotComplete)
+            {
+                break;
+            }
+        }
+
+        return windows;
     }
 
     private static bool IsDialog(IntPtr window, CFScope scope)
@@ -287,6 +385,19 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         public readonly nint Length = length;
     }
 
+    /// <summary>
+    /// The 20 bytes that _AXUIElementCreateWithRemoteToken takes to identify an AX element of a process.
+    /// Pack = 4 puts the element id right after the 12 bytes before it, with no padding.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    private struct RemoteToken(int processId)
+    {
+        public readonly int ProcessId = processId;
+        public readonly int Reserved = 0;
+        public readonly int Magic = 0x636f636f; // "coco"
+        public long ElementId;
+    }
+
     private const string ApplicationServices =
         "/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices";
 
@@ -307,6 +418,13 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
 
     [DllImport(ApplicationServices)]
     private static extern int AXUIElementPerformAction(IntPtr element, IntPtr action);
+
+    // Private API: not in the SDK headers, and may be removed in a future version of macOS.
+    [DllImport(ApplicationServices)]
+    private static extern IntPtr _AXUIElementCreateWithRemoteToken(IntPtr data);
+
+    [DllImport(CoreFoundation)]
+    private static extern IntPtr CFDataCreate(IntPtr allocator, ref RemoteToken bytes, nint length);
 
     [DllImport(CoreFoundation, CharSet = CharSet.Unicode)]
     private static extern IntPtr CFStringCreateWithCharacters(IntPtr allocator, string chars, nint numChars);
