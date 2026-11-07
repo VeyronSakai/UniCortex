@@ -279,6 +279,9 @@ namespace UniCortex.Editor
             var setGameViewSizeUseCase = new SetGameViewSizeUseCase(dispatcher, editorWindowOps);
             var setGameViewSizeHandler = new SetGameViewSizeHandler(setGameViewSizeUseCase);
 
+            var addGameViewSizeUseCase = new AddGameViewSizeUseCase(dispatcher, editorWindowOps);
+            var addGameViewSizeHandler = new AddGameViewSizeHandler(addGameViewSizeUseCase);
+
             var getGameViewScaleUseCase = new GetGameViewScaleUseCase(dispatcher, editorWindowOps);
             var getGameViewScaleHandler = new GetGameViewScaleHandler(getGameViewScaleUseCase);
 
@@ -461,6 +464,7 @@ namespace UniCortex.Editor
             getGameViewSizeHandler.Register(router);
             getGameViewSizeListHandler.Register(router);
             setGameViewSizeHandler.Register(router);
+            addGameViewSizeHandler.Register(router);
             getGameViewScaleHandler.Register(router);
             setGameViewScaleHandler.Register(router);
             getPlayModeViewTypeHandler.Register(router);

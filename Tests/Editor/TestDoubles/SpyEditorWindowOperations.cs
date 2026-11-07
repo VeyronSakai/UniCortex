@@ -10,6 +10,9 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int OpenGameViewCallCount { get; private set; }
         public int GetGameViewSizeCallCount { get; private set; }
         public int GetGameViewSizeListCallCount { get; private set; }
+        public int GetGameViewSizesCallCount { get; private set; }
+        public int AddGameViewSizeCallCount { get; private set; }
+        public (string name, int width, int height) LastAddedSize { get; private set; }
         public int SetGameViewSizeCallCount { get; private set; }
         public int GetGameViewScaleCallCount { get; private set; }
         public int SetGameViewScaleCallCount { get; private set; }
@@ -58,6 +61,28 @@ namespace UniCortex.Editor.Tests.TestDoubles
                 sizes = SizeListEntries,
                 selectedIndex = SelectedSizeIndex
             };
+        }
+
+        public GameViewSizeEntry[] GetGameViewSizes()
+        {
+            GetGameViewSizesCallCount++;
+            return SizeListEntries;
+        }
+
+        public int AddGameViewSize(string name, int width, int height)
+        {
+            AddGameViewSizeCallCount++;
+            LastAddedSize = (name, width, height);
+
+            var index = SizeListEntries.Length;
+            var entries = new GameViewSizeEntry[index + 1];
+            SizeListEntries.CopyTo(entries, 0);
+            entries[index] = new GameViewSizeEntry
+            {
+                index = index, name = name, width = width, height = height, sizeType = "FixedResolution"
+            };
+            SizeListEntries = entries;
+            return index;
         }
 
         public void SetGameViewSize(int index)

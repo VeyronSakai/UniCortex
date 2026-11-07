@@ -62,6 +62,18 @@ public class GameViewSizeCommands(GameViewUseCase gameViewUseCase)
         var message = await gameViewUseCase.SetSizeAsync(index, cancellationToken);
         Console.WriteLine(message);
     }
+
+    /// <summary>Add a fixed resolution to the Game View size list of the current platform without selecting it.</summary>
+    /// <param name="name">Name (label) of the size. Up to 40 characters.</param>
+    /// <param name="width">Width in pixels (10 to 99999).</param>
+    /// <param name="height">Height in pixels (10 to 99999).</param>
+    [Command("add")]
+    public async Task Add([Argument] string name, [Argument] int width, [Argument] int height,
+        CancellationToken cancellationToken = default)
+    {
+        var message = await gameViewUseCase.AddSizeAsync(name, width, height, cancellationToken);
+        Console.WriteLine(message);
+    }
 }
 
 public class GameViewScaleCommands(GameViewUseCase gameViewUseCase)

@@ -92,6 +92,45 @@ public class GameViewUseCaseTest
     }
 
     [Test]
+    public async ValueTask AddSize_AddsFixedResolution_WithoutSelectingIt_And_DoesNotAddItTwice()
+    {
+        // Arrange
+        // The size is saved to the Unity preferences and cannot be removed through UniCortex,
+        // so a fixed name is used and later runs find the size added by an earlier run.
+        const string name = "UniCortex Test";
+        const int width = 642;
+        const int height = 1389;
+        var before = await _fixture.GameViewUseCase.GetSizeListResponseAsync(CancellationToken.None);
+
+        // Act
+        var first = await _fixture.GameViewUseCase.AddSizeResponseAsync(name, width, height,
+            CancellationToken.None);
+        var second = await _fixture.GameViewUseCase.AddSizeResponseAsync(name, width, height,
+            CancellationToken.None);
+
+        // Assert
+        Assert.That(second.added, Is.False);
+        Assert.That(second.index, Is.EqualTo(first.index));
+
+        var after = await _fixture.GameViewUseCase.GetSizeListResponseAsync(CancellationToken.None);
+        Assert.That(after.selectedIndex, Is.EqualTo(before.selectedIndex));
+        Assert.That(after.sizes.Length, Is.EqualTo(before.sizes.Length + (first.added ? 1 : 0)));
+        var entry = after.sizes[first.index];
+        Assert.That(entry.name, Is.EqualTo(name));
+        Assert.That(entry.width, Is.EqualTo(width));
+        Assert.That(entry.height, Is.EqualTo(height));
+        Assert.That(entry.sizeType, Is.EqualTo("FixedResolution"));
+    }
+
+    [Test]
+    public void AddSize_WithOutOfRangeSize_Throws()
+    {
+        // Act & Assert
+        Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.GameViewUseCase.AddSizeAsync("UniCortex Test", 5, 1389, CancellationToken.None));
+    }
+
+    [Test]
     public async ValueTask GetScale_ReturnsScaleWithRange()
     {
         var response = await _fixture.GameViewUseCase.GetScaleResponseAsync(CancellationToken.None);

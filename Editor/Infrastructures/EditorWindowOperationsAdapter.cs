@@ -87,6 +87,18 @@ namespace UniCortex.Editor.Infrastructures
 
         public GetGameViewSizeListResponse GetGameViewSizeList()
         {
+            var entries = GetGameViewSizes();
+            var selectedIndex = GetSelectedSizeIndex();
+
+            return new GetGameViewSizeListResponse
+            {
+                sizes = entries,
+                selectedIndex = selectedIndex
+            };
+        }
+
+        public GameViewSizeEntry[] GetGameViewSizes()
+        {
             EnsureGameViewTypesAvailable();
 
             var (group, totalCount) = GetSizeGroup();
@@ -111,13 +123,29 @@ namespace UniCortex.Editor.Infrastructures
                 };
             }
 
-            var selectedIndex = GetSelectedSizeIndex();
+            return entries;
+        }
 
-            return new GetGameViewSizeListResponse
-            {
-                sizes = entries,
-                selectedIndex = selectedIndex
-            };
+        public int AddGameViewSize(string name, int width, int height)
+        {
+            EnsureGameViewTypesAvailable();
+
+            var (group, totalCount) = GetSizeGroup();
+
+            var fixedResolution = Enum.Parse(s_gameViewSizeTypeEnum, "FixedResolution");
+            var size = Activator.CreateInstance(s_gameViewSizeType, fixedResolution, width, height, name);
+
+            // Custom sizes come after the built-in ones, so the new size is at the old total count.
+            // GameViewSizeGroup.IndexOf is not used because it does not add the built-in count for custom sizes.
+            var addCustomSizeMethod = GetMethodOrThrow(group.GetType(), "AddCustomSize");
+            addCustomSizeMethod.Invoke(group, new[] { size });
+
+            // Save to the preferences, as the Game View's resolution menu does when a size is added.
+            var instance = GetGameViewSizesInstance();
+            var saveToHddMethod = GetMethodOrThrow(s_gameViewSizesType, "SaveToHDD");
+            saveToHddMethod.Invoke(instance, null);
+
+            return totalCount;
         }
 
         public void SetGameViewSize(int index)
@@ -201,10 +229,15 @@ namespace UniCortex.Editor.Infrastructures
             }
         }
 
-        private static (object group, int totalCount) GetSizeGroup()
+        private static object GetGameViewSizesInstance()
         {
             var singletonProperty = GetPropertyOrThrow(s_gameViewSizesType, "instance", AllStatic);
-            var instance = singletonProperty.GetValue(null);
+            return singletonProperty.GetValue(null);
+        }
+
+        private static (object group, int totalCount) GetSizeGroup()
+        {
+            var instance = GetGameViewSizesInstance();
 
             var currentGroupMethod = GetMethodOrThrow(s_gameViewSizesType, "GetGroup");
             var currentGroupTypeProperty = GetPropertyOrThrow(s_gameViewSizesType, "currentGroupType");
