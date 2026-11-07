@@ -830,6 +830,23 @@ Request body:
 
 Response: `{"success": true}`
 
+#### POST `/game-view/size/add`
+Adds a fixed resolution to the Game View size list of the current platform (`GameViewSizes.currentGroup`, accessed via reflection) and returns its index. The new size is not selected; select it with `POST /game-view/size`.
+
+Request body:
+```json
+{"name": "Phone Half", "width": 642, "height": 1389}
+```
+
+- `name` is required and up to 40 characters. `width` and `height` must be between 10 and 99999. Unity would otherwise cut the name and clamp the size without telling, so other values return 400
+- If a fixed resolution with the same name and size already exists (built-in or custom), nothing is added and its index is returned with `added: false`
+- The size is added after the existing sizes (`GameViewSizeGroup.AddCustomSize`), so the indices of the existing sizes and the selected size do not change
+- The size is saved to the Unity preferences (`GameViewSizes.SaveToHDD`, `GameViewSizes.asset` in the preferences folder), the same as a size added from the Game View's resolution menu. It remains after the Editor restarts and is shared by all projects on the machine
+- Does not open or focus the Game View
+- Useful to capture smaller images with the same aspect ratio as the device, e.g. 642x1389 for 1284x2778
+
+Response: `{"index": 25, "added": true}`
+
 #### GET `/game-view/scale`
 Gets the current Game View scale (zoom factor, `1.0` = 100%) together with the valid range. The range is dynamic and depends on the window size and the selected resolution.
 
@@ -1626,7 +1643,7 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 |------|-----|-------------|
 | `execute_menu_item` | POST `/menu-item/execute` | Execute a Unity menu item by path |
 
-#### View (12)
+#### View (13)
 
 | Tool | API | Description |
 |------|-----|-------------|
@@ -1637,6 +1654,7 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `get_game_view_size` | GET `/game-view/size` | Get the current Game View size |
 | `get_game_view_size_list` | GET `/game-view/size/list` | Get the list of available Game View sizes |
 | `set_game_view_size` | POST `/game-view/size` | Set the Game View resolution by index |
+| `add_game_view_size` | POST `/game-view/size/add` | Add a fixed resolution to the Game View size list without selecting it |
 | `get_play_mode_view_type` | GET `/game-view/view-type` | Get whether the Play Mode window shows the Game view or the Simulator view |
 | `set_play_mode_view_type` | POST `/game-view/view-type` | Switch the Play Mode window between the Game view and the Simulator view |
 | `get_simulator_device_list` | GET `/game-view/simulator/devices` | Get the devices of the Simulator view with the selected device and rotation |
@@ -1764,7 +1782,7 @@ project-window select
 menu execute
 scene-view focus|capture
 game-view focus|capture|safe-area
-game-view size get|list|set
+game-view size get|list|set|add
 game-view scale get|set
 game-view view-type get|set
 game-view simulator device list|set

@@ -73,6 +73,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string GameViewCapture = "/game-view/capture";
         public const string GameViewSize = "/game-view/size";
         public const string GameViewSizeList = "/game-view/size/list";
+        public const string GameViewSizeAdd = "/game-view/size/add";
         public const string GameViewScale = "/game-view/scale";
         public const string GameViewViewType = "/game-view/view-type";
         public const string GameViewSafeArea = "/game-view/safe-area";

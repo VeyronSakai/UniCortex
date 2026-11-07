@@ -67,7 +67,8 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
     [McpServerTool(Name = "set_game_view_size", ReadOnly = false),
      Description(
          "Set the Game View resolution in the Unity Editor by selecting a size from the available list. " +
-         "Use get_game_view_size_list to get available sizes and their indices."),
+         "Use get_game_view_size_list to get available sizes and their indices, " +
+         "or add_game_view_size to add a fixed resolution that is not in the list."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetGameViewSizeAsync(
         [Description("Index of the size from get_game_view_size_list.")]
@@ -75,6 +76,26 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
         CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => gameViewUseCase.SetSizeAsync(index, ct), cancellationToken);
+
+    [McpServerTool(Name = "add_game_view_size", ReadOnly = false),
+     Description(
+         "Add a fixed resolution to the Game View size list of the current platform and return its index. " +
+         "The new size is not selected; pass the index to set_game_view_size to select it. " +
+         "If a fixed resolution with the same name and size already exists, nothing is added and " +
+         "its index is returned. A smaller resolution with the device's aspect ratio (e.g. 642x1389 " +
+         "for 1284x2778) keeps the layout while making capture_game_view images smaller. " +
+         "The size is saved to the Unity preferences, like sizes added from the Game View's resolution menu."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> AddGameViewSizeAsync(
+        [Description("Name (label) of the size shown in the Game View's resolution menu. Up to 40 characters.")]
+        string name,
+        [Description("Width in pixels (10 to 99999).")]
+        int width,
+        [Description("Height in pixels (10 to 99999).")]
+        int height,
+        CancellationToken cancellationToken)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => gameViewUseCase.AddSizeAsync(name, width, height, ct), cancellationToken);
 
     [McpServerTool(Name = "get_game_view_scale", ReadOnly = true),
      Description(

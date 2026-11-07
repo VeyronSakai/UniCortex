@@ -211,6 +211,7 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | `get_game_view_size` | Get the current Game View size (width and height in pixels) |
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
+| `add_game_view_size` | Add a fixed resolution to the Game View size list of the current platform without selecting it, and return its index (an existing entry with the same name and size is returned instead) |
 | `get_game_view_scale` | Get the current Game View scale (zoom factor) and its valid range |
 | `set_game_view_scale` | Set the Game View scale (zoom factor); clamped to the valid range |
 | `get_play_mode_view_type` | Get whether the Play Mode window shows the Game view or the Device Simulator view |
@@ -445,6 +446,7 @@ Component commands accept the fully-qualified component type name plus the defin
 | `game-view size get` | Show the current Game View size. |
 | `game-view size list` | List available Game View sizes. |
 | `game-view size set` | Set the Game View size by index. |
+| `game-view size add` | Add a fixed resolution (`<name> <width> <height>`) to the Game View size list without selecting it. |
 | `game-view scale get` | Show the current Game View scale and its valid range. |
 | `game-view scale set` | Set the Game View scale (zoom factor). |
 | `game-view view-type get` | Show whether the Play Mode window shows the Game view or the Simulator view. |

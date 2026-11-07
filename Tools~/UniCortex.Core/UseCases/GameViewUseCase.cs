@@ -66,6 +66,24 @@ public class GameViewUseCase(IUnityEditorClient client)
         return $"Game View size set to index {index} successfully.";
     }
 
+    public async ValueTask<string> AddSizeAsync(string name, int width, int height,
+        CancellationToken cancellationToken)
+    {
+        var response = await AddSizeResponseAsync(name, width, height, cancellationToken);
+        return response.added
+            ? $"Game View size \"{name}\" ({width}x{height}) added at index {response.index}."
+            : $"Game View size \"{name}\" ({width}x{height}) already exists at index {response.index}. " +
+              "No size was added.";
+    }
+
+    public async ValueTask<AddGameViewSizeResponse> AddSizeResponseAsync(string name, int width, int height,
+        CancellationToken cancellationToken)
+    {
+        return await client.PostAsync<AddGameViewSizeRequest, AddGameViewSizeResponse>(
+            ApiRoutes.GameViewSizeAdd, new AddGameViewSizeRequest { name = name, width = width, height = height },
+            cancellationToken);
+    }
+
     public async ValueTask<string> GetScaleAsync(CancellationToken cancellationToken)
     {
         var response = await GetScaleResponseAsync(cancellationToken);
