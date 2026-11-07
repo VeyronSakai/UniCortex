@@ -19,6 +19,7 @@ public sealed class UnityEditorFixture
     public PrefabUseCase PrefabUseCase { get; }
     public ScriptableObjectUseCase ScriptableObjectUseCase { get; }
     public AnimationClipUseCase AnimationClipUseCase { get; }
+    public AudioMixerUseCase AudioMixerUseCase { get; }
     public AssetUseCase AssetUseCase { get; }
     public ProjectWindowUseCase ProjectWindowUseCase { get; }
     public MenuItemUseCase MenuItemUseCase { get; }
@@ -42,6 +43,7 @@ public sealed class UnityEditorFixture
         PrefabUseCase = provider.GetRequiredService<PrefabUseCase>();
         ScriptableObjectUseCase = provider.GetRequiredService<ScriptableObjectUseCase>();
         AnimationClipUseCase = provider.GetRequiredService<AnimationClipUseCase>();
+        AudioMixerUseCase = provider.GetRequiredService<AudioMixerUseCase>();
         AssetUseCase = provider.GetRequiredService<AssetUseCase>();
         ProjectWindowUseCase = provider.GetRequiredService<ProjectWindowUseCase>();
         MenuItemUseCase = provider.GetRequiredService<MenuItemUseCase>();

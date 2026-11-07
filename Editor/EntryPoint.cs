@@ -1,6 +1,7 @@
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Handlers.AnimationClip;
+using UniCortex.Editor.Handlers.AudioMixer;
 using UniCortex.Editor.Handlers.Asset;
 using UniCortex.Editor.Handlers.Component;
 using UniCortex.Editor.Handlers.Console;
@@ -236,6 +237,18 @@ namespace UniCortex.Editor
             var removeAnimationCurveUseCase = new RemoveAnimationCurveUseCase(dispatcher, animationClipOps);
             var removeAnimationCurveHandler = new RemoveAnimationCurveHandler(removeAnimationCurveUseCase);
 
+            var audioMixerOps = new AudioMixerOperationsAdapter();
+
+            var createAudioMixerHandler =
+                new CreateAudioMixerHandler(new CreateAudioMixerUseCase(dispatcher, audioMixerOps));
+            var audioMixerHandler = new AudioMixerHandler(new GetAudioMixerUseCase(dispatcher, audioMixerOps));
+            var addAudioMixerGroupHandler =
+                new AddAudioMixerGroupHandler(new AddAudioMixerGroupUseCase(dispatcher, audioMixerOps));
+            var exposeAudioMixerParameterHandler =
+                new ExposeAudioMixerParameterHandler(new ExposeAudioMixerParameterUseCase(dispatcher, audioMixerOps));
+            var setAudioSourceOutputHandler =
+                new SetAudioSourceOutputHandler(new SetAudioSourceOutputUseCase(dispatcher, audioMixerOps));
+
 
             var assetDbOps = new AssetDatabaseOperationsAdapter();
             var projectWindowOps = new ProjectWindowOperationsAdapter();
@@ -451,6 +464,11 @@ namespace UniCortex.Editor
             animationCurvesHandler.Register(router);
             setAnimationCurveHandler.Register(router);
             removeAnimationCurveHandler.Register(router);
+            createAudioMixerHandler.Register(router);
+            audioMixerHandler.Register(router);
+            addAudioMixerGroupHandler.Register(router);
+            exposeAudioMixerParameterHandler.Register(router);
+            setAudioSourceOutputHandler.Register(router);
             assetRefreshHandler.Register(router);
             selectProjectWindowAssetHandler.Register(router);
             executeMenuItemHandler.Register(router);
