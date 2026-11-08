@@ -35,7 +35,7 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
     [McpServerTool(Name = "create_game_object", ReadOnly = false),
      Description(
          "Create an empty GameObject in the current scene, optionally under a parent at a sibling index " +
-         "and with a RectTransform for UI. Supports Undo."),
+         "and with a RectTransform for UI."),
      UsedImplicitly]
     public ValueTask<CallToolResult> CreateGameObjectAsync(
         [Description("Name of the GameObject.")] string name,
@@ -53,7 +53,7 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, useRectTransform, ct), cancellationToken);
 
-    [McpServerTool(Name = "delete_game_object", ReadOnly = false), Description("Delete a GameObject from the current scene. Supports Undo."), UsedImplicitly]
+    [McpServerTool(Name = "delete_game_object", ReadOnly = false), Description("Delete a GameObject from the current scene."), UsedImplicitly]
     public ValueTask<CallToolResult> DeleteGameObjectAsync(
         [Description("instanceId of the GameObject.")]
         int instanceId,
@@ -64,7 +64,7 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
     [McpServerTool(Name = "modify_game_object", ReadOnly = false),
      Description(
          "Change a GameObject's name, active state, tag, layer, parent or sibling order; " +
-         "only the given fields change. Supports Undo."),
+         "only the given fields change."),
      UsedImplicitly]
     public ValueTask<CallToolResult> ModifyGameObjectAsync(
         [Description("instanceId of the GameObject.")]
@@ -92,8 +92,7 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
     [McpServerTool(Name = "duplicate_game_object", ReadOnly = false),
      Description(
          "Duplicate a GameObject like the Editor's Duplicate (Ctrl+D): children and components are copied, " +
-         "Prefab instances stay linked with their overrides, and the copy is placed right after the original. " +
-         "Supports Undo."),
+         "Prefab instances stay linked with their overrides, and the copy is placed right after the original."),
      UsedImplicitly]
     public ValueTask<CallToolResult> DuplicateGameObjectAsync(
         [Description("instanceId of the GameObject.")]

@@ -22,11 +22,11 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase, IA
         string name,
         [Description("Output file path of the video.")]
         string outputPath,
-        [Description("Encoder: UnityMediaEncoder (default), ProRes, GIF")]
+        [Description("Encoder: UnityMediaEncoder, ProRes or GIF.")]
         string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
-        [Description("Encoding quality (UnityMediaEncoder only): Low (default), Medium, High")]
+        [Description("Encoding quality (UnityMediaEncoder only): Low, Medium or High.")]
         string encodingQuality = MovieRecorderEncodingQuality.Low,
-        [Description("Capture audio (default false).")]
+        [Description("Capture audio.")]
         bool captureAudio = false,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>
@@ -74,7 +74,7 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase, IA
     public ValueTask<CallToolResult> StartRecorderAsync(
         [Description("Recorder index from get_all_recorders.")]
         int index,
-        [Description("Frames per second (default 30).")]
+        [Description("Frames per second.")]
         int fps = RecorderFps.Default,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>

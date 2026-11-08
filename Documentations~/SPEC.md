@@ -1515,6 +1515,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
 The tool receives the corresponding Core service via constructor DI and wraps the result in a `CallToolResult`.
+Tool and parameter descriptions are kept short because AI agents read them as tokens. For the same reason, `Program.cs` removes `"default": null` and the `"null"` type of nullable parameters (e.g. `["integer", "null"]` becomes `"integer"`) from the generated input schemas with `ToolInputSchema.Simplify`; an omitted optional parameter is already null.
 
 #### Editor Control (13)
 

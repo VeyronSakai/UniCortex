@@ -42,7 +42,7 @@ public class TimelineTools(TimelineUseCase timelineUseCase, IAsyncOperationSeque
             ct => timelineUseCase.CreateAsync(assetPath, ct), cancellationToken);
 
     [McpServerTool(Name = "add_timeline_track", ReadOnly = false),
-     Description("Add a track to the TimelineAsset of a PlayableDirector. Undo supported."),
+     Description("Add a track to the TimelineAsset of a PlayableDirector."),
      UsedImplicitly]
     public ValueTask<CallToolResult> AddTimelineTrackAsync(
         [Description(DirectorInstanceIdDescription)]
@@ -58,7 +58,7 @@ public class TimelineTools(TimelineUseCase timelineUseCase, IAsyncOperationSeque
             ct => timelineUseCase.AddTrackAsync(instanceId, trackType, trackName, ct), cancellationToken);
 
     [McpServerTool(Name = "remove_timeline_track", ReadOnly = false),
-     Description("Remove a track from the TimelineAsset of a PlayableDirector by index. Undo supported."),
+     Description("Remove a track from the TimelineAsset of a PlayableDirector by index."),
      UsedImplicitly]
     public ValueTask<CallToolResult> RemoveTimelineTrackAsync(
         [Description(DirectorInstanceIdDescription)]
@@ -70,7 +70,7 @@ public class TimelineTools(TimelineUseCase timelineUseCase, IAsyncOperationSeque
             ct => timelineUseCase.RemoveTrackAsync(instanceId, trackIndex, ct), cancellationToken);
 
     [McpServerTool(Name = "bind_timeline_track", ReadOnly = false),
-     Description("Set the binding of a Timeline track on a PlayableDirector. Undo supported."),
+     Description("Set the binding of a Timeline track on a PlayableDirector."),
      UsedImplicitly]
     public ValueTask<CallToolResult> BindTimelineTrackAsync(
         [Description(DirectorInstanceIdDescription)]
@@ -85,7 +85,7 @@ public class TimelineTools(TimelineUseCase timelineUseCase, IAsyncOperationSeque
             cancellationToken);
 
     [McpServerTool(Name = "add_timeline_clip", ReadOnly = false),
-     Description("Add a default clip of the track's clip type to a Timeline track. Undo supported."),
+     Description("Add a default clip of the track's clip type to a Timeline track."),
      UsedImplicitly]
     public ValueTask<CallToolResult> AddTimelineClipAsync(
         [Description(DirectorInstanceIdDescription)]
@@ -104,7 +104,7 @@ public class TimelineTools(TimelineUseCase timelineUseCase, IAsyncOperationSeque
             cancellationToken);
 
     [McpServerTool(Name = "remove_timeline_clip", ReadOnly = false),
-     Description("Remove a clip from a Timeline track by index. Undo supported."),
+     Description("Remove a clip from a Timeline track by index."),
      UsedImplicitly]
     public ValueTask<CallToolResult> RemoveTimelineClipAsync(
         [Description(DirectorInstanceIdDescription)]
@@ -175,7 +175,7 @@ public class TimelineTools(TimelineUseCase timelineUseCase, IAsyncOperationSeque
     [McpServerTool(Name = "modify_timeline_clip", ReadOnly = false),
      Description(
          "Change the timing and settings of a Timeline clip; only the given values change. " +
-         "timeScale, clipIn, ease and extrapolation fail if the clip type does not support them. Undo supported."),
+         "timeScale, clipIn, ease and extrapolation fail if the clip type does not support them."),
      UsedImplicitly]
     public ValueTask<CallToolResult> ModifyTimelineClipAsync(
         [Description(DirectorInstanceIdDescription)]
@@ -225,7 +225,7 @@ public class TimelineTools(TimelineUseCase timelineUseCase, IAsyncOperationSeque
      Description(
          "Set a serialized property of a Timeline clip's PlayableAsset, e.g. m_Clip to assign an AnimationClip. " +
          "Paths are listed by get_timeline_clip_properties; the clip's timing is changed with modify_timeline_clip. " +
-         "ExposedReferences are resolved through the PlayableDirector. Undo supported."),
+         "ExposedReferences are resolved through the PlayableDirector."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetTimelineClipPropertyAsync(
         [Description(DirectorInstanceIdDescription)]
@@ -247,7 +247,7 @@ public class TimelineTools(TimelineUseCase timelineUseCase, IAsyncOperationSeque
     [McpServerTool(Name = "set_timeline_track_property", ReadOnly = false),
      Description(
          "Set a serialized property of a Timeline track (e.g. m_TrackOffset, or m_Muted to mute it). " +
-         "Paths are listed by get_timeline_track_properties. Undo supported."),
+         "Paths are listed by get_timeline_track_properties."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetTimelineTrackPropertyAsync(
         [Description(DirectorInstanceIdDescription)]

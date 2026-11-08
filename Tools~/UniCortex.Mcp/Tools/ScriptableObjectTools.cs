@@ -39,7 +39,7 @@ public class ScriptableObjectTools(
 
     [McpServerTool(Name = "set_scriptable_object_property", ReadOnly = false),
      Description(
-         "Set a serialized property of a ScriptableObject .asset file. Supports Undo."),
+         "Set a serialized property of a ScriptableObject .asset file."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetScriptableObjectPropertyAsync(
         [Description("ScriptableObject asset path (e.g. \"Assets/Data/MyData.asset\").")]

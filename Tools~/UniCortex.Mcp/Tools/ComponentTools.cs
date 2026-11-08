@@ -19,10 +19,10 @@ public class ComponentTools(ComponentUseCase componentUseCase, IAsyncOperationSe
         "Assembly of the type (e.g. \"UnityEngine.PhysicsModule\" or \"Assembly-CSharp\").";
 
     private const string ComponentIndexDescription =
-        "Index among components of the same type. Default 0.";
+        "Index among components of the same type.";
 
     [McpServerTool(Name = "add_component", ReadOnly = false),
-     Description("Add a component to a GameObject. Supports Undo."), UsedImplicitly]
+     Description("Add a component to a GameObject."), UsedImplicitly]
     public ValueTask<CallToolResult> AddComponentAsync(
         [Description(InstanceIdDescription)] int instanceId,
         [Description(ComponentTypeDescription)] string componentType,
@@ -32,7 +32,7 @@ public class ComponentTools(ComponentUseCase componentUseCase, IAsyncOperationSe
             ct => componentUseCase.AddAsync(instanceId, componentType, assemblyName, ct), cancellationToken);
 
     [McpServerTool(Name = "remove_component", ReadOnly = false),
-     Description("Remove a component from a GameObject. Supports Undo."), UsedImplicitly]
+     Description("Remove a component from a GameObject."), UsedImplicitly]
     public ValueTask<CallToolResult> RemoveComponentAsync(
         [Description(InstanceIdDescription)] int instanceId,
         [Description(ComponentTypeDescription)] string componentType,
@@ -59,7 +59,7 @@ public class ComponentTools(ComponentUseCase componentUseCase, IAsyncOperationSe
 
     [McpServerTool(Name = "set_component_property", ReadOnly = false),
      Description("Set a serialized property of a component, including object references " +
-                 "(e.g. PlayableDirector.m_PlayableAsset). Supports Undo."),
+                 "(e.g. PlayableDirector.m_PlayableAsset)."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetComponentPropertyAsync(
         [Description(InstanceIdDescription)] int instanceId,

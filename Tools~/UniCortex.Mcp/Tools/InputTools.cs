@@ -64,7 +64,7 @@ public class InputTools(InputUseCase inputUseCase, IAsyncOperationSequencer sequ
         "Not with x/y.";
 
     private const string ButtonDescription =
-        $"Mouse button: \"{MouseButton.Left}\" (default), \"{MouseButton.Right}\" or \"{MouseButton.Middle}\".";
+        $"Mouse button: \"{MouseButton.Left}\", \"{MouseButton.Right}\" or \"{MouseButton.Middle}\".";
 
     [McpServerTool(Name = "click_mouse", ReadOnly = false),
      Description("Click (or tap): press, hold for holdDuration seconds, and release. " +

@@ -36,9 +36,9 @@ public class AnimationClipTools(AnimationClipUseCase animationClipUseCase, IAsyn
     public ValueTask<CallToolResult> CreateAnimationClipAsync(
         [Description("Asset path ending with \".anim\" (e.g. \"Assets/Animations/FadeIn.anim\").")]
         string assetPath,
-        [Description("Whether the clip loops (Loop Time). Default false.")]
+        [Description("Whether the clip loops (Loop Time).")]
         bool loop = false,
-        [Description("Sample rate in frames per second. Default 60.")]
+        [Description("Sample rate in frames per second.")]
         float frameRate = 60f,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -58,7 +58,7 @@ public class AnimationClipTools(AnimationClipUseCase animationClipUseCase, IAsyn
     [McpServerTool(Name = "set_animation_curve", ReadOnly = false),
      Description(
          "Set one float curve of an AnimationClip, replacing all of its existing keys. " +
-         "Creates the curve if it does not exist. Undo supported."),
+         "Creates the curve if it does not exist."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetAnimationCurveAsync(
         [Description(AssetPathDescription)] string assetPath,
@@ -75,7 +75,7 @@ public class AnimationClipTools(AnimationClipUseCase animationClipUseCase, IAsyn
             cancellationToken);
 
     [McpServerTool(Name = "remove_animation_curve", ReadOnly = false),
-     Description("Remove one float curve from an AnimationClip. Undo supported."),
+     Description("Remove one float curve from an AnimationClip."),
      UsedImplicitly]
     public ValueTask<CallToolResult> RemoveAnimationCurveAsync(
         [Description(AssetPathDescription)] string assetPath,
