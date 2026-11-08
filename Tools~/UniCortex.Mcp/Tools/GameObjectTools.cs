@@ -12,16 +12,14 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
 {
     [McpServerTool(Name = "find_game_objects", ReadOnly = true),
      Description(
-         "Find GameObjects in every loaded scene (including additively loaded scenes and, in Play Mode, " +
-         "the DontDestroyOnLoad scene) with the Hierarchy window's search syntax. In Prefab Mode only the Prefab " +
-         "contents are searched. Plain text matches names (partial, case-insensitive; multiple words must all match), " +
-         "t:Type matches component type (derived types included; multiple t: tokens are OR), and " +
-         "ref:<instanceId>: finds objects referencing that object. Wildcards are not supported. " +
-         "Each result includes activeSelf, tag, layer, components and sceneName."),
+         "Find GameObjects in all loaded scenes (DontDestroyOnLoad included in Play Mode; only the Prefab contents " +
+         "in Prefab Mode) with the Hierarchy search syntax: words match names (partial, case-insensitive, all must " +
+         "match), t:Type matches a component type (derived included; multiple t: are OR), and ref:<instanceId>: " +
+         "finds objects referencing it. No wildcards. " +
+         "Results include activeSelf, tag, layer, components and sceneName."),
      UsedImplicitly]
     public ValueTask<CallToolResult> FindGameObjectsAsync(
-        [Description(
-            "Search query. Examples: 'Main Camera', 't:Camera', 'Button t:Image', 't:Camera t:Light', 'ref:12345:'.")]
+        [Description("Search query, e.g. 'Main Camera', 't:Camera', 'Button t:Image', 'ref:12345:'.")]
         string query,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>
@@ -36,30 +34,28 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
 
     [McpServerTool(Name = "create_game_object", ReadOnly = false),
      Description(
-         "Create a new empty GameObject in the current scene, optionally under a parent at a specific sibling " +
-         "position. For UI, the object can be created with a RectTransform. Supports Undo."),
+         "Create an empty GameObject in the current scene, optionally under a parent at a sibling index " +
+         "and with a RectTransform for UI. Supports Undo."),
      UsedImplicitly]
     public ValueTask<CallToolResult> CreateGameObjectAsync(
-        [Description("Name of the GameObject to create.")] string name,
+        [Description("Name of the GameObject.")] string name,
         [Description(
-            "Instance ID of the parent GameObject. The new object's local transform is reset and it inherits the " +
-            "parent's layer. If omitted, the object is created at the scene root.")]
+            "instanceId of the parent (local transform is reset, parent's layer inherited). Omit for the scene root.")]
         int? parentInstanceId = null,
         [Description(
-            "Position among siblings (0 = first). For UI, sibling order determines draw order. " +
-            "Values beyond the last sibling place it last. If omitted, the object is placed last.")]
+            "Position among siblings (0 = first; omitted or out of range = last). For UI it sets the draw order.")]
         int? siblingIndex = null,
         [Description(
-            "Create the object with a RectTransform for UI. Automatically applied when the parent has a RectTransform. " +
-            "To adjust anchors (e.g. stretch to fill the parent), use set_component_property on the RectTransform.")]
+            "Use a RectTransform for UI (automatic when the parent has one). " +
+            "Set anchors with set_component_property on the RectTransform.")]
         bool? useRectTransform = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => gameObjectUseCase.CreateAsync(name, parentInstanceId, siblingIndex, useRectTransform, ct), cancellationToken);
 
-    [McpServerTool(Name = "delete_game_object", ReadOnly = false), Description("Remove a GameObject from the current scene by its instance ID. Supports Undo."), UsedImplicitly]
+    [McpServerTool(Name = "delete_game_object", ReadOnly = false), Description("Delete a GameObject from the current scene. Supports Undo."), UsedImplicitly]
     public ValueTask<CallToolResult> DeleteGameObjectAsync(
-        [Description("The instance ID of the GameObject to delete.")]
+        [Description("instanceId of the GameObject.")]
         int instanceId,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -67,27 +63,25 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
 
     [McpServerTool(Name = "modify_game_object", ReadOnly = false),
      Description(
-         "Modify a GameObject's properties (name, active state, tag, layer, parent, sibling order). " +
-         "Only specified fields are changed. Supports Undo."),
+         "Change a GameObject's name, active state, tag, layer, parent or sibling order; " +
+         "only the given fields change. Supports Undo."),
      UsedImplicitly]
     public ValueTask<CallToolResult> ModifyGameObjectAsync(
-        [Description("The instance ID of the GameObject to modify.")]
+        [Description("instanceId of the GameObject.")]
         int instanceId,
-        [Description("New name for the GameObject.")] string? name = null,
-        [Description("Set active state (true/false).")] bool? activeSelf = null,
-        [Description("New tag for the GameObject.")] string? tag = null,
+        [Description("New name.")] string? name = null,
+        [Description("Active state.")] bool? activeSelf = null,
+        [Description("New tag.")] string? tag = null,
         [Description("New layer index.")] int? layer = null,
-        [Description("Instance ID of the new parent. Use 0 to move to root.")]
+        [Description("instanceId of the new parent; 0 for the scene root.")]
         int? parentInstanceId = null,
         [Description(
-            "New position among siblings (0 = first). Can be used without parentInstanceId to reorder within the " +
-            "current parent, or together with it to place the object at a specific position under the new parent. " +
-            "Values beyond the last sibling place it last.")]
+            "New position among siblings (0 = first; out of range = last), " +
+            "under the current parent or under parentInstanceId.")]
         int? siblingIndex = null,
         [Description(
-            "When changing the parent, keep the world position/rotation/scale (true, default) or keep the local " +
-            "values (false). Use false when moving between parents with different scales (e.g. another Canvas) " +
-            "or when the local values should be kept as-is.")]
+            "When reparenting, keep the world transform (true, default) or the local values (false, " +
+            "e.g. when moving between Canvases with different scales).")]
         bool? worldPositionStays = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -97,14 +91,14 @@ public class GameObjectTools(GameObjectUseCase gameObjectUseCase, IAsyncOperatio
 
     [McpServerTool(Name = "duplicate_game_object", ReadOnly = false),
      Description(
-         "Duplicate a GameObject in the current scene, the same as the Editor's Duplicate command (Ctrl+D). " +
-         "Children and components are copied, prefab instances (including nested ones) stay linked to their " +
-         "prefab with their overrides, and the copy is placed as a sibling right after the original. Supports Undo."),
+         "Duplicate a GameObject like the Editor's Duplicate (Ctrl+D): children and components are copied, " +
+         "Prefab instances stay linked with their overrides, and the copy is placed right after the original. " +
+         "Supports Undo."),
      UsedImplicitly]
     public ValueTask<CallToolResult> DuplicateGameObjectAsync(
-        [Description("The instance ID of the GameObject to duplicate.")]
+        [Description("instanceId of the GameObject.")]
         int instanceId,
-        [Description("Optional name for the duplicate. If omitted, a Unity-style unique name like 'Foo (1)' is assigned.")]
+        [Description("Name of the copy. Omit for a unique name like 'Foo (1)'.")]
         string? name = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,

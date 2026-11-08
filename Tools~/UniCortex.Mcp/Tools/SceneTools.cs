@@ -13,7 +13,7 @@ public class SceneTools(SceneUseCase sceneUseCase, IAsyncOperationSequencer sequ
     [McpServerTool(Name = "create_scene", ReadOnly = false),
      Description("Create a new empty scene and save it at the specified asset path."), UsedImplicitly]
     public ValueTask<CallToolResult> CreateSceneAsync(
-        [Description("The asset path where the scene should be saved (e.g. \"Assets/Scenes/NewScene.unity\").")]
+        [Description("Asset path to save to (e.g. \"Assets/Scenes/NewScene.unity\").")]
         string scenePath,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -22,16 +22,16 @@ public class SceneTools(SceneUseCase sceneUseCase, IAsyncOperationSequencer sequ
     [McpServerTool(Name = "open_scene", ReadOnly = false),
      Description("Open a scene in the Unity Editor by its asset path."), UsedImplicitly]
     public ValueTask<CallToolResult> OpenSceneAsync(
-        [Description("The asset path of the scene to open (e.g. \"Assets/Scenes/Main.unity\").")]
+        [Description("Scene asset path (e.g. \"Assets/Scenes/Main.unity\").")]
         string scenePath,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => sceneUseCase.OpenAsync(scenePath, ct), cancellationToken);
 
     [McpServerTool(Name = "get_hierarchy", ReadOnly = true),
-     Description("Get the GameObject hierarchy of every loaded scene (including additively loaded scenes and, in Play Mode, " +
-                 "the DontDestroyOnLoad scene) or of the Prefab open in Prefab Mode. Returns one entry per scene " +
-                 "with its name, path, whether it is the active scene, and its GameObject tree."), UsedImplicitly]
+     Description("Get the GameObject tree of every loaded scene (DontDestroyOnLoad included in Play Mode), " +
+                 "or of the Prefab in Prefab Mode, with each scene's name, path and whether it is active."),
+     UsedImplicitly]
     public ValueTask<CallToolResult> GetHierarchyAsync(CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer, sceneUseCase.GetHierarchyAsync, cancellationToken);
 }

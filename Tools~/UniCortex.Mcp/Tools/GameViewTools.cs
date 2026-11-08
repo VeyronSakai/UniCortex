@@ -19,25 +19,20 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
 
     [McpServerTool(Name = "capture_game_view", ReadOnly = true),
      Description(
-         "Capture the Game View as a PNG image at the Game View resolution. " +
-         "Only available in Play Mode; use capture_scene_view in Edit Mode. " +
-         "The Game View is opened if needed and focused before capturing. " +
-         "When the Play Mode window is in the Simulator view, the simulated device screen is captured " +
-         "with the device frame unless deviceFrame is false. In the Game view, or with deviceFrame set to false, " +
-         "image pixel (px, py) corresponds to screen coordinates x = px, y = imageHeight - py."),
+         "Capture the Game View as a PNG at its resolution (focuses it first). " +
+         "Play Mode only; use capture_scene_view in Edit Mode. " +
+         "In the Simulator view the device frame is included unless deviceFrame is false. " +
+         "Without the frame, image pixel (px, py) is screen x = px, y = imageHeight - py."),
      UsedImplicitly]
     public ValueTask<CallToolResult> CaptureGameViewAsync(
         [Description(
             "Draw the safe area (Screen.safeArea) as a yellow outline and the cutouts (Screen.cutouts, " +
-            "e.g. notches and camera holes) as translucent red areas on the image. " +
-            "Useful with the Simulator view to check whether UI overlaps the notch. Defaults to false.")]
+            "e.g. notches) in translucent red, e.g. to check UI against the notch. Default false.")]
         bool? drawSafeArea = null,
         [Description(
-            "Draw the device frame of the Simulator view (bezel, rounded corners, notch and camera hole) " +
-            "around the image, rotated like the simulated device, to see whether UI overlaps the notch or " +
-            "the rounded corners. When omitted, the frame is drawn in the Simulator view and not in the " +
-            "Game view. true is an error in the Game view. The image then includes the frame, so its pixels " +
-            "no longer match screen coordinates; set to false to capture only the screen.")]
+            "Draw the Simulator view's device frame (bezel, rounded corners, notch) around the image. " +
+            "Default: true in the Simulator view, false in the Game view (true is an error there). " +
+            "With the frame, pixels no longer match screen coordinates.")]
         bool? deviceFrame = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>
@@ -50,28 +45,25 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
         }, cancellationToken);
 
     [McpServerTool(Name = "get_game_view_size", ReadOnly = true),
-     Description("Get the current Game View size (width and height in pixels) in the Unity Editor."),
+     Description("Get the current Game View size in pixels."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetGameViewSizeAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, gameViewUseCase.GetSizeAsync, cancellationToken);
 
     [McpServerTool(Name = "get_game_view_size_list", ReadOnly = true),
      Description(
-         "Get the list of available Game View sizes (built-in and custom) in the Unity Editor. " +
-         "Returns each size with its index, name, width, height, and type. " +
-         "Use the index with set_game_view_size to select a resolution."),
+         "List the Game View sizes (index, name, width, height, type). Pass an index to set_game_view_size."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetGameViewSizeListAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, gameViewUseCase.GetSizeListAsync, cancellationToken);
 
     [McpServerTool(Name = "set_game_view_size", ReadOnly = false),
      Description(
-         "Set the Game View resolution in the Unity Editor by selecting a size from the available list. " +
-         "Use get_game_view_size_list to get available sizes and their indices, " +
-         "or add_game_view_size to add a fixed resolution that is not in the list."),
+         "Select a Game View size by its index from get_game_view_size_list. " +
+         "Use add_game_view_size for a resolution not in the list."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetGameViewSizeAsync(
-        [Description("Index of the size from get_game_view_size_list.")]
+        [Description("Index from get_game_view_size_list.")]
         int index,
         CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -79,15 +71,13 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
 
     [McpServerTool(Name = "add_game_view_size", ReadOnly = false),
      Description(
-         "Add a fixed resolution to the Game View size list of the current platform and return its index. " +
-         "The new size is not selected; pass the index to set_game_view_size to select it. " +
-         "If a fixed resolution with the same name and size already exists, nothing is added and " +
-         "its index is returned. A smaller resolution with the device's aspect ratio (e.g. 642x1389 " +
-         "for 1284x2778) keeps the layout while making capture_game_view images smaller. " +
-         "The size is saved to the Unity preferences, like sizes added from the Game View's resolution menu."),
+         "Add a fixed resolution to the current platform's Game View size list (saved to Unity preferences) " +
+         "and return its index; it is not selected, so pass the index to set_game_view_size. " +
+         "An existing size with the same name and size is reused. A smaller size with the device's aspect " +
+         "ratio (e.g. 642x1389 for 1284x2778) keeps the layout and makes capture_game_view images smaller."),
      UsedImplicitly]
     public ValueTask<CallToolResult> AddGameViewSizeAsync(
-        [Description("Name (label) of the size shown in the Game View's resolution menu. Up to 40 characters.")]
+        [Description("Label shown in the resolution menu (up to 40 characters).")]
         string name,
         [Description("Width in pixels (10 to 99999).")]
         int width,
@@ -99,20 +89,17 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
 
     [McpServerTool(Name = "get_game_view_scale", ReadOnly = true),
      Description(
-         "Get the current Game View scale (zoom factor) in the Unity Editor, " +
-         "along with the valid minimum and maximum scale. 1.0 means 100%."),
+         "Get the Game View zoom scale (1.0 = 100%) and its valid minimum and maximum."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetGameViewScaleAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, gameViewUseCase.GetScaleAsync, cancellationToken);
 
     [McpServerTool(Name = "set_game_view_scale", ReadOnly = false),
      Description(
-         "Set the Game View scale (zoom factor) in the Unity Editor. 1.0 means 100%. " +
-         "The value is clamped to the Game View's valid range and the applied value is returned. " +
-         "Use get_game_view_scale to see the current value and valid range."),
+         "Set the Game View zoom scale (1.0 = 100%). It is clamped to the valid range and the applied value is returned."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetGameViewScaleAsync(
-        [Description("Scale (zoom) factor. 1.0 = 100%. Clamped to the Game View's valid range.")]
+        [Description("Zoom scale; 1.0 = 100%.")]
         float scale,
         CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -129,8 +116,7 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
     [McpServerTool(Name = "set_play_mode_view_type", ReadOnly = false),
      Description(
          "Switch the Play Mode window between the Game view and the Device Simulator view. " +
-         "Use the Simulator view to simulate a mobile device, including its safe area and notch " +
-         "(Screen.safeArea and Screen.cutouts), which the Game view does not simulate."),
+         "Only the Simulator view simulates a device's safe area and notch (Screen.safeArea, Screen.cutouts)."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetPlayModeViewTypeAsync(
         [Description("View type: \"GameView\" or \"SimulatorView\".")]
@@ -141,9 +127,8 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
 
     [McpServerTool(Name = "get_simulator_device_list", ReadOnly = true),
      Description(
-         "Get the list of devices available in the Device Simulator view, with each device's index, name and " +
-         "native screen resolution (portrait), together with the selected device and its rotation. " +
-         "The Play Mode window must be in the Simulator view (see set_play_mode_view_type)."),
+         "List the Device Simulator devices (index, name, native portrait resolution) with the selected device " +
+         "and rotation. Requires the Simulator view (see set_play_mode_view_type)."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetSimulatorDeviceListAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, gameViewUseCase.GetSimulatorDeviceListAsync,
@@ -151,17 +136,13 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
 
     [McpServerTool(Name = "set_simulator_device", ReadOnly = false),
      Description(
-         "Select the simulated device and/or its rotation in the Device Simulator view. " +
-         "Specify index, rotation, or both. The Play Mode window must be in the Simulator view " +
-         "(see set_play_mode_view_type). Use get_screen_safe_area afterwards to get the resulting " +
-         "screen orientation, size and safe area."),
+         "Select the simulated device and/or its rotation. Requires the Simulator view " +
+         "(see set_play_mode_view_type). Use get_screen_safe_area afterwards for the resulting screen and safe area."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetSimulatorDeviceAsync(
-        [Description("Index of the device from get_simulator_device_list. Omit to keep the current device.")]
+        [Description("Device index from get_simulator_device_list. Omit to keep the current device.")]
         int? index = null,
-        [Description(
-            "Clockwise rotation of the device in degrees: 0 (portrait), 90, 180 or 270, " +
-            "same as the rotate buttons of the Simulator view. Omit to keep the current rotation.")]
+        [Description("Clockwise rotation in degrees: 0 (portrait), 90, 180 or 270. Omit to keep the current rotation.")]
         int? rotation = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -169,11 +150,9 @@ public class GameViewTools(GameViewUseCase gameViewUseCase, IAsyncOperationSeque
 
     [McpServerTool(Name = "get_screen_safe_area", ReadOnly = true),
      Description(
-         "Get the screen size, the safe area (Screen.safeArea) and the cutouts (Screen.cutouts) of the " +
-         "Play Mode window. In the Simulator view, these are the values of the simulated device and " +
-         "orientation; in the Game view, the safe area is the whole screen. Rects are in screen coordinates " +
-         "(origin at the bottom-left), the same as get_ui_pointer_targets, so UI rects can be compared " +
-         "with the safe area directly."),
+         "Get the screen size, safe area (Screen.safeArea) and cutouts (Screen.cutouts) of the Play Mode window: " +
+         "the simulated device's in the Simulator view, the whole screen in the Game view. " +
+         "Rects are in screen coordinates (bottom-left origin), the same as get_ui_pointer_targets."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetScreenSafeAreaAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, gameViewUseCase.GetSafeAreaAsync, cancellationToken);

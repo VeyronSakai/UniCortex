@@ -10,16 +10,21 @@ namespace UniCortex.Mcp.Tools;
 [McpServerToolType, UsedImplicitly]
 public class ComponentTools(ComponentUseCase componentUseCase, IAsyncOperationSequencer sequencer)
 {
+    private const string InstanceIdDescription = "instanceId of the GameObject.";
+
     private const string ComponentTypeDescription =
-        "The fully-qualified component type name including namespace (e.g. \"UnityEngine.Rigidbody\").";
+        "Fully qualified component type (e.g. \"UnityEngine.Rigidbody\").";
 
     private const string AssemblyNameDescription =
-        "The name of the assembly that defines the type (e.g. \"UnityEngine.PhysicsModule\" or \"Assembly-CSharp\").";
+        "Assembly of the type (e.g. \"UnityEngine.PhysicsModule\" or \"Assembly-CSharp\").";
+
+    private const string ComponentIndexDescription =
+        "Index among components of the same type. Default 0.";
 
     [McpServerTool(Name = "add_component", ReadOnly = false),
      Description("Add a component to a GameObject. Supports Undo."), UsedImplicitly]
     public ValueTask<CallToolResult> AddComponentAsync(
-        [Description("The instance ID of the GameObject.")] int instanceId,
+        [Description(InstanceIdDescription)] int instanceId,
         [Description(ComponentTypeDescription)] string componentType,
         [Description(AssemblyNameDescription)] string assemblyName,
         CancellationToken cancellationToken = default)
@@ -29,10 +34,10 @@ public class ComponentTools(ComponentUseCase componentUseCase, IAsyncOperationSe
     [McpServerTool(Name = "remove_component", ReadOnly = false),
      Description("Remove a component from a GameObject. Supports Undo."), UsedImplicitly]
     public ValueTask<CallToolResult> RemoveComponentAsync(
-        [Description("The instance ID of the GameObject.")] int instanceId,
+        [Description(InstanceIdDescription)] int instanceId,
         [Description(ComponentTypeDescription)] string componentType,
         [Description(AssemblyNameDescription)] string assemblyName,
-        [Description("Index when multiple components of same type exist. Defaults to 0.")]
+        [Description(ComponentIndexDescription)]
         int componentIndex = 0,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -42,10 +47,10 @@ public class ComponentTools(ComponentUseCase componentUseCase, IAsyncOperationSe
     [McpServerTool(Name = "get_component_properties", ReadOnly = true),
      Description("Get serialized properties of a component on a GameObject."), UsedImplicitly]
     public ValueTask<CallToolResult> GetComponentPropertiesAsync(
-        [Description("The instance ID of the GameObject.")] int instanceId,
+        [Description(InstanceIdDescription)] int instanceId,
         [Description(ComponentTypeDescription)] string componentType,
         [Description(AssemblyNameDescription)] string assemblyName,
-        [Description("Index when multiple components of same type exist. Defaults to 0.")]
+        [Description(ComponentIndexDescription)]
         int componentIndex = 0,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -53,15 +58,14 @@ public class ComponentTools(ComponentUseCase componentUseCase, IAsyncOperationSe
             cancellationToken);
 
     [McpServerTool(Name = "set_component_property", ReadOnly = false),
-     Description("Set a serialized property on a component. Uses SerializedProperty API with automatic Undo. " +
-                 "Object references such as PlayableDirector.m_PlayableAsset or a [SerializeField] component " +
-                 "can be assigned by asset path, GUID, or instanceId."),
+     Description("Set a serialized property of a component, including object references " +
+                 "(e.g. PlayableDirector.m_PlayableAsset). Supports Undo."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetComponentPropertyAsync(
-        [Description("The instance ID of the GameObject.")] int instanceId,
+        [Description(InstanceIdDescription)] int instanceId,
         [Description(ComponentTypeDescription)] string componentType,
         [Description(AssemblyNameDescription)] string assemblyName,
-        [Description("The property path (e.g. m_LocalPosition.x).")]
+        [Description("Serialized property path (e.g. m_LocalPosition.x).")]
         string propertyPath,
         [Description(PropertyValueDescriptions.Value)]
         string value,
