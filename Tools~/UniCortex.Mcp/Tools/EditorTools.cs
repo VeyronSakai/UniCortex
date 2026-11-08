@@ -26,25 +26,23 @@ public class EditorTools(EditorUseCase editorUseCase, IAsyncOperationSequencer s
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.ExitPlayModeAsync, cancellationToken);
 
     [McpServerTool(Name = "get_editor_status", ReadOnly = true),
-     Description(
-         "Get the current state of the Unity Editor (play mode, paused). Works even when the editor is paused."),
+     Description("Get the Unity Editor state (play mode, paused). Works while paused."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetEditorStatusAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.GetEditorStatusAsync, cancellationToken);
 
     [McpServerTool(Name = "pause_editor", ReadOnly = false),
-     Description("Pause the Unity Editor. Use with step_editor for frame-by-frame control."), UsedImplicitly]
+     Description("Pause the Unity Editor. Advance frames with step_editor."), UsedImplicitly]
     public ValueTask<CallToolResult> PauseEditorAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.PauseAsync, cancellationToken);
 
     [McpServerTool(Name = "unpause_editor", ReadOnly = false),
-     Description("Unpause the Unity Editor. Works even when the editor is paused."), UsedImplicitly]
+     Description("Unpause the Unity Editor."), UsedImplicitly]
     public ValueTask<CallToolResult> UnpauseEditorAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.UnpauseAsync, cancellationToken);
 
     [McpServerTool(Name = "step_editor", ReadOnly = false),
-     Description(
-         "Advance the Unity Editor by one frame while paused. Use with pause_editor for frame-by-frame control of Play Mode."),
+     Description("Advance the Unity Editor by one frame while paused (see pause_editor)."),
      UsedImplicitly]
     public ValueTask<CallToolResult> StepEditorAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.StepAsync, cancellationToken);
@@ -58,32 +56,31 @@ public class EditorTools(EditorUseCase editorUseCase, IAsyncOperationSequencer s
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.RedoAsync, cancellationToken);
 
     [McpServerTool(Name = "save", ReadOnly = false),
-     Description("Execute File/Save to save the currently active stage in the Unity Editor. Supports any asset that File/Save can handle, such as Scenes, Prefabs, Timelines, etc."),
+     Description("Run File/Save to save the active stage (Scene, Prefab, Timeline, etc.)."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SaveAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.SaveAsync, cancellationToken);
 
     [McpServerTool(Name = "reload_domain", ReadOnly = false),
-     Description("Request a domain reload (script recompilation) in the Unity Editor."), UsedImplicitly]
+     Description("Request a domain reload (script recompilation)."), UsedImplicitly]
     public ValueTask<CallToolResult> ReloadDomainAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.ReloadDomainAsync, cancellationToken);
 
     [McpServerTool(Name = "get_active_platform", ReadOnly = true),
-     Description("Get the active build target platform (e.g. StandaloneOSX, Android, iOS) of the Unity Editor."),
+     Description("Get the active build target platform (e.g. StandaloneOSX, Android, iOS)."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetActivePlatformAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.GetActivePlatformAsync, cancellationToken);
 
     [McpServerTool(Name = "switch_platform", ReadOnly = false),
      Description(
-         "Switch the active build target platform of the Unity Editor (File > Build Settings > Switch Platform). " +
-         "Assets are reimported and scripts are recompiled, which can take several minutes. " +
-         "Not available in Play Mode. The platform module must be installed."),
+         "Switch the active build target platform. Assets are reimported and scripts recompiled, which can " +
+         "take minutes. Not available in Play Mode; the platform module must be installed."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SwitchPlatformAsync(
         [Description(
-            "Build target name of the UnityEditor.BuildTarget enum (case-insensitive), " +
-            "e.g. StandaloneOSX, StandaloneWindows64, StandaloneLinux64, Android, iOS, WebGL.")]
+            "UnityEditor.BuildTarget name (case-insensitive), " +
+            "e.g. StandaloneOSX, StandaloneWindows64, Android, iOS, WebGL.")]
         string buildTarget,
         CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer,

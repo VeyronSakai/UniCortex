@@ -16,11 +16,11 @@ public class ScriptableObjectTools(
      Description("Create a new ScriptableObject .asset file at the given path."),
      UsedImplicitly]
     public ValueTask<CallToolResult> CreateScriptableObjectAsync(
-        [Description("The fully-qualified ScriptableObject subclass name (e.g. \"MyNamespace.MyScriptableObject\").")]
+        [Description("Fully qualified ScriptableObject subclass (e.g. \"MyNamespace.MyScriptableObject\").")]
         string typeName,
-        [Description("The name of the assembly that defines the type (e.g. \"Assembly-CSharp\").")]
+        [Description("Assembly of the type (e.g. \"Assembly-CSharp\").")]
         string assemblyName,
-        [Description("The asset path where the ScriptableObject should be saved (e.g. \"Assets/Data/MyData.asset\").")]
+        [Description("Asset path to save to (e.g. \"Assets/Data/MyData.asset\").")]
         string assetPath,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -31,7 +31,7 @@ public class ScriptableObjectTools(
          "Get the list of serialized properties (path, type, value) of a ScriptableObject .asset file."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetScriptableObjectPropertiesAsync(
-        [Description("The asset path of the ScriptableObject (e.g. \"Assets/Data/MyData.asset\").")]
+        [Description("ScriptableObject asset path (e.g. \"Assets/Data/MyData.asset\").")]
         string assetPath,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -39,12 +39,12 @@ public class ScriptableObjectTools(
 
     [McpServerTool(Name = "set_scriptable_object_property", ReadOnly = false),
      Description(
-         "Set a serialized property value on a ScriptableObject .asset file. Property path and value format follow the same conventions as set_component_property."),
+         "Set a serialized property of a ScriptableObject .asset file."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SetScriptableObjectPropertyAsync(
-        [Description("The asset path of the ScriptableObject (e.g. \"Assets/Data/MyData.asset\").")]
+        [Description("ScriptableObject asset path (e.g. \"Assets/Data/MyData.asset\").")]
         string assetPath,
-        [Description("The property path to set (e.g. \"m_Speed\" or \"items.Array.data[0].name\").")]
+        [Description("Serialized property path (e.g. \"m_Speed\" or \"items.Array.data[0].name\").")]
         string propertyPath,
         [Description(PropertyValueDescriptions.Value)]
         string value,

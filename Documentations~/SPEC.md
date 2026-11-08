@@ -1515,6 +1515,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
 The tool receives the corresponding Core service via constructor DI and wraps the result in a `CallToolResult`.
+Tool and parameter descriptions are kept short because AI agents read them as tokens.
 
 #### Editor Control (13)
 

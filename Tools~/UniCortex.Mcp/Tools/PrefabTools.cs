@@ -13,9 +13,9 @@ public class PrefabTools(PrefabUseCase prefabUseCase, IAsyncOperationSequencer s
     [McpServerTool(Name = "create_prefab", ReadOnly = false),
      Description("Create a Prefab asset from a GameObject in the scene."), UsedImplicitly]
     public ValueTask<CallToolResult> CreatePrefabAsync(
-        [Description("The instance ID of the GameObject to save as a Prefab.")]
+        [Description("instanceId of the GameObject to save.")]
         int instanceId,
-        [Description("The asset path where the Prefab should be saved (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
+        [Description("Asset path to save to (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
         string assetPath,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -25,7 +25,7 @@ public class PrefabTools(PrefabUseCase prefabUseCase, IAsyncOperationSequencer s
      Description("Instantiate a Prefab into the current scene. Returns the new GameObject's name and instance ID."),
      UsedImplicitly]
     public ValueTask<CallToolResult> InstantiatePrefabAsync(
-        [Description("The asset path of the Prefab to instantiate (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
+        [Description("Prefab asset path (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
         string assetPath,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
@@ -34,7 +34,7 @@ public class PrefabTools(PrefabUseCase prefabUseCase, IAsyncOperationSequencer s
     [McpServerTool(Name = "open_prefab", ReadOnly = false),
      Description("Open a Prefab asset in Prefab Mode for editing."), UsedImplicitly]
     public ValueTask<CallToolResult> OpenPrefabAsync(
-        [Description("The asset path of the Prefab to open (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
+        [Description("Prefab asset path (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
         string assetPath,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,

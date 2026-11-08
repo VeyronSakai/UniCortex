@@ -14,21 +14,19 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase, IA
 {
     [McpServerTool(Name = "add_movie_recorder", ReadOnly = false),
      Description(
-         "Add a Movie recorder to the Movie recorder list. " +
-         "Records the Game View. Audio capture is off by default. Output format depends on the chosen encoder (MP4 by default). " +
-         "Returns the assigned recorder name. " +
-         "Requires the Unity Recorder package (com.unity.recorder) to be installed."),
+         "Add a Movie recorder that records the Game View and return its name. " +
+         "The output format depends on the encoder (MP4 by default). Requires com.unity.recorder."),
      UsedImplicitly]
     public ValueTask<CallToolResult> AddRecorderAsync(
-        [Description("Name for the recorder (required).")]
+        [Description("Recorder name.")]
         string name,
-        [Description("Output file path for the video (required).")]
+        [Description("Output file path of the video.")]
         string outputPath,
-        [Description("Encoder: UnityMediaEncoder (default), ProRes, GIF")]
+        [Description("Encoder: UnityMediaEncoder, ProRes or GIF.")]
         string encoder = MovieRecorderEncoderType.UnityMediaEncoder,
-        [Description("Encoding quality (UnityMediaEncoder only): Low (default), Medium, High")]
+        [Description("Encoding quality (UnityMediaEncoder only): Low, Medium or High.")]
         string encodingQuality = MovieRecorderEncodingQuality.Low,
-        [Description("Whether to capture audio (default: false)")]
+        [Description("Capture audio.")]
         bool captureAudio = false,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>
@@ -40,8 +38,7 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase, IA
 
     [McpServerTool(Name = "get_all_recorders", ReadOnly = true),
      Description(
-         "Get the list of all configured recorders and their settings (Movie, etc.). " +
-         "Requires the Unity Recorder package (com.unity.recorder) to be installed."),
+         "List the configured recorders and their settings. Requires com.unity.recorder."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetRecorderListAsync(CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>
@@ -57,12 +54,10 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase, IA
 
     [McpServerTool(Name = "remove_movie_recorder", ReadOnly = false),
      Description(
-         "Remove a Movie recorder from the Movie recorder list by its index. " +
-         "Use get_all_recorders to find the index. " +
-         "Requires the Unity Recorder package (com.unity.recorder) to be installed."),
+         "Remove a Movie recorder by its index from get_all_recorders. Requires com.unity.recorder."),
      UsedImplicitly]
     public ValueTask<CallToolResult> RemoveRecorderAsync(
-        [Description("The index of the recorder to remove (obtained from get_all_recorders)")]
+        [Description("Recorder index from get_all_recorders.")]
         int index,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>
@@ -73,15 +68,13 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase, IA
 
     [McpServerTool(Name = "start_movie_recorder", ReadOnly = false),
      Description(
-         "Start recording with the specified Movie recorder. Only available in Play Mode. " +
-         "Requires the Unity Recorder package (com.unity.recorder) to be installed. " +
-         "Add a Movie recorder first with add_movie_recorder. " +
-         "Call stop_movie_recorder to stop and save the recording."),
+         "Start recording with a Movie recorder (added with add_movie_recorder) in Play Mode; " +
+         "stop and save with stop_movie_recorder. Requires com.unity.recorder."),
      UsedImplicitly]
     public ValueTask<CallToolResult> StartRecorderAsync(
-        [Description("The index of the recorder to use (obtained from get_all_recorders)")]
+        [Description("Recorder index from get_all_recorders.")]
         int index,
-        [Description("Frames per second (default: 30)")]
+        [Description("Frames per second.")]
         int fps = RecorderFps.Default,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>
@@ -92,8 +85,7 @@ public class MovieRecordingTools(MovieRecordingUseCase movieRecordingUseCase, IA
 
     [McpServerTool(Name = "stop_movie_recorder", ReadOnly = false),
      Description(
-         "Stop the current Movie recording and save the video file. " +
-         "Returns the output file path where the recording was saved."),
+         "Stop the current Movie recording, save the video and return its file path."),
      UsedImplicitly]
     public ValueTask<CallToolResult> StopRecorderAsync(CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteAsync(sequencer, async ct =>
