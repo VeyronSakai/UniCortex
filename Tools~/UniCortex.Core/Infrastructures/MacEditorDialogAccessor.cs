@@ -13,10 +13,6 @@ namespace UniCortex.Core.Infrastructures;
 [SupportedOSPlatform("macos")]
 public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
 {
-    // Subroles of the windows that macOS treats as dialogs, e.g. the NSAlert window shown by
-    // EditorUtility.DisplayDialog.
-    private static readonly string[] s_dialogSubroles = ["AXDialog", "AXSystemDialog"];
-
     // Title bar buttons of a window, which are not the buttons of the dialog itself.
     private static readonly string[] s_windowControlSubroles =
         ["AXCloseButton", "AXMinimizeButton", "AXZoomButton", "AXFullScreenButton"];
@@ -117,7 +113,7 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         var dialogs = new List<FoundDialog>();
         foreach (var window in windows)
         {
-            if (IsDialog(window, scope))
+            if (IsModal(window, scope))
             {
                 dialogs.Add(ReadDialog(window, scope));
             }
@@ -210,14 +206,11 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         return windows;
     }
 
-    private static bool IsDialog(IntPtr window, CFScope scope)
+    // The dialogs that block the Editor (EditorUtility.DisplayDialog, the save panel, EditorWindow.ShowModal, etc.) have
+    // AXModal true. The subrole is not used: some windows that do not block the Editor (e.g. the "New Scene" window)
+    // have the AXDialog subrole, and the Editor keeps answering requests while they are open.
+    private static bool IsModal(IntPtr window, CFScope scope)
     {
-        var subrole = GetString(window, "AXSubrole", scope);
-        if (subrole != null && s_dialogSubroles.Contains(subrole))
-        {
-            return true;
-        }
-
         CopyAttribute(window, "AXModal", scope, out var modal);
         return modal != IntPtr.Zero && CFGetTypeID(modal) == CFBooleanGetTypeID() && CFBooleanGetValue(modal);
     }
