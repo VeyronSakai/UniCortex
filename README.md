@@ -96,6 +96,18 @@ The MCP server exposes the following built-in tools.
 | `undo` | Undo the last operation |
 | `redo` | Redo an undone operation |
 | `save` | Save the currently active stage (Scene, Prefab, Timeline, etc.) |
+| `get_active_platform` | Get the active build target platform |
+| `switch_platform` | Switch the active build target platform (reimports assets and recompiles scripts) |
+
+#### Editor Dialog
+
+| Tool | Description |
+|------|-------------|
+| `get_editor_dialogs` | Get the modal dialogs that the Unity Editor itself shows (e.g. "Saving failed"), not the game's UI, with their title, message, and button labels |
+| `click_editor_dialog_button` | Click a button of an open Editor dialog by its label to close it |
+
+While a modal dialog is open, the Unity Editor cannot answer the other tools. These tools read the dialog with the OS window APIs instead, so they work while the Editor is blocked. They need `UNICORTEX_PROJECT_PATH` and support macOS and Windows. On macOS, allow the app that runs the MCP server (e.g. your terminal or AI agent app) in **System Settings > Privacy & Security > Accessibility**.
+
 #### Scene
 
 | Tool | Description |
@@ -112,7 +124,7 @@ The MCP server exposes the following built-in tools.
 | `create_game_object` | Create a new empty GameObject, optionally under a parent at a given sibling index (with RectTransform support for UI) |
 | `delete_game_object` | Delete a GameObject (supports Undo) |
 | `modify_game_object` | Modify name, active state, tag, layer, parent, or sibling order |
-| `duplicate_game_object` | Duplicate a GameObject including children and components (supports Undo) |
+| `duplicate_game_object` | Duplicate a GameObject like the Editor's Duplicate command, keeping prefab instance links (supports Undo) |
 
 #### Component
 
@@ -195,12 +207,18 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | `focus_scene_view` | Switch focus to the Scene View window |
 | `capture_scene_view` | Capture the Scene View as a PNG image. Works in both Edit Mode and Play Mode, and captures the Prefab contents in Prefab Mode (gizmos and Screen Space - Overlay UI are not included) |
 | `focus_game_view` | Switch focus to the Game View window |
-| `capture_game_view` | Capture the Game View as a PNG at the Game View resolution (Play Mode only) |
+| `capture_game_view` | Capture the Game View (or the Simulator view) as a PNG at its resolution (Play Mode only), with the device frame in the Simulator view by default, optionally drawing the safe area and cutouts |
 | `get_game_view_size` | Get the current Game View size (width and height in pixels) |
 | `get_game_view_size_list` | Get the list of available Game View sizes (built-in and custom) |
 | `set_game_view_size` | Set the Game View resolution by index from the size list |
+| `add_game_view_size` | Add a fixed resolution to the Game View size list of the current platform without selecting it, and return its index (an existing entry with the same name and size is returned instead) |
 | `get_game_view_scale` | Get the current Game View scale (zoom factor) and its valid range |
 | `set_game_view_scale` | Set the Game View scale (zoom factor); clamped to the valid range |
+| `get_play_mode_view_type` | Get whether the Play Mode window shows the Game view or the Device Simulator view |
+| `set_play_mode_view_type` | Switch the Play Mode window between the Game view and the Device Simulator view |
+| `get_simulator_device_list` | List the devices of the Simulator view with the selected device and rotation |
+| `set_simulator_device` | Select the simulated device and/or its rotation in the Simulator view |
+| `get_screen_safe_area` | Get the screen size, safe area and cutouts (notch) of the Game view or the Simulator view |
 
 #### Recorder
 
@@ -216,7 +234,8 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 
 | Tool | Description |
 |------|-------------|
-| `press_key` | Press keys via Input System in Play Mode (requires com.unity.inputsystem). Pass several keys for a combination such as Ctrl+S. Use holdDuration to keep them pressed |
+| `press_key` | Press keys via Input System in Play Mode (requires com.unity.inputsystem). Pass several keys for a combination such as Ctrl+S. Use holdDuration to keep them pressed. Does not type text into text fields |
+| `type_text` | Type text (any characters, e.g. Japanese) into the focused text field in Play Mode: uGUI InputField, TMP_InputField or UI Toolkit TextField (requires com.unity.inputsystem) |
 | `click_mouse` | Click (or tap) via Input System in Play Mode (requires com.unity.inputsystem). Accepts either x/y or the instanceId of a UI target (requires com.unity.ugui). Use holdDuration for a long press |
 | `drag_mouse` | Drag (or swipe) from a start to an end over a given time in one call |
 | `move_mouse` | Move the mouse without pressing a button, e.g. for hover |
@@ -332,6 +351,10 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `editor redo` | Perform Redo. |
 | `editor save` | Save the active stage. |
 | `editor reload-domain` | Request script recompilation. |
+| `editor platform get` | Show the active build target platform. |
+| `editor platform switch <buildTarget>` | Switch the active build target platform (e.g. `Android`, `iOS`). |
+| `editor dialog list` | List the modal dialogs open in the Unity Editor with their title, message, and button labels. |
+| `editor dialog click <button>` | Click a button of an open modal dialog by its label (e.g. `OK`). |
 
 #### `scene`
 
@@ -349,7 +372,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `game-object create` | Create a new empty GameObject, optionally under a parent at a given sibling index. |
 | `game-object delete` | Delete a GameObject by `instanceId`. |
 | `game-object modify` | Rename, reparent, reorder, or change active state, tag, or layer. |
-| `game-object duplicate` | Duplicate a GameObject (deep copy of children and components). |
+| `game-object duplicate` | Duplicate a GameObject like the Editor's Duplicate command, keeping prefab instance links. |
 
 #### `component`
 
@@ -411,25 +434,32 @@ Component commands accept the fully-qualified component type name plus the defin
 | `project-window select` | Select and ping an asset in the Project Window. |
 | `menu execute` | Execute a Unity menu item by path. |
 
-#### `scene-view`, `game-view`, `game-view size`, `game-view scale`
+#### `scene-view`, `game-view`, `game-view size`, `game-view scale`, `game-view view-type`, `game-view simulator device`
 
 | Command | Description |
 | --- | --- |
 | `scene-view focus` | Focus the Scene View window. |
 | `scene-view capture` | Capture the Scene View as a PNG file. Works in Edit Mode and Play Mode, including Prefab Mode. |
 | `game-view focus` | Focus the Game View window. |
-| `game-view capture` | Capture the Game View as a PNG file at the Game View resolution. Play Mode only. |
+| `game-view capture` | Capture the Game View (or the Simulator view) as a PNG file at its resolution. Play Mode only. In the Simulator view the device frame is drawn by default (`--no-device-frame` to omit it). `--draw-safe-area` draws the safe area and cutouts. |
+| `game-view safe-area` | Show the screen size, safe area and cutouts of the Game view or the Simulator view. |
 | `game-view size get` | Show the current Game View size. |
 | `game-view size list` | List available Game View sizes. |
 | `game-view size set` | Set the Game View size by index. |
+| `game-view size add` | Add a fixed resolution (`<name> <width> <height>`) to the Game View size list without selecting it. |
 | `game-view scale get` | Show the current Game View scale and its valid range. |
 | `game-view scale set` | Set the Game View scale (zoom factor). |
+| `game-view view-type get` | Show whether the Play Mode window shows the Game view or the Simulator view. |
+| `game-view view-type set` | Switch the Play Mode window to `GameView` or `SimulatorView`. |
+| `game-view simulator device list` | List the devices of the Simulator view. |
+| `game-view simulator device set` | Select the simulated device (`--index`) and/or its rotation (`--rotation`). |
 
 #### `input`
 
 | Command | Description |
 | --- | --- |
 | `input key press` | Press keys together (e.g. `LeftCtrl,S`), holding them for `--hold-duration` seconds. Requires `com.unity.inputsystem`; Play Mode only. |
+| `input text type` | Type text into the focused text field. Requires `com.unity.inputsystem`; Play Mode only. |
 | `input mouse click` | Click (or tap) at `--x`/`--y` or at a UI object (`--instance-id`), holding the button for `--hold-duration` seconds. Requires `com.unity.inputsystem`; Play Mode only. |
 | `input mouse drag` | Drag from `--from-x`/`--from-y` or `--from-instance-id` to `--to-x`/`--to-y` or `--to-instance-id` over `--duration` seconds in one call. |
 | `input mouse move` | Move the mouse without pressing a button, e.g. for hover. |
