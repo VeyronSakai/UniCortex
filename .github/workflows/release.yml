@@ -130,6 +130,12 @@ jobs:
     needs: [update-draft, paths-filter]
     environment: Release
     runs-on: ubuntu-latest
+    # Job-level permissions replace the workflow-level ones, so restate them
+    # and add id-token: write for NuGet.org Trusted Publishing (GitHub OIDC).
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
     concurrency:
       group: ${{ github.workflow }}
       cancel-in-progress: false
@@ -166,9 +172,16 @@ jobs:
       - name: Pack CLI tool package
         run: |
           dotnet pack $env:CLI_CSPROJ_PATH --configuration Release --output ./artifacts/cli-tool
+      # Exchange the GitHub OIDC token for a short-lived (1 hour) NuGet API key.
+      # Request it right before pushing so it does not expire.
+      - name: Log in to NuGet.org
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: nuget-login
+        with:
+          user: ${{ secrets.NUGET_USER }}
       - name: Publish CLI tool package to NuGet.org
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
           $packagePath = (Get-ChildItem ./artifacts/cli-tool/*.nupkg | Select-Object -First 1).FullName
           if (-not $packagePath) {
