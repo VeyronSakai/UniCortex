@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using UniCortex.Core.Domains;
@@ -22,9 +23,14 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
 
     // Element ids are given in order, about one for each new window: the Editor used about 40 while it started,
     // and none for a domain reload. The ids of closed windows have no element, so the scan goes on past them and
-    // stops only after this many ids in a row without an element. Each id takes less than 0.1 milliseconds, so the
-    // scan of a newly opened Editor took about 60 milliseconds.
+    // stops only after this many ids in a row without an element.
     private const long MaxIdsWithoutElement = 1000;
+
+    // While a modal dialog blocks the Editor, its modal loop answers each id within 2 milliseconds, so a scan of
+    // about 1100 ids ended within a second. An Editor that is not blocked answers only about every 100 milliseconds
+    // while it is in the background, and the same scan took about a minute. No modal dialog is open then, so the scan
+    // stops after this time.
+    private const long MaxScanMilliseconds = 3000;
 
     private const int AXErrorSuccess = 0;
     private const int AXErrorInvalidUIElement = -25202;
@@ -148,8 +154,14 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         var windowRole = scope.CreateString("AXWindow");
         var token = new RemoteToken(processId);
         var lastElementId = 0L;
+        var stopwatch = Stopwatch.StartNew();
         for (var id = 0L; id - lastElementId <= MaxIdsWithoutElement; id++)
         {
+            if (stopwatch.ElapsedMilliseconds > MaxScanMilliseconds)
+            {
+                break;
+            }
+
             token.ElementId = id;
             var data = CFDataCreate(IntPtr.Zero, ref token, Marshal.SizeOf<RemoteToken>());
             IntPtr element;
