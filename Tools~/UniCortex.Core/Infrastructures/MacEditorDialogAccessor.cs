@@ -105,7 +105,29 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
             dialogs = ReadDialogs(FindWindowsByElementId(processId, scope), scope);
         }
 
+        // While the screen is locked, an open dialog may not be found, so "no dialog" cannot be reported.
+        if (dialogs.Count == 0 && IsScreenLocked(scope))
+        {
+            throw new InvalidOperationException(
+                "The screen is locked, so the Unity Editor's dialogs cannot be read. " +
+                "Ask the user to unlock the screen, then try again.");
+        }
+
         return dialogs;
+    }
+
+    private static bool IsScreenLocked(CFScope scope)
+    {
+        // Null when the process is not in a GUI login session (e.g. logged in with SSH).
+        var session = scope.Own(CGSessionCopyCurrentDictionary());
+        if (session == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        // kCGSSessionScreenIsLocked is in the dictionary only while the screen is locked.
+        var locked = CFDictionaryGetValue(session, scope.CreateString("CGSSessionScreenIsLocked"));
+        return locked != IntPtr.Zero && CFGetTypeID(locked) == CFBooleanGetTypeID() && CFBooleanGetValue(locked);
     }
 
     private static List<FoundDialog> ReadDialogs(List<IntPtr> windows, CFScope scope)
@@ -396,6 +418,11 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
 
     private const string CoreFoundation = "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation";
 
+    private const string CoreGraphics = "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics";
+
+    [DllImport(CoreGraphics)]
+    private static extern IntPtr CGSessionCopyCurrentDictionary();
+
     [DllImport(ApplicationServices)]
     [return: MarshalAs(UnmanagedType.I1)]
     private static extern bool AXIsProcessTrusted();
@@ -454,6 +481,9 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
     [DllImport(CoreFoundation)]
     [return: MarshalAs(UnmanagedType.I1)]
     private static extern bool CFEqual(IntPtr cf1, IntPtr cf2);
+
+    [DllImport(CoreFoundation)]
+    private static extern IntPtr CFDictionaryGetValue(IntPtr dictionary, IntPtr key);
 
     [DllImport(CoreFoundation)]
     private static extern void CFRelease(IntPtr cf);
