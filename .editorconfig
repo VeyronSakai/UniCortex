@@ -262,3 +262,8 @@ dotnet_diagnostic.IDE0007.severity = warning
 csharp_style_var_for_built_in_types = true:warning
 csharp_style_var_when_type_is_apparent = true:warning
 csharp_style_var_elsewhere = true:warning
+
+# Shared DTOs are compiled by both Unity (nullable disabled) and UniCortex.Core (nullable enabled).
+# Their JsonUtility-style fields have no initializers, so silence CS8618 for them in .NET builds.
+[Editor/Domains/Models/**.cs]
+dotnet_diagnostic.CS8618.severity = none
