@@ -42,6 +42,11 @@ namespace UniCortex.Editor.Domains.Models
         public const string AnimationClipCurves = "/animation-clip/curves";
         public const string AnimationClipSetCurve = "/animation-clip/curve/set";
         public const string AnimationClipRemoveCurve = "/animation-clip/curve/remove";
+        public const string AudioMixerCreate = "/audio-mixer/create";
+        public const string AudioMixer = "/audio-mixer";
+        public const string AudioMixerAddGroup = "/audio-mixer/group/add";
+        public const string AudioMixerExposeParameter = "/audio-mixer/parameter/expose";
+        public const string AudioSourceSetOutput = "/audio-source/output/set";
         public const string AssetDatabaseRefresh = "/asset-database/refresh";
         public const string ProjectWindowSelect = "/project-window/select";
         public const string MenuItemExecute = "/menu-item/execute";

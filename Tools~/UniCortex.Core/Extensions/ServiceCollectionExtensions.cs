@@ -35,6 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<PrefabUseCase>();
         services.AddTransient<ScriptableObjectUseCase>();
         services.AddTransient<AnimationClipUseCase>();
+        services.AddTransient<AudioMixerUseCase>();
         services.AddTransient<TestUseCase>();
         services.AddTransient<ConsoleUseCase>();
         services.AddTransient<AssetUseCase>();
