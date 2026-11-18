@@ -95,7 +95,7 @@ namespace UniCortex.Editor.Tests.UseCases
         }
 
         [Test]
-        public void ExecuteAsync_SuggestsOnlyDiscard_WhenUntitledSceneHasUnsavedChanges()
+        public void ExecuteAsync_AsksUserToHandleUntitledScene_WhenUntitledSceneHasUnsavedChanges()
         {
             // Arrange
             var spy = new SpyTestRunner();
@@ -111,7 +111,8 @@ namespace UniCortex.Editor.Tests.UseCases
 
             // Assert
             StringAssert.Contains("Untitled", ex.Message);
-            StringAssert.Contains("discard_scene_changes", ex.Message);
+            StringAssert.Contains("ask the user", ex.Message);
+            StringAssert.DoesNotContain("discard_scene_changes", ex.Message);
             StringAssert.DoesNotContain("save (CLI: editor save)", ex.Message);
             Assert.AreEqual(0, spy.StartCallCount);
         }

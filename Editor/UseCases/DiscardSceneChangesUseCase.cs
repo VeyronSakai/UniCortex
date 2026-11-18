@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Exceptions;
@@ -26,6 +28,15 @@ namespace UniCortex.Editor.UseCases
                 if (_editorApplication.IsPlaying)
                 {
                     throw new PlayModeException("Cannot discard scene changes during play mode.");
+                }
+
+                // An untitled scene has no saved state to go back to. Fail before discarding anything, so that
+                // the changes are either all discarded or all kept.
+                if (_sceneManager.GetDirtyScenePaths().Any(string.IsNullOrEmpty))
+                {
+                    throw new InvalidOperationException(
+                        "Cannot discard the changes of an untitled scene, because it has no saved state to go " +
+                        "back to. Ask the user to save the scene or open another scene in the Editor, then retry.");
                 }
 
                 _sceneManager.DiscardChanges();

@@ -31,9 +31,9 @@ public class SceneTools(SceneUseCase sceneUseCase, IAsyncOperationSequencer sequ
             ct => sceneUseCase.OpenAsync(scenePath, ct), cancellationToken);
 
     [McpServerTool(Name = "discard_scene_changes", ReadOnly = false),
-     Description("Discard the unsaved changes of every loaded scene: scenes with a path are reopened from disk, " +
-                 "and untitled scenes are closed (replaced with a new empty scene if no other scene remains). " +
-                 "Cannot be undone."), UsedImplicitly]
+     Description("Discard the unsaved changes of every loaded scene by reloading it from disk. " +
+                 "Fails without changing anything while an untitled scene has unsaved changes. Cannot be undone."),
+     UsedImplicitly]
     public ValueTask<CallToolResult> DiscardSceneChangesAsync(CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer, sceneUseCase.DiscardChangesAsync, cancellationToken);
 

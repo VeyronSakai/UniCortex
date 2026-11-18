@@ -67,5 +67,24 @@ namespace UniCortex.Editor.Tests.Infrastructures
             // Assert
             Assert.That(paths, Does.Contain(AdditiveScenePath));
         }
+
+        [Test]
+        public void DiscardChanges_WithDirtyAdditiveScene_ReloadsItFromDisk()
+        {
+            // Arrange
+            var go = new GameObject("EditorSceneManagerAdapterTest_Discarded");
+            SceneManager.MoveGameObjectToScene(go, _additiveScene);
+            EditorSceneManager.MarkSceneDirty(_additiveScene);
+            var adapter = new EditorSceneManagerAdapter();
+
+            // Act
+            adapter.DiscardChanges();
+
+            // Assert
+            _additiveScene = SceneManager.GetSceneByPath(AdditiveScenePath);
+            Assert.IsTrue(_additiveScene.isLoaded);
+            Assert.IsFalse(_additiveScene.isDirty);
+            Assert.AreEqual(0, _additiveScene.rootCount);
+        }
     }
 }

@@ -114,7 +114,7 @@ While a modal dialog is open, the Unity Editor cannot answer the other tools. Th
 |------|-------------|
 | `create_scene` | Create a new empty scene and save it at the specified asset path |
 | `open_scene` | Open a scene by path |
-| `discard_scene_changes` | Discard the unsaved changes of every loaded scene (scenes with a path are reopened from disk, untitled scenes are closed) |
+| `discard_scene_changes` | Discard the unsaved changes of every loaded scene by reloading it from disk (not supported for untitled scenes) |
 
 UniCortex never saves scenes on its own. `create_scene`, `open_scene`, and `run_tests` fail while a loaded scene has unsaved changes; save them with `save` or discard them with `discard_scene_changes` first.
 | `get_hierarchy` | Get the GameObject hierarchy tree of every loaded scene or the Prefab |

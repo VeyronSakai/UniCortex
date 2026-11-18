@@ -23,7 +23,7 @@ public class SceneCommands(SceneUseCase sceneUseCase)
         Console.WriteLine(message);
     }
 
-    /// <summary>Discard the unsaved changes of every loaded scene. Scenes with a path are reopened from disk and untitled scenes are closed.</summary>
+    /// <summary>Discard the unsaved changes of every loaded scene by reloading it from disk. Fails while an untitled scene has unsaved changes.</summary>
     [Command("discard")]
     public async Task Discard(CancellationToken cancellationToken)
     {

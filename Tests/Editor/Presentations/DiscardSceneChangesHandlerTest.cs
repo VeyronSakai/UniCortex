@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using NUnit.Framework;
 using UniCortex.Editor.Domains.Models;
@@ -56,6 +57,30 @@ namespace UniCortex.Editor.Tests.Presentations
             // Assert
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("Cannot discard scene changes during play mode", context.ResponseBody);
+            Assert.AreEqual(0, sceneManager.DiscardChangesCallCount);
+        }
+
+        [Test]
+        public void HandleDiscardSceneChanges_Returns400_WhenUntitledSceneHasUnsavedChanges()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager { DirtyScenePaths = new List<string> { "" } };
+            var editorApp = new SpyEditorApplication();
+            var useCase = new DiscardSceneChangesUseCase(dispatcher, sceneManager, editorApp);
+            var handler = new DiscardSceneChangesHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.SceneDiscard);
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            StringAssert.Contains("untitled scene", context.ResponseBody);
             Assert.AreEqual(0, sceneManager.DiscardChangesCallCount);
         }
     }

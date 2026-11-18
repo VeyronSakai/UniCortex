@@ -95,7 +95,7 @@ public class SceneUseCaseTest
     }
 
     [Test]
-    public async ValueTask DiscardChanges_ReopensSceneFromDisk()
+    public async ValueTask DiscardChanges_ReloadsSceneFromDisk()
     {
         // Arrange
         await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);

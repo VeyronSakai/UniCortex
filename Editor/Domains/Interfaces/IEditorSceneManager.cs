@@ -12,8 +12,8 @@ namespace UniCortex.Editor.Domains.Interfaces
         // Returns the paths of the loaded scenes that have unsaved changes (an empty string for an untitled scene).
         IReadOnlyList<string> GetDirtyScenePaths();
 
-        // Drops the unsaved changes of every loaded scene: scenes with a path are reopened from disk and
-        // untitled scenes are closed.
+        // Reloads every loaded scene that has a path and unsaved changes from disk, dropping the changes.
+        // Untitled scenes are left as they are, since they have no saved state to go back to.
         void DiscardChanges();
     }
 }

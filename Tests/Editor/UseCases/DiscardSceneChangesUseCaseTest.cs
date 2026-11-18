@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using NUnit.Framework;
 using UniCortex.Editor.Domains.Exceptions;
@@ -41,6 +43,28 @@ namespace UniCortex.Editor.Tests.UseCases
 
             // Assert
             StringAssert.Contains("Cannot discard scene changes during play mode", ex.Message);
+            Assert.AreEqual(0, sceneManager.DiscardChangesCallCount);
+        }
+
+        [Test]
+        public void ExecuteAsync_Throws_WhenUntitledSceneHasUnsavedChanges()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager
+            {
+                DirtyScenePaths = new List<string> { "Assets/Scenes/Main.unity", "" }
+            };
+            var editorApp = new SpyEditorApplication();
+            var useCase = new DiscardSceneChangesUseCase(dispatcher, sceneManager, editorApp);
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult());
+
+            // Assert
+            StringAssert.Contains("untitled scene", ex.Message);
+            StringAssert.Contains("Ask the user", ex.Message);
             Assert.AreEqual(0, sceneManager.DiscardChangesCallCount);
         }
     }

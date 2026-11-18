@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 using UnityEditor.SceneManagement;
@@ -8,6 +9,12 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class EditorSceneManagerAdapter : IEditorSceneManager
     {
+        // EditorSceneManager.ReloadScene(Scene) is internal, so call it through reflection. It is what the
+        // "Discard changes" item of the Hierarchy window's scene context menu calls (after its confirmation dialog).
+        private static readonly MethodInfo s_reloadScene = typeof(UnityEditor.SceneManagement.EditorSceneManager)
+            .GetMethod("ReloadScene", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(Scene) },
+                null);
+
         public bool CreateScene(string scenePath)
         {
             AssetUtility.EnsureParentFolderExists(scenePath);
@@ -77,40 +84,36 @@ namespace UniCortex.Editor.Infrastructures
 
         public void DiscardChanges()
         {
-            if (GetDirtyScenePaths().Count == 0)
+            // Collect the scenes first: reloading a scene may change the loaded scene list.
+            var dirtyScenes = new List<Scene>();
+            for (var i = 0; i < SceneManager.sceneCount; i++)
             {
-                return;
-            }
-
-            // Reopen the scenes that have a path from disk, keeping their order, loaded state and the active scene.
-            // An untitled scene has no saved state to go back to, so it is dropped.
-            var setups = new List<SceneSetup>();
-            foreach (var setup in UnityEditor.SceneManagement.EditorSceneManager.GetSceneManagerSetup())
-            {
-                if (!string.IsNullOrEmpty(setup.path))
+                var scene = SceneManager.GetSceneAt(i);
+                if (scene.isDirty && !string.IsNullOrEmpty(scene.path))
                 {
-                    setups.Add(setup);
+                    dirtyScenes.Add(scene);
                 }
             }
 
-            var activeIndex = setups.FindIndex(setup => setup.isActive);
-            if (activeIndex < 0)
+            if (dirtyScenes.Count == 0)
             {
-                // The active scene was untitled: make the first loaded scene active instead.
-                activeIndex = setups.FindIndex(setup => setup.isLoaded);
-            }
-
-            if (activeIndex < 0)
-            {
-                // No scene with a path is loaded, so there is nothing to reopen.
-                UnityEditor.SceneManagement.EditorSceneManager.NewScene(
-                    UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
-                    UnityEditor.SceneManagement.NewSceneMode.Single);
                 return;
             }
 
-            setups[activeIndex].isActive = true;
-            UnityEditor.SceneManagement.EditorSceneManager.RestoreSceneManagerSetup(setups.ToArray());
+            if (s_reloadScene == null)
+            {
+                throw new System.InvalidOperationException(
+                    "Discarding scene changes is not supported in this Unity version " +
+                    "(EditorSceneManager.ReloadScene was not found).");
+            }
+
+            foreach (var scene in dirtyScenes)
+            {
+                if (!(bool)s_reloadScene.Invoke(null, new object[] { scene }))
+                {
+                    throw new System.InvalidOperationException($"Failed to reload scene '{scene.path}'.");
+                }
+            }
         }
     }
 }
