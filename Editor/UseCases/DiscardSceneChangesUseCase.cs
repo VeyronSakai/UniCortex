@@ -36,7 +36,7 @@ namespace UniCortex.Editor.UseCases
                 {
                     throw new InvalidOperationException(
                         "Cannot discard the changes of an untitled scene, because it has no saved state to go " +
-                        "back to. Ask the user to save the scene or open another scene in the Editor, then retry.");
+                        "back to.");
                 }
 
                 _sceneManager.DiscardChanges();

@@ -64,7 +64,7 @@ namespace UniCortex.Editor.Tests.UseCases
 
             // Assert
             StringAssert.Contains("untitled scene", ex.Message);
-            StringAssert.Contains("Ask the user", ex.Message);
+            StringAssert.Contains("no saved state", ex.Message);
             Assert.AreEqual(0, sceneManager.DiscardChangesCallCount);
         }
     }

@@ -24,9 +24,7 @@ namespace UniCortex.Editor.Domains.Exceptions
             {
                 // Saving an untitled scene opens the save panel, which blocks the Editor, and it has no saved state
                 // that its changes could be discarded back to.
-                return message +
-                       "An untitled scene can be neither saved nor discarded with UniCortex, so ask the user to " +
-                       "save the scene or open another scene in the Editor, then retry.";
+                return message + "An untitled scene can be neither saved nor discarded with UniCortex.";
             }
 
             return message +
