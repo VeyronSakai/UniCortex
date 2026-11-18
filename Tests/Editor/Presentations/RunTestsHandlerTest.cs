@@ -19,7 +19,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
             var dispatcher = new FakeMainThreadDispatcher();
-            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, new SpyEditorSceneManager());
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -42,7 +42,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
             var dispatcher = new FakeMainThreadDispatcher();
-            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, new SpyEditorSceneManager());
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -62,7 +62,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
             var dispatcher = new FakeMainThreadDispatcher();
-            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, new SpyEditorSceneManager());
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -82,7 +82,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
             var dispatcher = new FakeMainThreadDispatcher();
-            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, new SpyEditorSceneManager());
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -108,7 +108,7 @@ namespace UniCortex.Editor.Tests.Presentations
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication { IsPlaying = true };
             var dispatcher = new FakeMainThreadDispatcher();
-            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, new SpyEditorSceneManager());
             var handler = new RunTestsHandler(useCase);
 
             var router = new RequestRouter();
@@ -121,6 +121,35 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("Cannot run tests during play mode", context.ResponseBody);
+            Assert.AreEqual(0, spy.StartCallCount);
+        }
+
+        [Test]
+        public void HandleRunTests_Returns400_WhenSceneHasUnsavedChanges()
+        {
+            // Arrange
+            var spy = new SpyTestRunner();
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager
+            {
+                DirtyScenePaths = new List<string> { "Assets/Scenes/Main.unity" }
+            };
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, sceneManager);
+            var handler = new RunTestsHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.TestsRun,
+                "{\"testMode\":\"EditMode\"}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            StringAssert.Contains("Assets/Scenes/Main.unity", context.ResponseBody);
             Assert.AreEqual(0, spy.StartCallCount);
         }
     }

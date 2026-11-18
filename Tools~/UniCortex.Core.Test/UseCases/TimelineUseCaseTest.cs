@@ -32,6 +32,8 @@ public class TimelineUseCaseTest
     [TearDown]
     public async ValueTask TearDown()
     {
+        // Discard the test's changes: open_scene fails while a scene has unsaved changes.
+        await _fixture.SceneUseCase.DiscardChangesAsync(CancellationToken.None);
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
         UnityEditorFixture.DeleteAssetFile(TimelineAssetPath);

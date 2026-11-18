@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Text.Json;
 using NUnit.Framework;
 using UniCortex.Core.Test.Fixtures;
@@ -67,4 +68,27 @@ public class TestUseCaseTest
         Assert.That(response!.results, Has.Count.EqualTo(0));
     }
 
+    [Test, Order(5), CancelAfter(300_000)]
+    public async ValueTask Run_Throws_WhenSceneHasUnsavedChanges()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
+        await _fixture.GameObjectUseCase.CreateAsync("UnsavedObject", cancellationToken: CancellationToken.None);
+
+        try
+        {
+            // Act
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _fixture.TestUseCase.RunAsync(testMode: TestModes.EditMode,
+                    cancellationToken: CancellationToken.None));
+
+            // Assert
+            Assert.That(ex!.Message, Does.Contain("Cannot run tests"));
+            Assert.That(ex.Message, Does.Contain(TestConstants.SampleScenePath));
+        }
+        finally
+        {
+            await _fixture.SceneUseCase.DiscardChangesAsync(CancellationToken.None);
+        }
+    }
 }

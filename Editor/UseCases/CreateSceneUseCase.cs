@@ -28,6 +28,13 @@ namespace UniCortex.Editor.UseCases
                     throw new PlayModeException("Cannot create scene during play mode.");
                 }
 
+                // The new scene replaces the current ones, which would drop their unsaved changes.
+                var dirtyScenePaths = _sceneManager.GetDirtyScenePaths();
+                if (dirtyScenePaths.Count > 0)
+                {
+                    throw new UnsavedSceneChangesException("Cannot create a scene", dirtyScenePaths);
+                }
+
                 return _sceneManager.CreateScene(scenePath);
             }, cancellationToken);
         }

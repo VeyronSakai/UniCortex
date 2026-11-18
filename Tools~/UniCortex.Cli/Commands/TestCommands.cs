@@ -5,7 +5,7 @@ namespace UniCortex.Cli.Commands;
 
 public class TestCommands(TestUseCase testUseCase)
 {
-    /// <summary>Run Unity Test Runner tests and wait for completion.</summary>
+    /// <summary>Run Unity Test Runner tests and wait for completion. Fails while a loaded scene has unsaved changes.</summary>
     /// <param name="testMode">Test mode: "EditMode" or "PlayMode".</param>
     /// <param name="testNames">Specific test names to run.</param>
     /// <param name="groupNames">Test group names to run.</param>

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -12,6 +13,8 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string LastScenePath { get; private set; }
         public int GetHierarchyCallCount { get; private set; }
         public GetHierarchyResponse HierarchyResult { get; set; }
+        public List<string> DirtyScenePaths { get; set; } = new List<string>();
+        public int DiscardChangesCallCount { get; private set; }
 
         public bool CreateScene(string scenePath)
         {
@@ -30,6 +33,16 @@ namespace UniCortex.Editor.Tests.TestDoubles
         {
             GetHierarchyCallCount++;
             return HierarchyResult;
+        }
+
+        public IReadOnlyList<string> GetDirtyScenePaths()
+        {
+            return DirtyScenePaths;
+        }
+
+        public void DiscardChanges()
+        {
+            DiscardChangesCallCount++;
         }
     }
 }

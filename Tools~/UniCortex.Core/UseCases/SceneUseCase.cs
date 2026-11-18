@@ -21,6 +21,13 @@ public class SceneUseCase(IUnityEditorClient client)
         return $"Scene opened: {scenePath}";
     }
 
+    public async ValueTask<string> DiscardChangesAsync(CancellationToken cancellationToken)
+    {
+        await client.PostAsync<DiscardSceneChangesRequest, DiscardSceneChangesResponse>(
+            ApiRoutes.SceneDiscard, cancellationToken: cancellationToken);
+        return "Scene changes discarded.";
+    }
+
     public async ValueTask<string> GetHierarchyAsync(CancellationToken cancellationToken)
     {
         var response = await client.GetAsync<GetHierarchyRequest, GetHierarchyResponse>(
