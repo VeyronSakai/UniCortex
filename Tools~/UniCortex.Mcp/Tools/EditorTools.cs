@@ -56,7 +56,9 @@ public class EditorTools(EditorUseCase editorUseCase, IAsyncOperationSequencer s
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.RedoAsync, cancellationToken);
 
     [McpServerTool(Name = "save", ReadOnly = false),
-     Description("Run File/Save to save the active stage (Scene, Prefab, Timeline, etc.)."),
+     Description("Run File/Save to save the active stage (Scene, Prefab, Timeline, etc.). " +
+                 "For an untitled scene, File/Save opens the save panel, which blocks the Editor; " +
+                 "use save_scene_as instead."),
      UsedImplicitly]
     public ValueTask<CallToolResult> SaveAsync(CancellationToken cancellationToken)
         => McpToolExecution.ExecuteTextAsync(sequencer, editorUseCase.SaveAsync, cancellationToken);

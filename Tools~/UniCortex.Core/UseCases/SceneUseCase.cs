@@ -28,6 +28,14 @@ public class SceneUseCase(IUnityEditorClient client)
         return "Scene changes discarded.";
     }
 
+    public async ValueTask<string> SaveAsAsync(string scenePath, CancellationToken cancellationToken)
+    {
+        var request = new SaveSceneAsRequest { scenePath = scenePath };
+        await client.PostAsync<SaveSceneAsRequest, SaveSceneAsResponse>(ApiRoutes.SceneSaveAs, request,
+            cancellationToken);
+        return $"Active scene saved as: {scenePath}";
+    }
+
     public async ValueTask<string> GetHierarchyAsync(CancellationToken cancellationToken)
     {
         var response = await client.GetAsync<GetHierarchyRequest, GetHierarchyResponse>(

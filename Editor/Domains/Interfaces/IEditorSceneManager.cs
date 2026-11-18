@@ -15,5 +15,9 @@ namespace UniCortex.Editor.Domains.Interfaces
         // Reloads every loaded scene that has a path and unsaved changes from disk, dropping the changes.
         // Untitled scenes are left as they are, since they have no saved state to go back to.
         void DiscardChanges();
+
+        // Saves the active scene to the given path without the save panel, like File > Save As.
+        // The scene then refers to the new path. Fails if another file already exists at the path.
+        void SaveActiveSceneAs(string scenePath);
     }
 }

@@ -37,6 +37,18 @@ public class SceneTools(SceneUseCase sceneUseCase, IAsyncOperationSequencer sequ
     public ValueTask<CallToolResult> DiscardSceneChangesAsync(CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer, sceneUseCase.DiscardChangesAsync, cancellationToken);
 
+    [McpServerTool(Name = "save_scene_as", ReadOnly = false),
+     Description("Save the active scene to the specified asset path without the save panel, like File > Save As. " +
+                 "Use it to save an untitled scene. The scene then refers to the new path, and the file at its " +
+                 "previous path keeps its last saved state. Fails if the path already exists."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> SaveSceneAsAsync(
+        [Description("Asset path to save to (e.g. \"Assets/Scenes/NewScene.unity\").")]
+        string scenePath,
+        CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => sceneUseCase.SaveAsAsync(scenePath, ct), cancellationToken);
+
     [McpServerTool(Name = "get_hierarchy", ReadOnly = true),
      Description("Get the GameObject tree of every loaded scene (DontDestroyOnLoad included in Play Mode), " +
                  "or of the Prefab in Prefab Mode, with each scene's name, path and whether it is active."),

@@ -15,6 +15,8 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public GetHierarchyResponse HierarchyResult { get; set; }
         public List<string> DirtyScenePaths { get; set; } = new List<string>();
         public int DiscardChangesCallCount { get; private set; }
+        public int SaveActiveSceneAsCallCount { get; private set; }
+        public string LastSaveAsScenePath { get; private set; }
 
         public bool CreateScene(string scenePath)
         {
@@ -43,6 +45,12 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public void DiscardChanges()
         {
             DiscardChangesCallCount++;
+        }
+
+        public void SaveActiveSceneAs(string scenePath)
+        {
+            SaveActiveSceneAsCallCount++;
+            LastSaveAsScenePath = scenePath;
         }
     }
 }

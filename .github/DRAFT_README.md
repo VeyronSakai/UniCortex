@@ -115,9 +115,10 @@ While a modal dialog is open, the Unity Editor cannot answer the other tools. Th
 | `create_scene` | Create a new empty scene and save it at the specified asset path |
 | `open_scene` | Open a scene by path |
 | `discard_scene_changes` | Discard the unsaved changes of every loaded scene by reloading it from disk (not supported for untitled scenes) |
-
-UniCortex never saves scenes on its own. `create_scene`, `open_scene`, and `run_tests` fail while a loaded scene has unsaved changes; save them with `save` or discard them with `discard_scene_changes` first.
+| `save_scene_as` | Save the active scene to the specified asset path without the save panel, like File > Save As |
 | `get_hierarchy` | Get the GameObject hierarchy tree of every loaded scene or the Prefab |
+
+UniCortex never saves scenes on its own. `create_scene`, `open_scene`, and `run_tests` fail while a loaded scene has unsaved changes; save them with `save` or discard them with `discard_scene_changes` first. An untitled scene cannot be saved with `save` (File/Save opens the save panel, which blocks the Editor) or discarded, so save it to an asset path with `save_scene_as`.
 
 #### GameObject
 
@@ -366,6 +367,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | `scene create` | Create a new empty scene at the specified asset path. |
 | `scene open` | Open a scene by asset path. |
 | `scene discard` | Discard the unsaved changes of every loaded scene. |
+| `scene save-as` | Save the active scene to the specified asset path without the save panel. |
 | `scene hierarchy` | Print the current scene hierarchy as JSON. |
 
 #### `game-object`

@@ -119,6 +119,59 @@ public class SceneUseCaseTest
     }
 
     [Test]
+    public async ValueTask SaveAs_SavesActiveSceneToNewPath()
+    {
+        // Arrange
+        const string savedAsScenePath = "Assets/Scenes/SaveSceneAsTest.unity";
+        await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
+        await _fixture.GameObjectUseCase.CreateAsync("SavedAsObject", cancellationToken: CancellationToken.None);
+
+        try
+        {
+            // Act
+            var message = await _fixture.SceneUseCase.SaveAsAsync(savedAsScenePath, CancellationToken.None);
+
+            // Assert
+            Assert.That(message, Does.Contain($"Active scene saved as: {savedAsScenePath}"));
+            var json = await _fixture.SceneUseCase.GetHierarchyAsync(CancellationToken.None);
+            var response = JsonSerializer.Deserialize<GetHierarchyResponse>(json, s_jsonOptions)!;
+            Assert.That(response.scenes, Has.Count.EqualTo(1));
+            Assert.That(response.scenes[0].scenePath, Is.EqualTo(savedAsScenePath));
+            Assert.That(response.scenes[0].gameObjects.Select(g => g.name), Does.Contain("SavedAsObject"));
+
+            // The saved scene has no unsaved changes left, so another scene can be opened. The scene at the
+            // previous path keeps its last saved state.
+            await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
+            json = await _fixture.SceneUseCase.GetHierarchyAsync(CancellationToken.None);
+            response = JsonSerializer.Deserialize<GetHierarchyResponse>(json, s_jsonOptions)!;
+            Assert.That(response.scenes[0].gameObjects.Select(g => g.name), Does.Not.Contain("SavedAsObject"));
+        }
+        finally
+        {
+            await _fixture.SceneUseCase.DiscardChangesAsync(CancellationToken.None);
+            await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
+            UnityEditorFixture.DeleteAssetFile(savedAsScenePath);
+        }
+    }
+
+    [Test]
+    public async ValueTask SaveAs_Throws_WhenPathAlreadyExists()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
+
+        // Act
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await _fixture.SceneUseCase.SaveAsAsync(TestConstants.SampleScenePath, CancellationToken.None));
+
+        // Assert
+        Assert.That(ex!.Message, Does.Contain("already exists"));
+        var json = await _fixture.SceneUseCase.GetHierarchyAsync(CancellationToken.None);
+        var response = JsonSerializer.Deserialize<GetHierarchyResponse>(json, s_jsonOptions)!;
+        Assert.That(response.scenes[0].scenePath, Is.EqualTo(TestScenePath));
+    }
+
+    [Test]
     public async ValueTask Create_ReturnsSuccess()
     {
         const string newScenePath = "Assets/Scenes/CreateSceneTest.unity";
