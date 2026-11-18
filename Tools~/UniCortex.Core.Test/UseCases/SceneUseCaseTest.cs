@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Text.Json;
 using NUnit.Framework;
 using UniCortex.Core.Test.Fixtures;
@@ -26,8 +27,9 @@ public class SceneUseCaseTest
     [OneTimeTearDown]
     public async ValueTask OneTimeTearDown()
     {
-        // Open SampleScene first so the test scene is unloaded from Unity.
-        // OpenScene calls SaveIfDirty(), which would recreate the file if we deleted it first.
+        // Discard the test's changes: open_scene fails while a scene has unsaved changes.
+        await _fixture.SceneUseCase.DiscardChangesAsync(CancellationToken.None);
+        // Open SampleScene first so the test scene is unloaded from Unity before its file is deleted.
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }
@@ -66,6 +68,54 @@ public class SceneUseCaseTest
         var message = await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
 
         Assert.That(message, Does.Contain("Scene opened"));
+    }
+
+    [Test]
+    public async ValueTask Open_Throws_WhenSceneHasUnsavedChanges()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
+        await _fixture.GameObjectUseCase.CreateAsync("UnsavedObject", cancellationToken: CancellationToken.None);
+
+        try
+        {
+            // Act
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None));
+
+            // Assert
+            Assert.That(ex!.Message, Does.Contain("Cannot open a scene"));
+            Assert.That(ex.Message, Does.Contain(TestScenePath));
+            Assert.That(ex.Message, Does.Contain("discard_scene_changes"));
+        }
+        finally
+        {
+            await _fixture.SceneUseCase.DiscardChangesAsync(CancellationToken.None);
+        }
+    }
+
+    [Test]
+    public async ValueTask DiscardChanges_ReopensSceneFromDisk()
+    {
+        // Arrange
+        await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None);
+        await _fixture.GameObjectUseCase.CreateAsync("DiscardedObject", cancellationToken: CancellationToken.None);
+
+        // Act
+        var message = await _fixture.SceneUseCase.DiscardChangesAsync(CancellationToken.None);
+
+        // Assert
+        Assert.That(message, Does.Contain("Scene changes discarded"));
+        var json = await _fixture.SceneUseCase.GetHierarchyAsync(CancellationToken.None);
+        var response = JsonSerializer.Deserialize<GetHierarchyResponse>(json, s_jsonOptions)!;
+        Assert.That(response.scenes, Has.Count.EqualTo(1));
+        Assert.That(response.scenes[0].scenePath, Is.EqualTo(TestScenePath));
+        Assert.That(response.scenes[0].isActive, Is.True);
+        Assert.That(response.scenes[0].gameObjects.Select(g => g.name), Does.Not.Contain("DiscardedObject"));
+
+        // The scene has no unsaved changes left, so another scene can be opened.
+        Assert.DoesNotThrowAsync(async () =>
+            await _fixture.SceneUseCase.OpenAsync(TestScenePath, CancellationToken.None));
     }
 
     [Test]

@@ -114,6 +114,9 @@ While a modal dialog is open, the Unity Editor cannot answer the other tools. Th
 |------|-------------|
 | `create_scene` | Create a new empty scene and save it at the specified asset path |
 | `open_scene` | Open a scene by path |
+| `discard_scene_changes` | Discard the unsaved changes of every loaded scene (scenes with a path are reopened from disk, untitled scenes are closed) |
+
+UniCortex never saves scenes on its own. `create_scene`, `open_scene`, and `run_tests` fail while a loaded scene has unsaved changes; save them with `save` or discard them with `discard_scene_changes` first.
 | `get_hierarchy` | Get the GameObject hierarchy tree of every loaded scene or the Prefab |
 
 #### GameObject
@@ -362,6 +365,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | --- | --- |
 | `scene create` | Create a new empty scene at the specified asset path. |
 | `scene open` | Open a scene by asset path. |
+| `scene discard` | Discard the unsaved changes of every loaded scene. |
 | `scene hierarchy` | Print the current scene hierarchy as JSON. |
 
 #### `game-object`

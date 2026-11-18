@@ -138,7 +138,8 @@ namespace UniCortex.Editor
             var redoHandler = new RedoHandler(redoUseCase);
 
             var testRunnerAdapter = new TestRunnerAdapter(dispatcher, testResultStore);
-            var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, dispatcher, editorApplication);
+            var runTestsUseCase = new RunTestsUseCase(testRunnerAdapter, dispatcher, editorApplication,
+                sceneManagerAdapter);
             var runTestsHandler = new RunTestsHandler(runTestsUseCase);
             var testResultHandler = new TestResultHandler(dispatcher, testResultStore);
 
@@ -155,6 +156,10 @@ namespace UniCortex.Editor
 
             var openSceneUseCase = new OpenSceneUseCase(dispatcher, sceneManagerAdapter, editorApplication);
             var openSceneHandler = new OpenSceneHandler(openSceneUseCase);
+
+            var discardSceneChangesUseCase =
+                new DiscardSceneChangesUseCase(dispatcher, sceneManagerAdapter, editorApplication);
+            var discardSceneChangesHandler = new DiscardSceneChangesHandler(discardSceneChangesUseCase);
 
             var saveUseCase = new SaveUseCase(dispatcher, editorApplication);
             var saveHandler = new Handlers.Editor.SaveHandler(saveUseCase);
@@ -432,6 +437,7 @@ namespace UniCortex.Editor
             consoleClearHandler.Register(router);
             createSceneHandler.Register(router);
             openSceneHandler.Register(router);
+            discardSceneChangesHandler.Register(router);
             saveHandler.Register(router);
             hierarchyHandler.Register(router);
             getGameObjectsHandler.Register(router);

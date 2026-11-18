@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using UniCortex.Editor.Domains.Models;
 using UniCortex.Editor.Handlers.Scene;
@@ -90,6 +91,31 @@ namespace UniCortex.Editor.Tests.Presentations
 
             Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
             StringAssert.Contains("Cannot open scene during play mode", context.ResponseBody);
+            Assert.AreEqual(0, sceneManager.OpenSceneCallCount);
+        }
+
+        [Test]
+        public void HandleOpenScene_Returns400_WhenSceneHasUnsavedChanges()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager { DirtyScenePaths = new List<string> { "" } };
+            var editorApp = new SpyEditorApplication();
+            var useCase = new OpenSceneUseCase(dispatcher, sceneManager, editorApp);
+            var handler = new OpenSceneHandler(useCase);
+
+            var router = new RequestRouter();
+            handler.Register(router);
+
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.SceneOpen,
+                "{\"scenePath\":\"Assets/Scenes/Main.unity\"}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.BadRequest, context.ResponseStatusCode);
+            StringAssert.Contains("Untitled", context.ResponseBody);
             Assert.AreEqual(0, sceneManager.OpenSceneCallCount);
         }
     }

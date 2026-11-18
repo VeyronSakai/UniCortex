@@ -11,7 +11,6 @@ namespace UniCortex.Editor.Infrastructures
         public bool CreateScene(string scenePath)
         {
             AssetUtility.EnsureParentFolderExists(scenePath);
-            SaveIfDirty();
             var scene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
                 UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
                 UnityEditor.SceneManagement.NewSceneMode.Single);
@@ -25,28 +24,7 @@ namespace UniCortex.Editor.Infrastructures
 
         public void OpenScene(string scenePath)
         {
-            SaveIfDirty();
             UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scenePath);
-        }
-
-        // Save all dirty scenes to prevent "Scene(s) Have Been Modified" dialog
-        // when NewScene(Single) or OpenScene(Single) closes the current scene.
-        private static void SaveIfDirty()
-        {
-            var sceneCount = SceneManager.sceneCount;
-            for (var i = 0; i < sceneCount; i++)
-            {
-                if (SceneManager.GetSceneAt(i).isDirty)
-                {
-                    if (!UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes())
-                    {
-                        throw new System.InvalidOperationException(
-                            "Failed to save open scenes before scene operation.");
-                    }
-
-                    return;
-                }
-            }
         }
 
         public GetHierarchyResponse GetHierarchy()
@@ -80,6 +58,59 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             return new GetHierarchyResponse(scenes);
+        }
+
+        public IReadOnlyList<string> GetDirtyScenePaths()
+        {
+            var paths = new List<string>();
+            for (var i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var scene = SceneManager.GetSceneAt(i);
+                if (scene.isDirty)
+                {
+                    paths.Add(scene.path);
+                }
+            }
+
+            return paths;
+        }
+
+        public void DiscardChanges()
+        {
+            if (GetDirtyScenePaths().Count == 0)
+            {
+                return;
+            }
+
+            // Reopen the scenes that have a path from disk, keeping their order, loaded state and the active scene.
+            // An untitled scene has no saved state to go back to, so it is dropped.
+            var setups = new List<SceneSetup>();
+            foreach (var setup in UnityEditor.SceneManagement.EditorSceneManager.GetSceneManagerSetup())
+            {
+                if (!string.IsNullOrEmpty(setup.path))
+                {
+                    setups.Add(setup);
+                }
+            }
+
+            var activeIndex = setups.FindIndex(setup => setup.isActive);
+            if (activeIndex < 0)
+            {
+                // The active scene was untitled: make the first loaded scene active instead.
+                activeIndex = setups.FindIndex(setup => setup.isLoaded);
+            }
+
+            if (activeIndex < 0)
+            {
+                // No scene with a path is loaded, so there is nothing to reopen.
+                UnityEditor.SceneManagement.EditorSceneManager.NewScene(
+                    UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
+                    UnityEditor.SceneManagement.NewSceneMode.Single);
+                return;
+            }
+
+            setups[activeIndex].isActive = true;
+            UnityEditor.SceneManagement.EditorSceneManager.RestoreSceneManagerSetup(setups.ToArray());
         }
     }
 }

@@ -30,8 +30,9 @@ public class ComponentUseCaseTest
     [TearDown]
     public async ValueTask TearDown()
     {
-        // Open SampleScene first so the test scene is unloaded from Unity.
-        // OpenScene calls SaveIfDirty(), which would recreate the file if we deleted it first.
+        // Discard the test's changes: open_scene fails while a scene has unsaved changes.
+        await _fixture.SceneUseCase.DiscardChangesAsync(CancellationToken.None);
+        // Open SampleScene first so the test scene is unloaded from Unity before its file is deleted.
         await _fixture.SceneUseCase.OpenAsync(TestConstants.SampleScenePath, CancellationToken.None);
         UnityEditorFixture.DeleteAssetFile(TestScenePath);
     }

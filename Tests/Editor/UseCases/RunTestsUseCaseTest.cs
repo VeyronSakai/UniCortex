@@ -18,7 +18,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
             var dispatcher = new FakeMainThreadDispatcher();
-            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, new SpyEditorSceneManager());
 
             useCase.ExecuteAsync(new RunTestsRequest(TestModes.PlayMode), CancellationToken.None)
                 .GetAwaiter().GetResult();
@@ -33,7 +33,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication();
             var dispatcher = new FakeMainThreadDispatcher();
-            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, new SpyEditorSceneManager());
 
             var request = new RunTestsRequest(
                 TestModes.EditMode,
@@ -57,13 +57,62 @@ namespace UniCortex.Editor.Tests.UseCases
             var spy = new SpyTestRunner();
             var editorApp = new SpyEditorApplication { IsPlaying = true };
             var dispatcher = new FakeMainThreadDispatcher();
-            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp);
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, new SpyEditorSceneManager());
 
             var ex = Assert.Throws<PlayModeException>(() =>
                 useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
                     .GetAwaiter().GetResult());
 
             StringAssert.Contains("Cannot run tests during play mode", ex.Message);
+            Assert.AreEqual(0, spy.StartCallCount);
+        }
+
+        [Test]
+        public void ExecuteAsync_ThrowsUnsavedSceneChangesException_WhenSceneHasUnsavedChanges()
+        {
+            // Arrange
+            var spy = new SpyTestRunner();
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager
+            {
+                DirtyScenePaths = new List<string> { "Assets/Scenes/Main.unity" }
+            };
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, sceneManager);
+
+            // Act
+            var ex = Assert.Throws<UnsavedSceneChangesException>(() =>
+                useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
+                    .GetAwaiter().GetResult());
+
+            // Assert
+            StringAssert.Contains("Cannot run tests", ex.Message);
+            StringAssert.Contains("Assets/Scenes/Main.unity", ex.Message);
+            StringAssert.Contains("save (CLI: editor save)", ex.Message);
+            StringAssert.Contains("discard_scene_changes", ex.Message);
+            Assert.AreEqual(0, spy.StartCallCount);
+            Assert.AreEqual(0, sceneManager.DiscardChangesCallCount);
+        }
+
+        [Test]
+        public void ExecuteAsync_SuggestsOnlyDiscard_WhenUntitledSceneHasUnsavedChanges()
+        {
+            // Arrange
+            var spy = new SpyTestRunner();
+            var editorApp = new SpyEditorApplication();
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager { DirtyScenePaths = new List<string> { "" } };
+            var useCase = new RunTestsUseCase(spy, dispatcher, editorApp, sceneManager);
+
+            // Act
+            var ex = Assert.Throws<UnsavedSceneChangesException>(() =>
+                useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
+                    .GetAwaiter().GetResult());
+
+            // Assert
+            StringAssert.Contains("Untitled", ex.Message);
+            StringAssert.Contains("discard_scene_changes", ex.Message);
+            StringAssert.DoesNotContain("save (CLI: editor save)", ex.Message);
             Assert.AreEqual(0, spy.StartCallCount);
         }
     }

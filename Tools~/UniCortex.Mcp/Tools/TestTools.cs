@@ -12,7 +12,8 @@ namespace UniCortex.Mcp.Tools;
 public class TestTools(TestUseCase testUseCase, IAsyncOperationSequencer sequencer)
 {
     [McpServerTool(Name = "run_tests", ReadOnly = true),
-     Description("Run Unity Test Runner tests and wait for completion."), UsedImplicitly]
+     Description("Run Unity Test Runner tests and wait for completion. " +
+                 "Fails while a loaded scene has unsaved changes; save or discard them first."), UsedImplicitly]
     public ValueTask<CallToolResult> RunTestsAsync(
         [Description("Test mode: '" + TestModes.EditMode + "' or '" + TestModes.PlayMode + "'. Defaults to '" + TestModes.EditMode + "'.")]
         string? testMode = null,

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using UniCortex.Editor.Domains.Exceptions;
 using UniCortex.Editor.Tests.TestDoubles;
@@ -37,6 +38,30 @@ namespace UniCortex.Editor.Tests.UseCases
                 useCase.ExecuteAsync("Assets/Scenes/Main.unity", CancellationToken.None)
                     .GetAwaiter().GetResult());
             Assert.AreEqual(0, sceneManager.OpenSceneCallCount);
+        }
+
+        [Test]
+        public void ExecuteAsync_ThrowsUnsavedSceneChangesException_WhenSceneHasUnsavedChanges()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager
+            {
+                DirtyScenePaths = new List<string> { "Assets/Scenes/Main.unity" }
+            };
+            var editorApp = new SpyEditorApplication();
+            var useCase = new OpenSceneUseCase(dispatcher, sceneManager, editorApp);
+
+            // Act
+            var ex = Assert.Throws<UnsavedSceneChangesException>(() =>
+                useCase.ExecuteAsync("Assets/Scenes/Other.unity", CancellationToken.None)
+                    .GetAwaiter().GetResult());
+
+            // Assert
+            StringAssert.Contains("Cannot open a scene", ex.Message);
+            StringAssert.Contains("Assets/Scenes/Main.unity", ex.Message);
+            Assert.AreEqual(0, sceneManager.OpenSceneCallCount);
+            Assert.AreEqual(0, editorApp.SaveCallCount);
         }
     }
 }

@@ -2,6 +2,7 @@ using System.Linq;
 using NUnit.Framework;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -50,6 +51,21 @@ namespace UniCortex.Editor.Tests.Infrastructures
             Assert.AreEqual(1, additive.gameObjects.Count);
             Assert.AreEqual("EditorSceneManagerAdapterTest_Additive", additive.gameObjects[0].name);
             Assert.AreEqual(go.GetInstanceID(), additive.gameObjects[0].instanceId);
+        }
+
+        [Test]
+        public void GetDirtyScenePaths_WithDirtyAdditiveScene_ReturnsItsPath()
+        {
+            // Arrange
+            var adapter = new EditorSceneManagerAdapter();
+            Assert.That(adapter.GetDirtyScenePaths(), Does.Not.Contain(AdditiveScenePath));
+            EditorSceneManager.MarkSceneDirty(_additiveScene);
+
+            // Act
+            var paths = adapter.GetDirtyScenePaths();
+
+            // Assert
+            Assert.That(paths, Does.Contain(AdditiveScenePath));
         }
     }
 }

@@ -120,6 +120,7 @@ If the server is stopped while handling a request (e.g. by a domain reload), it 
 The client resends a request until the server answers: on a refused connection, a 503, a dropped connection, an empty response, or a response that is not JSON (every response written by a request handler is JSON; a non-JSON one, such as a `400` written by the listener itself while it is closing, means the request never reached a handler).
 While a request waits for its response (including the time spent resending it), the client reads the Editor's modal dialogs with the OS window APIs (see Editor Dialog), first after 5 seconds and then every 2 seconds. If one is open, the Editor cannot respond until it is closed, so the request fails at once with the dialog's title, message, and buttons, and tells the caller to close it with `click_editor_dialog_button`. This covers both a dialog shown while the request waits in the queue (e.g. a scene reload confirmation) and one shown by the request itself (e.g. "Saving failed", or the save panel of an untitled scene). The request is not cancelled in the Editor, so it may still run after the dialog is closed. When the dialogs cannot be read (on Linux, or without the Accessibility permission on macOS), the request keeps waiting.
 All scene-mutating operations support Undo.
+Scenes are never saved implicitly. Endpoints that would close the loaded scenes or start the Test Runner (`/scene/create`, `/scene/open`, `/tests/run`) return `400 Bad Request` while a loaded scene has unsaved changes (`Scene.isDirty`): closing the scenes would drop the changes, and the Test Runner would ask to save them in a dialog that blocks the Editor. The error lists the scenes (an untitled one as `Untitled`) and tells the caller to save them with `save` or discard them with `discard_scene_changes`. Saving an untitled scene opens the save panel, which also blocks the Editor, so when an untitled scene has changes the error suggests only discarding them (or asking the user to save the scene).
 Endpoints that save a new asset at a given path (`/scene/create`, `/scriptable-object/create`, `/animation-clip/create`, `/prefab/create`, `/timeline/create`) create any missing parent folders under `Assets/` first. A path outside `Assets/` or an asset that still cannot be saved returns `400 Bad Request` with the reason.
 
 ### Editor Control
@@ -218,7 +219,7 @@ Response: `{"success": true}`
 ### Scene
 
 #### POST `/scene/create`
-Creates a new empty scene and saves it to the specified asset path.
+Creates a new empty scene and saves it to the specified asset path. Returns 400 in Play Mode or while a loaded scene has unsaved changes.
 
 Request body:
 ```json
@@ -228,12 +229,23 @@ Request body:
 Response: `{"success": true}`
 
 #### POST `/scene/open`
-Opens a scene. `EditorSceneManager.OpenScene()`
+Opens a scene. `EditorSceneManager.OpenScene()`. Returns 400 in Play Mode or while a loaded scene has unsaved changes.
 
 Request body:
 ```json
 {"scenePath": "Assets/Scenes/Main.unity"}
 ```
+
+Response: `{"success": true}`
+
+#### POST `/scene/discard`
+Discards the unsaved changes of every loaded scene. Does nothing when no scene has unsaved changes.
+
+- Scenes with a path are reopened from disk with `EditorSceneManager.RestoreSceneManagerSetup()`, keeping their order, loaded state, and the active scene
+- An untitled scene has no saved state, so it is closed. If it was the active scene, the first loaded scene becomes active. If no scene with a path is loaded, the scenes are replaced with a new empty scene (`NewSceneSetup.EmptyScene`)
+- Not undoable. Returns 400 in Play Mode
+
+Request body: none
 
 Response: `{"success": true}`
 
@@ -739,7 +751,7 @@ Request body:
 - `categoryNames`: array of test category names (optional)
 - `assemblyNames`: array of test assembly names (optional)
 
-Response: `202 Accepted` with `{"success": true}`. Returns 400 in Play Mode.
+Response: `202 Accepted` with `{"success": true}`. Returns 400 in Play Mode or while a loaded scene has unsaved changes (scenes are not saved before the run).
 
 #### GET `/tests/result`
 Returns the result of the latest run started by `POST /tests/run`. While the run is in progress, the body is empty; clients retry until the result is stored.
@@ -1567,12 +1579,13 @@ Output of `get_editor_dialogs`:
 }
 ```
 
-#### Scene (3)
+#### Scene (4)
 
 | Tool | API | Description |
 |------|-----|-------------|
 | `create_scene` | POST `/scene/create` | Create a new empty scene and save it to an asset path |
 | `open_scene` | POST `/scene/open` | Open a scene by path |
+| `discard_scene_changes` | POST `/scene/discard` | Discard the unsaved changes of every loaded scene |
 | `get_hierarchy` | GET `/hierarchy` | Get the GameObject hierarchy of every loaded scene (or the Prefab) as a tree per scene |
 
 #### GameObject (5)
@@ -1769,7 +1782,7 @@ A CLI tool for operating the Unity Editor from a terminal. Uses Core services di
 editor ping|play|stop|status|pause|unpause|step|undo|redo|reload-domain
 editor platform get|switch
 editor dialog list|click
-scene create|open|save|hierarchy
+scene create|open|discard|hierarchy
 game-object find|create|delete|modify
 component add|remove
 component property list|set

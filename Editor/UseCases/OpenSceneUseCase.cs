@@ -28,6 +28,13 @@ namespace UniCortex.Editor.UseCases
                     throw new PlayModeException("Cannot open scene during play mode.");
                 }
 
+                // Opening a scene closes the current ones, which would drop their unsaved changes.
+                var dirtyScenePaths = _sceneManager.GetDirtyScenePaths();
+                if (dirtyScenePaths.Count > 0)
+                {
+                    throw new UnsavedSceneChangesException("Cannot open a scene", dirtyScenePaths);
+                }
+
                 _sceneManager.OpenScene(scenePath);
                 return true;
             }, cancellationToken);
