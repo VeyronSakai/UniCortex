@@ -77,7 +77,7 @@ public class EditorCommands(EditorUseCase editorUseCase)
         Console.WriteLine(message);
     }
 
-    /// <summary>Save the currently active stage in the Unity Editor (Scene, Prefab, or Timeline).</summary>
+    /// <summary>Save the currently active stage in the Unity Editor (Scene, Prefab, or Timeline). For an untitled scene, this opens the save panel, which blocks the Editor; use scene save-as instead.</summary>
     [Command("save")]
     public async Task Save(CancellationToken cancellationToken)
     {

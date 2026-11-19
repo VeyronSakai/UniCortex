@@ -161,6 +161,9 @@ namespace UniCortex.Editor
                 new DiscardSceneChangesUseCase(dispatcher, sceneManagerAdapter, editorApplication);
             var discardSceneChangesHandler = new DiscardSceneChangesHandler(discardSceneChangesUseCase);
 
+            var saveSceneAsUseCase = new SaveSceneAsUseCase(dispatcher, sceneManagerAdapter, editorApplication);
+            var saveSceneAsHandler = new SaveSceneAsHandler(saveSceneAsUseCase);
+
             var saveUseCase = new SaveUseCase(dispatcher, editorApplication);
             var saveHandler = new Handlers.Editor.SaveHandler(saveUseCase);
 
@@ -438,6 +441,7 @@ namespace UniCortex.Editor
             createSceneHandler.Register(router);
             openSceneHandler.Register(router);
             discardSceneChangesHandler.Register(router);
+            saveSceneAsHandler.Register(router);
             saveHandler.Register(router);
             hierarchyHandler.Register(router);
             getGameObjectsHandler.Register(router);

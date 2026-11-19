@@ -27,6 +27,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string SceneCreate = "/scene/create";
         public const string SceneOpen = "/scene/open";
         public const string SceneDiscard = "/scene/discard";
+        public const string SceneSaveAs = "/scene/save-as";
         public const string Hierarchy = "/hierarchy";
         public const string ComponentAdd = "/component/add";
         public const string ComponentRemove = "/component/remove";

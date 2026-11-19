@@ -1,7 +1,10 @@
+using System;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using UniCortex.Editor.Infrastructures;
 using UniCortex.Editor.Tests.TestDoubles;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -12,19 +15,26 @@ namespace UniCortex.Editor.Tests.Infrastructures
     internal sealed class EditorSceneManagerAdapterTest
     {
         private const string AdditiveScenePath = "Assets/EditorSceneManagerAdapterTest.unity";
+        private const string SavedAsScenePath = "Assets/EditorSceneManagerAdapterTest_SavedAs.unity";
+        private const string ExistingScenePath = "Assets/EditorSceneManagerAdapterTest_Existing.unity";
 
+        private Scene _previousActiveScene;
         private Scene _additiveScene;
 
         [SetUp]
         public void SetUp()
         {
+            _previousActiveScene = SceneManager.GetActiveScene();
             _additiveScene = AdditiveTestScene.Open(AdditiveScenePath);
         }
 
         [TearDown]
         public void TearDown()
         {
+            SceneManager.SetActiveScene(_previousActiveScene);
             AdditiveTestScene.Close(_additiveScene, AdditiveScenePath);
+            AssetDatabase.DeleteAsset(SavedAsScenePath);
+            AssetDatabase.DeleteAsset(ExistingScenePath);
         }
 
         [Test]
@@ -85,6 +95,45 @@ namespace UniCortex.Editor.Tests.Infrastructures
             Assert.IsTrue(_additiveScene.isLoaded);
             Assert.IsFalse(_additiveScene.isDirty);
             Assert.AreEqual(0, _additiveScene.rootCount);
+        }
+
+        [Test]
+        public void SaveActiveSceneAs_SavesActiveSceneToNewPath()
+        {
+            // Arrange
+            var go = new GameObject("EditorSceneManagerAdapterTest_SavedAs");
+            SceneManager.MoveGameObjectToScene(go, _additiveScene);
+            SceneManager.SetActiveScene(_additiveScene);
+            var adapter = new EditorSceneManagerAdapter();
+
+            // Act
+            adapter.SaveActiveSceneAs(SavedAsScenePath);
+
+            // Assert
+            Assert.AreEqual(SavedAsScenePath, _additiveScene.path);
+            Assert.IsFalse(_additiveScene.isDirty);
+            StringAssert.Contains("EditorSceneManagerAdapterTest_SavedAs", File.ReadAllText(SavedAsScenePath));
+            StringAssert.DoesNotContain("EditorSceneManagerAdapterTest_SavedAs", File.ReadAllText(AdditiveScenePath));
+        }
+
+        [Test]
+        public void SaveActiveSceneAs_ThrowsArgumentException_WhenPathAlreadyExists()
+        {
+            // Arrange
+            AssetDatabase.CopyAsset(AdditiveScenePath, ExistingScenePath);
+            var existingContent = File.ReadAllText(ExistingScenePath);
+            var go = new GameObject("EditorSceneManagerAdapterTest_NotSaved");
+            SceneManager.MoveGameObjectToScene(go, _additiveScene);
+            SceneManager.SetActiveScene(_additiveScene);
+            var adapter = new EditorSceneManagerAdapter();
+
+            // Act
+            var ex = Assert.Throws<ArgumentException>(() => adapter.SaveActiveSceneAs(ExistingScenePath));
+
+            // Assert
+            StringAssert.Contains("already exists", ex.Message);
+            Assert.AreEqual(existingContent, File.ReadAllText(ExistingScenePath));
+            Assert.AreEqual(AdditiveScenePath, _additiveScene.path);
         }
     }
 }

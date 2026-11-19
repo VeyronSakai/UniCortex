@@ -31,6 +31,15 @@ public class SceneCommands(SceneUseCase sceneUseCase)
         Console.WriteLine(message);
     }
 
+    /// <summary>Save the active scene to the specified asset path without the save panel, like File > Save As. Fails if the path already exists.</summary>
+    /// <param name="scenePath">Asset path to save the scene to (e.g. "Assets/Scenes/NewScene.unity").</param>
+    [Command("save-as")]
+    public async Task SaveAs([Argument] string scenePath, CancellationToken cancellationToken)
+    {
+        var message = await sceneUseCase.SaveAsAsync(scenePath, cancellationToken);
+        Console.WriteLine(message);
+    }
+
     /// <summary>Get the GameObject hierarchy of every loaded scene (or the Prefab in Prefab Mode).</summary>
     [Command("hierarchy")]
     public async Task Hierarchy(CancellationToken cancellationToken)

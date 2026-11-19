@@ -120,7 +120,7 @@ If the server is stopped while handling a request (e.g. by a domain reload), it 
 The client resends a request until the server answers: on a refused connection, a 503, a dropped connection, an empty response, or a response that is not JSON (every response written by a request handler is JSON; a non-JSON one, such as a `400` written by the listener itself while it is closing, means the request never reached a handler).
 While a request waits for its response (including the time spent resending it), the client reads the Editor's modal dialogs with the OS window APIs (see Editor Dialog), first after 5 seconds and then every 2 seconds. If one is open, the Editor cannot respond until it is closed, so the request fails at once with the dialog's title, message, and buttons, and tells the caller to close it with `click_editor_dialog_button`. This covers both a dialog shown while the request waits in the queue (e.g. a scene reload confirmation) and one shown by the request itself (e.g. "Saving failed", or the save panel of an untitled scene). The request is not cancelled in the Editor, so it may still run after the dialog is closed. When the dialogs cannot be read (on Linux, or without the Accessibility permission on macOS), the request keeps waiting.
 All scene-mutating operations support Undo.
-Scenes are never saved implicitly. Endpoints that would close the loaded scenes or start the Test Runner (`/scene/create`, `/scene/open`, `/tests/run`) return `400 Bad Request` while a loaded scene has unsaved changes (`Scene.isDirty`): closing the scenes would drop the changes, and the Test Runner would ask to save them in a dialog that blocks the Editor. The error lists the scenes (an untitled one as `Untitled`) and tells the caller to save them with `save` or discard them with `discard_scene_changes`. An untitled scene can be neither saved (saving it opens the save panel, which also blocks the Editor) nor discarded (it has no saved state), and the error says so when an untitled scene has changes.
+Scenes are never saved implicitly. Endpoints that would close the loaded scenes or start the Test Runner (`/scene/create`, `/scene/open`, `/tests/run`) return `400 Bad Request` while a loaded scene has unsaved changes (`Scene.isDirty`): closing the scenes would drop the changes, and the Test Runner would ask to save them in a dialog that blocks the Editor. The error lists the scenes (an untitled one as `Untitled`) and tells the caller to save them with `save` or discard them with `discard_scene_changes`. An untitled scene can be neither saved with `save` (File/Save opens the save panel, which also blocks the Editor) nor discarded (it has no saved state), so when an untitled scene has changes, the error tells the caller to save it to an asset path with `save_scene_as` instead.
 Endpoints that save a new asset at a given path (`/scene/create`, `/scriptable-object/create`, `/animation-clip/create`, `/prefab/create`, `/timeline/create`) create any missing parent folders under `Assets/` first. A path outside `Assets/` or an asset that still cannot be saved returns `400 Bad Request` with the reason.
 
 ### Editor Control
@@ -210,7 +210,7 @@ Redoes the most recently undone operation. `Undo.PerformRedo()`
 Response: `{"success": true}`
 
 #### POST `/editor/save`
-Executes File/Save, saving the currently active stage. Applies to anything File/Save can save — scenes, Prefabs, Timeline, etc. `EditorApplication.ExecuteMenuItem("File/Save")`
+Executes File/Save, saving the currently active stage. Applies to anything File/Save can save — scenes, Prefabs, Timeline, etc. `EditorApplication.ExecuteMenuItem("File/Save")`. For an untitled scene with unsaved changes, File/Save opens the save panel, which blocks the Editor; use `/scene/save-as` for it.
 
 Request body: none
 
@@ -246,6 +246,22 @@ Discards the unsaved changes of every loaded scene. Does nothing when no scene h
 - Not undoable. Returns 400 in Play Mode
 
 Request body: none
+
+Response: `{"success": true}`
+
+#### POST `/scene/save-as`
+Saves the active scene to the specified asset path without the save panel, like File > Save As. `EditorSceneManager.SaveScene(activeScene, scenePath)`. This is how an untitled scene with unsaved changes gets saved, since `/editor/save` would open the save panel for it.
+
+- The scene then refers to the new path. The file at its previous path (if any) keeps its last saved state
+- Only the active scene (`SceneManager.GetActiveScene()`) is saved, as with File > Save As. Other loaded scenes are left as they are
+- `scenePath` must end with `.unity`. Missing parent folders under `Assets/` are created
+- Returns 400 when a file or folder already exists at `scenePath`, since `SaveScene` would overwrite it without asking, unlike the save panel. Saving to the scene's own path is a plain save
+- Not undoable. Returns 400 in Play Mode
+
+Request body:
+```json
+{"scenePath": "Assets/Scenes/NewScene.unity"}
+```
 
 Response: `{"success": true}`
 
@@ -1579,13 +1595,14 @@ Output of `get_editor_dialogs`:
 }
 ```
 
-#### Scene (4)
+#### Scene (5)
 
 | Tool | API | Description |
 |------|-----|-------------|
 | `create_scene` | POST `/scene/create` | Create a new empty scene and save it to an asset path |
 | `open_scene` | POST `/scene/open` | Open a scene by path |
 | `discard_scene_changes` | POST `/scene/discard` | Discard the unsaved changes of every loaded scene |
+| `save_scene_as` | POST `/scene/save-as` | Save the active scene to an asset path without the save panel (e.g. an untitled scene) |
 | `get_hierarchy` | GET `/hierarchy` | Get the GameObject hierarchy of every loaded scene (or the Prefab) as a tree per scene |
 
 #### GameObject (5)
@@ -1782,7 +1799,7 @@ A CLI tool for operating the Unity Editor from a terminal. Uses Core services di
 editor ping|play|stop|status|pause|unpause|step|undo|redo|reload-domain
 editor platform get|switch
 editor dialog list|click
-scene create|open|discard|hierarchy
+scene create|open|discard|save-as|hierarchy
 game-object find|create|delete|modify
 component add|remove
 component property list|set

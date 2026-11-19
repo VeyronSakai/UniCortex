@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
@@ -113,6 +114,25 @@ namespace UniCortex.Editor.Infrastructures
                 {
                     throw new System.InvalidOperationException($"Failed to reload scene '{scene.path}'.");
                 }
+            }
+        }
+
+        public void SaveActiveSceneAs(string scenePath)
+        {
+            var scene = SceneManager.GetActiveScene();
+
+            // SaveScene overwrites the file without asking, while the save panel would ask first. Refuse instead,
+            // so that another scene (possibly loaded) or asset is not replaced. Saving to its own path is a plain save.
+            if (scenePath != scene.path && (File.Exists(scenePath) || Directory.Exists(scenePath)))
+            {
+                throw new System.ArgumentException(
+                    $"'{scenePath}' already exists. Choose a path that does not exist yet.");
+            }
+
+            AssetUtility.EnsureParentFolderExists(scenePath);
+            if (!UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, scenePath))
+            {
+                throw new System.ArgumentException($"Failed to save scene at '{scenePath}'.");
             }
         }
     }
