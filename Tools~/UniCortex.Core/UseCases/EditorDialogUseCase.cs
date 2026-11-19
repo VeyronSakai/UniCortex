@@ -45,7 +45,18 @@ public class EditorDialogUseCase(IUnityEditorProcessProvider processProvider, IE
             throw new InvalidOperationException("No modal dialog is open in the Unity Editor.");
         }
 
-        var available = string.Join(", ", dialogs.SelectMany(d => d.buttons).Select(b => $"\"{b}\""));
+        var buttons = dialogs.SelectMany(d => d.buttons).ToList();
+        if (buttons.Count == 0)
+        {
+            // The accessor has already tried to make the buttons readable (on macOS, by bringing the Editor to the
+            // front), so they cannot be read and the dialog has to be closed by the user.
+            var titles = string.Join(", ", dialogs.Select(d => $"\"{d.title}\""));
+            throw new InvalidOperationException(
+                $"No button labeled \"{buttonLabel}\" is found in the open dialogs ({titles}), and none of their " +
+                "buttons could be read. Ask the user to close them.");
+        }
+
+        var available = string.Join(", ", buttons.Select(b => $"\"{b}\""));
         throw new InvalidOperationException(
             $"No button labeled \"{buttonLabel}\" is found in the open dialogs. Available buttons: {available}");
     }

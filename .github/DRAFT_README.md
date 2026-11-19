@@ -106,7 +106,7 @@ The MCP server exposes the following built-in tools.
 | `get_editor_dialogs` | Get the modal dialogs that the Unity Editor itself shows (e.g. "Saving failed"), not the game's UI, with their title, message, and button labels |
 | `click_editor_dialog_button` | Click a button of an open Editor dialog by its label to close it |
 
-While a modal dialog is open, the Unity Editor cannot answer the other tools. These tools read the dialog with the OS window APIs instead, so they work while the Editor is blocked. They need `UNICORTEX_PROJECT_PATH` and support macOS and Windows. On macOS, allow the app that runs the MCP server (e.g. your terminal or AI agent app) in **System Settings > Privacy & Security > Accessibility**.
+While a modal dialog is open, the Unity Editor cannot answer the other tools. These tools read the dialog with the OS window APIs instead, so they work while the Editor is blocked. They need `UNICORTEX_PROJECT_PATH` and support macOS and Windows. On macOS, allow the app that runs the MCP server (e.g. your terminal or AI agent app) in **System Settings > Privacy & Security > Accessibility**. While the Editor is in another Space or hidden, the buttons of the save panel cannot be read, so `click_editor_dialog_button` brings the Editor to the front to read them, which switches your Space to the Editor.
 
 #### Scene
 

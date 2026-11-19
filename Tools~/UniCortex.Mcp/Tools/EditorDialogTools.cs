@@ -16,6 +16,8 @@ public class EditorDialogTools(EditorDialogUseCase editorDialogUseCase)
          "Get the modal dialogs the Unity Editor itself shows (e.g. \"Saving failed\"; not the game's UI) with " +
          "their title, message and button labels. While one is open the Editor processes no other tool calls; " +
          "this tool works without the Editor, so use it when other tools do not return. " +
+         "On macOS, the save panel may list no buttons while the Editor is in another Space or hidden; " +
+         "click_editor_dialog_button reads them after bringing the Editor to the front. " +
          "Needs the Accessibility permission on macOS; not supported on Linux."),
      UsedImplicitly]
     public ValueTask<CallToolResult> GetEditorDialogsAsync(CancellationToken cancellationToken)
@@ -25,6 +27,9 @@ public class EditorDialogTools(EditorDialogUseCase editorDialogUseCase)
      Description(
          "Click a button of a modal Unity Editor dialog (not the game's UI) by its label to close it. " +
          "Read the labels with get_editor_dialogs first. " +
+         "If it lists no buttons, pass the one you expect (e.g. \"Cancel\"): on macOS, this brings the Editor to " +
+         "the front, switching the user's Space, to read the buttons of a dialog that is not shown, and the error " +
+         "lists them if the label is not found. " +
          "Needs the Accessibility permission on macOS; not supported on Linux."),
      UsedImplicitly]
     public ValueTask<CallToolResult> ClickEditorDialogButtonAsync(

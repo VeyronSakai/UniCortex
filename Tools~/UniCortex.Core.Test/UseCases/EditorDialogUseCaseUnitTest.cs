@@ -110,6 +110,25 @@ public class EditorDialogUseCaseUnitTest
         Assert.That(ex.Message, Does.Contain("\"Save\", \"Cancel\""));
     }
 
+    [Test]
+    public void ClickButtonAsync_ThrowsAskingUserToClose_WhenNoButtonCanBeRead()
+    {
+        // Arrange
+        var accessor = new FakeEditorDialogAccessor();
+        accessor.Dialogs.Add(new EditorDialog { title = "Save Scene" });
+        var useCase = new EditorDialogUseCase(new StubProcessProvider(), accessor);
+
+        // Act
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await useCase.ClickButtonAsync("Cancel", CancellationToken.None));
+
+        // Assert
+        Assert.That(ex!.Message, Does.Contain("No button labeled \"Cancel\""));
+        Assert.That(ex.Message, Does.Contain("(\"Save Scene\")"));
+        Assert.That(ex.Message, Does.Contain("none of their buttons could be read"));
+        Assert.That(ex.Message, Does.Not.Contain("Available buttons"));
+    }
+
     private sealed class StubProcessProvider : IUnityEditorProcessProvider
     {
         public int GetProcessId()

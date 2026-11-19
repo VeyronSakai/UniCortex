@@ -38,6 +38,40 @@ public class EditorDialogWatchHandlerTest
     }
 
     [Test]
+    public void SendAsync_DialogWithoutReadButtons_FailsWithHintToBringEditorToFront()
+    {
+        // Arrange
+        var inner = new DelayedHandler(TimeSpan.FromMinutes(1));
+        var accessor = new FakeEditorDialogAccessor(new EditorDialog { title = "Save Scene", message = "Save Scene" });
+        using var client = CreateClient(inner, accessor);
+
+        // Act
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(() =>
+            client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/")));
+
+        // Assert
+        Assert.That(exception!.Message, Does.Contain("Buttons: none could be read"));
+        Assert.That(exception.Message, Does.Contain("click_editor_dialog_button does"));
+        Assert.That(exception.Message, Does.Contain("\"Cancel\""));
+    }
+
+    [Test]
+    public void SendAsync_DialogWithButtons_FailsWithoutHintToBringEditorToFront()
+    {
+        // Arrange
+        var inner = new DelayedHandler(TimeSpan.FromMinutes(1));
+        var accessor = new FakeEditorDialogAccessor(new EditorDialog { title = "Saving failed", buttons = ["OK"] });
+        using var client = CreateClient(inner, accessor);
+
+        // Act
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(() =>
+            client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/")));
+
+        // Assert
+        Assert.That(exception!.Message, Does.Not.Contain("brought to the front"));
+    }
+
+    [Test]
     public async ValueTask SendAsync_NoDialogWhileWaiting_ReturnsResponse()
     {
         // Arrange

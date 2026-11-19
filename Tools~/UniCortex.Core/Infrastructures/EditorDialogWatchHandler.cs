@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Domains.Models;
 
@@ -89,7 +90,9 @@ public class EditorDialogWatchHandler(
                 builder.AppendLine($"Message: {dialog.message}");
             }
 
-            builder.AppendLine($"Buttons: {string.Join(", ", dialog.buttons.Select(b => $"\"{b}\""))}");
+            builder.AppendLine(dialog.buttons.Count > 0
+                ? $"Buttons: {string.Join(", ", dialog.buttons.Select(b => $"\"{b}\""))}"
+                : "Buttons: none could be read");
         }
 
         builder.AppendLine();
@@ -97,6 +100,11 @@ public class EditorDialogWatchHandler(
             "The request was already sent to the Editor: it may have opened the dialog, or it may still run after " +
             "the dialog is closed. Close the dialog with click_editor_dialog_button (CLI: editor dialog click " +
             "<button>), or ask the user to close it, then check the result before retrying the request.");
+        if (dialogs.Any(dialog => dialog.buttons.Count == 0))
+        {
+            builder.Append(' ').Append(EditorDialogButtonLabel.UnreadButtonsHint);
+        }
+
         return builder.ToString();
     }
 }
