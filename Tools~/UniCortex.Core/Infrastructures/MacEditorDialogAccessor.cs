@@ -32,6 +32,11 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
     // stops after this time.
     private const long MaxScanMilliseconds = 3000;
 
+    // After the Editor is brought to the front, the dialogs are read again until the buttons of the save panel are
+    // read (the Space switches with an animation first), or until this time.
+    private const int ReadAgainIntervalMilliseconds = 100;
+    private const long MaxReadAgainMilliseconds = 3000;
+
     private const int AXErrorSuccess = 0;
     private const int AXErrorInvalidUIElement = -25202;
     private const int AXErrorCannotComplete = -25204;
@@ -48,8 +53,51 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
 
     public EditorDialog? ClickButton(int processId, string buttonLabel)
     {
-        using var scope = new CFScope();
-        foreach (var found in FindDialogs(processId, scope))
+        using (var scope = new CFScope())
+        {
+            var dialogs = FindDialogs(processId, scope);
+            var clicked = PressButton(dialogs, buttonLabel, scope);
+            if (clicked != null)
+            {
+                return clicked;
+            }
+
+            // The contents of the save panel (NSSavePanel) are drawn by another process and are bridged into the
+            // Editor's AX tree only while the panel is shown, so its buttons cannot be read while the Editor is in
+            // another Space or hidden. Bring the Editor to the front, which switches the user's Space to it, and read
+            // the dialogs again. GetDialogs does not do this, since only a click is sent to close the dialog.
+            var unreadDialogs = dialogs
+                .Where(found => !found.IsShown && found.Dialog.buttons.Count == 0)
+                .ToList();
+            if (unreadDialogs.Count == 0 || !BringToFront(processId, unreadDialogs, scope))
+            {
+                return null;
+            }
+        }
+
+        var stopwatch = Stopwatch.StartNew();
+        while (true)
+        {
+            Thread.Sleep(ReadAgainIntervalMilliseconds);
+            using var scope = new CFScope();
+            var dialogs = FindDialogs(processId, scope);
+            var clicked = PressButton(dialogs, buttonLabel, scope);
+            if (clicked != null)
+            {
+                return clicked;
+            }
+
+            if (dialogs.All(found => found.Dialog.buttons.Count > 0) ||
+                stopwatch.ElapsedMilliseconds >= MaxReadAgainMilliseconds)
+            {
+                return null;
+            }
+        }
+    }
+
+    private static EditorDialog? PressButton(List<FoundDialog> dialogs, string buttonLabel, CFScope scope)
+    {
+        foreach (var found in dialogs)
         {
             for (var i = 0; i < found.Dialog.buttons.Count; i++)
             {
@@ -70,6 +118,26 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         }
 
         return null;
+    }
+
+    // Activating the Editor with NSRunningApplication from another process did not make it the frontmost
+    // application, but setting AXFrontmost did.
+    private static bool BringToFront(int processId, List<FoundDialog> dialogs, CFScope scope)
+    {
+        var application = scope.Own(AXUIElementCreateApplication(processId));
+        AXUIElementSetMessagingTimeout(application, MessagingTimeoutSeconds);
+        var error = AXUIElementSetAttributeValue(application, scope.CreateString("AXFrontmost"), GetCFBooleanTrue());
+        if (error != AXErrorSuccess)
+        {
+            return false;
+        }
+
+        foreach (var found in dialogs)
+        {
+            AXUIElementPerformAction(found.Element, scope.CreateString("AXRaise"));
+        }
+
+        return true;
     }
 
     private static List<FoundDialog> FindDialogs(int processId, CFScope scope)
@@ -94,34 +162,37 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
 
         // AXWindows lists only the windows in the current Space. A modal dialog is usually the focused window of the
         // application, which is returned even when the Editor is in another Space.
-        var candidates = ToElements(windows);
+        var windowsInSpace = ToElements(windows);
         CopyAttribute(application, "AXFocusedWindow", scope, out var focusedWindow);
-        var isInOtherSpace = focusedWindow == IntPtr.Zero || !candidates.Any(window => CFEqual(window, focusedWindow));
-        if (focusedWindow != IntPtr.Zero && isInOtherSpace)
-        {
-            candidates.Add(focusedWindow);
-        }
+        var isFocusedWindowInOtherSpace =
+            focusedWindow == IntPtr.Zero || !windowsInSpace.Any(window => CFEqual(window, focusedWindow));
 
-        var dialogs = ReadDialogs(candidates, scope);
+        // The windows of a hidden application are still listed in AXWindows, but are not shown.
+        var isHidden = GetBool(application, "AXHidden", scope);
+        var dialogs = ReadDialogs(windowsInSpace, isShown: !isHidden, scope);
+        if (focusedWindow != IntPtr.Zero && isFocusedWindowInOtherSpace)
+        {
+            dialogs.AddRange(ReadDialogs([focusedWindow], isShown: false, scope));
+        }
 
         // A dialog opened while the Editor is not the active application (e.g. the save panel of an untitled scene)
         // may not become the focused window, so it can be in neither attribute while the Editor is in another Space.
-        if (dialogs.Count == 0 && isInOtherSpace)
+        if (dialogs.Count == 0 && isFocusedWindowInOtherSpace)
         {
-            dialogs = ReadDialogs(FindWindowsByElementId(processId, scope), scope);
+            dialogs = ReadDialogs(FindWindowsByElementId(processId, scope), isShown: false, scope);
         }
 
         return dialogs;
     }
 
-    private static List<FoundDialog> ReadDialogs(List<IntPtr> windows, CFScope scope)
+    private static List<FoundDialog> ReadDialogs(List<IntPtr> windows, bool isShown, CFScope scope)
     {
         var dialogs = new List<FoundDialog>();
         foreach (var window in windows)
         {
             if (IsModal(window, scope))
             {
-                dialogs.Add(ReadDialog(window, scope));
+                dialogs.Add(ReadDialog(window, isShown, scope));
             }
 
             // A sheet is not listed in AXWindows but attached to its parent window as a child.
@@ -129,7 +200,7 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
             {
                 if (GetString(child, "AXRole", scope) == "AXSheet")
                 {
-                    dialogs.Add(ReadDialog(child, scope));
+                    dialogs.Add(ReadDialog(child, isShown, scope));
                 }
             }
         }
@@ -223,13 +294,12 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
     // have the AXDialog subrole, and the Editor keeps answering requests while they are open.
     private static bool IsModal(IntPtr window, CFScope scope)
     {
-        CopyAttribute(window, "AXModal", scope, out var modal);
-        return modal != IntPtr.Zero && CFGetTypeID(modal) == CFBooleanGetTypeID() && CFBooleanGetValue(modal);
+        return GetBool(window, "AXModal", scope);
     }
 
-    private static FoundDialog ReadDialog(IntPtr window, CFScope scope)
+    private static FoundDialog ReadDialog(IntPtr window, bool isShown, CFScope scope)
     {
-        var found = new FoundDialog();
+        var found = new FoundDialog(window, isShown);
         var texts = new List<string>();
         CollectContents(window, 0, texts, found, scope);
 
@@ -300,6 +370,12 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         return error;
     }
 
+    private static bool GetBool(IntPtr element, string attribute, CFScope scope)
+    {
+        CopyAttribute(element, attribute, scope, out var value);
+        return value != IntPtr.Zero && CFGetTypeID(value) == CFBooleanGetTypeID() && CFBooleanGetValue(value);
+    }
+
     private static string? GetString(IntPtr element, string attribute, CFScope scope)
     {
         CopyAttribute(element, attribute, scope, out var value);
@@ -343,10 +419,21 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         return elements;
     }
 
-    private sealed class FoundDialog
+    private static IntPtr GetCFBooleanTrue()
+    {
+        // kCFBooleanTrue is a global variable that holds the CFBoolean, not a function.
+        var library = NativeLibrary.Load(CoreFoundation);
+        return Marshal.ReadIntPtr(NativeLibrary.GetExport(library, "kCFBooleanTrue"));
+    }
+
+    private sealed class FoundDialog(IntPtr element, bool isShown)
     {
         public readonly EditorDialog Dialog = new();
         public readonly List<IntPtr> ButtonElements = new();
+        public readonly IntPtr Element = element;
+
+        // False when the dialog was found outside AXWindows (in another Space) or the Editor is hidden.
+        public readonly bool IsShown = isShown;
         public bool HasProgressIndicator;
     }
 
@@ -420,6 +507,9 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
 
     [DllImport(ApplicationServices)]
     private static extern int AXUIElementCopyAttributeValue(IntPtr element, IntPtr attribute, out IntPtr value);
+
+    [DllImport(ApplicationServices)]
+    private static extern int AXUIElementSetAttributeValue(IntPtr element, IntPtr attribute, IntPtr value);
 
     [DllImport(ApplicationServices)]
     private static extern int AXUIElementPerformAction(IntPtr element, IntPtr action);

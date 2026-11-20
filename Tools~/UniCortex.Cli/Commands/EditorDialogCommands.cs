@@ -13,7 +13,7 @@ public class EditorDialogCommands(EditorDialogUseCase editorDialogUseCase)
         Console.WriteLine(json);
     }
 
-    /// <summary>Click a button of a modal dialog open in the Unity Editor by its label.</summary>
+    /// <summary>Click a button of a modal dialog open in the Unity Editor by its label. On macOS, if the buttons of a dialog cannot be read because the Editor is in another Space or hidden, this brings the Editor to the front to read them.</summary>
     /// <param name="button">The label of the button to click (e.g. OK). Case-insensitive.</param>
     [Command("click")]
     public async Task Click([Argument] string button, CancellationToken cancellationToken)

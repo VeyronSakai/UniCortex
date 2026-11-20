@@ -25,6 +25,8 @@ public class EditorDialogTools(EditorDialogUseCase editorDialogUseCase)
      Description(
          "Click a button of a modal Unity Editor dialog (not the game's UI) by its label to close it. " +
          "Read the labels with get_editor_dialogs first. " +
+         "If it lists no buttons, pass the one you expect (e.g. \"Cancel\"); on macOS this brings the Editor to " +
+         "the front to read them. " +
          "Needs the Accessibility permission on macOS; not supported on Linux."),
      UsedImplicitly]
     public ValueTask<CallToolResult> ClickEditorDialogButtonAsync(
