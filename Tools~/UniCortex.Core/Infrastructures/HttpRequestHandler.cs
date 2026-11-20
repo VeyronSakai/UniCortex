@@ -26,13 +26,12 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
     {
         var startTime = DateTime.UtcNow;
         var logged = false;
-        request.Options.TryGetValue(RequestAttemptClock.Key, out var attemptClock);
 
         while (true)
         {
             try
             {
-                var response = await SendAttemptAsync(request, attemptClock, cancellationToken);
+                var response = await base.SendAsync(request, cancellationToken);
 
                 // Every response written by a request handler is JSON. While the server is stopping (e.g. for a domain
                 // reload), the listener may answer by itself with an empty or non-JSON response. The server also
@@ -63,19 +62,6 @@ public class HttpRequestHandler(ILogger<HttpRequestHandler> logger) : Delegating
 
                 await Task.Delay(1000, cancellationToken);
             }
-        }
-    }
-
-    private async Task<HttpResponseMessage> SendAttemptAsync(
-        HttpRequestMessage request, RequestAttemptClock? attemptClock, CancellationToken cancellationToken)
-    {
-        try
-        {
-            return await base.SendAsync(request, cancellationToken);
-        }
-        finally
-        {
-            attemptClock?.MarkAttemptEnded();
         }
     }
 }
