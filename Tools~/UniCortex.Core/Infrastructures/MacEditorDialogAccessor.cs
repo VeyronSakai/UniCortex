@@ -45,6 +45,14 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
 
     private static bool s_canCreateElementFromRemoteToken = true;
 
+    /// <summary>
+    /// Whether this process has the Accessibility permission, which reading the dialogs needs.
+    /// </summary>
+    public static bool HasAccessibilityPermission()
+    {
+        return AXIsProcessTrusted();
+    }
+
     public IReadOnlyList<EditorDialog> GetDialogs(int processId)
     {
         using var scope = new CFScope();
@@ -144,10 +152,7 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
     {
         if (!AXIsProcessTrusted())
         {
-            throw new InvalidOperationException(
-                "The Accessibility permission is required to read the Unity Editor's dialogs. " +
-                "Allow the app that runs UniCortex (e.g. your terminal or AI agent app) in " +
-                "System Settings > Privacy & Security > Accessibility, then restart it.");
+            throw new AccessibilityPermissionException();
         }
 
         var application = scope.Own(AXUIElementCreateApplication(processId));

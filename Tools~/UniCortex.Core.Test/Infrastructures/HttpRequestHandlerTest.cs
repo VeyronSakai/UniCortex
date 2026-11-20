@@ -110,6 +110,25 @@ public class HttpRequestHandlerTest
         Assert.That(inner.CallCount, Is.EqualTo(1));
     }
 
+    [Test]
+    public async ValueTask SendAsync_MarksAttemptClock_WhenAttemptEnds()
+    {
+        // Arrange
+        var attemptClock = new RequestAttemptClock();
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/");
+        request.Options.Set(RequestAttemptClock.Key, attemptClock);
+        var inner = new ScriptedHandler(new HttpRequestException(), Ok());
+        using var client = CreateClient(inner);
+
+        // Act
+        using var response = await client.SendAsync(request);
+
+        // Assert
+        // The second attempt starts after the 1-second retry delay and ends at once, which resets the clock.
+        Assert.That(attemptClock.CurrentAttemptDuration, Is.LessThan(TimeSpan.FromMilliseconds(500)));
+        Assert.That(inner.CallCount, Is.EqualTo(2));
+    }
+
     private static HttpClient CreateClient(HttpMessageHandler inner)
     {
         return new HttpClient(new HttpRequestHandler(NullLogger<HttpRequestHandler>.Instance) { InnerHandler = inner });

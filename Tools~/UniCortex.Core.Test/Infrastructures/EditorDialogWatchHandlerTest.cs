@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Domains.Models;
 using UniCortex.Core.Infrastructures;
@@ -92,8 +94,8 @@ public class EditorDialogWatchHandlerTest
     {
         // Arrange
         var inner = new DelayedHandler(TimeSpan.FromMilliseconds(300));
-        var accessor = new FakeEditorDialogAccessor { ThrowsOnRead = true };
-        using var client = CreateClient(inner, accessor);
+        var accessor = new FakeEditorDialogAccessor { ReadException = new PlatformNotSupportedException("Not supported.") };
+        using var client = CreateClient(inner, accessor, noAnswerTimeout: TimeSpan.FromMilliseconds(50));
 
         // Act
         using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/"));
@@ -119,14 +121,50 @@ public class EditorDialogWatchHandlerTest
         Assert.That(accessor.ReadCount, Is.EqualTo(0));
     }
 
+    [Test]
+    public void SendAsync_NoAnswerWithoutAccessibilityPermission_FailsWithHowToGrantIt()
+    {
+        // Arrange
+        var inner = new DelayedHandler(TimeSpan.FromMinutes(1));
+        var accessor = new FakeEditorDialogAccessor { ReadException = new AccessibilityPermissionException() };
+        using var client = CreateClient(inner, accessor, noAnswerTimeout: TimeSpan.FromMilliseconds(100));
+
+        // Act
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(() =>
+            client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/")));
+
+        // Assert
+        Assert.That(exception!.Message, Does.StartWith("The Unity Editor has not responded for"));
+        Assert.That(exception.Message, Does.Contain("Accessibility permission is not granted"));
+        Assert.That(exception.Message, Does.Contain(AccessibilityPermissionException.SettingsUrl));
+        Assert.That(inner.WasCancelled, Is.True);
+    }
+
+    [Test]
+    public async ValueTask SendAsync_AttemptsKeepEndingWithoutAccessibilityPermission_ReturnsResponse()
+    {
+        // Arrange
+        var inner = new NotYetAnsweringHandler(TimeSpan.FromMilliseconds(400), TimeSpan.FromMilliseconds(20));
+        var accessor = new FakeEditorDialogAccessor { ReadException = new AccessibilityPermissionException() };
+        using var client = CreateClient(inner, accessor, noAnswerTimeout: TimeSpan.FromMilliseconds(100));
+
+        // Act
+        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "http://localhost/"));
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(accessor.ReadCount, Is.GreaterThan(0));
+    }
+
     private static HttpClient CreateClient(HttpMessageHandler inner, IEditorDialogAccessor accessor,
-        TimeSpan? firstCheckDelay = null)
+        TimeSpan? firstCheckDelay = null, TimeSpan? noAnswerTimeout = null)
     {
         var handler = new EditorDialogWatchHandler(NullLogger<EditorDialogWatchHandler>.Instance,
             new FakeProcessProvider(), accessor)
         {
             FirstCheckDelay = firstCheckDelay ?? TimeSpan.FromMilliseconds(50),
             CheckInterval = TimeSpan.FromMilliseconds(20),
+            NoAnswerTimeout = noAnswerTimeout ?? TimeSpan.FromMinutes(1),
             InnerHandler = inner
         };
         return new HttpClient(handler);
@@ -147,6 +185,25 @@ public class EditorDialogWatchHandlerTest
         }
     }
 
+    // Ends an attempt of the request at every interval, as HttpRequestHandler does while the Editor answers "not yet"
+    // (e.g. GET /tests/result while tests run), and answers 200 after the delay.
+    private sealed class NotYetAnsweringHandler(TimeSpan delay, TimeSpan interval) : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            Assert.That(request.Options.TryGetValue(RequestAttemptClock.Key, out var attemptClock), Is.True);
+            var stopwatch = Stopwatch.StartNew();
+            while (stopwatch.Elapsed < delay)
+            {
+                await Task.Delay(interval, cancellationToken);
+                attemptClock!.MarkAttemptEnded();
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+    }
+
     private sealed class FakeProcessProvider : IUnityEditorProcessProvider
     {
         public int GetProcessId()
@@ -159,15 +216,15 @@ public class EditorDialogWatchHandlerTest
     {
         private int _readCount;
 
-        public bool ThrowsOnRead { get; init; }
+        public Exception? ReadException { get; init; }
         public int ReadCount => Volatile.Read(ref _readCount);
 
         public IReadOnlyList<EditorDialog> GetDialogs(int processId)
         {
             Interlocked.Increment(ref _readCount);
-            if (ThrowsOnRead)
+            if (ReadException != null)
             {
-                throw new PlatformNotSupportedException("Not supported.");
+                throw ReadException;
             }
 
             return dialogs;

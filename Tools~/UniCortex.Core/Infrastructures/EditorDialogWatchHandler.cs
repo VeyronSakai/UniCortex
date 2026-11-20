@@ -20,9 +20,19 @@ public class EditorDialogWatchHandler(
     internal TimeSpan FirstCheckDelay { get; init; } = TimeSpan.FromSeconds(5);
     internal TimeSpan CheckInterval { get; init; } = TimeSpan.FromSeconds(2);
 
+    // Without the Accessibility permission on macOS, the dialogs cannot be read. A request whose current attempt the
+    // Editor has not answered for this time then fails, instead of waiting until the client times out (10 minutes).
+    // Requests whose attempts end (e.g. GET /tests/result while tests run, or refused during a domain reload) keep
+    // waiting, but a long operation that blocks the main thread (e.g. a large import) is not told apart from a dialog.
+    public const int NoAnswerTimeoutSeconds = 60;
+
+    internal TimeSpan NoAnswerTimeout { get; init; } = TimeSpan.FromSeconds(NoAnswerTimeoutSeconds);
+
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var attemptClock = new RequestAttemptClock();
+        request.Options.Set(RequestAttemptClock.Key, attemptClock);
         using var sendCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var sendTask = base.SendAsync(request, sendCts.Token);
         var delay = FirstCheckDelay;
@@ -42,8 +52,7 @@ public class EditorDialogWatchHandler(
             var (dialogs, error) = await Task.Run(ReadDialogs, cancellationToken);
             if (error != null && !failureLogged)
             {
-                // Without the dialogs (e.g. on Linux, or without the Accessibility permission on macOS), the request
-                // keeps waiting as before.
+                // Without the dialogs (e.g. on Linux), the request keeps waiting as before.
                 logger.LogWarning("Could not check the Unity Editor's modal dialogs: {Message}", error.Message);
                 failureLogged = true;
             }
@@ -55,13 +64,25 @@ public class EditorDialogWatchHandler(
 
             if (dialogs.Count > 0)
             {
-                await sendCts.CancelAsync();
-                _ = sendTask.ContinueWith(t => t.Exception, TaskContinuationOptions.OnlyOnFaulted);
+                await AbandonAsync(sendCts, sendTask);
                 throw new InvalidOperationException(CreateBlockedByDialogMessage(dialogs));
+            }
+
+            if (error is AccessibilityPermissionException && attemptClock.CurrentAttemptDuration >= NoAnswerTimeout)
+            {
+                await AbandonAsync(sendCts, sendTask);
+                throw new InvalidOperationException(CreateNoAnswerWithoutPermissionMessage(NoAnswerTimeout));
             }
 
             delay = CheckInterval;
         }
+    }
+
+    // Cancels the request and stops waiting for it. The request is not cancelled in the Editor.
+    private static async Task AbandonAsync(CancellationTokenSource sendCts, Task<HttpResponseMessage> sendTask)
+    {
+        await sendCts.CancelAsync();
+        _ = sendTask.ContinueWith(t => t.Exception, TaskContinuationOptions.OnlyOnFaulted);
     }
 
     private (IReadOnlyList<EditorDialog> Dialogs, Exception? Error) ReadDialogs()
@@ -106,5 +127,17 @@ public class EditorDialogWatchHandler(
         }
 
         return builder.ToString();
+    }
+
+    private static string CreateNoAnswerWithoutPermissionMessage(TimeSpan timeout)
+    {
+        return
+            $"The Unity Editor has not responded for {timeout.TotalSeconds:0} seconds. A modal dialog may be open " +
+            "in the Editor, but UniCortex cannot read the Editor's dialogs because the Accessibility permission is " +
+            "not granted. Ask the user to close the dialog in the Editor if one is open. To let " +
+            "get_editor_dialogs and click_editor_dialog_button read and close the dialogs, the user has to grant " +
+            "the permission: " + AccessibilityPermissionException.HowToGrant + " The request was already sent to " +
+            "the Editor: it may still be running (e.g. a long import), or it may run after the dialog is closed, so " +
+            "check the result before retrying the request.";
     }
 }
