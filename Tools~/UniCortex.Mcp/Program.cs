@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using UniCortex.Core.Extensions;
+using UniCortex.Mcp;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -14,7 +15,7 @@ builder.Logging.AddConsole(options =>
 builder.Services.AddUniCortexCore();
 
 builder.Services
-    .AddMcpServer()
+    .AddMcpServer(options => options.ServerInstructions = ServerInstructions.Create())
     .WithStdioServerTransport()
     .WithToolsFromAssembly()
     .WithListToolsHandler(UniCortex.Mcp.Tools.ExtensionTools.ListToolsAsync)

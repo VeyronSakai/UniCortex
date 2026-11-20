@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
+using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Domains.Models;
 using UniCortex.Core.Infrastructures;
@@ -88,12 +90,31 @@ public class EditorDialogWatchHandlerTest
     }
 
     [Test]
-    public async ValueTask SendAsync_DialogsUnreadable_ReturnsResponse()
+    public async ValueTask SendAsync_DialogsUnreadable_ReturnsResponseAndLogsWarningOnce()
     {
         // Arrange
         var inner = new DelayedHandler(TimeSpan.FromMilliseconds(300));
-        var accessor = new FakeEditorDialogAccessor { ThrowsOnRead = true };
-        using var client = CreateClient(inner, accessor);
+        var accessor = new FakeEditorDialogAccessor { ReadError = new AccessibilityPermissionException() };
+        var logger = new RecordingLogger();
+        using var client = CreateClient(inner, accessor, logger: logger);
+
+        // Act
+        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/"));
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(accessor.ReadCount, Is.GreaterThan(1));
+        Assert.That(logger.WarningCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async ValueTask SendAsync_DialogsUnsupportedOnPlatform_ReturnsResponseWithoutWarning()
+    {
+        // Arrange
+        var inner = new DelayedHandler(TimeSpan.FromMilliseconds(300));
+        var accessor = new FakeEditorDialogAccessor { ReadError = new PlatformNotSupportedException("Not supported.") };
+        var logger = new RecordingLogger();
+        using var client = CreateClient(inner, accessor, logger: logger);
 
         // Act
         using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "http://localhost/"));
@@ -101,6 +122,7 @@ public class EditorDialogWatchHandlerTest
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         Assert.That(accessor.ReadCount, Is.GreaterThan(0));
+        Assert.That(logger.WarningCount, Is.EqualTo(0));
     }
 
     [Test]
@@ -120,9 +142,9 @@ public class EditorDialogWatchHandlerTest
     }
 
     private static HttpClient CreateClient(HttpMessageHandler inner, IEditorDialogAccessor accessor,
-        TimeSpan? firstCheckDelay = null)
+        TimeSpan? firstCheckDelay = null, ILogger<EditorDialogWatchHandler>? logger = null)
     {
-        var handler = new EditorDialogWatchHandler(NullLogger<EditorDialogWatchHandler>.Instance,
+        var handler = new EditorDialogWatchHandler(logger ?? NullLogger<EditorDialogWatchHandler>.Instance,
             new FakeProcessProvider(), accessor)
         {
             FirstCheckDelay = firstCheckDelay ?? TimeSpan.FromMilliseconds(50),
@@ -159,15 +181,15 @@ public class EditorDialogWatchHandlerTest
     {
         private int _readCount;
 
-        public bool ThrowsOnRead { get; init; }
+        public Exception? ReadError { get; init; }
         public int ReadCount => Volatile.Read(ref _readCount);
 
         public IReadOnlyList<EditorDialog> GetDialogs(int processId)
         {
             Interlocked.Increment(ref _readCount);
-            if (ThrowsOnRead)
+            if (ReadError is not null)
             {
-                throw new PlatformNotSupportedException("Not supported.");
+                throw ReadError;
             }
 
             return dialogs;
@@ -176,6 +198,32 @@ public class EditorDialogWatchHandlerTest
         public EditorDialog? ClickButton(int processId, string buttonLabel)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    private sealed class RecordingLogger : ILogger<EditorDialogWatchHandler>
+    {
+        private int _warningCount;
+
+        public int WarningCount => Volatile.Read(ref _warningCount);
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+        {
+            return null;
+        }
+
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            return true;
+        }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel == LogLevel.Warning)
+            {
+                Interlocked.Increment(ref _warningCount);
+            }
         }
     }
 }
