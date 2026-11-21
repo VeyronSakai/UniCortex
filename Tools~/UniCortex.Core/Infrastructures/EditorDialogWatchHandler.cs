@@ -9,7 +9,8 @@ namespace UniCortex.Core.Infrastructures;
 /// <summary>
 /// Fails a request that waits for the Unity Editor while a modal dialog of the Editor is open.
 /// The Editor runs requests on its main thread, which does not run until the dialog is closed, so the request would
-/// otherwise wait until the client times out. The dialogs are read with the OS window APIs while the request waits.
+/// otherwise wait until someone closes the dialog. The dialogs are read with the OS window APIs while the request
+/// waits.
 /// </summary>
 public class EditorDialogWatchHandler(
     ILogger<EditorDialogWatchHandler> logger,

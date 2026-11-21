@@ -30,7 +30,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
                 MediaTypeNames.Application.Json)
             : null;
         using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}{route}") { Content = content };
-        using var response = await SendAsync(httpRequest, cancellationToken);
+        using var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -47,8 +47,7 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
         await WaitForServerAsync(cancellationToken);
 
         var queryString = request != null ? BuildQueryString(request) : "";
-        using var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}{route}{queryString}");
-        using var response = await SendAsync(httpRequest, cancellationToken);
+        using var response = await _httpClient.GetAsync($"{baseUrl}{route}{queryString}", cancellationToken);
         await response.EnsureSuccessWithErrorBodyAsync(cancellationToken);
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -61,29 +60,8 @@ public class UnityEditorClient(IHttpClientFactory httpClientFactory, IUnityServe
     /// </summary>
     public async ValueTask WaitForServerAsync(CancellationToken cancellationToken = default)
     {
-        using var pingRequest = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}{ApiRoutes.Ping}");
-        using var pingResponse = await SendAsync(pingRequest, cancellationToken);
+        using var pingResponse = await _httpClient.GetAsync($"{BaseUrl}{ApiRoutes.Ping}", cancellationToken);
         await pingResponse.EnsureSuccessWithErrorBodyAsync(cancellationToken);
-    }
-
-    private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        try
-        {
-            return await _httpClient.SendAsync(request, cancellationToken);
-        }
-        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
-        {
-            // HttpClient reports its timeout as a cancellation. The dialogs are read while the request waits
-            // (EditorDialogWatchHandler), so a request blocked by a dialog that can be read has failed before this.
-            throw new TimeoutException(
-                $"The Unity Editor did not respond within {_httpClient.Timeout.TotalMinutes:0.#} minutes. It may be " +
-                "blocked by a modal dialog that UniCortex cannot read (e.g. without the Accessibility permission on " +
-                "macOS), or still be running a long operation. Call get_editor_dialogs (CLI: editor dialog list), " +
-                "which tells why the dialogs cannot be read, or ask the user to check the Editor. The request was " +
-                "already sent to the Editor and may still run, so check the result before retrying the request.",
-                ex);
-        }
     }
 
     private static string BuildQueryString<T>(T request)
