@@ -165,6 +165,15 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         AXUIElementSetMessagingTimeout(application, MessagingTimeoutSeconds);
 
         var error = CopyAttribute(application, "AXWindows", scope, out var windows);
+
+        // The Editor answers the Accessibility API on its main thread, also while a modal dialog runs its own event
+        // loop. So when it does not answer, its main thread is busy otherwise (e.g. importing assets or switching the
+        // platform), and no modal dialog is open.
+        if (error == AXErrorCannotComplete)
+        {
+            return [];
+        }
+
         if (error != AXErrorSuccess && error != AXErrorNoValue)
         {
             throw new InvalidOperationException(
