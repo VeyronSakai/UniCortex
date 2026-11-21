@@ -40,9 +40,10 @@ public class EditorDialogWatchHandler(
 
             // The OS window APIs can block for a while (e.g. the Accessibility API waits for the Editor to answer).
             var (dialogs, error) = await Task.Run(ReadDialogs, cancellationToken);
-            // Without the dialogs (e.g. on Linux, or without the Accessibility permission on macOS), the request keeps
-            // waiting as before. The warning tells the user what to fix, so it is not logged where reading them is
-            // not supported at all: the CLI would print it for every long request on Linux.
+            // When the dialogs cannot be read, the request just keeps waiting for the response. The warning says why,
+            // so that the user can fix it (e.g. grant the Accessibility permission on macOS). It is not logged on
+            // Linux, where reading the dialogs is not supported: there is nothing to fix, and the CLI would print it
+            // for every command that waits for 5 seconds.
             if (error is not null and not PlatformNotSupportedException && !failureLogged)
             {
                 logger.LogWarning("Could not check the Unity Editor's modal dialogs: {Message}", error.Message);
