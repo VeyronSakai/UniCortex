@@ -5,8 +5,7 @@ namespace UniCortex.Core.UseCases;
 
 public class EditorUseCase(IUnityEditorClient client)
 {
-    private static readonly TimeSpan s_pollInterval = TimeSpan.FromSeconds(1);
-    private static readonly TimeSpan s_pollTimeout = TimeSpan.FromSeconds(30);
+    internal TimeSpan PlayModePollInterval { get; init; } = TimeSpan.FromSeconds(1);
 
     public async ValueTask<string> PingAsync(CancellationToken cancellationToken)
     {
@@ -162,20 +161,28 @@ public class EditorUseCase(IUnityEditorClient client)
         return status.isPlaying;
     }
 
+    // There is no time limit, since entering play mode can take long: scripts that are still compiling are compiled
+    // first, and the Editor answers requests meanwhile. isPlayingOrWillChangePlaymode tells whether the Editor is still
+    // heading for the expected state, so that a change it refused (e.g. play mode with compile errors) fails at once.
     private async ValueTask WaitForPlayModeStateAsync(bool expectedPlaying,
         CancellationToken cancellationToken)
     {
-        var deadline = DateTime.UtcNow + s_pollTimeout;
-        while (DateTime.UtcNow < deadline)
+        while (true)
         {
-            await Task.Delay(s_pollInterval, cancellationToken);
-            if (await GetIsPlayingAsync(cancellationToken) == expectedPlaying)
+            await Task.Delay(PlayModePollInterval, cancellationToken);
+            var status = await GetStatusAsync(cancellationToken);
+            if (status.isPlaying == expectedPlaying)
             {
                 return;
             }
-        }
 
-        throw new TimeoutException(
-            $"Timed out waiting for Editor to {(expectedPlaying ? "enter" : "exit")} play mode.");
+            if (status.isPlayingOrWillChangePlaymode != expectedPlaying)
+            {
+                throw new InvalidOperationException(expectedPlaying
+                    ? "The Unity Editor did not enter play mode. Scripts may have compile errors: check them with " +
+                      "get_console_logs (CLI: console logs)."
+                    : "The Unity Editor did not exit play mode.");
+            }
+        }
     }
 }
