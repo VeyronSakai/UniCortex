@@ -94,7 +94,7 @@ public class EditorDialogWatchHandlerTest
     {
         // Arrange
         var inner = new DelayedHandler(TimeSpan.FromMilliseconds(300));
-        var accessor = new FakeEditorDialogAccessor { ReadError = new AccessibilityPermissionException() };
+        var accessor = new FakeEditorDialogAccessor { ReadError = new MacAccessibilityPermissionException() };
         var logger = new RecordingLogger();
         using var client = CreateClient(inner, accessor, logger: logger);
 

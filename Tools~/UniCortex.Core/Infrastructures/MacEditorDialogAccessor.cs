@@ -152,7 +152,7 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
     {
         if (!AXIsProcessTrusted())
         {
-            throw new AccessibilityPermissionException();
+            throw new MacAccessibilityPermissionException();
         }
 
         var application = scope.Own(AXUIElementCreateApplication(processId));

@@ -21,6 +21,6 @@ internal static class ServerInstructions
             "read or close the Unity Editor's modal dialogs (get_editor_dialogs, click_editor_dialog_button). While " +
             "a dialog is open, the Editor does not respond, and a tool call waits until it times out (10 minutes) " +
             "instead of failing with the dialog's contents. Let the user know, so that they can grant it: " +
-            AccessibilityPermissionException.HowToGrant;
+            MacAccessibilityPermissionException.HowToGrant;
     }
 }
