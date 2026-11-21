@@ -17,6 +17,8 @@ namespace UniCortex.Editor.Infrastructures
             set => EditorApplication.isPaused = value;
         }
 
+        public bool IsPlayingOrWillChangePlaymode => EditorApplication.isPlayingOrWillChangePlaymode;
+
         public void Step()
         {
             EditorApplication.Step();

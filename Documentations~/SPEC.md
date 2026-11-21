@@ -139,11 +139,15 @@ Returns the current state of the Editor. Also used for internal polling inside M
 
 Response:
 ```json
-{"isPlaying": false, "isPaused": false}
+{"isPlaying": false, "isPaused": false, "isPlayingOrWillChangePlaymode": false}
 ```
+
+`isPlayingOrWillChangePlaymode` is `EditorApplication.isPlayingOrWillChangePlaymode`: where the Editor is heading. It becomes `true` as soon as play mode is requested and stays so while the Editor enters it (e.g. while scripts that are still compiling are compiled first), and becomes `false` as soon as exiting play mode is requested, while `isPlaying` is still `true`.
 
 #### POST `/editor/play`
 Enters Play mode. `EditorApplication.isPlaying = true`
+
+The client then polls `GET /editor/status` every second until `isPlaying` is `true`, without a time limit: entering play mode waits for a running script compilation, which the Editor runs without blocking requests and which can take minutes in a large project. If `isPlayingOrWillChangePlaymode` is `false` before that, the Editor did not enter play mode (e.g. because of compile errors), and the request fails at once. `POST /editor/stop` is waited for in the same way.
 
 Response: `{"success": true}`
 

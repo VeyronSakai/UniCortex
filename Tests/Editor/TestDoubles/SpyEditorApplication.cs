@@ -6,6 +6,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
     {
         public bool IsPlaying { get; set; }
         public bool IsPaused { get; set; }
+        public bool IsPlayingOrWillChangePlaymode { get; set; }
         public int StepCallCount { get; private set; }
         public int SaveCallCount { get; private set; }
 

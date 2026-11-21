@@ -4,6 +4,7 @@ namespace UniCortex.Editor.Domains.Interfaces
     {
         bool IsPlaying { get; set; }
         bool IsPaused { get; set; }
+        bool IsPlayingOrWillChangePlaymode { get; }
         void Step();
         void Save();
     }

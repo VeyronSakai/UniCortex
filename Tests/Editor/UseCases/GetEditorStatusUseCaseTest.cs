@@ -35,5 +35,21 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.IsFalse(result.isPaused);
             Assert.AreEqual(1, dispatcher.CallCount);
         }
+
+        [Test]
+        public void ExecuteAsync_WhileEnteringPlayMode_ReturnsThatItWillPlay()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var editorApplication = new SpyEditorApplication { IsPlayingOrWillChangePlaymode = true };
+            var useCase = new GetEditorStatusUseCase(dispatcher, editorApplication);
+
+            // Act
+            var result = useCase.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.IsFalse(result.isPlaying);
+            Assert.IsTrue(result.isPlayingOrWillChangePlaymode);
+        }
     }
 }
