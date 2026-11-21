@@ -9,6 +9,8 @@ var app = ConsoleApp.Create()
     {
         services.AddLogging(b =>
         {
+            // Warnings go to stderr, so that they never mix with a command's output on stdout.
+            b.AddConsole(options => { options.LogToStandardErrorThreshold = LogLevel.Trace; });
             b.SetMinimumLevel(LogLevel.Warning);
         });
         services.AddUniCortexCore();

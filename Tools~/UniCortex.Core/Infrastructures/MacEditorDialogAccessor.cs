@@ -14,6 +14,10 @@ namespace UniCortex.Core.Infrastructures;
 [SupportedOSPlatform("macos")]
 public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
 {
+    public const string HowToGrantAccessibilityPermission =
+        "Allow the app that runs UniCortex (e.g. your terminal or AI agent app) in " +
+        "System Settings > Privacy & Security > Accessibility, then restart it.";
+
     // Title bar buttons of a window, which are not the buttons of the dialog itself.
     private static readonly string[] s_windowControlSubroles =
         ["AXCloseButton", "AXMinimizeButton", "AXZoomButton", "AXFullScreenButton"];
@@ -44,6 +48,14 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
     private const int AXErrorAttributeUnsupported = -25205;
 
     private static bool s_canCreateElementFromRemoteToken = true;
+
+    /// <summary>
+    /// Whether this process has the Accessibility permission, which reading the dialogs needs.
+    /// </summary>
+    public static bool HasAccessibilityPermission()
+    {
+        return AXIsProcessTrusted();
+    }
 
     public IReadOnlyList<EditorDialog> GetDialogs(int processId)
     {
@@ -146,8 +158,7 @@ public sealed class MacEditorDialogAccessor : IEditorDialogAccessor
         {
             throw new InvalidOperationException(
                 "The Accessibility permission is required to read the Unity Editor's dialogs. " +
-                "Allow the app that runs UniCortex (e.g. your terminal or AI agent app) in " +
-                "System Settings > Privacy & Security > Accessibility, then restart it.");
+                HowToGrantAccessibilityPermission);
         }
 
         var application = scope.Own(AXUIElementCreateApplication(processId));

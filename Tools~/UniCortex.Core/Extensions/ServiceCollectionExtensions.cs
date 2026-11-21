@@ -14,15 +14,20 @@ public static class ServiceCollectionExtensions
         services.AddTransient<EditorDialogWatchHandler>();
         services.AddTransient<HttpRequestHandler>();
         services.AddTransient<IUnityServerUrlProvider, UnityServerUrlProvider>();
-        services.AddHttpClient(HttpClientNames.UniCortex, client =>
-            {
-                // Test runs and domain reloads can take several minutes.
-                // HttpRequestHandler retries during reloads, so this must exceed the max retry window.
-                client.Timeout = TimeSpan.FromMinutes(10);
-            })
-            // The dialog watch is outside the retries, so that it also covers the time spent resending a request.
-            .AddHttpMessageHandler<EditorDialogWatchHandler>()
-            .AddHttpMessageHandler<HttpRequestHandler>();
+        var httpClientBuilder = services.AddHttpClient(HttpClientNames.UniCortex, client =>
+        {
+            // Test runs and domain reloads can take several minutes.
+            // HttpRequestHandler retries during reloads, so this must exceed the max retry window.
+            client.Timeout = TimeSpan.FromMinutes(10);
+        });
+        // The dialog watch is outside the retries, so that it also covers the time spent resending a request. The
+        // dialogs can be read on macOS and Windows only, so elsewhere it would only warn on every long request.
+        if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
+        {
+            httpClientBuilder.AddHttpMessageHandler<EditorDialogWatchHandler>();
+        }
+
+        httpClientBuilder.AddHttpMessageHandler<HttpRequestHandler>();
 
         services.AddTransient<IUnityEditorClient, UnityEditorClient>();
         services.AddTransient<IUnityEditorProcessProvider, UnityEditorProcessProvider>();
