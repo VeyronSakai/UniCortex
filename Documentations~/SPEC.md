@@ -1792,7 +1792,7 @@ A CLI tool for operating the Unity Editor from a terminal. Uses Core services di
 - ConsoleAppFramework (5.6.0)
 - UniCortex.Core (ProjectReference)
 - Launched directly via `dotnet run --project` (no prebuild required)
-- Warnings of Core (e.g. the dialogs of the Editor cannot be read) go to stderr, so that they never mix with a command's output on stdout
+- Warnings go to stderr (stdout is for the command's output)
 
 ### Command Structure
 

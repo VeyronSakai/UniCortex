@@ -3,7 +3,6 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
 using UniCortex.Core.Domains.Models;
 using UniCortex.Core.Infrastructures;
@@ -94,7 +93,7 @@ public class EditorDialogWatchHandlerTest
     {
         // Arrange
         var inner = new DelayedHandler(TimeSpan.FromMilliseconds(300));
-        var accessor = new FakeEditorDialogAccessor { ReadError = new MacAccessibilityPermissionException() };
+        var accessor = new FakeEditorDialogAccessor { ReadError = new InvalidOperationException("No permission.") };
         var logger = new RecordingLogger();
         using var client = CreateClient(inner, accessor, logger: logger);
 
