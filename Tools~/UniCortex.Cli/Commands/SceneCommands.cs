@@ -5,7 +5,7 @@ namespace UniCortex.Cli.Commands;
 
 public class SceneCommands(SceneUseCase sceneUseCase)
 {
-    /// <summary>Create a new empty scene and save it at the specified asset path. Fails while a loaded scene has unsaved changes.</summary>
+    /// <summary>Create a new empty scene and save it at the specified asset path. Fails while a loaded scene or the Prefab in Prefab Mode has unsaved changes.</summary>
     /// <param name="scenePath">Asset path to save the scene (e.g. "Assets/Scenes/NewScene.unity").</param>
     [Command("create")]
     public async Task Create([Argument] string scenePath, CancellationToken cancellationToken)
@@ -14,7 +14,7 @@ public class SceneCommands(SceneUseCase sceneUseCase)
         Console.WriteLine(message);
     }
 
-    /// <summary>Open a scene in the Unity Editor by its asset path. Fails while a loaded scene has unsaved changes.</summary>
+    /// <summary>Open a scene in the Unity Editor by its asset path. Fails while a loaded scene or the Prefab in Prefab Mode has unsaved changes.</summary>
     /// <param name="scenePath">Asset path of the scene to open (e.g. "Assets/Scenes/Main.unity").</param>
     [Command("open")]
     public async Task Open([Argument] string scenePath, CancellationToken cancellationToken)

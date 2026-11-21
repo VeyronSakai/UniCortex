@@ -116,5 +116,26 @@ namespace UniCortex.Editor.Tests.UseCases
             StringAssert.DoesNotContain("save (CLI: editor save)", ex.Message);
             Assert.AreEqual(0, spy.StartCallCount);
         }
+
+        [Test]
+        public void ExecuteAsync_ThrowsUnsavedPrefabChangesException_WhenPrefabModeHasUnsavedChanges()
+        {
+            // Arrange
+            var spy = new SpyTestRunner();
+            var sceneManager = new SpyEditorSceneManager { DirtyPrefabStagePath = "Assets/Prefabs/Open.prefab" };
+            var useCase = new RunTestsUseCase(spy, new FakeMainThreadDispatcher(), new SpyEditorApplication(),
+                sceneManager);
+
+            // Act
+            var ex = Assert.Throws<UnsavedPrefabChangesException>(() =>
+                useCase.ExecuteAsync(new RunTestsRequest(TestModes.EditMode), CancellationToken.None)
+                    .GetAwaiter().GetResult());
+
+            // Assert
+            StringAssert.Contains("Cannot run tests", ex.Message);
+            StringAssert.Contains("save (CLI: editor save)", ex.Message);
+            StringAssert.Contains("prefab close --discard-changes", ex.Message);
+            Assert.AreEqual(0, spy.StartCallCount);
+        }
     }
 }

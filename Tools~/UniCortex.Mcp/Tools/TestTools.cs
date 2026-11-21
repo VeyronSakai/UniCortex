@@ -13,7 +13,8 @@ public class TestTools(TestUseCase testUseCase, IAsyncOperationSequencer sequenc
 {
     [McpServerTool(Name = "run_tests", ReadOnly = true),
      Description("Run Unity Test Runner tests and wait for completion. " +
-                 "Fails while a loaded scene has unsaved changes; save or discard them first."), UsedImplicitly]
+                 "Fails while a loaded scene or the Prefab in Prefab Mode has unsaved changes; " +
+                 "save or discard them first."), UsedImplicitly]
     public ValueTask<CallToolResult> RunTestsAsync(
         [Description("Test mode: '" + TestModes.EditMode + "' or '" + TestModes.PlayMode + "'. Defaults to '" + TestModes.EditMode + "'.")]
         string? testMode = null,

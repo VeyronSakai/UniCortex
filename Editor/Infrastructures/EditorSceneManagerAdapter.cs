@@ -83,6 +83,12 @@ namespace UniCortex.Editor.Infrastructures
             return paths;
         }
 
+        public string GetDirtyPrefabStagePath()
+        {
+            var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            return prefabStage != null && prefabStage.scene.isDirty ? prefabStage.assetPath : null;
+        }
+
         public void DiscardChanges()
         {
             // Collect the scenes first: reloading a scene may change the loaded scene list.

@@ -209,10 +209,10 @@ namespace UniCortex.Editor
             var instantiatePrefabUseCase = new InstantiatePrefabUseCase(dispatcher, prefabOps);
             var instantiatePrefabHandler = new InstantiatePrefabHandler(instantiatePrefabUseCase);
 
-            var openPrefabUseCase = new OpenPrefabUseCase(dispatcher, prefabOps);
+            var openPrefabUseCase = new OpenPrefabUseCase(dispatcher, prefabOps, sceneManagerAdapter);
             var openPrefabHandler = new OpenPrefabHandler(openPrefabUseCase);
 
-            var closePrefabUseCase = new ClosePrefabUseCase(dispatcher, prefabOps);
+            var closePrefabUseCase = new ClosePrefabUseCase(dispatcher, prefabOps, sceneManagerAdapter);
             var closePrefabHandler = new ClosePrefabHandler(closePrefabUseCase);
 
             var scriptableObjectOps = new ScriptableObjectOperationsAdapter();

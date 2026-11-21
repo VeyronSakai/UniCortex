@@ -25,7 +25,7 @@ public class PrefabCommands(PrefabUseCase prefabUseCase)
         Console.WriteLine(json);
     }
 
-    /// <summary>Open a Prefab asset in Prefab Mode for editing.</summary>
+    /// <summary>Open a Prefab asset in Prefab Mode for editing. Fails while the Prefab already open in Prefab Mode has unsaved changes.</summary>
     /// <param name="assetPath">Asset path of the Prefab to open (e.g. "Assets/Prefabs/MyCube.prefab").</param>
     [Command("open")]
     public async Task Open([Argument] string assetPath, CancellationToken cancellationToken = default)
@@ -34,11 +34,12 @@ public class PrefabCommands(PrefabUseCase prefabUseCase)
         Console.WriteLine(message);
     }
 
-    /// <summary>Close Prefab Mode and return to the main stage.</summary>
+    /// <summary>Close Prefab Mode and return to the main stage. Fails while the Prefab has unsaved changes, unless --discard-changes is given.</summary>
+    /// <param name="discardChanges">Discard the unsaved changes of the Prefab instead of failing. Cannot be undone.</param>
     [Command("close")]
-    public async Task Close(CancellationToken cancellationToken = default)
+    public async Task Close(bool discardChanges = false, CancellationToken cancellationToken = default)
     {
-        var message = await prefabUseCase.CloseAsync(cancellationToken);
+        var message = await prefabUseCase.CloseAsync(discardChanges, cancellationToken);
         Console.WriteLine(message);
     }
 }

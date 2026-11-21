@@ -37,10 +37,12 @@ namespace UniCortex.Editor.Tests.TestDoubles
         }
 
         public int ClosePrefabCallCount { get; private set; }
+        public bool LastCloseDiscardChanges { get; private set; }
 
-        public void ClosePrefab()
+        public void ClosePrefab(bool discardChanges)
         {
             ClosePrefabCallCount++;
+            LastCloseDiscardChanges = discardChanges;
         }
     }
 }

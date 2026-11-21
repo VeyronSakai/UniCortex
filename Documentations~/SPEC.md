@@ -121,6 +121,8 @@ The client resends a request until the server answers: on a refused connection, 
 On macOS and Windows, while a request waits for its response (including the time spent resending it), the client reads the Editor's modal dialogs with the OS window APIs (see Editor Dialog), first after 5 seconds and then every 2 seconds. If one is open, the Editor cannot respond until it is closed, so the request fails at once with the dialog's title, message, and buttons, and tells the caller to close it with `click_editor_dialog_button`. This covers both a dialog shown while the request waits in the queue (e.g. a scene reload confirmation) and one shown by the request itself (e.g. "Saving failed", or the save panel of an untitled scene). The request is not cancelled in the Editor, so it may still run after the dialog is closed. When the dialogs cannot be read (e.g. without the Accessibility permission on macOS), and on Linux, where they are not read, the request keeps waiting until the dialog is closed. The client has no time limit for a request: a long operation that blocks the main thread (e.g. a platform switch or a large import) cannot be told apart from a dialog, and how long it takes cannot be known in advance. The caller stops waiting by cancelling the request (an MCP cancellation, or Ctrl+C in the CLI). To tell why a request may keep waiting, the MCP server checks the permission when it starts on macOS and, if it is missing, says so and how to grant it in the server's `instructions`. The CLI has no such startup message, so it prints a warning to stderr when it first fails to read the dialogs while a request waits, with the reason and how to grant the permission.
 All scene-mutating operations support Undo.
 Scenes are never saved implicitly. Endpoints that would close the loaded scenes or start the Test Runner (`/scene/create`, `/scene/open`, `/tests/run`) return `400 Bad Request` while a loaded scene has unsaved changes (`Scene.isDirty`): closing the scenes would drop the changes, and the Test Runner would ask to save them in a dialog that blocks the Editor. The error lists the scenes (an untitled one as `Untitled`) and tells the caller to save them with `save` or discard them with `discard_scene_changes`. An untitled scene can be neither saved with `save` (File/Save opens the save panel, which also blocks the Editor) nor discarded (it has no saved state), so when an untitled scene has changes, the error tells the caller to save it to an asset path with `save_scene_as` instead.
+
+The same applies to the Prefab open in Prefab Mode. With Auto Save off (a toggle in the Prefab Mode header), its changes stay unsaved (`PrefabStage.scene.isDirty`), and leaving Prefab Mode makes Unity ask whether to save them in the "Prefab Has Been Modified" dialog (Save / Discard Changes / Cancel), which blocks the Editor. Cancelling it does not cancel the operation: `/scene/create` still replaced the main scenes behind Prefab Mode. So the endpoints that leave Prefab Mode (`/prefab/close`, `/prefab/open`, even for the Prefab already open, `/scene/create`, `/scene/open`, `/tests/run`) return `400 Bad Request` while it has unsaved changes, checked before the loaded scenes, and the error tells the caller to save them with `save` (File/Save saves the Prefab in Prefab Mode) or to discard them with `/prefab/close` with `discardChanges`. With Auto Save on, the changes are saved as they are made, so the Prefab has none. Entering play mode keeps Prefab Mode and does not ask.
 Endpoints that save a new asset at a given path (`/scene/create`, `/scriptable-object/create`, `/animation-clip/create`, `/prefab/create`, `/timeline/create`) create any missing parent folders under `Assets/` first. A path outside `Assets/` or an asset that still cannot be saved returns `400 Bad Request` with the reason.
 
 ### Editor Control
@@ -223,7 +225,7 @@ Response: `{"success": true}`
 ### Scene
 
 #### POST `/scene/create`
-Creates a new empty scene and saves it to the specified asset path. Returns 400 in Play Mode or while a loaded scene has unsaved changes.
+Creates a new empty scene and saves it to the specified asset path. Returns 400 in Play Mode or while a loaded scene or the Prefab in Prefab Mode has unsaved changes.
 
 Request body:
 ```json
@@ -233,7 +235,7 @@ Request body:
 Response: `{"success": true}`
 
 #### POST `/scene/open`
-Opens a scene. `EditorSceneManager.OpenScene()`. Returns 400 in Play Mode or while a loaded scene has unsaved changes.
+Opens a scene. `EditorSceneManager.OpenScene()`. Returns 400 in Play Mode or while a loaded scene or the Prefab in Prefab Mode has unsaved changes.
 
 Request body:
 ```json
@@ -680,7 +682,7 @@ Response:
 ```
 
 #### POST `/prefab/open`
-Opens a Prefab asset in Prefab Mode. `PrefabStageUtility.OpenPrefab()`
+Opens a Prefab asset in Prefab Mode. `PrefabStageUtility.OpenPrefab()`. Returns 400 while the Prefab already open in Prefab Mode has unsaved changes.
 
 Request body:
 ```json
@@ -690,9 +692,12 @@ Request body:
 Response: `{"success": true}`
 
 #### POST `/prefab/close`
-Closes Prefab Mode and returns to the main stage. `StageUtility.GoToMainStage()`
+Closes Prefab Mode and returns to the main stage. `StageUtility.GoToMainStage()`. Returns 400 while the Prefab has unsaved changes, unless `discardChanges` is true: then `PrefabStage.ClearDirtiness()` drops them first, so that Unity does not ask to save them, and the Prefab asset is left as it was saved.
 
-Request body: none
+Request body (optional):
+```json
+{"discardChanges": false}
+```
 
 Response: `{"success": true}`
 
@@ -771,7 +776,7 @@ Request body:
 - `categoryNames`: array of test category names (optional)
 - `assemblyNames`: array of test assembly names (optional)
 
-Response: `202 Accepted` with `{"success": true}`. Returns 400 in Play Mode or while a loaded scene has unsaved changes (scenes are not saved before the run).
+Response: `202 Accepted` with `{"success": true}`. Returns 400 in Play Mode or while a loaded scene or the Prefab in Prefab Mode has unsaved changes (they are not saved before the run).
 
 #### GET `/tests/result`
 Returns the result of the latest run started by `POST /tests/run`. While the run is in progress, the body is empty; clients retry until the result is stored.

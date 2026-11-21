@@ -50,8 +50,14 @@ namespace UniCortex.Editor.Infrastructures
             PrefabStageUtility.OpenPrefab(assetPath);
         }
 
-        public void ClosePrefab()
+        public void ClosePrefab(bool discardChanges)
         {
+            var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (discardChanges && prefabStage != null)
+            {
+                prefabStage.ClearDirtiness();
+            }
+
             StageUtility.GoToMainStage();
         }
     }

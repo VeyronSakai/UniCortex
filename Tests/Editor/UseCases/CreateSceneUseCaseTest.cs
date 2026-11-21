@@ -63,5 +63,23 @@ namespace UniCortex.Editor.Tests.UseCases
             Assert.AreEqual(0, sceneManager.CreateSceneCallCount);
             Assert.AreEqual(0, editorApp.SaveCallCount);
         }
+
+        [Test]
+        public void ExecuteAsync_ThrowsUnsavedPrefabChangesException_WhenPrefabModeHasUnsavedChanges()
+        {
+            // Arrange
+            var dispatcher = new FakeMainThreadDispatcher();
+            var sceneManager = new SpyEditorSceneManager { DirtyPrefabStagePath = "Assets/Prefabs/Open.prefab" };
+            var useCase = new CreateSceneUseCase(dispatcher, sceneManager, new SpyEditorApplication());
+
+            // Act
+            var ex = Assert.Throws<UnsavedPrefabChangesException>(() =>
+                useCase.ExecuteAsync("Assets/Scenes/New.unity", CancellationToken.None)
+                    .GetAwaiter().GetResult());
+
+            // Assert
+            StringAssert.Contains("Cannot create a scene", ex.Message);
+            Assert.AreEqual(0, sceneManager.CreateSceneCallCount);
+        }
     }
 }

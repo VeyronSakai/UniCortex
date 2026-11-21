@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var operations = new SpyPrefabOperations();
-            var useCase = new OpenPrefabUseCase(dispatcher, operations);
+            var useCase = new OpenPrefabUseCase(dispatcher, operations, new SpyEditorSceneManager());
             var handler = new OpenPrefabHandler(useCase);
 
             var router = new RequestRouter();
@@ -37,7 +37,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var operations = new SpyPrefabOperations();
-            var useCase = new OpenPrefabUseCase(dispatcher, operations);
+            var useCase = new OpenPrefabUseCase(dispatcher, operations, new SpyEditorSceneManager());
             var handler = new OpenPrefabHandler(useCase);
 
             var router = new RequestRouter();
@@ -56,7 +56,7 @@ namespace UniCortex.Editor.Tests.Presentations
         {
             var dispatcher = new FakeMainThreadDispatcher();
             var operations = new SpyPrefabOperations();
-            var useCase = new OpenPrefabUseCase(dispatcher, operations);
+            var useCase = new OpenPrefabUseCase(dispatcher, operations, new SpyEditorSceneManager());
             var handler = new OpenPrefabHandler(useCase);
 
             var router = new RequestRouter();
