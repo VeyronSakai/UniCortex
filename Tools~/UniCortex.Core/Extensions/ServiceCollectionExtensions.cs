@@ -16,9 +16,9 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IUnityServerUrlProvider, UnityServerUrlProvider>();
         var httpClientBuilder = services.AddHttpClient(HttpClientNames.UniCortex, client =>
         {
-            // Test runs and domain reloads can take several minutes.
-            // HttpRequestHandler retries during reloads, so this must exceed the max retry window.
-            client.Timeout = TimeSpan.FromMinutes(10);
+            // How long a request takes cannot be known in advance (e.g. a platform switch or a menu item in a large
+            // project), so there is no time limit: the caller decides when to stop waiting by cancelling the request.
+            client.Timeout = Timeout.InfiniteTimeSpan;
         });
         // The dialog watch is outside the retries, so that it also covers the time spent resending a request. The
         // dialogs can be read on macOS and Windows only, so elsewhere it would only warn on every long request.
