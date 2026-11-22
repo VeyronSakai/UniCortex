@@ -32,7 +32,8 @@ public class PrefabUseCase(IUnityEditorClient client)
         return $"Prefab opened: {assetPath}";
     }
 
-    public async ValueTask<string> CloseAsync(bool discardChanges, CancellationToken cancellationToken)
+    public async ValueTask<string> CloseAsync(bool discardChanges = false,
+        CancellationToken cancellationToken = default)
     {
         var request = new ClosePrefabRequest { discardChanges = discardChanges };
         await client.PostAsync<ClosePrefabRequest, ClosePrefabResponse>(ApiRoutes.PrefabClose, request,

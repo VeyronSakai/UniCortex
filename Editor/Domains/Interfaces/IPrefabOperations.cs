@@ -9,6 +9,6 @@ namespace UniCortex.Editor.Domains.Interfaces
         void OpenPrefab(string assetPath);
         // Leaves Prefab Mode. With discardChanges, the unsaved changes of the Prefab are dropped first, so that
         // Unity does not ask whether to save them.
-        void ClosePrefab(bool discardChanges);
+        void ClosePrefab(bool discardChanges = false);
     }
 }

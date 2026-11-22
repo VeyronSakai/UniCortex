@@ -19,7 +19,7 @@ namespace UniCortex.Editor.UseCases
             _sceneManager = sceneManager;
         }
 
-        public async Task ExecuteAsync(bool discardChanges, CancellationToken cancellationToken = default)
+        public async Task ExecuteAsync(bool discardChanges = false, CancellationToken cancellationToken = default)
         {
             await _dispatcher.RunOnMainThreadAsync(() =>
             {

@@ -118,7 +118,7 @@ public class PrefabUseCaseTest
             Assert.That(childResponse.instanceId, Is.Not.EqualTo(0));
 
             // Close prefab mode to return to the main stage
-            await _fixture.PrefabUseCase.CloseAsync(false, ct);
+            await _fixture.PrefabUseCase.CloseAsync(cancellationToken: ct);
         }
         finally
         {
@@ -132,7 +132,7 @@ public class PrefabUseCaseTest
     {
         var ct = CancellationToken.None;
 
-        var message = await _fixture.PrefabUseCase.CloseAsync(false, ct);
+        var message = await _fixture.PrefabUseCase.CloseAsync(cancellationToken: ct);
 
         Assert.That(message, Does.Contain("Prefab mode closed."));
     }
@@ -157,7 +157,7 @@ public class PrefabUseCaseTest
             Assert.That(hierarchyJson, Does.Contain("HierarchyPrefabTest"));
             Assert.That(hierarchyJson, Does.Contain("HierarchyPrefabTest.prefab"));
 
-            await _fixture.PrefabUseCase.CloseAsync(false, ct);
+            await _fixture.PrefabUseCase.CloseAsync(cancellationToken: ct);
         }
         finally
         {
@@ -185,7 +185,7 @@ public class PrefabUseCaseTest
 
             Assert.That(findJson, Does.Contain("FindPrefabTest"));
 
-            await _fixture.PrefabUseCase.CloseAsync(false, ct);
+            await _fixture.PrefabUseCase.CloseAsync(cancellationToken: ct);
         }
         finally
         {
@@ -216,7 +216,7 @@ public class PrefabUseCaseTest
             Assert.That(response.gameObjects.Select(g => g.name), Is.EqualTo(new[] { "FindQueryPrefabTest" }));
             Assert.That(response.gameObjects.Select(g => g.instanceId), Does.Not.Contain(createResponse.instanceId));
 
-            await _fixture.PrefabUseCase.CloseAsync(false, ct);
+            await _fixture.PrefabUseCase.CloseAsync(cancellationToken: ct);
         }
         finally
         {
@@ -244,7 +244,7 @@ public class PrefabUseCaseTest
 
             Assert.That(message, Does.Contain("Saved successfully."));
 
-            await _fixture.PrefabUseCase.CloseAsync(false, ct);
+            await _fixture.PrefabUseCase.CloseAsync(cancellationToken: ct);
         }
         finally
         {

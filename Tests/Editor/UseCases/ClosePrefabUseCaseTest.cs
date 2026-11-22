@@ -16,7 +16,7 @@ namespace UniCortex.Editor.Tests.UseCases
             var operations = new SpyPrefabOperations();
             var useCase = new ClosePrefabUseCase(dispatcher, operations, new SpyEditorSceneManager());
 
-            useCase.ExecuteAsync(false, CancellationToken.None)
+            useCase.ExecuteAsync(cancellationToken: CancellationToken.None)
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(1, operations.ClosePrefabCallCount);
@@ -35,7 +35,7 @@ namespace UniCortex.Editor.Tests.UseCases
 
             // Act
             var ex = Assert.Throws<UnsavedPrefabChangesException>(() =>
-                useCase.ExecuteAsync(false, CancellationToken.None).GetAwaiter().GetResult());
+                useCase.ExecuteAsync(cancellationToken: CancellationToken.None).GetAwaiter().GetResult());
 
             // Assert
             StringAssert.Contains("Cannot close Prefab Mode", ex.Message);
