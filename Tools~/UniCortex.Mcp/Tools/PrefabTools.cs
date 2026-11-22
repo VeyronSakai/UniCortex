@@ -32,7 +32,10 @@ public class PrefabTools(PrefabUseCase prefabUseCase, IAsyncOperationSequencer s
             ct => prefabUseCase.InstantiateAsync(assetPath, ct), cancellationToken);
 
     [McpServerTool(Name = "open_prefab", ReadOnly = false),
-     Description("Open a Prefab asset in Prefab Mode for editing."), UsedImplicitly]
+     Description("Open a Prefab asset in Prefab Mode for editing. " +
+                 "Fails while the Prefab already open in Prefab Mode has unsaved changes; " +
+                 "save or discard them first."),
+     UsedImplicitly]
     public ValueTask<CallToolResult> OpenPrefabAsync(
         [Description("Prefab asset path (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
         string assetPath,
@@ -41,7 +44,14 @@ public class PrefabTools(PrefabUseCase prefabUseCase, IAsyncOperationSequencer s
             ct => prefabUseCase.OpenAsync(assetPath, ct), cancellationToken);
 
     [McpServerTool(Name = "close_prefab", ReadOnly = false),
-     Description("Close Prefab Mode and return to the main stage."), UsedImplicitly]
-    public ValueTask<CallToolResult> ClosePrefabAsync(CancellationToken cancellationToken = default)
-        => McpToolExecution.ExecuteTextAsync(sequencer, prefabUseCase.CloseAsync, cancellationToken);
+     Description("Close Prefab Mode and return to the main stage. " +
+                 "Fails while the Prefab has unsaved changes, unless discardChanges is true; " +
+                 "save them first to keep them."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> ClosePrefabAsync(
+        [Description("Discard the unsaved changes of the Prefab instead of failing. Cannot be undone.")]
+        bool discardChanges = false,
+        CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => prefabUseCase.CloseAsync(discardChanges, ct), cancellationToken);
 }

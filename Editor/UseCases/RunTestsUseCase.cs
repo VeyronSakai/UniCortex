@@ -32,7 +32,14 @@ namespace UniCortex.Editor.UseCases
                     throw new PlayModeException("Cannot run tests during play mode.");
                 }
 
-                // The Test Runner would ask to save scenes with unsaved changes in a dialog that blocks the Editor.
+                // The Test Runner leaves Prefab Mode and opens a test scene, which would ask to save unsaved
+                // changes in a dialog that blocks the Editor.
+                var dirtyPrefabPath = _sceneManager.GetDirtyPrefabStagePath();
+                if (dirtyPrefabPath != null)
+                {
+                    throw new UnsavedPrefabChangesException("Cannot run tests", dirtyPrefabPath);
+                }
+
                 var dirtyScenePaths = _sceneManager.GetDirtyScenePaths();
                 if (dirtyScenePaths.Count > 0)
                 {

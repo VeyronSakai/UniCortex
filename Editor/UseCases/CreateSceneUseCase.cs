@@ -28,6 +28,13 @@ namespace UniCortex.Editor.UseCases
                     throw new PlayModeException("Cannot create scene during play mode.");
                 }
 
+                // Leaving Prefab Mode with unsaved changes would ask to save them in a dialog.
+                var dirtyPrefabPath = _sceneManager.GetDirtyPrefabStagePath();
+                if (dirtyPrefabPath != null)
+                {
+                    throw new UnsavedPrefabChangesException("Cannot create a scene", dirtyPrefabPath);
+                }
+
                 // The new scene replaces the current ones, which would drop their unsaved changes.
                 var dirtyScenePaths = _sceneManager.GetDirtyScenePaths();
                 if (dirtyScenePaths.Count > 0)

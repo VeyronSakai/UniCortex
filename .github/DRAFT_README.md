@@ -118,7 +118,7 @@ While a modal dialog is open, the Unity Editor cannot answer the other tools. Th
 | `save_scene_as` | Save the active scene to the specified asset path without the save panel, like File > Save As |
 | `get_hierarchy` | Get the GameObject hierarchy tree of every loaded scene or the Prefab |
 
-UniCortex never saves scenes on its own. `create_scene`, `open_scene`, and `run_tests` fail while a loaded scene has unsaved changes; save them with `save` or discard them with `discard_scene_changes` first. An untitled scene cannot be saved with `save` (File/Save opens the save panel, which blocks the Editor) or discarded, so save it to an asset path with `save_scene_as`.
+UniCortex never saves scenes on its own. `create_scene`, `open_scene`, and `run_tests` fail while a loaded scene has unsaved changes; save them with `save` or discard them with `discard_scene_changes` first. An untitled scene cannot be saved with `save` (File/Save opens the save panel, which blocks the Editor) or discarded, so save it to an asset path with `save_scene_as`. With Auto Save off in Prefab Mode, the same goes for the Prefab: `open_prefab`, `close_prefab`, `create_scene`, `open_scene`, and `run_tests` fail while it has unsaved changes; save them with `save`, or discard them with `close_prefab` with `discardChanges`.
 
 #### GameObject
 
@@ -171,7 +171,7 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | `create_prefab` | Save a scene GameObject as a Prefab asset |
 | `instantiate_prefab` | Instantiate a Prefab into the scene |
 | `open_prefab` | Open a Prefab asset in Prefab Mode for editing |
-| `close_prefab` | Close Prefab Mode and return to the main stage |
+| `close_prefab` | Close Prefab Mode and return to the main stage (`discardChanges` drops unsaved changes of the Prefab) |
 
 #### Asset
 
@@ -417,7 +417,7 @@ Component commands accept the fully-qualified component type name plus the defin
 | `prefab create` | Save a scene GameObject as a Prefab asset. |
 | `prefab instantiate` | Instantiate a Prefab into the current scene. |
 | `prefab open` | Open a Prefab in Prefab Mode. |
-| `prefab close` | Close Prefab Mode and return to the main stage. |
+| `prefab close` | Close Prefab Mode and return to the main stage. Add `--discard-changes` to drop unsaved changes of the Prefab. |
 
 #### `test`
 

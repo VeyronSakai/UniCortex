@@ -32,10 +32,12 @@ public class PrefabUseCase(IUnityEditorClient client)
         return $"Prefab opened: {assetPath}";
     }
 
-    public async ValueTask<string> CloseAsync(CancellationToken cancellationToken)
+    public async ValueTask<string> CloseAsync(bool discardChanges = false,
+        CancellationToken cancellationToken = default)
     {
-        await client.PostAsync<object, ClosePrefabResponse>(ApiRoutes.PrefabClose, null, cancellationToken);
-        return "Prefab mode closed.";
+        var request = new ClosePrefabRequest { discardChanges = discardChanges };
+        await client.PostAsync<ClosePrefabRequest, ClosePrefabResponse>(ApiRoutes.PrefabClose, request,
+            cancellationToken);
+        return discardChanges ? "Prefab mode closed without saving its changes." : "Prefab mode closed.";
     }
-
 }

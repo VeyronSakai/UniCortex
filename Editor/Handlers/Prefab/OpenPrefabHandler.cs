@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -41,9 +42,17 @@ namespace UniCortex.Editor.Handlers.Prefab
                 return;
             }
 
-            await _useCase.ExecuteAsync(request.assetPath, cancellationToken);
-            var json = JsonUtility.ToJson(new OpenPrefabResponse(true));
-            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            try
+            {
+                await _useCase.ExecuteAsync(request.assetPath, cancellationToken);
+                var json = JsonUtility.ToJson(new OpenPrefabResponse(true));
+                await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+            }
         }
     }
 }

@@ -12,7 +12,8 @@ public class SceneTools(SceneUseCase sceneUseCase, IAsyncOperationSequencer sequ
 {
     [McpServerTool(Name = "create_scene", ReadOnly = false),
      Description("Create a new empty scene and save it at the specified asset path. " +
-                 "Fails while a loaded scene has unsaved changes; save or discard them first."), UsedImplicitly]
+                 "Fails while a loaded scene or the Prefab in Prefab Mode has unsaved changes; " +
+                 "save or discard them first."), UsedImplicitly]
     public ValueTask<CallToolResult> CreateSceneAsync(
         [Description("Asset path to save to (e.g. \"Assets/Scenes/NewScene.unity\").")]
         string scenePath,
@@ -22,7 +23,8 @@ public class SceneTools(SceneUseCase sceneUseCase, IAsyncOperationSequencer sequ
 
     [McpServerTool(Name = "open_scene", ReadOnly = false),
      Description("Open a scene in the Unity Editor by its asset path. " +
-                 "Fails while a loaded scene has unsaved changes; save or discard them first."), UsedImplicitly]
+                 "Fails while a loaded scene or the Prefab in Prefab Mode has unsaved changes; " +
+                 "save or discard them first."), UsedImplicitly]
     public ValueTask<CallToolResult> OpenSceneAsync(
         [Description("Scene asset path (e.g. \"Assets/Scenes/Main.unity\").")]
         string scenePath,

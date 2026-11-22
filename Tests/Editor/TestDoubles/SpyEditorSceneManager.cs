@@ -14,6 +14,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int GetHierarchyCallCount { get; private set; }
         public GetHierarchyResponse HierarchyResult { get; set; }
         public List<string> DirtyScenePaths { get; set; } = new List<string>();
+        public string DirtyPrefabStagePath { get; set; }
         public int DiscardChangesCallCount { get; private set; }
         public int SaveActiveSceneAsCallCount { get; private set; }
         public string LastSaveAsScenePath { get; private set; }
@@ -40,6 +41,11 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public IReadOnlyList<string> GetDirtyScenePaths()
         {
             return DirtyScenePaths;
+        }
+
+        public string GetDirtyPrefabStagePath()
+        {
+            return DirtyPrefabStagePath;
         }
 
         public void DiscardChanges()

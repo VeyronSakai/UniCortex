@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -23,9 +24,23 @@ namespace UniCortex.Editor.Handlers.Prefab
 
         private async Task HandleAsync(IRequestContext context, CancellationToken cancellationToken)
         {
-            await _useCase.ExecuteAsync(cancellationToken);
-            var json = JsonUtility.ToJson(new ClosePrefabResponse(true));
-            await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            // The body is optional, so that a request without one keeps closing as before.
+            var body = await context.ReadBodyAsync();
+            var request = string.IsNullOrEmpty(body)
+                ? new ClosePrefabRequest()
+                : JsonUtility.FromJson<ClosePrefabRequest>(body);
+
+            try
+            {
+                await _useCase.ExecuteAsync(request.discardChanges, cancellationToken);
+                var json = JsonUtility.ToJson(new ClosePrefabResponse(true));
+                await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var errorJson = JsonUtility.ToJson(new ErrorResponse(ex.Message));
+                await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+            }
         }
     }
 }
