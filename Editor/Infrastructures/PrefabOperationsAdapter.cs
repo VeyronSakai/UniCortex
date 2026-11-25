@@ -47,8 +47,7 @@ namespace UniCortex.Editor.Infrastructures
             }
 
             var guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
-            var modifiedPrefabStagePath = connect && sourcePrefabStage != null ? sourcePrefabStage.assetPath : "";
-            return new CreatePrefabResponse(true, guid, modifiedPrefabStagePath);
+            return new CreatePrefabResponse(true, guid);
         }
 
         public InstantiatePrefabResponse InstantiatePrefab(string assetPath)

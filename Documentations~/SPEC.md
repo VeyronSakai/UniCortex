@@ -666,16 +666,15 @@ Request body:
 {"instanceId": 12345, "assetPath": "Assets/Prefabs/MyCube.prefab", "connect": false}
 ```
 
-- `connect` (optional, default `false`): the GameObject becomes an instance of the new Prefab, like dragging it into the Project window. The GameObject, its children and its components stay the same objects (they keep their instanceIds), so references to them from other objects stay valid. This is how part of a Prefab is extracted into its own Prefab in Prefab Mode: the open Prefab then holds an instance of the new one, and has changes to save with `/editor/save` (UniCortex does not save it), unless Auto Save is on. A GameObject that is the outermost root of a prefab instance becomes an instance of a new Prefab Variant of its Prefab (unpack it with `/prefab/unpack` first to get a plain Prefab). Undo reverts the link, but the saved asset is kept. Without `connect`, the GameObject is left unlinked
+- `connect` (optional, default `false`): the GameObject becomes an instance of the new Prefab, like dragging it into the Project window. The GameObject, its children and its components stay the same objects (they keep their instanceIds), so references to them from other objects stay valid. This is how part of a Prefab is extracted into its own Prefab in Prefab Mode: the open Prefab then holds an instance of the new one, and has changes to save with `/editor/save` (UniCortex does not save it), unless Auto Save is on. Leaving Prefab Mode while they are unsaved fails, as described under API Endpoints. A GameObject that is the outermost root of a prefab instance becomes an instance of a new Prefab Variant of its Prefab (unpack it with `/prefab/unpack` first to get a plain Prefab). Undo reverts the link, but the saved asset is kept. Without `connect`, the GameObject is left unlinked
 - Returns 400 when `assetPath` is the Prefab open in Prefab Mode (saving would replace the Prefab being edited), and, with `connect`, for the root of the Prefab open in Prefab Mode (it would turn that Prefab into a Variant of the new one) or for a GameObject that is part of a prefab instance but not its outermost root (Unity cannot save it)
 
 Response:
 ```json
-{"success": true, "guid": "0123456789abcdef0123456789abcdef", "modifiedPrefabStagePath": ""}
+{"success": true, "guid": "0123456789abcdef0123456789abcdef"}
 ```
 
 - `guid`: GUID of the saved Prefab asset
-- `modifiedPrefabStagePath`: with `connect` for a GameObject in Prefab Mode, the asset path of the Prefab open in Prefab Mode, which now holds an instance of the new Prefab and has to be saved. Empty otherwise
 
 #### POST `/prefab/instantiate`
 Instantiates a Prefab into the scene. `PrefabUtility.InstantiatePrefab()` + `Undo.RegisterCreatedObjectUndo`

@@ -100,7 +100,6 @@ public class PrefabUseCaseTest
             var guid = UnityEditorFixture.ReadAssetGuid(partPath);
             Assert.That(message, Does.Contain($"Prefab created at: {partPath} (GUID: {guid})."));
             Assert.That(message, Does.Contain($"GameObject {partId} is now an instance of it."));
-            Assert.That(message, Does.Contain($"The Prefab open in Prefab Mode ({parentPath})"));
             // Once saved, the open Prefab holds an instance of the new Prefab.
             await _fixture.EditorUseCase.SaveAsync(ct);
             Assert.That(UnityEditorFixture.ReadAssetText(parentPath), Does.Contain(guid));
@@ -134,7 +133,6 @@ public class PrefabUseCaseTest
             // Assert
             var guid = UnityEditorFixture.ReadAssetGuid(partPath);
             Assert.That(message, Does.Contain($"Prefab created at: {partPath} (GUID: {guid})."));
-            Assert.That(message, Does.Not.Contain("The Prefab open in Prefab Mode"));
             // The source is not linked to the new Prefab, so it is not a prefab instance.
             var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
                 await _fixture.PrefabUseCase.UnpackAsync(partId, cancellationToken: ct));

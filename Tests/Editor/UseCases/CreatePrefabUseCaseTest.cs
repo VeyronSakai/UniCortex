@@ -32,8 +32,7 @@ namespace UniCortex.Editor.Tests.UseCases
             // Arrange
             var operations = new SpyPrefabOperations
             {
-                CreateResult = new CreatePrefabResponse(true, "0123456789abcdef0123456789abcdef",
-                    "Assets/Prefabs/Parent.prefab")
+                CreateResult = new CreatePrefabResponse(true, "0123456789abcdef0123456789abcdef")
             };
             var useCase = new CreatePrefabUseCase(new FakeMainThreadDispatcher(), operations);
 
@@ -44,7 +43,6 @@ namespace UniCortex.Editor.Tests.UseCases
             // Assert
             Assert.IsTrue(operations.LastCreateConnect);
             Assert.AreEqual("0123456789abcdef0123456789abcdef", result.guid);
-            Assert.AreEqual("Assets/Prefabs/Parent.prefab", result.modifiedPrefabStagePath);
         }
     }
 }

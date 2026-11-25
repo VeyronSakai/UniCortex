@@ -10,7 +10,7 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public int LastCreateInstanceId { get; private set; }
         public string LastCreateAssetPath { get; private set; }
         public bool LastCreateConnect { get; private set; }
-        public CreatePrefabResponse CreateResult { get; set; } = new CreatePrefabResponse(true, "", "");
+        public CreatePrefabResponse CreateResult { get; set; } = new CreatePrefabResponse(true, "");
 
         public int InstantiateCallCount { get; private set; }
         public string LastInstantiateAssetPath { get; private set; }

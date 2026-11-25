@@ -64,7 +64,6 @@ namespace UniCortex.Editor.Tests.Infrastructures
             Assert.AreSame(body, source.GetComponent<Rigidbody>());
             Assert.AreSame(body, joint.connectedBody);
             Assert.AreEqual(AssetDatabase.AssetPathToGUID(NewPrefabPath), response.guid);
-            Assert.AreEqual("", response.modifiedPrefabStagePath);
         }
 
         [Test]
@@ -80,7 +79,6 @@ namespace UniCortex.Editor.Tests.Infrastructures
             Assert.IsFalse(PrefabUtility.IsPartOfPrefabInstance(source));
             Assert.IsTrue(File.Exists(NewPrefabPath));
             Assert.AreEqual(AssetDatabase.AssetPathToGUID(NewPrefabPath), response.guid);
-            Assert.AreEqual("", response.modifiedPrefabStagePath);
         }
 
         [Test]

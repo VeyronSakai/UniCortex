@@ -40,8 +40,7 @@ namespace UniCortex.Editor.Tests.Presentations
             // Arrange
             var operations = new SpyPrefabOperations
             {
-                CreateResult = new CreatePrefabResponse(true, "0123456789abcdef0123456789abcdef",
-                    "Assets/Prefabs/Parent.prefab")
+                CreateResult = new CreatePrefabResponse(true, "0123456789abcdef0123456789abcdef")
             };
             var useCase = new CreatePrefabUseCase(new FakeMainThreadDispatcher(), operations);
             var router = new RequestRouter();
@@ -56,7 +55,6 @@ namespace UniCortex.Editor.Tests.Presentations
             Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
             Assert.IsTrue(operations.LastCreateConnect);
             StringAssert.Contains("\"guid\":\"0123456789abcdef0123456789abcdef\"", context.ResponseBody);
-            StringAssert.Contains("\"modifiedPrefabStagePath\":\"Assets/Prefabs/Parent.prefab\"", context.ResponseBody);
         }
 
         [Test]

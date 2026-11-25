@@ -20,12 +20,6 @@ public class PrefabUseCase(IUnityEditorClient client)
             message += $" GameObject {instanceId} is now an instance of it.";
         }
 
-        if (!string.IsNullOrEmpty(response.modifiedPrefabStagePath))
-        {
-            message += $" The Prefab open in Prefab Mode ({response.modifiedPrefabStagePath}) now holds that " +
-                       "instance; save it with save (CLI: editor save) to keep the change, unless Auto Save is on.";
-        }
-
         return message;
     }
 
