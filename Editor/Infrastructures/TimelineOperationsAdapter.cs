@@ -334,10 +334,7 @@ namespace UniCortex.Editor.Infrastructures
                     continue;
                 }
 
-                properties.Add(new SerializedPropertyEntry(
-                    iterator.propertyPath,
-                    iterator.propertyType.ToString(),
-                    SerializedPropertyValueConverter.ToValueString(iterator)));
+                properties.Add(SerializedPropertyEntryFactory.Create(iterator));
             }
 
             return properties;

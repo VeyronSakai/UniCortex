@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
@@ -17,10 +18,17 @@ namespace UniCortex.Editor.UseCases
         }
 
         public async Task<GetComponentPropertiesResponse> ExecuteAsync(int instanceId, string componentType,
-            string assemblyName, int componentIndex, CancellationToken cancellationToken = default)
+            string assemblyName, int componentIndex, string propertyPath = null, int? depth = null,
+            CancellationToken cancellationToken = default)
         {
+            if (depth < 0)
+            {
+                throw new ArgumentException($"depth must be 0 or greater (got {depth}).");
+            }
+
             return await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.GetProperties(instanceId, componentType, assemblyName, componentIndex),
+                () => _operations.GetProperties(instanceId, componentType, assemblyName, componentIndex, propertyPath,
+                    depth),
                 cancellationToken);
         }
     }

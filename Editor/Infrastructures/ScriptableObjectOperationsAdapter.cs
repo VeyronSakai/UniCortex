@@ -52,10 +52,7 @@ namespace UniCortex.Editor.Infrastructures
             while (iterator.NextVisible(enterChildren))
             {
                 enterChildren = false;
-                properties.Add(new SerializedPropertyEntry(
-                    iterator.propertyPath,
-                    iterator.propertyType.ToString(),
-                    SerializedPropertyValueConverter.ToValueString(iterator)));
+                properties.Add(SerializedPropertyEntryFactory.Create(iterator));
             }
 
             return new GetScriptableObjectPropertiesResponse(asset.GetType().FullName, properties);

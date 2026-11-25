@@ -21,6 +21,8 @@ namespace UniCortex.Editor.Tests.TestDoubles
         public string LastGetPropertiesComponentType { get; private set; }
         public string LastGetPropertiesAssembly { get; private set; }
         public int LastGetPropertiesComponentIndex { get; private set; }
+        public string LastGetPropertiesPropertyPath { get; private set; }
+        public int? LastGetPropertiesDepth { get; private set; }
         public GetComponentPropertiesResponse GetPropertiesResult { get; set; }
 
         public int SetPropertyCallCount { get; private set; }
@@ -48,13 +50,15 @@ namespace UniCortex.Editor.Tests.TestDoubles
         }
 
         public GetComponentPropertiesResponse GetProperties(int instanceId, string componentType,
-            string assemblyName, int componentIndex)
+            string assemblyName, int componentIndex, string propertyPath, int? depth)
         {
             GetPropertiesCallCount++;
             LastGetPropertiesInstanceId = instanceId;
             LastGetPropertiesComponentType = componentType;
             LastGetPropertiesAssembly = assemblyName;
             LastGetPropertiesComponentIndex = componentIndex;
+            LastGetPropertiesPropertyPath = propertyPath;
+            LastGetPropertiesDepth = depth;
             return GetPropertiesResult;
         }
 

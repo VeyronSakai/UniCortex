@@ -99,6 +99,82 @@ public class TimelineUseCaseTest
     }
 
     [Test, CancelAfter(120_000)]
+    public async ValueTask GetComponentProperties_ListsSceneBindings_WithPathsThatCanBeSet(
+        CancellationToken cancellationToken)
+    {
+        // Arrange
+        const string directorType = "UnityEngine.Playables.PlayableDirector";
+        const string directorAssembly = "UnityEngine.DirectorModule";
+        const string bindingPath = "m_SceneBindings.Array.data[0].value";
+        var goId = await CreateTimelineSetupAsync(cancellationToken);
+        var targetJson = await _fixture.GameObjectUseCase.CreateAsync("BindingTarget",
+            cancellationToken: cancellationToken);
+        var target = JsonSerializer.Deserialize<CreateGameObjectResponse>(targetJson, s_jsonOptions)!;
+
+        try
+        {
+            await _fixture.TimelineUseCase.AddTrackAsync(
+                goId, "UnityEngine.Timeline.ActivationTrack", "ActivationTrack", cancellationToken);
+            await _fixture.TimelineUseCase.BindTrackAsync(goId, 0, goId, cancellationToken);
+
+            // Act
+            var json = await _fixture.ComponentUseCase.GetPropertiesAsync(goId, directorType, directorAssembly,
+                propertyPath: "m_SceneBindings", cancellationToken: cancellationToken);
+            await _fixture.ComponentUseCase.SetPropertyAsync(goId, directorType, directorAssembly, bindingPath,
+                target.instanceId.ToString(), cancellationToken);
+            var updatedJson = await _fixture.ComponentUseCase.GetPropertiesAsync(goId, directorType,
+                directorAssembly, propertyPath: bindingPath, cancellationToken: cancellationToken);
+
+            // Assert
+            var properties = JsonSerializer.Deserialize<GetComponentPropertiesResponse>(json, s_jsonOptions)!
+                .properties;
+            Assert.That(properties.All(p => p.path.StartsWith("m_SceneBindings", StringComparison.Ordinal)));
+            var binding = properties.Single(p => p.path == bindingPath);
+            Assert.That(binding.value, Is.EqualTo(goId.ToString()));
+            Assert.That(binding.reference, Is.EqualTo("TimelineTestObj (UnityEngine.GameObject)"));
+            // Entries that are not object references have no "reference".
+            Assert.That(json, Does.Not.Contain("\"reference\":\"\""));
+
+            var updated = JsonSerializer.Deserialize<GetComponentPropertiesResponse>(updatedJson, s_jsonOptions)!
+                .properties.Single();
+            Assert.That(updated.path, Is.EqualTo(bindingPath));
+            Assert.That(updated.value, Is.EqualTo(target.instanceId.ToString()));
+            Assert.That(updated.reference, Is.EqualTo("BindingTarget (UnityEngine.GameObject)"));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(target.instanceId, cancellationToken);
+            await _fixture.GameObjectUseCase.DeleteAsync(goId, cancellationToken);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
+    public async ValueTask GetComponentProperties_WithDepthZero_ListsOnlyTopLevelProperties(
+        CancellationToken cancellationToken)
+    {
+        // Arrange
+        var goId = await CreateTimelineSetupAsync(cancellationToken);
+
+        try
+        {
+            // Act
+            var json = await _fixture.ComponentUseCase.GetPropertiesAsync(goId,
+                "UnityEngine.Playables.PlayableDirector", "UnityEngine.DirectorModule", depth: 0,
+                cancellationToken: cancellationToken);
+
+            // Assert
+            var paths = JsonSerializer.Deserialize<GetComponentPropertiesResponse>(json, s_jsonOptions)!
+                .properties.Select(p => p.path).ToList();
+            Assert.That(paths, Does.Contain("m_SceneBindings"));
+            Assert.That(paths.All(p => !p.Contains('.')));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(goId, cancellationToken);
+        }
+    }
+
+    [Test, CancelAfter(120_000)]
     public async ValueTask Create_CreatesTimelineAsset(CancellationToken cancellationToken)
     {
         var json = await _fixture.TimelineUseCase.CreateAsync(TimelineAssetPath, cancellationToken);

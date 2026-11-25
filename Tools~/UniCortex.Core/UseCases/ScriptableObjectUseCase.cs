@@ -1,6 +1,7 @@
 using System.Text.Json;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
+using UniCortex.Core.Extensions;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
@@ -27,6 +28,7 @@ public class ScriptableObjectUseCase(IUnityEditorClient client)
             await client
                 .GetAsync<GetScriptableObjectPropertiesRequest, GetScriptableObjectPropertiesResponse>(
                     ApiRoutes.ScriptableObjectProperties, request, cancellationToken);
+        response.properties.OmitEmptyReferences();
         return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 

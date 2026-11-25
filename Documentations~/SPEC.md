@@ -452,22 +452,32 @@ Request body: `{"instanceId": 12345, "componentType": "UnityEngine.Rigidbody", "
 Response: `{"success": true}`
 
 #### GET `/component/properties?instanceId=12345&componentType=UnityEngine.Transform&assemblyName=UnityEngine.CoreModule`
-Returns the serialized properties of the specified component.
+Returns the visible serialized properties of the specified component (`SerializedProperty.NextVisible`).
 
 Query parameters:
 - `instanceId`: instanceId of the target GameObject (required)
 - `componentType`: fully qualified component type name including namespace (required)
 - `assemblyName`: assembly name that defines the type (required)
 - `componentIndex`: index used when multiple components of the same type exist (optional, default: 0)
+- `propertyPath`: list only this property and its children, starting with the property itself (optional). A path that `FindProperty` does not find returns 400
+- `depth`: how many levels of children to list below the top-level properties, or below `propertyPath` (optional, 0 or greater). `0` lists the top-level properties only (or only `propertyPath`). Omitted, every level is listed
 
-Response:
+The children of arrays and lists, nested `[Serializable]` values and `[SerializeReference]` values (`Generic` and `ManagedReference` properties) are listed after them, with the full paths that `/component/property` accepts, e.g. `m_SceneBindings.Array.data[0].value`. An array lists its size (`<path>.Array.size`, which can be set to resize it) and then its elements. A `[SerializeReference]` value is expanded only where it first appears, since it can be referenced from several places and from itself (a cycle that would otherwise be followed forever). Other properties (strings, vectors, colors, curves, ...) are single entries, since their value is shown whole. Most components grow by a few dozen entries at most, but some are large (a ParticleSystem lists about 725 entries instead of 40), and so is a long list in a MonoBehaviour: use `depth: 0` for an overview, then `propertyPath` for the part to read.
+
+Object references have a `reference` that names their target (see Object reference values).
+
+Response (excerpt; `reference` of the other entries left out as in the MCP / CLI output):
 ```json
 {
-  "componentType": "UnityEngine.Transform",
+  "componentType": "UnityEngine.Playables.PlayableDirector",
   "properties": [
-    {"path": "m_LocalPosition", "type": "Vector3", "value": {"x": 0, "y": 1, "z": 0}},
-    {"path": "m_LocalRotation", "type": "Quaternion", "value": {"x": 0, "y": 0, "z": 0, "w": 1}},
-    {"path": "m_LocalScale", "type": "Vector3", "value": {"x": 1, "y": 1, "z": 1}}
+    {"path": "m_PlayableAsset", "type": "ObjectReference", "value": "Assets/Timelines/Intro.playable", "reference": "Assets/Timelines/Intro.playable (UnityEngine.Timeline.TimelineAsset)"},
+    {"path": "m_InitialTime", "type": "Float", "value": "0"},
+    {"path": "m_SceneBindings", "type": "Generic", "value": "Generic"},
+    {"path": "m_SceneBindings.Array.size", "type": "ArraySize", "value": "1"},
+    {"path": "m_SceneBindings.Array.data[0]", "type": "Generic", "value": "Generic"},
+    {"path": "m_SceneBindings.Array.data[0].key", "type": "ObjectReference", "value": "Assets/Timelines/Intro.playable", "reference": "Assets/Timelines/Intro.playable: Activation Track (UnityEngine.Timeline.ActivationTrack)"},
+    {"path": "m_SceneBindings.Array.data[0].value", "type": "ObjectReference", "value": "12346", "reference": "Stage/Door (UnityEngine.GameObject)"}
   ]
 }
 ```
@@ -488,6 +498,7 @@ Request body:
 
 - `propertyPath`: Unity's `SerializedProperty.propertyPath` format
 - `value`: passed as a string. The type is inferred automatically from `SerializedProperty.propertyType`
+- `<array>.Array.size` (`ArraySize`) resizes the array. It must be 0 or greater
 
 Response: `{"success": true}`
 
@@ -508,6 +519,18 @@ The resolved object is assigned as-is when it matches the field type. Otherwise 
 2. Sub-assets stored in the same asset file (`AssetDatabase.LoadAllAssetsAtPath`, e.g. a Sprite inside a Texture)
 
 If no candidate is accepted (type mismatch, or a scene object assigned to an asset), the property is left unchanged and 400 is returned.
+
+When these properties are read (`/component/properties`, `/scriptable-object/properties`, `/timeline/track/properties`, `/timeline/clip/properties`), `value` is in the format above (an asset path, an instanceId, or `null`), so it can be passed back as-is. Since an instanceId does not say what the object is, the entry also has a `reference` that names the target, followed by its type:
+
+| Target | `reference` |
+|--------|-------------|
+| Main asset | `Assets/Timelines/Intro.playable (UnityEngine.Timeline.TimelineAsset)` |
+| Object inside an asset (e.g. a component of a Prefab asset, a sub-asset) | `Assets/Prefabs/Row.prefab: Row/Button (UnityEngine.UI.Image)` |
+| Scene or Prefab Mode object | `Canvas/Panel/Button (UnityEngine.UI.Image)`: the hierarchy path |
+| Scene object in another scene than the object that holds the reference, or held by an asset (e.g. an exposed reference of a Timeline clip resolved through a PlayableDirector) | `Assets/Scenes/Other.unity: Root/Child (UnityEngine.Transform)` |
+| Set, but the target no longer exists (e.g. it was destroyed) | `Missing` (`value` is `null`) |
+
+For entries that are not object references, and for references that are not set, `reference` is an empty string in the HTTP response (JsonUtility writes every field), and the MCP server / CLI leave it out of their output.
 
 Example: assign a Timeline to a PlayableDirector:
 ```json
@@ -1651,7 +1674,7 @@ Output of `get_editor_dialogs`:
 |------|-----|-------------|
 | `add_component` | POST `/component/add` | Add a component to a GameObject |
 | `remove_component` | POST `/component/remove` | Remove a component from a GameObject |
-| `get_component_properties` | GET `/component/properties` | Get the serialized properties of a component |
+| `get_component_properties` | GET `/component/properties` | Get the serialized properties of a component, including the elements of arrays and nested serializable values (`propertyPath` / `depth` to read less) |
 | `set_component_property` | POST `/component/property` | Modify a component property |
 
 Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rigidbody` + `UnityEngine.PhysicsModule`).

@@ -63,7 +63,7 @@ namespace UniCortex.Editor.Infrastructures
         }
 
         public GetComponentPropertiesResponse GetProperties(int instanceId, string componentType,
-            string assemblyName, int componentIndex)
+            string assemblyName, int componentIndex, string propertyPath, int? depth)
         {
             var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
             if (go == null)
@@ -94,24 +94,14 @@ namespace UniCortex.Editor.Infrastructures
                     $"componentIndex {componentIndex} out of range. Found {components.Length} component(s) of type '{componentType}'.");
             }
 
-            var component = components[componentIndex];
-            var serializedObject = new SerializedObject(component);
-            var properties = new List<SerializedPropertyEntry>();
-
-            // Iterate over all visible serialized properties.
-            // enterChildren=true on the first call to enter the root,
-            // then false to stay at the top level (skip child properties of compound types).
-            var iterator = serializedObject.GetIterator();
-            var enterChildren = true;
-            while (iterator.NextVisible(enterChildren))
+            var serializedObject = new SerializedObject(components[componentIndex]);
+            if (!string.IsNullOrEmpty(propertyPath) && serializedObject.FindProperty(propertyPath) == null)
             {
-                enterChildren = false;
-                properties.Add(new SerializedPropertyEntry(
-                    iterator.propertyPath,
-                    iterator.propertyType.ToString(),
-                    SerializedPropertyValueConverter.ToValueString(iterator)));
+                throw new ArgumentException(
+                    $"Property '{propertyPath}' not found on component '{componentType}'.");
             }
 
+            var properties = SerializedPropertyLister.List(serializedObject, propertyPath, depth);
             return new GetComponentPropertiesResponse(type.FullName, properties);
         }
 

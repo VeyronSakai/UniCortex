@@ -5,17 +5,20 @@ namespace UniCortex.Cli.Commands;
 
 public class ComponentPropertyCommands(ComponentUseCase componentUseCase)
 {
-    /// <summary>List serialized properties of a component on a GameObject.</summary>
+    /// <summary>List serialized properties of a component on a GameObject, including the elements of arrays and nested serializable values.</summary>
     /// <param name="instanceId">Instance ID of the target GameObject.</param>
     /// <param name="componentType">Fully-qualified component type name (e.g. "UnityEngine.Transform").</param>
     /// <param name="assemblyName">Name of the assembly that defines the type (e.g. "UnityEngine.CoreModule").</param>
     /// <param name="componentIndex">Index when multiple components of the same type exist.</param>
+    /// <param name="propertyPath">List only this property and its children (e.g. "m_SceneBindings").</param>
+    /// <param name="depth">Levels of children to list (0 = top level only, or only the property at --property-path). Omit for all.</param>
     [Command("list")]
     public async Task List([Argument] int instanceId, [Argument] string componentType,
-        [Argument] string assemblyName, int componentIndex = 0, CancellationToken cancellationToken = default)
+        [Argument] string assemblyName, int componentIndex = 0, string? propertyPath = null, int? depth = null,
+        CancellationToken cancellationToken = default)
     {
         var json = await componentUseCase.GetPropertiesAsync(instanceId, componentType, assemblyName,
-            componentIndex, cancellationToken);
+            componentIndex, propertyPath, depth, cancellationToken);
         Console.WriteLine(json);
     }
 
