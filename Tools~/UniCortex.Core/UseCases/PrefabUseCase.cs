@@ -7,13 +7,20 @@ namespace UniCortex.Core.UseCases;
 
 public class PrefabUseCase(IUnityEditorClient client)
 {
-    public async ValueTask<string> CreateAsync(int instanceId, string assetPath,
-        CancellationToken cancellationToken)
+    public async ValueTask<string> CreateAsync(int instanceId, string assetPath, bool connect = false,
+        CancellationToken cancellationToken = default)
     {
-        var request = new CreatePrefabRequest { instanceId = instanceId, assetPath = assetPath };
-        await client.PostAsync<CreatePrefabRequest, CreatePrefabResponse>(ApiRoutes.PrefabCreate, request,
-            cancellationToken);
-        return $"Prefab created at: {assetPath}";
+        var request = new CreatePrefabRequest { instanceId = instanceId, assetPath = assetPath, connect = connect };
+        var response = await client.PostAsync<CreatePrefabRequest, CreatePrefabResponse>(ApiRoutes.PrefabCreate,
+            request, cancellationToken);
+
+        var message = $"Prefab created at: {assetPath} (GUID: {response.guid}).";
+        if (connect)
+        {
+            message += $" GameObject {instanceId} is now an instance of it.";
+        }
+
+        return message;
     }
 
     public async ValueTask<string> InstantiateAsync(string assetPath, CancellationToken cancellationToken)

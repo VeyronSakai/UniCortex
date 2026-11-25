@@ -80,6 +80,17 @@ public sealed class UnityEditorFixture
     }
 
     /// <summary>
+    /// Reads the text of an asset file from disk using UNICORTEX_PROJECT_PATH, or returns null if it does not exist.
+    /// </summary>
+    public static string? ReadAssetText(string assetPath)
+    {
+        var projectPath = Environment.GetEnvironmentVariable("UNICORTEX_PROJECT_PATH")
+                          ?? throw new InvalidOperationException("UNICORTEX_PROJECT_PATH is not set.");
+        var fullPath = Path.Combine(projectPath, assetPath);
+        return File.Exists(fullPath) ? File.ReadAllText(fullPath) : null;
+    }
+
+    /// <summary>
     /// Reads the GUID of an asset from its .meta file using UNICORTEX_PROJECT_PATH.
     /// </summary>
     public static string ReadAssetGuid(string assetPath)

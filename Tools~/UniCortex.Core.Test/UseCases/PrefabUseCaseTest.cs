@@ -47,7 +47,7 @@ public class PrefabUseCaseTest
         try
         {
             var message = await _fixture.PrefabUseCase.CreateAsync(
-                createResponse.instanceId, "Assets/CreatePrefabTest.prefab", ct);
+                createResponse.instanceId, "Assets/CreatePrefabTest.prefab", cancellationToken: ct);
 
             Assert.That(message, Does.Contain("Prefab created at: Assets/CreatePrefabTest.prefab"));
         }
@@ -55,6 +55,156 @@ public class PrefabUseCaseTest
         {
             await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
             UnityEditorFixture.DeleteAssetFile("Assets/CreatePrefabTest.prefab");
+        }
+    }
+
+    // Creates a GameObject with a child in the scene and saves it as a Prefab. Returns the scene GameObject's
+    // instanceId. In the Prefab, the root is named after the asset file.
+    private async ValueTask<int> CreatePrefabWithChildAsync(string rootName, string childName, string prefabPath,
+        CancellationToken ct)
+    {
+        var rootJson = await _fixture.GameObjectUseCase.CreateAsync(rootName, cancellationToken: ct);
+        var root = JsonSerializer.Deserialize<CreateGameObjectResponse>(rootJson, s_jsonOptions)!;
+        await _fixture.GameObjectUseCase.CreateAsync(childName, parentInstanceId: root.instanceId,
+            cancellationToken: ct);
+        await _fixture.PrefabUseCase.CreateAsync(root.instanceId, prefabPath, cancellationToken: ct);
+        return root.instanceId;
+    }
+
+    private async ValueTask<int> FindSingleInstanceIdAsync(string name, CancellationToken ct)
+    {
+        var findJson = await _fixture.GameObjectUseCase.FindAsync(name, ct);
+        var found = JsonSerializer.Deserialize<FindGameObjectsResponse>(findJson, s_jsonOptions)!;
+        return found.gameObjects.Single(g => g.name == name).instanceId;
+    }
+
+    [Test]
+    public async ValueTask Create_WithConnect_InPrefabMode_LinksOpenPrefabToNewPrefab()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        const string parentPath = "Assets/ConnectParent.prefab";
+        const string partPath = "Assets/ConnectPart.prefab";
+        var sceneRootId = await CreatePrefabWithChildAsync("ConnectParentObj", "ConnectPart", parentPath, ct);
+
+        try
+        {
+            await _fixture.PrefabUseCase.OpenAsync(parentPath, ct);
+            var partId = await FindSingleInstanceIdAsync("ConnectPart", ct);
+
+            // Act
+            var message = await _fixture.PrefabUseCase.CreateAsync(partId, partPath, connect: true,
+                cancellationToken: ct);
+
+            // Assert
+            var guid = UnityEditorFixture.ReadAssetGuid(partPath);
+            Assert.That(message, Does.Contain($"Prefab created at: {partPath} (GUID: {guid})."));
+            Assert.That(message, Does.Contain($"GameObject {partId} is now an instance of it."));
+            // Once saved, the open Prefab holds an instance of the new Prefab.
+            await _fixture.EditorUseCase.SaveAsync(ct);
+            Assert.That(UnityEditorFixture.ReadAssetText(parentPath), Does.Contain(guid));
+        }
+        finally
+        {
+            await _fixture.PrefabUseCase.CloseAsync(discardChanges: true, cancellationToken: ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(sceneRootId, ct);
+            UnityEditorFixture.DeleteAssetFile(parentPath);
+            UnityEditorFixture.DeleteAssetFile(partPath);
+        }
+    }
+
+    [Test]
+    public async ValueTask Create_InPrefabMode_WithoutConnect_LeavesSourceUnlinked()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        const string parentPath = "Assets/CopyParent.prefab";
+        const string partPath = "Assets/CopyPart.prefab";
+        var sceneRootId = await CreatePrefabWithChildAsync("CopyParentObj", "CopyPart", parentPath, ct);
+
+        try
+        {
+            await _fixture.PrefabUseCase.OpenAsync(parentPath, ct);
+            var partId = await FindSingleInstanceIdAsync("CopyPart", ct);
+
+            // Act
+            var message = await _fixture.PrefabUseCase.CreateAsync(partId, partPath, cancellationToken: ct);
+
+            // Assert
+            var guid = UnityEditorFixture.ReadAssetGuid(partPath);
+            Assert.That(message, Does.Contain($"Prefab created at: {partPath} (GUID: {guid})."));
+            // The source is not linked to the new Prefab, so it is not a prefab instance.
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _fixture.PrefabUseCase.UnpackAsync(partId, cancellationToken: ct));
+            Assert.That(ex!.Message, Does.Contain("is not a prefab instance"));
+        }
+        finally
+        {
+            await _fixture.PrefabUseCase.CloseAsync(discardChanges: true, cancellationToken: ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(sceneRootId, ct);
+            UnityEditorFixture.DeleteAssetFile(parentPath);
+            UnityEditorFixture.DeleteAssetFile(partPath);
+        }
+    }
+
+    [Test]
+    public async ValueTask Create_Throws_WhenSavingOverPrefabOpenInPrefabMode()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        const string parentPath = "Assets/OverwriteParent.prefab";
+        var sceneRootId = await CreatePrefabWithChildAsync("OverwriteParentObj", "OverwritePart", parentPath, ct);
+
+        try
+        {
+            var before = UnityEditorFixture.ReadAssetText(parentPath);
+            await _fixture.PrefabUseCase.OpenAsync(parentPath, ct);
+            var partId = await FindSingleInstanceIdAsync("OverwritePart", ct);
+
+            // Act
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _fixture.PrefabUseCase.CreateAsync(partId, parentPath, cancellationToken: ct));
+
+            // Assert
+            Assert.That(ex!.Message, Does.Contain("it is the Prefab open in Prefab Mode"));
+            Assert.That(UnityEditorFixture.ReadAssetText(parentPath), Is.EqualTo(before));
+        }
+        finally
+        {
+            await _fixture.PrefabUseCase.CloseAsync(discardChanges: true, cancellationToken: ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(sceneRootId, ct);
+            UnityEditorFixture.DeleteAssetFile(parentPath);
+        }
+    }
+
+    [Test]
+    public async ValueTask Create_WithConnect_Throws_ForRootOfPrefabOpenInPrefabMode()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        const string parentPath = "Assets/RootConnectParent.prefab";
+        const string newPath = "Assets/RootConnectNew.prefab";
+        var sceneRootId = await CreatePrefabWithChildAsync("RootConnectParentObj", "RootConnectPart", parentPath, ct);
+
+        try
+        {
+            await _fixture.PrefabUseCase.OpenAsync(parentPath, ct);
+            var rootId = await FindSingleInstanceIdAsync("RootConnectParent", ct);
+
+            // Act
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _fixture.PrefabUseCase.CreateAsync(rootId, newPath, connect: true, cancellationToken: ct));
+
+            // Assert
+            Assert.That(ex!.Message, Does.Contain("it is the root of the Prefab open in Prefab Mode"));
+            Assert.That(UnityEditorFixture.ReadAssetText(newPath), Is.Null);
+        }
+        finally
+        {
+            await _fixture.PrefabUseCase.CloseAsync(discardChanges: true, cancellationToken: ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(sceneRootId, ct);
+            UnityEditorFixture.DeleteAssetFile(newPath);
+            UnityEditorFixture.DeleteAssetFile(parentPath);
         }
     }
 
@@ -67,7 +217,7 @@ public class PrefabUseCaseTest
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
 
         await _fixture.PrefabUseCase.CreateAsync(
-            createResponse.instanceId, "Assets/InstantiatePrefabTest.prefab", ct);
+            createResponse.instanceId, "Assets/InstantiatePrefabTest.prefab", cancellationToken: ct);
 
         var instantiatedId = 0;
         try
@@ -105,7 +255,7 @@ public class PrefabUseCaseTest
         try
         {
             await _fixture.PrefabUseCase.CreateAsync(
-                createResponse.instanceId, "Assets/OpenPrefabTest.prefab", ct);
+                createResponse.instanceId, "Assets/OpenPrefabTest.prefab", cancellationToken: ct);
 
             var message = await _fixture.PrefabUseCase.OpenAsync("Assets/OpenPrefabTest.prefab", ct);
 
@@ -145,7 +295,7 @@ public class PrefabUseCaseTest
         const string prefabPath = "Assets/UnpackPrefabTest.prefab";
         var createJson = await _fixture.GameObjectUseCase.CreateAsync("UnpackPrefabTestObj", cancellationToken: ct);
         var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
-        await _fixture.PrefabUseCase.CreateAsync(createResponse.instanceId, prefabPath, ct);
+        await _fixture.PrefabUseCase.CreateAsync(createResponse.instanceId, prefabPath, cancellationToken: ct);
         var instantiateJson = await _fixture.PrefabUseCase.InstantiateAsync(prefabPath, ct);
         var instance = JsonSerializer.Deserialize<InstantiatePrefabResponse>(instantiateJson, s_jsonOptions)!;
 
@@ -183,12 +333,12 @@ public class PrefabUseCaseTest
 
         try
         {
-            await _fixture.PrefabUseCase.CreateAsync(innerSource.instanceId, innerPath, ct);
+            await _fixture.PrefabUseCase.CreateAsync(innerSource.instanceId, innerPath, cancellationToken: ct);
             var innerJson = await _fixture.PrefabUseCase.InstantiateAsync(innerPath, ct);
             var inner = JsonSerializer.Deserialize<InstantiatePrefabResponse>(innerJson, s_jsonOptions)!;
             await _fixture.GameObjectUseCase.ModifyAsync(inner.instanceId, parentInstanceId: host.instanceId,
                 cancellationToken: ct);
-            await _fixture.PrefabUseCase.CreateAsync(host.instanceId, hostPath, ct);
+            await _fixture.PrefabUseCase.CreateAsync(host.instanceId, hostPath, cancellationToken: ct);
             await _fixture.PrefabUseCase.OpenAsync(hostPath, ct);
             var findJson = await _fixture.GameObjectUseCase.FindAsync("UnpackInner", ct);
             var found = JsonSerializer.Deserialize<FindGameObjectsResponse>(findJson, s_jsonOptions)!;
@@ -247,7 +397,7 @@ public class PrefabUseCaseTest
         try
         {
             await _fixture.PrefabUseCase.CreateAsync(
-                createResponse.instanceId, "Assets/HierarchyPrefabTest.prefab", ct);
+                createResponse.instanceId, "Assets/HierarchyPrefabTest.prefab", cancellationToken: ct);
 
             await _fixture.PrefabUseCase.OpenAsync("Assets/HierarchyPrefabTest.prefab", ct);
 
@@ -276,7 +426,7 @@ public class PrefabUseCaseTest
         try
         {
             await _fixture.PrefabUseCase.CreateAsync(
-                createResponse.instanceId, "Assets/FindPrefabTest.prefab", ct);
+                createResponse.instanceId, "Assets/FindPrefabTest.prefab", cancellationToken: ct);
 
             await _fixture.PrefabUseCase.OpenAsync("Assets/FindPrefabTest.prefab", ct);
 
@@ -304,7 +454,7 @@ public class PrefabUseCaseTest
         try
         {
             await _fixture.PrefabUseCase.CreateAsync(
-                createResponse.instanceId, "Assets/FindQueryPrefabTest.prefab", ct);
+                createResponse.instanceId, "Assets/FindQueryPrefabTest.prefab", cancellationToken: ct);
 
             await _fixture.PrefabUseCase.OpenAsync("Assets/FindQueryPrefabTest.prefab", ct);
 
@@ -335,7 +485,7 @@ public class PrefabUseCaseTest
         try
         {
             await _fixture.PrefabUseCase.CreateAsync(
-                createResponse.instanceId, "Assets/SavePrefabTest.prefab", ct);
+                createResponse.instanceId, "Assets/SavePrefabTest.prefab", cancellationToken: ct);
 
             await _fixture.PrefabUseCase.OpenAsync("Assets/SavePrefabTest.prefab", ct);
 

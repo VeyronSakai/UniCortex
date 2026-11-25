@@ -31,6 +31,30 @@ namespace UniCortex.Editor.Tests.Presentations
             StringAssert.Contains("true", context.ResponseBody);
             Assert.AreEqual(12345, operations.LastCreateInstanceId);
             Assert.AreEqual("Assets/Prefabs/Test.prefab", operations.LastCreateAssetPath);
+            Assert.IsFalse(operations.LastCreateConnect);
+        }
+
+        [Test]
+        public void HandleCreate_WithConnect_PassesConnect_And_ReturnsGuid()
+        {
+            // Arrange
+            var operations = new SpyPrefabOperations
+            {
+                CreateResult = new CreatePrefabResponse(true, "0123456789abcdef0123456789abcdef")
+            };
+            var useCase = new CreatePrefabUseCase(new FakeMainThreadDispatcher(), operations);
+            var router = new RequestRouter();
+            new CreatePrefabHandler(useCase).Register(router);
+            var context = new FakeRequestContext(HttpMethodType.Post, ApiRoutes.PrefabCreate,
+                "{\"instanceId\":12345,\"assetPath\":\"Assets/Prefabs/Test.prefab\",\"connect\":true}");
+
+            // Act
+            router.HandleRequestAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.AreEqual(HttpStatusCodes.Ok, context.ResponseStatusCode);
+            Assert.IsTrue(operations.LastCreateConnect);
+            StringAssert.Contains("\"guid\":\"0123456789abcdef0123456789abcdef\"", context.ResponseBody);
         }
 
         [Test]

@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using UniCortex.Editor.Domains.Interfaces;
+using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Editor.UseCases
 {
@@ -15,11 +16,11 @@ namespace UniCortex.Editor.UseCases
             _operations = operations;
         }
 
-        public async Task ExecuteAsync(int instanceId, string assetPath,
+        public async Task<CreatePrefabResponse> ExecuteAsync(int instanceId, string assetPath, bool connect = false,
             CancellationToken cancellationToken = default)
         {
-            await _dispatcher.RunOnMainThreadAsync(
-                () => _operations.CreatePrefab(instanceId, assetPath), cancellationToken);
+            return await _dispatcher.RunOnMainThreadAsync(
+                () => _operations.CreatePrefab(instanceId, assetPath, connect), cancellationToken);
         }
     }
 }
