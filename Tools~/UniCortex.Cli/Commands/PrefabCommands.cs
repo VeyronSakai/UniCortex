@@ -5,14 +5,15 @@ namespace UniCortex.Cli.Commands;
 
 public class PrefabCommands(PrefabUseCase prefabUseCase)
 {
-    /// <summary>Create a Prefab asset from a GameObject in the scene.</summary>
+    /// <summary>Create a Prefab asset from a GameObject in a scene or in Prefab Mode.</summary>
     /// <param name="instanceId">Instance ID of the source GameObject.</param>
     /// <param name="assetPath">Asset path to save the Prefab (e.g. "Assets/Prefabs/MyCube.prefab").</param>
+    /// <param name="connect">Turn the GameObject into an instance of the new Prefab (references to it stay valid).</param>
     [Command("create")]
-    public async Task Create([Argument] int instanceId, [Argument] string assetPath,
+    public async Task Create([Argument] int instanceId, [Argument] string assetPath, bool connect = false,
         CancellationToken cancellationToken = default)
     {
-        var message = await prefabUseCase.CreateAsync(instanceId, assetPath, cancellationToken);
+        var message = await prefabUseCase.CreateAsync(instanceId, assetPath, connect, cancellationToken);
         Console.WriteLine(message);
     }
 

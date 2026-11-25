@@ -168,7 +168,7 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 
 | Tool | Description |
 |------|-------------|
-| `create_prefab` | Save a scene GameObject as a Prefab asset |
+| `create_prefab` | Save a GameObject (in a scene or in Prefab Mode) as a Prefab asset and return its GUID. With `connect`, the GameObject becomes an instance of the new Prefab and references to it stay valid, e.g. to extract part of a Prefab into its own Prefab (supports Undo) |
 | `instantiate_prefab` | Instantiate a Prefab into the scene |
 | `open_prefab` | Open a Prefab asset in Prefab Mode for editing |
 | `close_prefab` | Close Prefab Mode and return to the main stage (`discardChanges` drops unsaved changes of the Prefab) |
@@ -415,7 +415,7 @@ Component commands accept the fully-qualified component type name plus the defin
 
 | Command | Description |
 | --- | --- |
-| `prefab create` | Save a scene GameObject as a Prefab asset. |
+| `prefab create` | Save a GameObject (in a scene or in Prefab Mode) as a Prefab asset. Add `--connect` to turn the GameObject into an instance of the new Prefab. |
 | `prefab instantiate` | Instantiate a Prefab into the current scene. |
 | `prefab open` | Open a Prefab in Prefab Mode. |
 | `prefab close` | Close Prefab Mode and return to the main stage. Add `--discard-changes` to drop unsaved changes of the Prefab. |

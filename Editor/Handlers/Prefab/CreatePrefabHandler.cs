@@ -48,8 +48,9 @@ namespace UniCortex.Editor.Handlers.Prefab
                 return;
             }
 
-            await _useCase.ExecuteAsync(request.instanceId, request.assetPath, cancellationToken);
-            var json = JsonUtility.ToJson(new CreatePrefabResponse(true));
+            var result = await _useCase.ExecuteAsync(request.instanceId, request.assetPath, request.connect,
+                cancellationToken);
+            var json = JsonUtility.ToJson(result);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }
     }

@@ -659,14 +659,23 @@ Response: `{"success": true}`
 ### Prefab
 
 #### POST `/prefab/create`
-Saves a GameObject in the scene as a Prefab asset. `PrefabUtility.SaveAsPrefabAsset()`
+Saves a GameObject in a loaded scene or in the Prefab open in Prefab Mode as a Prefab asset. `PrefabUtility.SaveAsPrefabAsset()`, or `PrefabUtility.SaveAsPrefabAssetAndConnect(go, assetPath, InteractionMode.UserAction)` with `connect`. An existing Prefab at `assetPath` is replaced.
 
 Request body:
 ```json
-{"instanceId": 12345, "assetPath": "Assets/Prefabs/MyCube.prefab"}
+{"instanceId": 12345, "assetPath": "Assets/Prefabs/MyCube.prefab", "connect": false}
 ```
 
-Response: `{"success": true}`
+- `connect` (optional, default `false`): the GameObject becomes an instance of the new Prefab, like dragging it into the Project window. The GameObject, its children and its components stay the same objects (they keep their instanceIds), so references to them from other objects stay valid. This is how part of a Prefab is extracted into its own Prefab in Prefab Mode: the open Prefab then holds an instance of the new one, and has changes to save with `/editor/save` (UniCortex does not save it), unless Auto Save is on. A GameObject that is the outermost root of a prefab instance becomes an instance of a new Prefab Variant of its Prefab (unpack it with `/prefab/unpack` first to get a plain Prefab). Undo reverts the link, but the saved asset is kept. Without `connect`, the GameObject is left unlinked
+- Returns 400 when `assetPath` is the Prefab open in Prefab Mode (saving would replace the Prefab being edited), and, with `connect`, for the root of the Prefab open in Prefab Mode (it would turn that Prefab into a Variant of the new one) or for a GameObject that is part of a prefab instance but not its outermost root (Unity cannot save it)
+
+Response:
+```json
+{"success": true, "guid": "0123456789abcdef0123456789abcdef", "modifiedPrefabStagePath": ""}
+```
+
+- `guid`: GUID of the saved Prefab asset
+- `modifiedPrefabStagePath`: with `connect` for a GameObject in Prefab Mode, the asset path of the Prefab open in Prefab Mode, which now holds an instance of the new Prefab and has to be saved. Empty otherwise
 
 #### POST `/prefab/instantiate`
 Instantiates a Prefab into the scene. `PrefabUtility.InstantiatePrefab()` + `Undo.RegisterCreatedObjectUndo`
@@ -1660,7 +1669,7 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 
 | Tool | API | Description |
 |------|-----|-------------|
-| `create_prefab` | POST `/prefab/create` | Save a scene GameObject as a Prefab asset |
+| `create_prefab` | POST `/prefab/create` | Save a GameObject (in a scene or in Prefab Mode) as a Prefab asset, optionally turning it into an instance of the new Prefab |
 | `instantiate_prefab` | POST `/prefab/instantiate` | Instantiate a Prefab into the scene |
 | `open_prefab` | POST `/prefab/open` | Open a Prefab in Prefab Mode |
 | `close_prefab` | POST `/prefab/close` | Close Prefab Mode and return to the main stage |

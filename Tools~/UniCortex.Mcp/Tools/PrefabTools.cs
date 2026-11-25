@@ -11,15 +11,19 @@ namespace UniCortex.Mcp.Tools;
 public class PrefabTools(PrefabUseCase prefabUseCase, IAsyncOperationSequencer sequencer)
 {
     [McpServerTool(Name = "create_prefab", ReadOnly = false),
-     Description("Create a Prefab asset from a GameObject in the scene."), UsedImplicitly]
+     Description("Create a Prefab asset from a GameObject in a scene or in Prefab Mode. Returns the asset's GUID."),
+     UsedImplicitly]
     public ValueTask<CallToolResult> CreatePrefabAsync(
         [Description("instanceId of the GameObject to save.")]
         int instanceId,
         [Description("Asset path to save to (e.g. \"Assets/Prefabs/MyCube.prefab\").")]
         string assetPath,
+        [Description("Turn the GameObject into an instance of the new Prefab (references to it stay valid), " +
+                     "e.g. to extract part of a Prefab in Prefab Mode. Undoable; the asset is kept.")]
+        bool connect = false,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => prefabUseCase.CreateAsync(instanceId, assetPath, ct), cancellationToken);
+            ct => prefabUseCase.CreateAsync(instanceId, assetPath, connect, ct), cancellationToken);
 
     [McpServerTool(Name = "instantiate_prefab", ReadOnly = false),
      Description("Instantiate a Prefab into the current scene. Returns the new GameObject's name and instance ID."),

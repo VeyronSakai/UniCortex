@@ -9,7 +9,7 @@ namespace UniCortex.Editor.Infrastructures
 {
     internal sealed class PrefabOperationsAdapter : IPrefabOperations
     {
-        public void CreatePrefab(int instanceId, string assetPath)
+        public CreatePrefabResponse CreatePrefab(int instanceId, string assetPath, bool connect)
         {
             var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
             if (go == null)
@@ -17,12 +17,38 @@ namespace UniCortex.Editor.Infrastructures
                 throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
             }
 
+            // Saving over the Prefab open in Prefab Mode would replace the asset being edited with the GameObject.
+            var currentPrefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (currentPrefabStage != null && string.Equals(currentPrefabStage.assetPath, assetPath.Replace('\\', '/'),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(
+                    $"Cannot save to '{assetPath}': it is the Prefab open in Prefab Mode, which it would replace.");
+            }
+
+            // Connecting the root of the Prefab open in Prefab Mode would turn that Prefab into a Variant of the new one.
+            var sourcePrefabStage = PrefabStageUtility.GetPrefabStage(go);
+            if (connect && sourcePrefabStage != null && sourcePrefabStage.prefabContentsRoot == go)
+            {
+                throw new ArgumentException(
+                    $"Cannot connect '{go.name}': it is the root of the Prefab open in Prefab Mode " +
+                    $"({sourcePrefabStage.assetPath}). Connect one of its children, or save it without connect.");
+            }
+
             AssetUtility.EnsureParentFolderExists(assetPath);
 
-            if (PrefabUtility.SaveAsPrefabAsset(go, assetPath) == null)
+            // UserAction records the connection as one Undo step. Undo does not delete the saved asset.
+            var asset = connect
+                ? PrefabUtility.SaveAsPrefabAssetAndConnect(go, assetPath, InteractionMode.UserAction)
+                : PrefabUtility.SaveAsPrefabAsset(go, assetPath);
+            if (asset == null)
             {
                 throw new ArgumentException($"Failed to save prefab at '{assetPath}'.");
             }
+
+            var guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
+            var modifiedPrefabStagePath = connect && sourcePrefabStage != null ? sourcePrefabStage.assetPath : "";
+            return new CreatePrefabResponse(true, guid, modifiedPrefabStagePath);
         }
 
         public InstantiatePrefabResponse InstantiatePrefab(string assetPath)
