@@ -701,6 +701,19 @@ Request body (optional):
 
 Response: `{"success": true}`
 
+#### POST `/prefab/unpack`
+Unpacks a prefab instance into plain GameObjects, like the Hierarchy window's Prefab > Unpack / Unpack Completely. `PrefabUtility.UnpackPrefabInstance(go, mode, InteractionMode.UserAction)`, which records one Undo step. Works on a prefab instance in a loaded scene and on one inside the Prefab open in Prefab Mode (the Prefab then has changes to save with `/editor/save`, unless Auto Save is on). The GameObjects keep their instanceIds.
+
+Request body:
+```json
+{"instanceId": 12345, "mode": "OutermostRoot"}
+```
+
+- `instanceId`: the outermost root of the prefab instance (required). Returns 400 when the GameObject is not part of a prefab instance, or when it is inside one but not its outermost root (the error names the outermost root and its instanceId)
+- `mode`: `OutermostRoot` (default) unpacks only this instance, so nested prefab instances inside it stay linked to their prefabs (each becomes an outermost prefab instance root). `Completely` unpacks the nested prefab instances too. Other values return 400
+
+Response: `{"success": true}`
+
 ### Asset
 
 #### POST `/asset-database/refresh`
@@ -1547,7 +1560,7 @@ A thin wrapper that is only responsible for MCP tool definitions. Each tool clas
   3. Exits with an error if neither is set
 - Logs go to stderr (stdout is reserved for the MCP protocol)
 
-### MCP Tools (56 tools total)
+### MCP Tools (57 tools total)
 
 To prevent AI agents from getting confused, each tool maps to a clearly distinct operation and overlap is eliminated.
 Each tool is defined as an `[McpServerTool]` method inside a `[McpServerToolType]` class.
@@ -1643,7 +1656,7 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `get_scriptable_object_properties` | GET `/scriptable-object/properties` | Get the top-level property list of an `.asset` file |
 | `set_scriptable_object_property` | POST `/scriptable-object/property` | Modify a specific property on an `.asset` file |
 
-#### Prefab (4)
+#### Prefab (5)
 
 | Tool | API | Description |
 |------|-----|-------------|
@@ -1651,6 +1664,7 @@ Types are specified with `componentType` + `assemblyName` (e.g. `UnityEngine.Rig
 | `instantiate_prefab` | POST `/prefab/instantiate` | Instantiate a Prefab into the scene |
 | `open_prefab` | POST `/prefab/open` | Open a Prefab in Prefab Mode |
 | `close_prefab` | POST `/prefab/close` | Close Prefab Mode and return to the main stage |
+| `unpack_prefab_instance` | POST `/prefab/unpack` | Unpack a prefab instance into plain GameObjects (nested instances stay linked unless `Completely`) |
 
 #### Asset (1)
 
@@ -1813,7 +1827,7 @@ scene create|open|discard|save-as|hierarchy
 game-object find|create|delete|modify
 component add|remove
 component property list|set
-prefab create|instantiate|open|close|save
+prefab create|instantiate|open|close|unpack
 scriptable-object create
 scriptable-object property list|set
 test run

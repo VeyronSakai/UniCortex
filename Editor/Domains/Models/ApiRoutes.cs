@@ -37,6 +37,7 @@ namespace UniCortex.Editor.Domains.Models
         public const string PrefabInstantiate = "/prefab/instantiate";
         public const string PrefabOpen = "/prefab/open";
         public const string PrefabClose = "/prefab/close";
+        public const string PrefabUnpack = "/prefab/unpack";
         public const string ScriptableObjectCreate = "/scriptable-object/create";
         public const string ScriptableObjectProperties = "/scriptable-object/properties";
         public const string ScriptableObjectProperty = "/scriptable-object/property";

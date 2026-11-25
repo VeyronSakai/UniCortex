@@ -54,4 +54,18 @@ public class PrefabTools(PrefabUseCase prefabUseCase, IAsyncOperationSequencer s
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
             ct => prefabUseCase.CloseAsync(discardChanges, ct), cancellationToken);
+
+    [McpServerTool(Name = "unpack_prefab_instance", ReadOnly = false),
+     Description("Unpack a prefab instance (in a scene or in Prefab Mode) into plain GameObjects, " +
+                 "e.g. to edit it freely or save it as a new Prefab with create_prefab. Undoable."),
+     UsedImplicitly]
+    public ValueTask<CallToolResult> UnpackPrefabInstanceAsync(
+        [Description("instanceId of the outermost root of the prefab instance.")]
+        int instanceId,
+        [Description("\"OutermostRoot\" (default): nested prefab instances inside stay linked. " +
+                     "\"Completely\": unpack them too.")]
+        string mode = "OutermostRoot",
+        CancellationToken cancellationToken = default)
+        => McpToolExecution.ExecuteTextAsync(sequencer,
+            ct => prefabUseCase.UnpackAsync(instanceId, mode, ct), cancellationToken);
 }

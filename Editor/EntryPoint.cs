@@ -215,6 +215,9 @@ namespace UniCortex.Editor
             var closePrefabUseCase = new ClosePrefabUseCase(dispatcher, prefabOps, sceneManagerAdapter);
             var closePrefabHandler = new ClosePrefabHandler(closePrefabUseCase);
 
+            var unpackPrefabInstanceUseCase = new UnpackPrefabInstanceUseCase(dispatcher, prefabOps);
+            var unpackPrefabInstanceHandler = new UnpackPrefabInstanceHandler(unpackPrefabInstanceUseCase);
+
             var scriptableObjectOps = new ScriptableObjectOperationsAdapter();
 
             var createScriptableObjectUseCase = new CreateScriptableObjectUseCase(dispatcher, scriptableObjectOps);
@@ -457,6 +460,7 @@ namespace UniCortex.Editor
             instantiatePrefabHandler.Register(router);
             openPrefabHandler.Register(router);
             closePrefabHandler.Register(router);
+            unpackPrefabInstanceHandler.Register(router);
             createScriptableObjectHandler.Register(router);
             scriptableObjectPropertiesHandler.Register(router);
             setScriptableObjectPropertyHandler.Register(router);

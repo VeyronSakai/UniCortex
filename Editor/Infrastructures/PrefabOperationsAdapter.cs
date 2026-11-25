@@ -60,5 +60,35 @@ namespace UniCortex.Editor.Infrastructures
 
             StageUtility.GoToMainStage();
         }
+
+        public void UnpackPrefabInstance(int instanceId, string mode)
+        {
+            var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+            if (go == null)
+            {
+                throw new ArgumentException($"GameObject with instanceId {instanceId} not found.");
+            }
+
+            if (!PrefabUtility.IsOutermostPrefabInstanceRoot(go))
+            {
+                var outermostRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
+                if (outermostRoot == null)
+                {
+                    throw new ArgumentException($"'{go.name}' (instanceId {instanceId}) is not a prefab instance.");
+                }
+
+                throw new ArgumentException(
+                    $"'{go.name}' (instanceId {instanceId}) is not the outermost root of a prefab instance. " +
+                    $"Unpack its outermost root '{outermostRoot.name}' " +
+                    $"(instanceId {outermostRoot.GetInstanceID()}) instead.");
+            }
+
+            var unpackMode = mode == PrefabUnpackModes.Completely
+                ? PrefabUnpackMode.Completely
+                : PrefabUnpackMode.OutermostRoot;
+
+            // UserAction records the unpack as one Undo step.
+            PrefabUtility.UnpackPrefabInstance(go, unpackMode, InteractionMode.UserAction);
+        }
     }
 }

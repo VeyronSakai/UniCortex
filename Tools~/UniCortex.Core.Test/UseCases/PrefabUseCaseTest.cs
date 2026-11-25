@@ -138,6 +138,105 @@ public class PrefabUseCaseTest
     }
 
     [Test]
+    public async ValueTask Unpack_ReturnsSuccess_AndUnlinksInstance()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        const string prefabPath = "Assets/UnpackPrefabTest.prefab";
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("UnpackPrefabTestObj", cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+        await _fixture.PrefabUseCase.CreateAsync(createResponse.instanceId, prefabPath, ct);
+        var instantiateJson = await _fixture.PrefabUseCase.InstantiateAsync(prefabPath, ct);
+        var instance = JsonSerializer.Deserialize<InstantiatePrefabResponse>(instantiateJson, s_jsonOptions)!;
+
+        try
+        {
+            // Act
+            var message = await _fixture.PrefabUseCase.UnpackAsync(instance.instanceId, cancellationToken: ct);
+
+            // Assert
+            Assert.That(message, Does.Contain($"Prefab instance unpacked (OutermostRoot): {instance.instanceId}"));
+            // The GameObject is no longer a prefab instance, so it cannot be unpacked again.
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _fixture.PrefabUseCase.UnpackAsync(instance.instanceId, cancellationToken: ct));
+            Assert.That(ex!.Message, Does.Contain("is not a prefab instance"));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(instance.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
+            UnityEditorFixture.DeleteAssetFile(prefabPath);
+        }
+    }
+
+    [Test]
+    public async ValueTask Unpack_InPrefabMode_UnpacksNestedInstance()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        const string innerPath = "Assets/UnpackInner.prefab";
+        const string hostPath = "Assets/UnpackHost.prefab";
+        var innerSourceJson = await _fixture.GameObjectUseCase.CreateAsync("UnpackInnerObj", cancellationToken: ct);
+        var innerSource = JsonSerializer.Deserialize<CreateGameObjectResponse>(innerSourceJson, s_jsonOptions)!;
+        var hostJson = await _fixture.GameObjectUseCase.CreateAsync("UnpackHostObj", cancellationToken: ct);
+        var host = JsonSerializer.Deserialize<CreateGameObjectResponse>(hostJson, s_jsonOptions)!;
+
+        try
+        {
+            await _fixture.PrefabUseCase.CreateAsync(innerSource.instanceId, innerPath, ct);
+            var innerJson = await _fixture.PrefabUseCase.InstantiateAsync(innerPath, ct);
+            var inner = JsonSerializer.Deserialize<InstantiatePrefabResponse>(innerJson, s_jsonOptions)!;
+            await _fixture.GameObjectUseCase.ModifyAsync(inner.instanceId, parentInstanceId: host.instanceId,
+                cancellationToken: ct);
+            await _fixture.PrefabUseCase.CreateAsync(host.instanceId, hostPath, ct);
+            await _fixture.PrefabUseCase.OpenAsync(hostPath, ct);
+            var findJson = await _fixture.GameObjectUseCase.FindAsync("UnpackInner", ct);
+            var found = JsonSerializer.Deserialize<FindGameObjectsResponse>(findJson, s_jsonOptions)!;
+            var nestedId = found.gameObjects.Single(g => g.name == "UnpackInner").instanceId;
+
+            // Act
+            var message = await _fixture.PrefabUseCase.UnpackAsync(nestedId, cancellationToken: ct);
+
+            // Assert
+            Assert.That(message, Does.Contain("Prefab instance unpacked"));
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _fixture.PrefabUseCase.UnpackAsync(nestedId, cancellationToken: ct));
+            Assert.That(ex!.Message, Does.Contain("is not a prefab instance"));
+        }
+        finally
+        {
+            await _fixture.PrefabUseCase.CloseAsync(discardChanges: true, cancellationToken: ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(host.instanceId, ct);
+            await _fixture.GameObjectUseCase.DeleteAsync(innerSource.instanceId, ct);
+            UnityEditorFixture.DeleteAssetFile(hostPath);
+            UnityEditorFixture.DeleteAssetFile(innerPath);
+        }
+    }
+
+    [Test]
+    public async ValueTask Unpack_Throws_WhenModeIsUnknown()
+    {
+        // Arrange
+        var ct = CancellationToken.None;
+        var createJson = await _fixture.GameObjectUseCase.CreateAsync("UnpackModeTestObj", cancellationToken: ct);
+        var createResponse = JsonSerializer.Deserialize<CreateGameObjectResponse>(createJson, s_jsonOptions)!;
+
+        try
+        {
+            // Act
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _fixture.PrefabUseCase.UnpackAsync(createResponse.instanceId, "Partially", ct));
+
+            // Assert
+            Assert.That(ex!.Message, Does.Contain("Unknown unpack mode: 'Partially'"));
+        }
+        finally
+        {
+            await _fixture.GameObjectUseCase.DeleteAsync(createResponse.instanceId, ct);
+        }
+    }
+
+    [Test]
     public async ValueTask GetHierarchy_InPrefabMode_ReturnsPrefabHierarchy()
     {
         var ct = CancellationToken.None;
