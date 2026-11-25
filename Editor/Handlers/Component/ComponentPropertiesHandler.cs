@@ -54,8 +54,26 @@ namespace UniCortex.Editor.Handlers.Component
                 componentIndex = parsed;
             }
 
+            // Without depth, every level of arrays and nested serializable values is listed.
+            int? depth = null;
+            var depthParam = context.GetQueryParameter("depth");
+            if (!string.IsNullOrEmpty(depthParam))
+            {
+                if (!int.TryParse(depthParam, out var parsedDepth))
+                {
+                    var errorJson = JsonUtility.ToJson(new ErrorResponse($"depth must be an integer (got '{depthParam}')."));
+                    await context.WriteResponseAsync(HttpStatusCodes.BadRequest, errorJson);
+                    return;
+                }
+
+                depth = parsedDepth;
+            }
+
+            var propertyPath = context.GetQueryParameter("propertyPath");
+
+            // A negative depth or an unknown propertyPath throws ArgumentException, which the router answers with 400.
             var result = await _useCase.ExecuteAsync(instanceId, componentType, assemblyName, componentIndex,
-                cancellationToken);
+                propertyPath, depth, cancellationToken);
             var json = JsonUtility.ToJson(result);
             await context.WriteResponseAsync(HttpStatusCodes.Ok, json);
         }

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
+using UniCortex.Core.Extensions;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
@@ -35,17 +36,22 @@ public class ComponentUseCase(IUnityEditorClient client)
     }
 
     public async ValueTask<string> GetPropertiesAsync(int instanceId, string componentType, string assemblyName,
-        int componentIndex = 0, CancellationToken cancellationToken = default)
+        int componentIndex = 0, string? propertyPath = null, int? depth = null,
+        CancellationToken cancellationToken = default)
     {
         var request = new GetComponentPropertiesRequest
         {
             instanceId = instanceId,
             componentType = componentType,
             assemblyName = assemblyName,
-            componentIndex = componentIndex
+            componentIndex = componentIndex,
+            // A null propertyPath or depth is left out of the query.
+            propertyPath = propertyPath!,
+            depth = depth
         };
         var response = await client.GetAsync<GetComponentPropertiesRequest, GetComponentPropertiesResponse>(
             ApiRoutes.ComponentProperties, request, cancellationToken);
+        response.properties.OmitEmptyReferences();
         return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 

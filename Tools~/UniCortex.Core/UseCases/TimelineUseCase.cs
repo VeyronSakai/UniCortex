@@ -1,6 +1,7 @@
 using System.Text.Json;
 using UniCortex.Core.Domains;
 using UniCortex.Core.Domains.Interfaces;
+using UniCortex.Core.Extensions;
 using UniCortex.Editor.Domains.Models;
 
 namespace UniCortex.Core.UseCases;
@@ -79,6 +80,7 @@ public class TimelineUseCase(IUnityEditorClient client)
             { instanceId = instanceId, assetPath = assetPath, trackIndex = trackIndex };
         var response = await client.GetAsync<GetTimelineTrackPropertiesRequest, GetTimelineTrackPropertiesResponse>(
             ApiRoutes.TimelineTrackProperties, request, cancellationToken);
+        response.properties.OmitEmptyReferences();
         return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 
@@ -89,6 +91,7 @@ public class TimelineUseCase(IUnityEditorClient client)
             { instanceId = instanceId, assetPath = assetPath, trackIndex = trackIndex, clipIndex = clipIndex };
         var response = await client.GetAsync<GetTimelineClipPropertiesRequest, GetTimelineClipPropertiesResponse>(
             ApiRoutes.TimelineClipProperties, request, cancellationToken);
+        response.properties.OmitEmptyReferences();
         return JsonSerializer.Serialize(response, JsonOptions.Default);
     }
 

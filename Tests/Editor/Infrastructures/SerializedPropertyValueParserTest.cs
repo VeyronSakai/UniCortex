@@ -45,6 +45,32 @@ namespace UniCortex.Editor.Tests.Infrastructures
             ApplyAndVerifyInt("intField", "-7", -7);
         }
 
+        // --- ArraySize ---
+
+        [Test]
+        public void ArraySize_ResizesArray()
+        {
+            // Arrange
+            var property = _serializedObject.FindProperty("arrayField.Array.size");
+
+            // Act
+            SerializedPropertyValueParser.ApplyValue(property, "3");
+            _serializedObject.ApplyModifiedProperties();
+
+            // Assert
+            Assert.AreEqual(3, _so.arrayField.Length);
+        }
+
+        [Test]
+        public void ArraySize_NegativeValue_Throws()
+        {
+            // Arrange
+            var property = _serializedObject.FindProperty("arrayField.Array.size");
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => SerializedPropertyValueParser.ApplyValue(property, "-1"));
+        }
+
         // --- Boolean ---
 
         [Test]

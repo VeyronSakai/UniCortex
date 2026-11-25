@@ -32,6 +32,19 @@ namespace UniCortex.Editor.Infrastructures
                             $"Cannot parse '{value}' as int for property '{property.propertyPath}'.");
                     break;
 
+                // The size of an array (e.g. "m_List.Array.size"). Setting it resizes the array.
+                case SerializedPropertyType.ArraySize:
+                    if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var size) ||
+                        size < 0)
+                    {
+                        throw new ArgumentException(
+                            $"Cannot parse '{value}' as an array size (0 or greater) for property " +
+                            $"'{property.propertyPath}'.");
+                    }
+
+                    property.intValue = size;
+                    break;
+
                 case SerializedPropertyType.Boolean:
                     property.boolValue = ParseBoolean(value);
                     break;

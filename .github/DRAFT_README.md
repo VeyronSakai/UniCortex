@@ -136,7 +136,7 @@ UniCortex never saves scenes on its own. `create_scene`, `open_scene`, and `run_
 |------|-------------|
 | `add_component` | Add a component to a GameObject |
 | `remove_component` | Remove a component from a GameObject |
-| `get_component_properties` | Get serialized properties of a component |
+| `get_component_properties` | Get the serialized properties of a component, including the elements of arrays and nested serializable values, with paths that `set_component_property` accepts. Object references name their target (or `Missing`). `propertyPath` and `depth` read less of a large component |
 | `set_component_property` | Set a serialized property on a component |
 
 Component type arguments are supplied as a fully-qualified type name plus the defining assembly name (e.g. `UnityEngine.Rigidbody` + `UnityEngine.PhysicsModule`).
@@ -387,7 +387,7 @@ If the tool is already installed, run `dotnet tool update --global UniCortex.Cli
 | --- | --- |
 | `component add` | Add a component to a GameObject. |
 | `component remove` | Remove a component from a GameObject. |
-| `component property list` | Print serialized component properties as JSON. |
+| `component property list` | Print serialized component properties as JSON, including the elements of arrays and nested serializable values. Use `--property-path` and `--depth` to print less. |
 | `component property set` | Set a serialized property by path. |
 
 Component commands accept the fully-qualified component type name plus the defining assembly name (e.g. `UnityEngine.Rigidbody UnityEngine.PhysicsModule`).

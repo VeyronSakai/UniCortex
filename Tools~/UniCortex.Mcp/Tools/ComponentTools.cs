@@ -45,16 +45,24 @@ public class ComponentTools(ComponentUseCase componentUseCase, IAsyncOperationSe
             cancellationToken);
 
     [McpServerTool(Name = "get_component_properties", ReadOnly = true),
-     Description("Get serialized properties of a component on a GameObject."), UsedImplicitly]
+     Description("Get the serialized properties of a component, including the elements of arrays and nested " +
+                 "serializable values, with paths that set_component_property accepts. Object references name " +
+                 "their target in \"reference\". Use depth or propertyPath to read less of a large component."),
+     UsedImplicitly]
     public ValueTask<CallToolResult> GetComponentPropertiesAsync(
         [Description(InstanceIdDescription)] int instanceId,
         [Description(ComponentTypeDescription)] string componentType,
         [Description(AssemblyNameDescription)] string assemblyName,
         [Description(ComponentIndexDescription)]
         int componentIndex = 0,
+        [Description("Read only this property and its children (e.g. \"m_SceneBindings\"). Omit for all.")]
+        string? propertyPath = null,
+        [Description("Levels of children to list (0 = top level only, or only propertyPath). Omit for all.")]
+        int? depth = null,
         CancellationToken cancellationToken = default)
         => McpToolExecution.ExecuteTextAsync(sequencer,
-            ct => componentUseCase.GetPropertiesAsync(instanceId, componentType, assemblyName, componentIndex, ct),
+            ct => componentUseCase.GetPropertiesAsync(instanceId, componentType, assemblyName, componentIndex,
+                propertyPath, depth, ct),
             cancellationToken);
 
     [McpServerTool(Name = "set_component_property", ReadOnly = false),
