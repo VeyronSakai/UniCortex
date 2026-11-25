@@ -42,4 +42,15 @@ public class PrefabCommands(PrefabUseCase prefabUseCase)
         var message = await prefabUseCase.CloseAsync(discardChanges, cancellationToken);
         Console.WriteLine(message);
     }
+
+    /// <summary>Unpack a prefab instance (in a scene or in Prefab Mode) into plain GameObjects. Undoable.</summary>
+    /// <param name="instanceId">Instance ID of the outermost root of the prefab instance.</param>
+    /// <param name="mode">OutermostRoot (nested prefab instances inside stay linked) or Completely (unpack them too).</param>
+    [Command("unpack")]
+    public async Task Unpack([Argument] int instanceId, string mode = "OutermostRoot",
+        CancellationToken cancellationToken = default)
+    {
+        var message = await prefabUseCase.UnpackAsync(instanceId, mode, cancellationToken);
+        Console.WriteLine(message);
+    }
 }

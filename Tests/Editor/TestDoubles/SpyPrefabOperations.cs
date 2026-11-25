@@ -1,3 +1,4 @@
+using System;
 using UniCortex.Editor.Domains.Interfaces;
 using UniCortex.Editor.Domains.Models;
 
@@ -43,6 +44,22 @@ namespace UniCortex.Editor.Tests.TestDoubles
         {
             ClosePrefabCallCount++;
             LastCloseDiscardChanges = discardChanges;
+        }
+
+        public int UnpackCallCount { get; private set; }
+        public int LastUnpackInstanceId { get; private set; }
+        public string LastUnpackMode { get; private set; }
+        public Exception UnpackException { get; set; }
+
+        public void UnpackPrefabInstance(int instanceId, string mode)
+        {
+            UnpackCallCount++;
+            LastUnpackInstanceId = instanceId;
+            LastUnpackMode = mode;
+            if (UnpackException != null)
+            {
+                throw UnpackException;
+            }
         }
     }
 }

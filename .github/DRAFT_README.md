@@ -172,6 +172,7 @@ A curve is identified by `animatorRelativePath` (path relative to the Animator r
 | `instantiate_prefab` | Instantiate a Prefab into the scene |
 | `open_prefab` | Open a Prefab asset in Prefab Mode for editing |
 | `close_prefab` | Close Prefab Mode and return to the main stage (`discardChanges` drops unsaved changes of the Prefab) |
+| `unpack_prefab_instance` | Unpack a prefab instance (in a scene or in Prefab Mode) into plain GameObjects (supports Undo). `mode`: `OutermostRoot` (default; nested prefab instances stay linked) or `Completely` |
 
 #### Asset
 
@@ -418,6 +419,7 @@ Component commands accept the fully-qualified component type name plus the defin
 | `prefab instantiate` | Instantiate a Prefab into the current scene. |
 | `prefab open` | Open a Prefab in Prefab Mode. |
 | `prefab close` | Close Prefab Mode and return to the main stage. Add `--discard-changes` to drop unsaved changes of the Prefab. |
+| `prefab unpack` | Unpack a prefab instance into plain GameObjects. Add `--mode Completely` to unpack nested prefab instances too. |
 
 #### `test`
 

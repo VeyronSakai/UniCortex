@@ -40,4 +40,14 @@ public class PrefabUseCase(IUnityEditorClient client)
             cancellationToken);
         return discardChanges ? "Prefab mode closed without saving its changes." : "Prefab mode closed.";
     }
+
+    public async ValueTask<string> UnpackAsync(int instanceId, string? mode = null,
+        CancellationToken cancellationToken = default)
+    {
+        var unpackMode = string.IsNullOrEmpty(mode) ? PrefabUnpackModes.OutermostRoot : mode;
+        var request = new UnpackPrefabInstanceRequest { instanceId = instanceId, mode = unpackMode };
+        await client.PostAsync<UnpackPrefabInstanceRequest, UnpackPrefabInstanceResponse>(ApiRoutes.PrefabUnpack,
+            request, cancellationToken);
+        return $"Prefab instance unpacked ({unpackMode}): {instanceId}";
+    }
 }

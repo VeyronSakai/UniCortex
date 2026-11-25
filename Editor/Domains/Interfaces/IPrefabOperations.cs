@@ -10,5 +10,7 @@ namespace UniCortex.Editor.Domains.Interfaces
         // Leaves Prefab Mode. With discardChanges, the unsaved changes of the Prefab are dropped first, so that
         // Unity does not ask whether to save them.
         void ClosePrefab(bool discardChanges = false);
+        // Unpacks the prefab instance whose outermost root is the given GameObject, with a PrefabUnpackModes value.
+        void UnpackPrefabInstance(int instanceId, string mode);
     }
 }
